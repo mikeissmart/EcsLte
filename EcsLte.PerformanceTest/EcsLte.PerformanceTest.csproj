@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{7886D05F-9898-4876-8582-D8339AEE331B}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>EcsLte.PerformanceTest</RootNamespace>
+    <AssemblyName>EcsLte.PerformanceTest</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Helpers\Components.cs" />
+    <Compile Include="Histroy\SaveLoadTestHistory.cs" />
+    <Compile Include="PerformanceTest\Entity\EntityAddComponent.cs" />
+    <Compile Include="PerformanceTest\Entity\EntityGetComponent.cs" />
+    <Compile Include="PerformanceTest\Entity\EntityGetComponents.cs" />
+    <Compile Include="PerformanceTest\Entity\EntityHasComponent.cs" />
+    <Compile Include="PerformanceTest\Entity\EntityRemoveComponent.cs" />
+    <Compile Include="PerformanceTest\Entity\EntityRemoveComponents.cs" />
+    <Compile Include="PerformanceTest\TestConsts.cs" />
+    <Compile Include="PerformanceTest\EmptyTest.cs" />
+    <Compile Include="PerformanceTest\IPerformanceTest.cs" />
+    <Compile Include="Histroy\TestHistory.cs" />
+    <Compile Include="PerformanceTest\World\WorldCreateEntity.cs" />
+    <Compile Include="PerformanceTest\World\WorldDestroyAllEntities.cs" />
+    <Compile Include="PerformanceTest\World\WorldDestroyEntity.cs" />
+    <Compile Include="PerformanceTest\World\WorldGetEntity.cs" />
+    <Compile Include="PerformanceTest\World\WorldHasEntity.cs" />
+    <Compile Include="PerformanceTest\World\WorldJsonSerialize.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EcsLte\EcsLte.csproj">
+      <Project>{453b0797-012f-4388-baf3-8f78d9e6a7fb}</Project>
+      <Name>EcsLte</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
