@@ -10,15 +10,7 @@ namespace EcsLte.UnitTest.FilterTests
 		{
 			var filter = Filter.AllOf<TestComponent1, TestComponent1>();
 
-			Assert.IsTrue(filter.AllOfIndices.Length == 1);
-		}
-
-		[TestMethod]
-		public void AllOfFilter()
-		{
-			var filter = Filter.AllOf(Filter.AllOf<TestComponent1>(), Filter.AllOf<TestComponent2>());
-
-			Assert.IsTrue(filter.AllOfIndices.Length == 2);
+			Assert.IsTrue(filter.AllOfIndexes.Length == 1);
 		}
 
 		[TestMethod]
@@ -26,7 +18,7 @@ namespace EcsLte.UnitTest.FilterTests
 		{
 			var filter = Filter.AllOf<TestComponent1, TestComponent2, TestComponent3, TestComponent4, TestComponent5>();
 
-			Assert.IsTrue(filter.AllOfIndices.Length == 5);
+			Assert.IsTrue(filter.AllOfIndexes.Length == 5);
 		}
 
 		[TestMethod]
@@ -34,15 +26,7 @@ namespace EcsLte.UnitTest.FilterTests
 		{
 			var filter = Filter.AnyOf<TestComponent1, TestComponent1>();
 
-			Assert.IsTrue(filter.AnyOfIndices.Length == 1);
-		}
-
-		[TestMethod]
-		public void AnyOfFilter()
-		{
-			var filter = Filter.AnyOf(Filter.AnyOf<TestComponent1>(), Filter.AnyOf<TestComponent2>());
-
-			Assert.IsTrue(filter.AnyOfIndices.Length == 2);
+			Assert.IsTrue(filter.AnyOfIndexes.Length == 1);
 		}
 
 		[TestMethod]
@@ -50,7 +34,32 @@ namespace EcsLte.UnitTest.FilterTests
 		{
 			var filter = Filter.AnyOf<TestComponent1, TestComponent2, TestComponent3, TestComponent4, TestComponent5>();
 
-			Assert.IsTrue(filter.AnyOfIndices.Length == 5);
+			Assert.IsTrue(filter.AnyOfIndexes.Length == 5);
+		}
+
+		[TestMethod]
+		public void Combine()
+		{
+			var filter = Filter.Combine(
+				Filter.AllOf<TestComponent1>(),
+				Filter.AnyOf<TestComponent1>(),
+				Filter.NoneOf<TestComponent1>());
+
+			Assert.IsTrue(
+				filter.AllOfIndexes.Length == 1 &&
+				filter.AnyOfIndexes.Length == 1 &&
+				filter.NoneOfIndexes.Length == 1);
+		}
+
+		[TestMethod]
+		public void CombineIndexes()
+		{
+			var filter = Filter.Combine(
+				Filter.AllOf<TestComponent1>(),
+				Filter.AnyOf<TestComponent2>(),
+				Filter.NoneOf<TestComponent3>());
+
+			Assert.IsTrue(filter.Indexes.Length == 3);
 		}
 
 		[TestMethod]
@@ -58,15 +67,7 @@ namespace EcsLte.UnitTest.FilterTests
 		{
 			var filter = Filter.NoneOf<TestComponent1, TestComponent1>();
 
-			Assert.IsTrue(filter.NoneOfIndices.Length == 1);
-		}
-
-		[TestMethod]
-		public void NoneOfFilter()
-		{
-			var filter = Filter.NoneOf(Filter.NoneOf<TestComponent1>(), Filter.NoneOf<TestComponent2>());
-
-			Assert.IsTrue(filter.NoneOfIndices.Length == 2);
+			Assert.IsTrue(filter.NoneOfIndexes.Length == 1);
 		}
 
 		[TestMethod]
@@ -74,7 +75,7 @@ namespace EcsLte.UnitTest.FilterTests
 		{
 			var filter = Filter.NoneOf<TestComponent1, TestComponent2, TestComponent3, TestComponent4, TestComponent5>();
 
-			Assert.IsTrue(filter.NoneOfIndices.Length == 5);
+			Assert.IsTrue(filter.NoneOfIndexes.Length == 5);
 		}
 	}
 }

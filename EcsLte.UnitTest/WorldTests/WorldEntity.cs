@@ -9,8 +9,8 @@ namespace EcsLte.UnitTest.WorldTests
 		public void GetEntity()
 		{
 			var world = World.CreateWorld();
-			var entity1 = world.CreateEntity();
-			var entity2 = world.GetEntity(entity1.Id);
+			var entity1 = world.EntityManager.CreateEntity();
+			var entity2 = world.EntityManager.GetEntity(entity1.Id);
 
 			Assert.IsTrue(entity1 == entity2);
 		}
@@ -23,9 +23,9 @@ namespace EcsLte.UnitTest.WorldTests
 			var createdEntities = new Entity[createCount];
 
 			for (int i = 0; i < createCount; i++)
-				createdEntities[i] = world.CreateEntity();
+				createdEntities[i] = world.EntityManager.CreateEntity();
 
-			var getEntities = world.GetEntities();
+			var getEntities = world.EntityManager.GetEntities();
 			bool areSame = true;
 			for (int i = 0; i < createCount; i++)
 			{
@@ -42,9 +42,9 @@ namespace EcsLte.UnitTest.WorldTests
 		public void HasEntity()
 		{
 			var world = World.CreateWorld();
-			var entity = world.CreateEntity();
+			var entity = world.EntityManager.CreateEntity();
 
-			Assert.IsTrue(world.HasEntity(entity));
+			Assert.IsTrue(world.EntityManager.HasEntity(entity));
 		}
 	}
 }

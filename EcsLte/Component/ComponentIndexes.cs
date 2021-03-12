@@ -18,12 +18,14 @@ namespace EcsLte
 				return _index;
 			}
 		}
+
+		public static Type ComponentType { get => typeof(TComponent); }
 	}
 
 	internal static class ComponentIndexes
 	{
+		private readonly static Dictionary<string, int> _componentIndexNameLookup;
 		private static Dictionary<Type, int> _componentIndexTypeLookup = InitializeAll();
-		private static Dictionary<string, int> _componentIndexNameLookup;
 		private static Type[] _componentTypes;
 		private static int[] _recordableComponentIndexes;
 

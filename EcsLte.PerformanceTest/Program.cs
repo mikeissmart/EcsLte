@@ -7,7 +7,7 @@ namespace EcsLte.PerformanceTest
 {
 	internal class Program
 	{
-		private static string _fileName = "TestHistory.json";
+		private readonly static string _fileName = "TestHistory.json";
 		private static Stopwatch _stopwatch;
 		private static List<TestHistory> _pastTestHistories;
 		private static List<TestHistory> _currentTestHistories;
@@ -21,14 +21,6 @@ namespace EcsLte.PerformanceTest
 			_pastTestHistories = SaveLoadTestHistory.Load(_fileName);
 			_currentTestHistories = new List<TestHistory>();
 
-			Run<WorldCreateEntity>();
-			Run<WorldDestroyEntity>();
-			Run<WorldDestroyAllEntities>();
-			Run<WorldGetEntity>();
-			Run<WorldHasEntity>();
-			//Run<WorldJsonSerialize>();
-			Run<EmptyTest>();
-
 			Run<EntityAddComponent>();
 			Run<EntityGetComponent>();
 			Run<EntityGetComponents>();
@@ -37,24 +29,41 @@ namespace EcsLte.PerformanceTest
 			Run<EntityRemoveComponents>();
 			Run<EmptyTest>();
 
-			SaveLoadTestHistory.Save(_fileName, _currentTestHistories);
+			Run<GroupCreate>();
+			Run<GroupAutoUpdateAfterEntityCreate>();
+			Run<GroupAutoUpdateBeforeEntityCreate>();
+			Run<EmptyTest>();
+
+			Run<WorldCreateEntity>();
+			Run<WorldDestroyEntity>();
+			Run<WorldDestroyAllEntities>();
+			Run<WorldGetEntity>();
+			Run<WorldHasEntity>();
+			//Run<WorldJsonSerialize>();
+			Run<EmptyTest>();
+
+			//SaveLoadTestHistory.Save(_fileName, _currentTestHistories);
 			Console.WriteLine("\nPress any key...");
 			Console.Read();
 
 			//Running performance tests...
 			//Name                                  Cur Time    Pre Time    Diff
-			//WorldCreateEntity:                    512 ms      514 ms      -2
-			//WorldDestroyEntity:                   392 ms      413 ms      -21
-			//WorldDestroyAllEntities:              362 ms      366 ms      -4
-			//WorldGetEntity:                       21 ms       21 ms       0
-			//WorldHasEntity:                       17 ms       17 ms       0
+			//EntityAddComponent:                   296 ms      336 ms      -40
+			//EntityGetComponent:                   169 ms      139 ms      30
+			//EntityGetComponents:                  878 ms      989 ms      -111
+			//EntityHasComponent:                   94 ms       65 ms       29
+			//EntityRemoveComponent:                309 ms      286 ms      23
+			//EntityRemoveComponents:               344 ms      290 ms      54
 
-			//EntityAddComponent:                   206 ms      196 ms      10
-			//EntityGetComponent:                   75 ms       69 ms       6
-			//EntityGetComponents:                  655 ms      635 ms      20
-			//EntityHasComponent:                   34 ms       34 ms       0
-			//EntityRemoveComponent:                142 ms      126 ms      16
-			//EntityRemoveComponents:               315 ms      340 ms      -25
+			//GroupCreate:                          512 ms      515 ms      -3
+			//GroupAutoUpdateAfterEntityCreate:     103 ms      206 ms      -103
+			//GroupAutoUpdateBeforeEntityCreate:    2100 ms     2020 ms     80
+
+			//WorldCreateEntity:                    1381 ms     1433 ms     -52
+			//WorldDestroyEntity:                   547 ms      531 ms      16
+			//WorldDestroyAllEntities:              537 ms      607 ms      -70
+			//WorldGetEntity:                       44 ms       64 ms       -20
+			//WorldHasEntity:                       51 ms       32 ms       19
 		}
 
 		private static void Run<TPerformanceTest>()

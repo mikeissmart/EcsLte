@@ -56,6 +56,8 @@
     <Compile Include="FilterTests\FilterModify.cs" />
     <Compile Include="FilterTests\FilterAnyOfEquallity.cs" />
     <Compile Include="FilterTests\FilterNoneOfEquallity.cs" />
+    <Compile Include="GroupTests\GroupFilter.cs" />
+    <Compile Include="GroupTests\GroupEquallity.cs" />
     <Compile Include="Models\Components.cs" />
     <Compile Include="WorldTests\WorldEntity.cs" />
     <Compile Include="WorldTests\WorldLife.cs" />

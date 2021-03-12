@@ -5,12 +5,9 @@ namespace EcsLte
 {
 	public interface IComponentPool
 	{
-		Type ComponentType { get; }
 		int Length { get; }
 
-		int AddComponent();
-
-		int AddComponent(IComponent component);
+		int AddComponent(IComponent component = null);
 
 		void SetComponent(int index, IComponent component);
 
@@ -24,39 +21,32 @@ namespace EcsLte
 	public class ComponentPool<TComponent> : IComponentPool
 		where TComponent : IComponent
 	{
-		private List<TComponent> _components;
-		private Queue<int> _unusedIndexes;
+		private readonly List<TComponent> _components;
+		private readonly Queue<int> _unusedIndexes;
 
 		public ComponentPool()
 		{
 			_components = new List<TComponent>();
 			_unusedIndexes = new Queue<int>();
-			ComponentType = typeof(TComponent);
-			AddComponent();
+			AddComponent(Activator.CreateInstance<TComponent>());
 		}
 
-		public Type ComponentType { get; private set; }
 		public int Length { get => _components.Count; }
-
-		public int AddComponent()
-		{
-			int index;
-			if (_unusedIndexes.Count > 0)
-				index = _unusedIndexes.Dequeue();
-			else
-			{
-				index = _components.Count;
-				_components.Add(Activator.CreateInstance<TComponent>());
-			}
-
-			return index;
-		}
 
 		public int AddComponent(IComponent component)
 		{
-			int index = AddComponent();
-			if (component != default)
+			int index;
+			if (_unusedIndexes.Count > 0)
+			{
+				index = _unusedIndexes.Dequeue();
 				_components[index] = (TComponent)component;
+			}
+			else
+			{
+				index = _components.Count;
+				_components.Add((TComponent)component);
+			}
+
 			return index;
 		}
 
@@ -73,7 +63,7 @@ namespace EcsLte
 		{
 			_unusedIndexes.Clear();
 			_components.Clear();
-			AddComponent();
+			AddComponent(Activator.CreateInstance<TComponent>());
 		}
 	}
 }

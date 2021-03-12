@@ -10,18 +10,18 @@
 			_world = World.CreateWorld();
 			_entities = new Entity[TestConsts.LoopCount];
 			for (int i = 0; i < TestConsts.LoopCount; i++)
-				_entities[i] = _world.CreateEntity();
+				_entities[i] = _world.EntityManager.CreateEntity();
 		}
 
 		public void Run()
 		{
 			for (int i = 0; i < TestConsts.LoopCount; i++)
-				_entities[i].AddComponent<TestComponent1>();
+				_world.EntityManager.AddComponent<TestComponent1>(_entities[i]);
 		}
 
 		public void PostRun()
 		{
-			_world.DestroyWorld();
+			World.DestroyWorld(_world);
 		}
 	}
 }

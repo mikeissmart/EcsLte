@@ -5,84 +5,55 @@ using System.Linq;
 
 namespace EcsLte
 {
-	public partial class Filter : IAllOfFilter
+	public partial struct Filter : IEquatable<Filter>
 	{
 		private static HashSet<int> _distinctIndicesBuffer;
 
-		private DataCache<int> _hashCache;
+		private int _hashCode;
+		private int[] _indexes;
 
-		public Filter()
+		public int[] Indexes
 		{
-			AllOfIndices = new int[0];
-			AnyOfIndices = new int[0];
-			NoneOfIndices = new int[0];
-
-			_hashCache = new DataCache<int>(UpdateHashCache);
+			get
+			{
+				if (_indexes == null)
+					_indexes = MergeDistinctIndices(AllOfIndexes, AnyOfIndexes, NoneOfIndexes);
+				return _indexes;
+			}
 		}
 
-		public int[] AllOfIndices { get; private set; }
-		public int[] AnyOfIndices { get; private set; }
-		public int[] NoneOfIndices { get; private set; }
+		public int[] AllOfIndexes { get; private set; }
+		public int[] AnyOfIndexes { get; private set; }
+		public int[] NoneOfIndexes { get; private set; }
 
-		public static Filter Combine(params IFilter[] filters)
+		public static Filter Combine(params Filter[] filters)
 		{
 			var filter = new Filter();
 			foreach (var f in filters)
-				filter.AllOfIndices = MergeDistinctIndices(filter.AllOfIndices, f.AllOfIndices);
+				filter.AllOfIndexes = MergeDistinctIndices(filter.AllOfIndexes, f.AllOfIndexes);
 			foreach (var f in filters)
-				filter.AnyOfIndices = MergeDistinctIndices(filter.AnyOfIndices, f.AnyOfIndices);
+				filter.AnyOfIndexes = MergeDistinctIndices(filter.AnyOfIndexes, f.AnyOfIndexes);
 			foreach (var f in filters)
-				filter.NoneOfIndices = MergeDistinctIndices(filter.NoneOfIndices, f.NoneOfIndices);
+				filter.NoneOfIndexes = MergeDistinctIndices(filter.NoneOfIndexes, f.NoneOfIndexes);
 
 			return filter;
 		}
 
-		public static IAllOfFilter AllOf(params IFilter[] filters)
-		{
-			var filter = new Filter();
-			foreach (var f in filters)
-				filter.AllOfIndices = MergeDistinctIndices(filter.AllOfIndices, f.AllOfIndices);
+		public static bool operator !=(Filter lhs, Filter rhs)
+			=> !(lhs == rhs);
 
-			return filter;
-		}
+		public static bool operator ==(Filter lhs, Filter rhs)
+			=> lhs.GetHashCode() == rhs.GetHashCode();
 
-		public static IAnyOfFilter AnyOf(params IFilter[] filters)
-		{
-			var filter = new Filter();
-			foreach (var f in filters)
-				filter.AnyOfIndices = MergeDistinctIndices(filter.AnyOfIndices, f.AnyOfIndices);
+		public bool Equals(Filter other)
+			=> this == other;
 
-			return filter;
-		}
-
-		public static INoneOfFilter NoneOf(params IFilter[] filters)
-		{
-			var filter = new Filter();
-			foreach (var f in filters)
-				filter.NoneOfIndices = MergeDistinctIndices(filter.NoneOfIndices, f.NoneOfIndices);
-
-			return filter;
-		}
-
-		IAnyOfFilter IAllOfFilter.AnyOf(params IFilter[] filters)
-		{
-			foreach (var f in filters)
-				AnyOfIndices = MergeDistinctIndices(AnyOfIndices, f.AnyOfIndices);
-
-			return this;
-		}
-
-		INoneOfFilter IAnyOfFilter.NoneOf(params IFilter[] filters)
-		{
-			foreach (var f in filters)
-				NoneOfIndices = MergeDistinctIndices(NoneOfIndices, f.NoneOfIndices);
-
-			return this;
-		}
+		public override bool Equals(object obj)
+			=> obj is Filter other && (this == other);
 
 		public bool Filtered(Entity entity)
 		{
-			var indexes = entity.Info.ComponentIndexes;
+			var indexes = entity.Info.AllComponentIndexes;
 
 			return FilteredAllOf(indexes) &&
 				FilteredAnyOf(indexes) &&
@@ -90,14 +61,9 @@ namespace EcsLte
 		}
 
 		public override int GetHashCode()
-			=> _hashCache.Data;
-
-		public override bool Equals(object obj)
-		{
-			if (!(obj is Filter objFilter) || obj == null)
-				return false;
-			return GetHashCode() == objFilter.GetHashCode();
-		}
+			=> _hashCode == 0
+				? GenerateHasCode()
+				: _hashCode;
 
 		private static int[] MergeDistinctIndex(int[] indices, int index)
 		{
@@ -116,37 +82,37 @@ namespace EcsLte
 			return indices;
 		}
 
-		private static int[] MergeDistinctIndices(int[] indices1, int[] indices2)
+		private static int[] MergeDistinctIndices(params int[][] allIndices)
 		{
-			if (indices1 == null && indices2 == null)
-				return new int[0];
-			else if (indices1 == null)
-				return indices2;
-			else if (indices2 == null)
-				return indices1;
-
 			if (_distinctIndicesBuffer == null)
 				_distinctIndicesBuffer = new HashSet<int>();
 			else
 				_distinctIndicesBuffer.Clear();
 
-			foreach (int indx in indices1)
-				_distinctIndicesBuffer.Add(indx);
-			foreach (int indx in indices2)
-				_distinctIndicesBuffer.Add(indx);
+			foreach (var indices in allIndices)
+			{
+				if (indices != null)
+				{
+					foreach (int index in indices)
+						_distinctIndicesBuffer.Add(index);
+				}
+			}
 
-			var indices = new int[_distinctIndicesBuffer.Count];
-			_distinctIndicesBuffer.CopyTo(indices);
-			Array.Sort(indices);
+			var mergedIndices = new int[_distinctIndicesBuffer.Count];
+			_distinctIndicesBuffer.CopyTo(mergedIndices);
+			Array.Sort(mergedIndices);
 
-			return indices;
+			return mergedIndices;
 		}
 
 		private bool FilteredAllOf(int[] componentIndexes)
 		{
+			if (AllOfIndexes == null)
+				return true;
+
 			bool isOk = true;
 
-			foreach (var index in AllOfIndices)
+			foreach (var index in AllOfIndexes)
 			{
 				if (componentIndexes[index] == 0)
 				{
@@ -160,9 +126,12 @@ namespace EcsLte
 
 		private bool FilteredAnyOf(int[] componentIndexes)
 		{
+			if (AnyOfIndexes == null)
+				return true;
+
 			bool isOk = false;
 
-			foreach (var index in AnyOfIndices)
+			foreach (var index in AnyOfIndexes)
 			{
 				if (componentIndexes[index] != 0)
 				{
@@ -176,9 +145,12 @@ namespace EcsLte
 
 		private bool FilteredNoneOf(int[] componentIndexes)
 		{
+			if (NoneOfIndexes == null)
+				return true;
+
 			bool isOk = true;
 
-			foreach (var index in NoneOfIndices)
+			foreach (var index in NoneOfIndexes)
 			{
 				if (componentIndexes[index] != 0)
 				{
@@ -190,13 +162,14 @@ namespace EcsLte
 			return isOk;
 		}
 
-		private int UpdateHashCache()
+		private int GenerateHasCode()
 		{
-			return (
-				StructuralComparisons.StructuralEqualityComparer.GetHashCode(AllOfIndices),
-				StructuralComparisons.StructuralEqualityComparer.GetHashCode(AnyOfIndices),
-				StructuralComparisons.StructuralEqualityComparer.GetHashCode(NoneOfIndices)
+			_hashCode = (
+				StructuralComparisons.StructuralEqualityComparer.GetHashCode(AllOfIndexes),
+				StructuralComparisons.StructuralEqualityComparer.GetHashCode(AnyOfIndexes),
+				StructuralComparisons.StructuralEqualityComparer.GetHashCode(NoneOfIndexes)
 			).GetHashCode();
+			return _hashCode;
 		}
 	}
 }

@@ -9,83 +9,85 @@ namespace EcsLte.UnitTest.EntityTests
 		[TestMethod]
 		public void Create()
 		{
-			var entity = World.CreateWorld().CreateEntity();
+			var world = World.CreateWorld();
+			var entity = world.EntityManager.CreateEntity();
 
-			Assert.IsTrue(entity.IsAlive && entity.Id != 0);
+			Assert.IsTrue(world.EntityManager.HasEntity(entity) && entity.Id != 0);
 		}
 
 		[TestMethod]
 		public void CreateAfterWorldDestroy()
 		{
 			var world = World.CreateWorld();
-			world.DestroyWorld();
+			World.DestroyWorld(world);
 
-			Assert.ThrowsException<WorldIsDestroyedException>(() => world.CreateEntity());
+			Assert.ThrowsException<WorldIsDestroyedException>(() => world.EntityManager.CreateEntity());
 		}
 
 		[TestMethod]
 		public void CreateNoWorld()
 		{
+			var world = World.CreateWorld();
 			var entity = new Entity();
 
-			Assert.IsFalse(entity.IsAlive);
+			Assert.IsFalse(world.EntityManager.HasEntity(entity));
 		}
 
 		[TestMethod]
 		public void CreateMultiple()
 		{
 			var world = World.CreateWorld();
-			var entity1 = world.CreateEntity();
-			var entity2 = world.CreateEntity();
+			var entity1 = world.EntityManager.CreateEntity();
+			var entity2 = world.EntityManager.CreateEntity();
 
-			Assert.IsTrue(entity1.IsAlive && entity1.Id != 0);
-			Assert.IsTrue(entity2.IsAlive && entity2.Id != 0);
+			Assert.IsTrue(world.EntityManager.HasEntity(entity1) && entity1.Id != 0);
+			Assert.IsTrue(world.EntityManager.HasEntity(entity2) && entity2.Id != 0);
 		}
 
 		[TestMethod]
 		public void CreateReuse()
 		{
 			var world = World.CreateWorld();
-			var entity1 = world.CreateEntity();
-			world.DestroyEntity(entity1);
+			var entity1 = world.EntityManager.CreateEntity();
+			world.EntityManager.DestroyEntity(entity1);
 
-			var entity2 = world.CreateEntity();
+			var entity2 = world.EntityManager.CreateEntity();
 
-			Assert.IsTrue(entity2.IsAlive && entity2.Generation != 1);
+			Assert.IsTrue(world.EntityManager.HasEntity(entity2) && entity2.Generation != 1);
 		}
 
 		[TestMethod]
 		public void Destroy()
 		{
 			var world = World.CreateWorld();
-			var entity = world.CreateEntity();
-			world.DestroyEntity(entity);
+			var entity = world.EntityManager.CreateEntity();
+			world.EntityManager.DestroyEntity(entity);
 
-			Assert.IsFalse(entity.IsAlive);
+			Assert.IsFalse(world.EntityManager.HasEntity(entity));
 		}
 
 		[TestMethod]
 		public void DestroyAfterWorldDestroy()
 		{
 			var world = World.CreateWorld();
-			var entity = world.CreateEntity();
-			world.DestroyWorld();
+			var entity = world.EntityManager.CreateEntity();
+			World.DestroyWorld(world);
 
-			Assert.ThrowsException<WorldIsDestroyedException>(() => world.DestroyEntity(entity));
+			Assert.ThrowsException<WorldIsDestroyedException>(() => world.EntityManager.DestroyEntity(entity));
 		}
 
 		[TestMethod]
 		public void DestroyMultiple()
 		{
 			var world = World.CreateWorld();
-			var entity1 = world.CreateEntity();
-			var entity2 = world.CreateEntity();
+			var entity1 = world.EntityManager.CreateEntity();
+			var entity2 = world.EntityManager.CreateEntity();
 
-			world.DestroyEntity(entity1);
-			world.DestroyEntity(entity2);
+			world.EntityManager.DestroyEntity(entity1);
+			world.EntityManager.DestroyEntity(entity2);
 
-			Assert.IsFalse(entity1.IsAlive);
-			Assert.IsFalse(entity2.IsAlive);
+			Assert.IsFalse(world.EntityManager.HasEntity(entity1));
+			Assert.IsFalse(world.EntityManager.HasEntity(entity2));
 		}
 	}
 }

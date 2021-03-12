@@ -11,8 +11,8 @@
 			_entities = new Entity[TestConsts.LoopCount];
 			for (int i = 0; i < TestConsts.LoopCount; i++)
 			{
-				var entity = _world.CreateEntity();
-				entity.AddComponent<TestComponent1>();
+				var entity = _world.EntityManager.CreateEntity();
+				_world.EntityManager.AddComponent<TestComponent1>(entity);
 				_entities[i] = entity;
 			}
 		}
@@ -20,12 +20,12 @@
 		public void Run()
 		{
 			for (int i = 0; i < TestConsts.LoopCount; i++)
-				_entities[i].GetComponents();
+				_world.EntityManager.GetAllComponents(_entities[i]);
 		}
 
 		public void PostRun()
 		{
-			_world.DestroyWorld();
+			World.DestroyWorld(_world);
 		}
 	}
 }

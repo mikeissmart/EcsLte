@@ -54,6 +54,9 @@
     <Compile Include="PerformanceTest\Entity\EntityHasComponent.cs" />
     <Compile Include="PerformanceTest\Entity\EntityRemoveComponent.cs" />
     <Compile Include="PerformanceTest\Entity\EntityRemoveComponents.cs" />
+    <Compile Include="PerformanceTest\Group\GroupAutoUpdateAfterEntityCreate.cs" />
+    <Compile Include="PerformanceTest\Group\GroupAutoUpdateBeforeEntityCreate.cs" />
+    <Compile Include="PerformanceTest\Group\GroupCreate.cs" />
     <Compile Include="PerformanceTest\TestConsts.cs" />
     <Compile Include="PerformanceTest\EmptyTest.cs" />
     <Compile Include="PerformanceTest\IPerformanceTest.cs" />

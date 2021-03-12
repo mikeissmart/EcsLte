@@ -6,6 +6,24 @@ namespace EcsLte.UnitTest.FilterTests
 	public class FilterNoneOfEquallity
 	{
 		[TestMethod]
+		public void DoubleEquals()
+		{
+			var filter1 = Filter.NoneOf<TestComponent1>();
+			var filter2 = Filter.NoneOf<TestComponent1>();
+
+			Assert.IsTrue(filter1 == filter2);
+		}
+
+		[TestMethod]
+		public void DoubleNotEquals()
+		{
+			var filter1 = Filter.NoneOf<TestComponent1>();
+			var filter2 = Filter.NoneOf<TestComponent1>();
+
+			Assert.IsFalse(filter1 != filter2);
+		}
+
+		[TestMethod]
 		public void Equals()
 		{
 			var filter1 = Filter.NoneOf<TestComponent1>();

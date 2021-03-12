@@ -38,18 +38,18 @@ namespace EcsLte.UnitTest.WorldTests
 		public void Destroy()
 		{
 			var world = World.CreateWorld();
-			world.DestroyWorld();
+			World.DestroyWorld(world);
 
-			Assert.IsTrue(world.IsDestroyed && World.GetWorld(world.WorldId) == null);
+			Assert.ThrowsException<WorldIsDestroyedException>(() => World.GetWorld(world.WorldId));
 		}
 
 		[TestMethod]
 		public void DestroyAfterDestroy()
 		{
 			var world = World.CreateWorld();
-			world.DestroyWorld();
+			World.DestroyWorld(world);
 
-			Assert.ThrowsException<WorldIsDestroyedException>(() => world.DestroyWorld());
+			Assert.ThrowsException<WorldIsDestroyedException>(() => World.DestroyWorld(world));
 		}
 	}
 }

@@ -6,6 +6,24 @@ namespace EcsLte.UnitTest.FilterTests
 	public class FilterAllOfEquallity
 	{
 		[TestMethod]
+		public void DoubleEquals()
+		{
+			var filter1 = Filter.AllOf<TestComponent1>();
+			var filter2 = Filter.AllOf<TestComponent1>();
+
+			Assert.IsTrue(filter1 == filter2);
+		}
+
+		[TestMethod]
+		public void DoubleNotEquals()
+		{
+			var filter1 = Filter.AllOf<TestComponent1>();
+			var filter2 = Filter.AllOf<TestComponent1>();
+
+			Assert.IsFalse(filter1 != filter2);
+		}
+
+		[TestMethod]
 		public void Equals()
 		{
 			var filter1 = Filter.AllOf<TestComponent1>();

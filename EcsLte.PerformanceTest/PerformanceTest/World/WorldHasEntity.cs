@@ -9,19 +9,19 @@
 		{
 			_world = World.CreateWorld();
 			for (int i = 0; i < TestConsts.LoopCount; i++)
-				_world.CreateEntity();
-			_entity = _world.CreateEntity();
+				_world.EntityManager.CreateEntity();
+			_entity = _world.EntityManager.CreateEntity();
 		}
 
 		public void Run()
 		{
 			for (int i = 0; i < TestConsts.LoopCount; i++)
-				_world.HasEntity(_entity);
+				_world.EntityManager.HasEntity(_entity);
 		}
 
 		public void PostRun()
 		{
-			_world.DestroyWorld();
+			World.DestroyWorld(_world);
 		}
 	}
 }

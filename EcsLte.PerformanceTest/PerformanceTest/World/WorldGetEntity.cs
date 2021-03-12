@@ -8,18 +8,18 @@
 		{
 			_world = World.CreateWorld();
 			for (int i = 0; i < TestConsts.LoopCount; i++)
-				_world.CreateEntity();
+				_world.EntityManager.CreateEntity();
 		}
 
 		public void Run()
 		{
 			for (int i = 1; i < TestConsts.LoopCount; i++)
-				_world.GetEntity(i);
+				_world.EntityManager.GetEntity(i);
 		}
 
 		public void PostRun()
 		{
-			_world.DestroyWorld();
+			World.DestroyWorld(_world);
 		}
 	}
 }

@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace EcsLte.PerformanceTest
+﻿namespace EcsLte.PerformanceTest
 {
 	public class WorldJsonSerialize : IPerformanceTest
 	{
@@ -9,12 +7,13 @@ namespace EcsLte.PerformanceTest
 		public void PreRun()
 		{
 			_world = World.CreateWorld();
-			_world.CreateEntity().AddComponent<TestComponent1>();
+			var entity = _world.EntityManager.CreateEntity();
+			_world.EntityManager.AddComponent<TestComponent1>(entity);
 		}
 
 		public void Run()
 		{
-			var serializeSettings = new JsonSerializerSettings
+			/*var serializeSettings = new JsonSerializerSettings
 			{
 				Formatting = Formatting.Indented,
 				TypeNameHandling = TypeNameHandling.All
@@ -25,12 +24,12 @@ namespace EcsLte.PerformanceTest
 			json = json;
 
 			var loadData = JsonConvert.DeserializeObject<WorldRecordableData>(json, serializeSettings);
-			loadData = loadData;
+			loadData = loadData;*/
 		}
 
 		public void PostRun()
 		{
-			_world.DestroyWorld();
+			World.DestroyWorld(_world);
 		}
 	}
 }

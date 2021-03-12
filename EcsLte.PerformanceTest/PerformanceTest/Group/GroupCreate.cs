@@ -1,6 +1,6 @@
 ﻿namespace EcsLte.PerformanceTest
 {
-	internal class WorldCreateEntity : IPerformanceTest
+	internal class GroupCreate : IPerformanceTest
 	{
 		private World _world;
 
@@ -11,8 +11,9 @@
 
 		public void Run()
 		{
+			var filter = Filter.AllOf<TestComponent1>();
 			for (int i = 0; i < TestConsts.LoopCount; i++)
-				_world.EntityManager.CreateEntity();
+				_world.GroupManager.GetGroup(filter);
 		}
 
 		public void PostRun()
