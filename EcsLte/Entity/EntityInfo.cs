@@ -5,15 +5,15 @@ namespace EcsLte
 {
 	internal class EntityInfo
 	{
-		private int[] _componentIndexes;
+		private static List<IComponent> _componentsBuffer = new List<IComponent>();
+
+		private IComponent[] _components;
 		private DataCache<IComponent[]> _componentsCache;
-		private IComponentPool[] _componentPools;
 		private EntityComponentChangedEvent _componentAddedEvent;
 		private EntityComponentChangedEvent _componentRemovedEvent;
 		private EntityComponentReplacedEvent _componentReplacedEvent;
-		private EntityEvent _entityWillBeDestroyedEvent;
 
-		public EntityInfo(int id, int generation, World world, IComponentPool[] componentPools)
+		public EntityInfo(int id, int generation, World world)
 		{
 			Id = id;
 			Generation = generation;
@@ -23,11 +23,11 @@ namespace EcsLte
 			_componentAddedEvent = new EntityComponentChangedEvent();
 			_componentRemovedEvent = new EntityComponentChangedEvent();
 			_componentReplacedEvent = new EntityComponentReplacedEvent();
-			_entityWillBeDestroyedEvent = new EntityEvent();
 
-			_componentIndexes = new int[ComponentIndexes.Count];
+			EntityWillBeDestroyedEvent = new EntityEvent();
+
+			_components = new IComponent[ComponentIndexes.Count];
 			_componentsCache = new DataCache<IComponent[]>(UpdateComponentsCache);
-			_componentPools = componentPools;
 
 			_componentReplacedEvent.Subscribe((entity, componentPoolIndex, prevComponent, newComponent) =>
 			{
@@ -40,14 +40,14 @@ namespace EcsLte
 		public bool IsAlive { get; set; }
 		public World World { get; set; }
 
-		public int[] AllComponentIndexes { get => _componentIndexes; }
+		private EntityEvent EntityWillBeDestroyedEvent { get; set; }
 
-		public int this[int componentPoolIndex]
+		public IComponent this[int componentIndex]
 		{
-			get => _componentIndexes[componentPoolIndex];
+			get => _components[componentIndex];
 			set
 			{
-				_componentIndexes[componentPoolIndex] = value;
+				_components[componentIndex] = value;
 				_componentsCache.IsDirty = true;
 			}
 		}
@@ -57,24 +57,26 @@ namespace EcsLte
 
 		public void Reset()
 		{
-			Array.Clear(_componentIndexes, 0, _componentIndexes.Length);
+			Array.Clear(_components, 0, _components.Length);
 			_componentAddedEvent.Clear();
 			_componentRemovedEvent.Clear();
 			_componentReplacedEvent.Clear();
-			_entityWillBeDestroyedEvent.Clear();
+			EntityWillBeDestroyedEvent.Clear();
 			IsAlive = false;
 		}
 
 		private IComponent[] UpdateComponentsCache()
 		{
-			var components = new List<IComponent>();
-			for (int i = 0; i < _componentIndexes.Length; i++)
+			_componentsBuffer.Clear();
+			for (int i = 0; i < _components.Length; i++)
 			{
-				if (_componentIndexes[i] != 0)
-					components.Add(_componentPools[i].GetComponent(_componentIndexes[i]));
+				if (_components[i] != null)
+				{
+					_componentsBuffer.Add(_components[i]);
+				}
 			}
 
-			return components.ToArray();
+			return _componentsBuffer.ToArray();
 		}
 	}
 }

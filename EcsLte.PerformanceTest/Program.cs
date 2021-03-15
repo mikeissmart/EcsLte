@@ -34,6 +34,11 @@ namespace EcsLte.PerformanceTest
 			Run<GroupAutoUpdateBeforeEntityCreate>();
 			Run<EmptyTest>();
 
+			Run<SharedKeyCreate>();
+			Run<SharedKeyAfterEntitiesGetEntities>();
+			Run<SharedKeyeBeforeEntitiesGetEntities>();
+			Run<EmptyTest>();
+
 			Run<WorldCreateEntity>();
 			Run<WorldDestroyEntity>();
 			Run<WorldDestroyAllEntities>();
@@ -42,28 +47,32 @@ namespace EcsLte.PerformanceTest
 			//Run<WorldJsonSerialize>();
 			Run<EmptyTest>();
 
-			//SaveLoadTestHistory.Save(_fileName, _currentTestHistories);
-			Console.WriteLine("\nPress any key...");
-			Console.Read();
+			Console.WriteLine("\nPress 1 to save time...");
+			if (Console.ReadKey().KeyChar == '1')
+				SaveLoadTestHistory.Save(_fileName, _currentTestHistories);
 
 			//Running performance tests...
 			//Name                                  Cur Time    Pre Time    Diff
-			//EntityAddComponent:                   296 ms      336 ms      -40
-			//EntityGetComponent:                   169 ms      139 ms      30
-			//EntityGetComponents:                  878 ms      989 ms      -111
-			//EntityHasComponent:                   94 ms       65 ms       29
-			//EntityRemoveComponent:                309 ms      286 ms      23
-			//EntityRemoveComponents:               344 ms      290 ms      54
+			//EntityAddComponent:                   576 ms      336 ms      240
+			//EntityGetComponent:                   104 ms      139 ms      -35
+			//EntityGetComponents:                  581 ms      989 ms      -408
+			//EntityHasComponent:                   74 ms       65 ms       9
+			//EntityRemoveComponent:                213 ms      286 ms      -73
+			//EntityRemoveComponents:               359 ms      290 ms      69
 
-			//GroupCreate:                          512 ms      515 ms      -3
-			//GroupAutoUpdateAfterEntityCreate:     103 ms      206 ms      -103
-			//GroupAutoUpdateBeforeEntityCreate:    2100 ms     2020 ms     80
+			//GroupCreate:                          513 ms      515 ms      -2
+			//GroupAutoUpdateAfterEntityCreate:     86 ms       206 ms      -120
+			//GroupAutoUpdateBeforeEntityCreate:    2147 ms     2020 ms     127
 
-			//WorldCreateEntity:                    1381 ms     1433 ms     -52
-			//WorldDestroyEntity:                   547 ms      531 ms      16
-			//WorldDestroyAllEntities:              537 ms      607 ms      -70
-			//WorldGetEntity:                       44 ms       64 ms       -20
-			//WorldHasEntity:                       51 ms       32 ms       19
+			//SharedKeyCreate:                      458 ms      0 ms        0
+			//SharedKeyAfterEntitiesGetEntities:    1535 ms     0 ms        0
+			//SharedKeyeBeforeEntitiesGetEntities:  614 ms      0 ms        0
+
+			//WorldCreateEntity:                    1540 ms     1433 ms     107
+			//WorldDestroyEntity:                   539 ms      531 ms      8
+			//WorldDestroyAllEntities:              547 ms      607 ms      -60
+			//WorldGetEntity:                       33 ms       64 ms       -31
+			//WorldHasEntity:                       46 ms       32 ms       14
 		}
 
 		private static void Run<TPerformanceTest>()
@@ -77,8 +86,9 @@ namespace EcsLte.PerformanceTest
 
 			TPerformanceTest test = default;
 
-			long avgTime = 0;
 			int loops = 5;
+			long[] times = new long[loops];
+			long avgTime = 0;
 			for (int i = 0; i < loops; i++)
 			{
 				test = new TPerformanceTest();
@@ -88,7 +98,17 @@ namespace EcsLte.PerformanceTest
 				test.Run();
 				_stopwatch.Stop();
 				test.PostRun();
+
+				times[i] = _stopwatch.ElapsedMilliseconds;
 				avgTime += _stopwatch.ElapsedMilliseconds;
+
+				string timesText = "";
+				foreach (var time in times)
+					timesText += $"{time}".PadRight(5);
+
+				Console.SetCursorPosition(0, Console.CursorTop);
+				Console.Write(
+					($"//{typeof(TPerformanceTest).Name}: ") + timesText, 0);
 			}
 			avgTime /= loops;
 
@@ -104,6 +124,7 @@ namespace EcsLte.PerformanceTest
 			if (prevTestHistory != null)
 				timeDiff = testHistory.TimeMs - prevTestHistory.TimeMs;
 
+			Console.SetCursorPosition(0, Console.CursorTop);
 			Console.WriteLine(
 				($"//{typeof(TPerformanceTest).Name}: ").PadRight(40) +
 				($"{avgTime} ms ").PadRight(12) +

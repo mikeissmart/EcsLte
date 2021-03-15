@@ -57,6 +57,9 @@
     <Compile Include="PerformanceTest\Group\GroupAutoUpdateAfterEntityCreate.cs" />
     <Compile Include="PerformanceTest\Group\GroupAutoUpdateBeforeEntityCreate.cs" />
     <Compile Include="PerformanceTest\Group\GroupCreate.cs" />
+    <Compile Include="PerformanceTest\Key\SharedKeyAfterEntitiesGetEntities.cs" />
+    <Compile Include="PerformanceTest\Key\SharedKeyCreate.cs" />
+    <Compile Include="PerformanceTest\Key\SharedKeyeBeforeEntitiesGetEntities.cs" />
     <Compile Include="PerformanceTest\TestConsts.cs" />
     <Compile Include="PerformanceTest\EmptyTest.cs" />
     <Compile Include="PerformanceTest\IPerformanceTest.cs" />

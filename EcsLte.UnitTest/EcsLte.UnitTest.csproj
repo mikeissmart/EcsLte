@@ -59,6 +59,7 @@
     <Compile Include="GroupTests\GroupFilter.cs" />
     <Compile Include="GroupTests\GroupEquallity.cs" />
     <Compile Include="Models\Components.cs" />
+    <Compile Include="Key\KeyLife.cs" />
     <Compile Include="WorldTests\WorldEntity.cs" />
     <Compile Include="WorldTests\WorldLife.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

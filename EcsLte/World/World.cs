@@ -12,6 +12,7 @@ namespace EcsLte
 		{
 			EntityManager = new EntityManager(this);
 			GroupManager = new GroupManager(this, EntityManager);
+			KeyManager = new KeyManager(this, EntityManager, GroupManager);
 		}
 
 		public static World DefaultWorld { get; set; } = CreateWorld();
@@ -20,6 +21,7 @@ namespace EcsLte
 		public bool IsDestroyed { get; private set; }
 		public EntityManager EntityManager { get; private set; }
 		public GroupManager GroupManager { get; private set; }
+		public KeyManager KeyManager { get; private set; }
 
 		internal static List<World> Worlds { get; private set; }
 

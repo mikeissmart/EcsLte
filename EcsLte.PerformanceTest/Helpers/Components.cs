@@ -1,5 +1,6 @@
 ﻿namespace EcsLte.PerformanceTest
 {
+	[SharedKey("Prop")]
 	public struct TestComponent1 : IComponent, IComponentRecordable { public int Prop { get; set; } }
 
 	public struct TestComponent2 : IComponent { public int Prop { get; set; } }

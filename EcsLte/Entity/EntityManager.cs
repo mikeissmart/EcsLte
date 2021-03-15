@@ -10,16 +10,15 @@ namespace EcsLte
 		private readonly List<EntityInfo> _entityInfos;
 		private readonly Queue<EntityInfo> _reuseableEntityInfos;
 		private readonly DataCache<Entity[]> _entitiesCache;
-		private readonly IComponentPool[] _componentPools;
-		private readonly World _world;
 
 		internal EntityManager(World world)
 		{
+			ComponentIndexes.Initialize();
+
 			_entityInfos = new List<EntityInfo>();
 			_reuseableEntityInfos = new Queue<EntityInfo>();
 			_entitiesCache = new DataCache<Entity[]>(UpdateEntitiesCache);
-			_componentPools = new IComponentPool[ComponentIndexes.Count];
-			_world = world;
+			World = world;
 
 			AnyEntityCreated = new EntityEvent();
 			AnyEntityWillBeDestroyedEvent = new EntityEvent();
@@ -28,16 +27,12 @@ namespace EcsLte
 			AnyComponentReplacedEvent = new EntityComponentReplacedEvent();
 
 			// Create place holder for null entity
-			var entityInfo = new EntityInfo(0, 0, world, null);
+			var entityInfo = new EntityInfo(0, 0, world);
 			entityInfo.Reset();
 			_entityInfos.Add(entityInfo);
-
-			// Create data dependent on component count
-			for (int i = 0; i < ComponentIndexes.Count; i++)
-				_componentPools[i] = (IComponentPool)Activator
-					.CreateInstance(typeof(ComponentPool<>)
-					.MakeGenericType(ComponentIndexes.AllComponentTypes[i]));
 		}
+
+		public World World { get; private set; }
 
 		internal EntityEvent AnyEntityCreated { get; private set; }
 		internal EntityEvent AnyEntityWillBeDestroyedEvent { get; private set; }
@@ -47,8 +42,8 @@ namespace EcsLte
 
 		public Entity CreateEntity()
 		{
-			if (_world.IsDestroyed)
-				throw new WorldIsDestroyedException(_world);
+			if (World.IsDestroyed)
+				throw new WorldIsDestroyedException(World);
 
 			EntityInfo entityInfo;
 			if (_reuseableEntityInfos.Count > 0)
@@ -59,7 +54,7 @@ namespace EcsLte
 			}
 			else
 			{
-				entityInfo = new EntityInfo(_entityInfos.Count, 1, _world, _componentPools);
+				entityInfo = new EntityInfo(_entityInfos.Count, 1, World);
 				_entityInfos.Add(entityInfo);
 			}
 			var entity = new Entity { Info = entityInfo };
@@ -73,9 +68,9 @@ namespace EcsLte
 		public void DestroyEntity(Entity entity)
 		{
 			if (!HasEntity(entity))
-				throw new WorldDoesNotHaveEntityException(_world, entity);
+				throw new WorldDoesNotHaveEntityException(World, entity);
 
-			var entityInfo = _entityInfos[entity.Id];
+			var entityInfo = entity.Info;
 
 			AnyEntityWillBeDestroyedEvent.Invoke(entity);
 			RemoveAllComponents(entity);
@@ -87,8 +82,8 @@ namespace EcsLte
 
 		public void DestroyAllEntities()
 		{
-			if (_world.IsDestroyed)
-				throw new WorldIsDestroyedException(_world);
+			if (World.IsDestroyed)
+				throw new WorldIsDestroyedException(World);
 
 			var entities = GetEntities();
 			for (int i = 0; i < entities.Length; i++)
@@ -97,42 +92,42 @@ namespace EcsLte
 
 		public Entity GetEntity(int id)
 		{
-			if (_world.IsDestroyed)
-				throw new WorldIsDestroyedException(_world);
+			if (World.IsDestroyed)
+				throw new WorldIsDestroyedException(World);
 			if (id <= 0 && id >= _entityInfos.Count)
 				throw new ArgumentOutOfRangeException();
 
 			var entity = new Entity { Info = _entityInfos[id] };
 			if (!entity.Info.IsAlive)
-				throw new WorldDoesNotHaveEntityException(_world, entity);
+				throw new WorldDoesNotHaveEntityException(World, entity);
 
 			return entity;
 		}
 
 		public Entity[] GetEntities()
 		{
-			if (_world.IsDestroyed)
-				throw new WorldIsDestroyedException(_world);
+			if (World.IsDestroyed)
+				throw new WorldIsDestroyedException(World);
 
 			return _entitiesCache.Data;
 		}
 
 		public bool HasEntity(Entity entity)
 		{
-			if (_world.IsDestroyed)
-				throw new WorldIsDestroyedException(_world);
+			if (World.IsDestroyed)
+				throw new WorldIsDestroyedException(World);
 			if (entity.Id <= 0 && entity.Id >= _entityInfos.Count)
 				throw new ArgumentOutOfRangeException();
-			return entity.WorldId == _world.WorldId && _entityInfos[entity.Id].IsAlive;
+			return entity.WorldId == World.WorldId && entity.Info.IsAlive;
 		}
 
 		public bool HasComponent<TComponent>(Entity entity)
 			where TComponent : IComponent
 		{
 			if (!HasEntity(entity))
-				throw new WorldDoesNotHaveEntityException(_world, entity);
+				throw new WorldDoesNotHaveEntityException(World, entity);
 
-			return _entityInfos[entity.Id][ComponentIndex<TComponent>.Index] != 0;
+			return entity.Info[ComponentIndex<TComponent>.Index] != null;
 		}
 
 		public TComponent AddComponent<TComponent>(Entity entity, TComponent component = default)
@@ -141,12 +136,10 @@ namespace EcsLte
 			if (HasComponent<TComponent>(entity))
 				throw new EntityAlreadyHasComponentException(entity, typeof(TComponent));
 
-			var entityInfo = _entityInfos[entity.Id];
-			var componentPoolIndex = ComponentIndex<TComponent>.Index;
-			var componentPool = _componentPools[componentPoolIndex];
+			var componentIndex = ComponentIndex<TComponent>.Index;
 
-			entityInfo[componentPoolIndex] = componentPool.AddComponent(component);
-			AnyComponentAddedEvent.Invoke(entity, componentPoolIndex, component);
+			entity.Info[componentIndex] = component;
+			AnyComponentAddedEvent.Invoke(entity, componentIndex, component);
 
 			return component;
 		}
@@ -157,11 +150,7 @@ namespace EcsLte
 			if (!HasComponent<TComponent>(entity))
 				throw new EntityNotHaveComponentException(entity, typeof(TComponent));
 
-			var entityInfo = _entityInfos[entity.Id];
-			var componentPoolIndex = ComponentIndex<TComponent>.Index;
-			var componentPool = _componentPools[componentPoolIndex];
-
-			return (TComponent)componentPool.GetComponent(entityInfo[componentPoolIndex]);
+			return (TComponent)entity.Info[ComponentIndex<TComponent>.Index];
 		}
 
 		public void RemoveComponent<TComponent>(Entity entity)
@@ -170,15 +159,11 @@ namespace EcsLte
 			if (!HasComponent<TComponent>(entity))
 				throw new EntityNotHaveComponentException(entity, typeof(TComponent));
 
-			var entityInfo = _entityInfos[entity.Id];
-			var componentPoolIndex = ComponentIndex<TComponent>.Index;
-			var componentPool = _componentPools[componentPoolIndex];
-			var componentIndex = entityInfo[componentPoolIndex];
-			var component = componentPool.GetComponent(componentIndex);
+			var componentIndex = ComponentIndex<TComponent>.Index;
+			var component = entity.Info[componentIndex];
 
-			componentPool.ClearComponent(componentIndex);
-			entityInfo[componentPoolIndex] = 0;
-			AnyComponentRemovedEvent.Invoke(entity, componentPoolIndex, component);
+			entity.Info[componentIndex] = null;
+			AnyComponentRemovedEvent.Invoke(entity, componentIndex, component);
 		}
 
 		public void ReplaceComponent<TComponent>(Entity entity, TComponent newComponent)
@@ -187,45 +172,39 @@ namespace EcsLte
 			if (!HasComponent<TComponent>(entity))
 				AddComponent(entity, newComponent);
 			{
-				var entityInfo = _entityInfos[entity.Id];
-				var componentPoolIndex = ComponentIndex<TComponent>.Index;
-				var componentPool = _componentPools[componentPoolIndex];
-				var componentIndex = entityInfo[componentPoolIndex];
-				var prevComponent = componentPool.GetComponent(componentIndex);
+				var componentIndex = ComponentIndex<TComponent>.Index;
+				var prevComponent = entity.Info[componentIndex];
 
-				componentPool.SetComponent(componentIndex, newComponent);
-				AnyComponentReplacedEvent.Invoke(entity, componentPoolIndex, prevComponent, newComponent);
+				entity.Info[componentIndex] = newComponent;
+				AnyComponentReplacedEvent.Invoke(entity, componentIndex, prevComponent, newComponent);
 			}
 		}
 
 		public IComponent[] GetAllComponents(Entity entity)
 		{
 			if (!HasEntity(entity))
-				throw new WorldDoesNotHaveEntityException(_world, entity);
-			return _entityInfos[entity.Id].GetComponents();
+				throw new WorldDoesNotHaveEntityException(World, entity);
+			return entity.Info.GetComponents();
 		}
 
 		public void RemoveAllComponents(Entity entity)
 		{
 			if (!HasEntity(entity))
-				throw new WorldDoesNotHaveEntityException(_world, entity);
+				throw new WorldDoesNotHaveEntityException(World, entity);
 
-			var entityInfo = _entityInfos[entity.Id];
-			for (int i = 0; i < _componentPools.Length; i++)
+			for (int i = 0; i < ComponentIndexes.Count; i++)
 			{
-				var componentIndex = entityInfo[i];
-				if (componentIndex != 0)
+				var component = entity.Info[i];
+				if (component != null)
 				{
-					var componentPool = _componentPools[i];
-					var prevComponent = componentPool.GetComponent(componentIndex);
-
-					componentPool.ClearComponent(componentIndex);
-					entityInfo[i] = 0;
-
-					AnyComponentRemovedEvent.Invoke(entity, i, prevComponent);
+					entity.Info[i] = null;
+					AnyComponentRemovedEvent.Invoke(entity, i, component);
 				}
 			}
 		}
+
+		internal IComponent GetComponent(Entity entity, int componentPoolIndex)
+			=> entity.Info[componentPoolIndex];
 
 		private Entity[] UpdateEntitiesCache()
 			=> _entityInfos

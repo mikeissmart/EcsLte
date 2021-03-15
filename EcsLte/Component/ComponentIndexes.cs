@@ -24,8 +24,8 @@ namespace EcsLte
 
 	internal static class ComponentIndexes
 	{
-		private readonly static Dictionary<string, int> _componentIndexNameLookup;
-		private static Dictionary<Type, int> _componentIndexTypeLookup = InitializeAll();
+		private static bool _isInitialized;
+		private static Dictionary<Type, int> _componentIndexTypeLookup;
 		private static Type[] _componentTypes;
 		private static int[] _recordableComponentIndexes;
 
@@ -39,11 +39,11 @@ namespace EcsLte
 		public static int GetComponentIndex<TComponent>() where TComponent : IComponent
 			=> _componentIndexTypeLookup[typeof(TComponent)];
 
-		public static int GetComponentIndex(string componentName)
-			=> _componentIndexNameLookup[componentName];
-
-		private static Dictionary<Type, int> InitializeAll()
+		internal static void Initialize()
 		{
+			if (_isInitialized)
+				return;
+
 			var iComponentType = typeof(IComponent);
 			var iComponentRecordableType = typeof(IComponentRecordable);
 			var componentTypes = AppDomain.CurrentDomain.GetAssemblies()
@@ -62,22 +62,21 @@ namespace EcsLte
 			if (componentsWrongType.Count != 0)
 				throw new ComponentNotStructException(componentsWrongType.ToArray());
 
-			var typeLookup = new Dictionary<Type, int>();
+			_componentIndexTypeLookup = new Dictionary<Type, int>();
 			var nameLookup = new Dictionary<string, int>();
 			var recordableComponentIndexes = new List<int>();
 			foreach (var type in componentTypes.OrderBy(x => x.FullName.ToString()))
 			{
-				typeLookup.Add(type, typeLookup.Count);
+				_componentIndexTypeLookup.Add(type, _componentIndexTypeLookup.Count);
 				nameLookup.Add(type.Name, nameLookup.Count);
 
 				if (iComponentRecordableType.IsAssignableFrom(type))
-					recordableComponentIndexes.Add(typeLookup.Count - 1);
+					recordableComponentIndexes.Add(_componentIndexTypeLookup.Count - 1);
 			}
-			_componentTypes = typeLookup.Keys.ToArray();
-			_recordableComponentIndexes = recordableComponentIndexes.ToArray();
-			_componentIndexTypeLookup = typeLookup;
 
-			return _componentIndexTypeLookup;
+			_isInitialized = true;
+			_componentTypes = _componentIndexTypeLookup.Keys.ToArray();
+			_recordableComponentIndexes = recordableComponentIndexes.ToArray();
 		}
 	}
 }

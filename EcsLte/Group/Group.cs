@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EcsLte.Exceptions;
+using System;
 using System.Collections.Generic;
 
 namespace EcsLte
@@ -25,13 +26,19 @@ namespace EcsLte
 		public int[] Indexes { get => Filter.Indexes; }
 		public Filter Filter { get; private set; }
 		public Entity[] Entities { get => _entitiesCache.Data; }
+		public bool IsDestroyed { get; internal set; }
 
 		internal GroupChangedEvent EntityAddedEvent { get; private set; }
 		internal GroupChangedEvent EntityRemovedEvent { get; private set; }
 		internal GroupUpdatedEvent EntityUpdatedEvent { get; private set; }
 
 		public bool ContainsEntity(Entity entity)
-			=> _entities.Contains(entity);
+		{
+			if (IsDestroyed)
+				throw new GroupIsDestroyedException(this);
+
+			return _entities.Contains(entity);
+		}
 
 		public bool Equals(Group other)
 		{
@@ -45,17 +52,24 @@ namespace EcsLte
 			if (Filter.Filtered(entity))
 			{
 				if (_entities.Add(entity))
+				{
 					_entitiesCache.IsDirty = true;
+				}
 			}
 			else
 			{
 				if (_entities.Remove(entity))
+				{
 					_entitiesCache.IsDirty = true;
+				}
 			}
 		}
 
 		internal void FilterEntity(Entity entity, int componentPoolIndex, IComponent component)
 		{
+			if (IsDestroyed)
+				throw new GroupIsDestroyedException(this);
+
 			if (Filter.Filtered(entity))
 			{
 				if (_entities.Add(entity))
@@ -77,11 +91,7 @@ namespace EcsLte
 		internal void UpdateEntity(Entity entity, int componentPoolIndex, IComponent prevComponent, IComponent newComponent)
 		{
 			if (_entities.Contains(entity))
-			{
-				EntityRemovedEvent.Invoke(entity, componentPoolIndex, prevComponent);
-				EntityAddedEvent.Invoke(entity, componentPoolIndex, newComponent);
 				EntityUpdatedEvent.Invoke(entity, componentPoolIndex, prevComponent, newComponent);
-			}
 		}
 
 		private Entity[] UpdateEntitiesCache()

@@ -52,13 +52,9 @@ namespace EcsLte
 			=> obj is Filter other && (this == other);
 
 		public bool Filtered(Entity entity)
-		{
-			var indexes = entity.Info.AllComponentIndexes;
-
-			return FilteredAllOf(indexes) &&
-				FilteredAnyOf(indexes) &&
-				FilteredNoneOf(indexes);
-		}
+			=> FilteredAllOf(entity) &&
+				FilteredAnyOf(entity) &&
+				FilteredNoneOf(entity);
 
 		public override int GetHashCode()
 			=> _hashCode == 0
@@ -105,16 +101,15 @@ namespace EcsLte
 			return mergedIndices;
 		}
 
-		private bool FilteredAllOf(int[] componentIndexes)
+		private bool FilteredAllOf(Entity entity)
 		{
-			if (AllOfIndexes == null)
+			if (AllOfIndexes == null || AllOfIndexes.Length == 0)
 				return true;
 
 			bool isOk = true;
-
 			foreach (var index in AllOfIndexes)
 			{
-				if (componentIndexes[index] == 0)
+				if (entity.Info[index] == null)
 				{
 					isOk = false;
 					break;
@@ -124,16 +119,15 @@ namespace EcsLte
 			return isOk;
 		}
 
-		private bool FilteredAnyOf(int[] componentIndexes)
+		private bool FilteredAnyOf(Entity entity)
 		{
-			if (AnyOfIndexes == null)
+			if (AnyOfIndexes == null || AnyOfIndexes.Length == 0)
 				return true;
 
 			bool isOk = false;
-
 			foreach (var index in AnyOfIndexes)
 			{
-				if (componentIndexes[index] != 0)
+				if (entity.Info[index] != null)
 				{
 					isOk = true;
 					break;
@@ -143,16 +137,15 @@ namespace EcsLte
 			return isOk;
 		}
 
-		private bool FilteredNoneOf(int[] componentIndexes)
+		private bool FilteredNoneOf(Entity entity)
 		{
-			if (NoneOfIndexes == null)
+			if (NoneOfIndexes == null || NoneOfIndexes.Length == 0)
 				return true;
 
 			bool isOk = true;
-
 			foreach (var index in NoneOfIndexes)
 			{
-				if (componentIndexes[index] != 0)
+				if (entity.Info[index] != null)
 				{
 					isOk = false;
 					break;
