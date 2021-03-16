@@ -1,27 +1,27 @@
 ﻿namespace EcsLte.PerformanceTest
 {
-	internal class SharedKeyAfterEntitiesGetEntities : IPerformanceTest
+	internal class PrimaryKeyCreate : IPerformanceTest
 	{
 		private World _world;
+		private IPrimaryKey _primaryKey;
 
 		public void PreRun()
 		{
 			_world = World.CreateWorld();
+			_primaryKey = _world.KeyManager.GetPrimaryKey<TestPrimaryKeyComponent1>(
+				_world.GroupManager.GetGroup(Filter.AllOf<TestPrimaryKeyComponent1>()));
 
 			for (int i = 0; i < TestConsts.LoopCount; i++)
 				_world.EntityManager.AddComponent(
 					_world.EntityManager.CreateEntity(),
-					new TestSharedKeyComponent1 { Prop = 1 });
+					new TestPrimaryKeyComponent1 { Prop = i });
 		}
 
 		public void Run()
 		{
-			var sharedKey = _world.KeyManager.GetSharedKey<TestSharedKeyComponent1>(
-				_world.GroupManager.GetGroup(Filter.AllOf<TestSharedKeyComponent1>()));
-
-			var keyComponent = new TestSharedKeyComponent1 { Prop = 1 };
+			var keyComponent = new TestPrimaryKeyComponent1 { Prop = 1 };
 			for (int i = 0; i < TestConsts.LoopCount; i++)
-				sharedKey.GetEntities(keyComponent);
+				_primaryKey.GetEntity(keyComponent);
 		}
 
 		public void PostRun()

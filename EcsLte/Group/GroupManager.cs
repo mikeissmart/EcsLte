@@ -13,13 +13,13 @@ namespace EcsLte
 		internal GroupManager(World world, EntityManager entityManager)
 		{
 			_groupLookup = new Dictionary<Filter, Group>();
-			_groupComponentIndexes = new List<Group>[ComponentIndexes.Count];
+			_groupComponentIndexes = new List<Group>[ComponentIndexes.Instance.Count];
 			_entityManager = entityManager;
 
 			World = world;
 			AnyGroupDestroyed = new GroupEvent();
 
-			for (int i = 0; i < ComponentIndexes.Count; i++)
+			for (int i = 0; i < ComponentIndexes.Instance.Count; i++)
 				_groupComponentIndexes[i] = new List<Group>();
 
 			_entityManager.AnyEntityCreated.Subscribe(OnEntityCreated);

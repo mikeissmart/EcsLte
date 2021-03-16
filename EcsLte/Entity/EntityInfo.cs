@@ -26,7 +26,7 @@ namespace EcsLte
 
 			EntityWillBeDestroyedEvent = new EntityEvent();
 
-			_components = new IComponent[ComponentIndexes.Count];
+			_components = new IComponent[ComponentIndexes.Instance.Count];
 			_componentsCache = new DataCache<IComponent[]>(UpdateComponentsCache);
 
 			_componentReplacedEvent.Subscribe((entity, componentPoolIndex, prevComponent, newComponent) =>

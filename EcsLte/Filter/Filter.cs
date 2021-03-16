@@ -35,6 +35,7 @@ namespace EcsLte
 				filter.AnyOfIndexes = MergeDistinctIndices(filter.AnyOfIndexes, f.AnyOfIndexes);
 			foreach (var f in filters)
 				filter.NoneOfIndexes = MergeDistinctIndices(filter.NoneOfIndexes, f.NoneOfIndexes);
+			filter.GenerateHasCode();
 
 			return filter;
 		}
@@ -57,9 +58,7 @@ namespace EcsLte
 				FilteredNoneOf(entity);
 
 		public override int GetHashCode()
-			=> _hashCode == 0
-				? GenerateHasCode()
-				: _hashCode;
+			=> _hashCode;
 
 		private static int[] MergeDistinctIndex(int[] indices, int index)
 		{
@@ -155,14 +154,13 @@ namespace EcsLte
 			return isOk;
 		}
 
-		private int GenerateHasCode()
+		private void GenerateHasCode()
 		{
 			_hashCode = (
-				StructuralComparisons.StructuralEqualityComparer.GetHashCode(AllOfIndexes),
-				StructuralComparisons.StructuralEqualityComparer.GetHashCode(AnyOfIndexes),
-				StructuralComparisons.StructuralEqualityComparer.GetHashCode(NoneOfIndexes)
-			).GetHashCode();
-			return _hashCode;
+					StructuralComparisons.StructuralEqualityComparer.GetHashCode(AllOfIndexes),
+					StructuralComparisons.StructuralEqualityComparer.GetHashCode(AnyOfIndexes),
+					StructuralComparisons.StructuralEqualityComparer.GetHashCode(NoneOfIndexes)
+				).GetHashCode();
 		}
 	}
 }

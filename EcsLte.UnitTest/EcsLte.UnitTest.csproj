@@ -49,6 +49,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Components.cs" />
     <Compile Include="EntityTests\EntityLife.cs" />
     <Compile Include="EntityTests\EntityEquallity.cs" />
     <Compile Include="EntityTests\EntityComponent.cs" />
@@ -58,8 +59,10 @@
     <Compile Include="FilterTests\FilterNoneOfEquallity.cs" />
     <Compile Include="GroupTests\GroupFilter.cs" />
     <Compile Include="GroupTests\GroupEquallity.cs" />
-    <Compile Include="Models\Components.cs" />
-    <Compile Include="Key\KeyLife.cs" />
+    <Compile Include="Key\PrimaryKeyLife.cs" />
+    <Compile Include="Key\SharedKeyLife.cs" />
+    <Compile Include="Key\PrimaryKeyEntity.cs" />
+    <Compile Include="Key\SharedKeyEntity.cs" />
     <Compile Include="WorldTests\WorldEntity.cs" />
     <Compile Include="WorldTests\WorldLife.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

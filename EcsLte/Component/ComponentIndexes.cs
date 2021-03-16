@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace EcsLte
 {
-	public static class ComponentIndex<TComponent> where TComponent : IComponent
+	public class ComponentIndex<TComponent> where TComponent : IComponent
 	{
 		private static int _index = -1;
 
@@ -14,36 +14,46 @@ namespace EcsLte
 			get
 			{
 				if (_index == -1)
-					_index = ComponentIndexes.GetComponentIndex<TComponent>();
+					_index = ComponentIndexes.Instance.GetComponentIndex<TComponent>();
 				return _index;
 			}
 		}
 
-		public static Type ComponentType { get => typeof(TComponent); }
+		public Type ComponentType { get => typeof(TComponent); }
 	}
 
-	internal static class ComponentIndexes
+	internal class ComponentIndexes
 	{
-		private static bool _isInitialized;
-		private static Dictionary<Type, int> _componentIndexTypeLookup;
-		private static Type[] _componentTypes;
-		private static int[] _recordableComponentIndexes;
+		private static ComponentIndexes _instance;
 
-		public static Type[] AllComponentTypes { get => _componentTypes; }
-		public static int[] RecordableComponentIndexes { get => _recordableComponentIndexes; }
-		public static int Count { get => _componentIndexTypeLookup.Count; }
+		private Dictionary<Type, int> _componentIndexTypeLookup;
+		private Type[] _componentTypes;
+		private int[] _recordableComponentIndexes;
 
-		public static int GetComponentIndex(Type componentType)
+		private ComponentIndexes() => Initialize();
+
+		public static ComponentIndexes Instance
+		{
+			get
+			{
+				if (_instance == null)
+					_instance = new ComponentIndexes();
+				return _instance;
+			}
+		}
+
+		public Type[] AllComponentTypes { get => _componentTypes; }
+		public int[] RecordableComponentIndexes { get => _recordableComponentIndexes; }
+		public int Count { get => _componentIndexTypeLookup.Count; }
+
+		public int GetComponentIndex(Type componentType)
 			=> _componentIndexTypeLookup[componentType];
 
-		public static int GetComponentIndex<TComponent>() where TComponent : IComponent
+		public int GetComponentIndex<TComponent>() where TComponent : IComponent
 			=> _componentIndexTypeLookup[typeof(TComponent)];
 
-		internal static void Initialize()
+		private void Initialize()
 		{
-			if (_isInitialized)
-				return;
-
 			var iComponentType = typeof(IComponent);
 			var iComponentRecordableType = typeof(IComponentRecordable);
 			var componentTypes = AppDomain.CurrentDomain.GetAssemblies()
@@ -74,7 +84,9 @@ namespace EcsLte
 					recordableComponentIndexes.Add(_componentIndexTypeLookup.Count - 1);
 			}
 
-			_isInitialized = true;
+			if (_componentIndexTypeLookup.Keys.Count == 0)
+				throw new NoComponentsException();
+
 			_componentTypes = _componentIndexTypeLookup.Keys.ToArray();
 			_recordableComponentIndexes = recordableComponentIndexes.ToArray();
 		}

@@ -46,7 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Helpers\Components.cs" />
+    <Compile Include="Components.cs" />
     <Compile Include="Histroy\SaveLoadTestHistory.cs" />
     <Compile Include="PerformanceTest\Entity\EntityAddComponent.cs" />
     <Compile Include="PerformanceTest\Entity\EntityGetComponent.cs" />
@@ -54,9 +54,15 @@
     <Compile Include="PerformanceTest\Entity\EntityHasComponent.cs" />
     <Compile Include="PerformanceTest\Entity\EntityRemoveComponent.cs" />
     <Compile Include="PerformanceTest\Entity\EntityRemoveComponents.cs" />
+    <Compile Include="PerformanceTest\Filter\FilterEquals.cs" />
+    <Compile Include="PerformanceTest\Filter\FilterFiltered.cs" />
+    <Compile Include="PerformanceTest\Filter\FilterGetHasCode.cs" />
     <Compile Include="PerformanceTest\Group\GroupAutoUpdateAfterEntityCreate.cs" />
     <Compile Include="PerformanceTest\Group\GroupAutoUpdateBeforeEntityCreate.cs" />
     <Compile Include="PerformanceTest\Group\GroupCreate.cs" />
+    <Compile Include="PerformanceTest\Key\PrimaryKeyAfterEntitiesGetEntity.cs" />
+    <Compile Include="PerformanceTest\Key\PrimaryKeyCreate.cs" />
+    <Compile Include="PerformanceTest\Key\PrimaryKeyeBeforeEntitiesGetEntity.cs" />
     <Compile Include="PerformanceTest\Key\SharedKeyAfterEntitiesGetEntities.cs" />
     <Compile Include="PerformanceTest\Key\SharedKeyCreate.cs" />
     <Compile Include="PerformanceTest\Key\SharedKeyeBeforeEntitiesGetEntities.cs" />

@@ -29,9 +29,19 @@ namespace EcsLte.PerformanceTest
 			Run<EntityRemoveComponents>();
 			Run<EmptyTest>();
 
+			Run<FilterEquals>();
+			Run<FilterFiltered>();
+			Run<FilterGetHasCode>();
+			Run<EmptyTest>();
+
 			Run<GroupCreate>();
 			Run<GroupAutoUpdateAfterEntityCreate>();
 			Run<GroupAutoUpdateBeforeEntityCreate>();
+			Run<EmptyTest>();
+
+			Run<PrimaryKeyCreate>();
+			Run<PrimaryKeyAfterEntitiesGetEntity>();
+			Run<PrimaryKeyeBeforeEntitiesGetEntity>();
 			Run<EmptyTest>();
 
 			Run<SharedKeyCreate>();
@@ -53,26 +63,34 @@ namespace EcsLte.PerformanceTest
 
 			//Running performance tests...
 			//Name                                  Cur Time    Pre Time    Diff
-			//EntityAddComponent:                   576 ms      336 ms      240
-			//EntityGetComponent:                   104 ms      139 ms      -35
-			//EntityGetComponents:                  581 ms      989 ms      -408
-			//EntityHasComponent:                   74 ms       65 ms       9
-			//EntityRemoveComponent:                213 ms      286 ms      -73
-			//EntityRemoveComponents:               359 ms      290 ms      69
+			//EntityAddComponent:                   623 ms      583 ms      40
+			//EntityGetComponent:                   106 ms      104 ms      2
+			//EntityGetComponents:                  515 ms      536 ms      -21
+			//EntityHasComponent:                   80 ms       78 ms       2
+			//EntityRemoveComponent:                218 ms      232 ms      -14
+			//EntityRemoveComponents:               345 ms      568 ms      -223
 
-			//GroupCreate:                          513 ms      515 ms      -2
-			//GroupAutoUpdateAfterEntityCreate:     86 ms       206 ms      -120
-			//GroupAutoUpdateBeforeEntityCreate:    2147 ms     2020 ms     127
+			//FilterEquals:                         12 ms       12 ms       0
+			//FilterFiltered:                       35 ms       36 ms       -1
+			//FilterGetHasCode:                     2 ms        2 ms        0
 
-			//SharedKeyCreate:                      458 ms      0 ms        0
-			//SharedKeyAfterEntitiesGetEntities:    1535 ms     0 ms        0
-			//SharedKeyeBeforeEntitiesGetEntities:  614 ms      0 ms        0
+			//GroupCreate:                          53 ms       54 ms       -1
+			//GroupAutoUpdateAfterEntityCreate:     251 ms      92 ms       159
+			//GroupAutoUpdateBeforeEntityCreate:    2066 ms     2235 ms     -169
 
-			//WorldCreateEntity:                    1540 ms     1433 ms     107
-			//WorldDestroyEntity:                   539 ms      531 ms      8
-			//WorldDestroyAllEntities:              547 ms      607 ms      -60
-			//WorldGetEntity:                       33 ms       64 ms       -31
-			//WorldHasEntity:                       46 ms       32 ms       14
+			//PrimaryKeyCreate:                     198 ms      0 ms        0
+			//PrimaryKeyAfterEntitiesGetEntity:     109 ms      0 ms        0
+			//PrimaryKeyeBeforeEntitiesGetEntity:   202 ms      0 ms        0
+
+			//SharedKeyCreate:                      119 ms      118 ms      1
+			//SharedKeyAfterEntitiesGetEntities:    636 ms      718 ms      -82
+			//SharedKeyeBeforeEntitiesGetEntities:  190 ms      190 ms      0
+
+			//WorldCreateEntity:                    1376 ms     1566 ms     -190
+			//WorldDestroyEntity:                   525 ms      766 ms      -241
+			//WorldDestroyAllEntities:              505 ms      746 ms      -241
+			//WorldGetEntity:                       46 ms       34 ms       12
+			//WorldHasEntity:                       46 ms       46 ms       0
 		}
 
 		private static void Run<TPerformanceTest>()

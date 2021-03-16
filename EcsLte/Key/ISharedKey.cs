@@ -7,7 +7,7 @@ namespace EcsLte
 	{
 		Type ComponentType { get; }
 		Group Group { get; }
-		bool IsDestroyed { get; set; } // TODO: find way to make set internal only
+		bool IsDestroyed { get; }
 
 		HashSet<Entity> GetEntities(IComponent component);
 

@@ -11,9 +11,9 @@
 
 		public void Run()
 		{
-			var group = _world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
+			var group = _world.GroupManager.GetGroup(Filter.AllOf<TestSharedKeyComponent1>());
 			for (int i = 0; i < TestConsts.LoopCount; i++)
-				_world.KeyManager.GetSharedKey<TestComponent1>(group);
+				_world.KeyManager.GetSharedKey<TestSharedKeyComponent1>(group);
 		}
 
 		public void PostRun()

@@ -13,8 +13,6 @@ namespace EcsLte
 
 		internal EntityManager(World world)
 		{
-			ComponentIndexes.Initialize();
-
 			_entityInfos = new List<EntityInfo>();
 			_reuseableEntityInfos = new Queue<EntityInfo>();
 			_entitiesCache = new DataCache<Entity[]>(UpdateEntitiesCache);
@@ -192,7 +190,7 @@ namespace EcsLte
 			if (!HasEntity(entity))
 				throw new WorldDoesNotHaveEntityException(World, entity);
 
-			for (int i = 0; i < ComponentIndexes.Count; i++)
+			for (int i = 0; i < ComponentIndexes.Instance.Count; i++)
 			{
 				var component = entity.Info[i];
 				if (component != null)

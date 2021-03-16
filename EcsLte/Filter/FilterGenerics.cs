@@ -7,8 +7,11 @@
 		{
 			var filter = new Filter
 			{
-				AllOfIndexes = new int[] { ComponentIndex<TComponent>.Index }
+				AllOfIndexes = new int[] { ComponentIndex<TComponent>.Index },
+				AnyOfIndexes = new int[0],
+				NoneOfIndexes = new int[0]
 			};
+			filter.GenerateHasCode();
 
 			return filter;
 		}
@@ -20,6 +23,7 @@
 			var filter = AllOf<TComponent1>();
 
 			filter.AllOfIndexes = MergeDistinctIndex(filter.AllOfIndexes, ComponentIndex<TComponent2>.Index);
+			filter.GenerateHasCode();
 
 			return filter;
 		}
@@ -32,6 +36,7 @@
 			var filter = AllOf<TComponent1, TComponent2>();
 
 			filter.AllOfIndexes = MergeDistinctIndex(filter.AllOfIndexes, ComponentIndex<TComponent3>.Index);
+			filter.GenerateHasCode();
 
 			return filter;
 		}
@@ -45,6 +50,7 @@
 			var filter = AllOf<TComponent1, TComponent2, TComponent3>();
 
 			filter.AllOfIndexes = MergeDistinctIndex(filter.AllOfIndexes, ComponentIndex<TComponent4>.Index);
+			filter.GenerateHasCode();
 
 			return filter;
 		}
@@ -59,6 +65,7 @@
 			var filter = AllOf<TComponent1, TComponent2, TComponent3, TComponent4>();
 
 			filter.AllOfIndexes = MergeDistinctIndex(filter.AllOfIndexes, ComponentIndex<TComponent5>.Index);
+			filter.GenerateHasCode();
 
 			return filter;
 		}
@@ -68,8 +75,11 @@
 		{
 			var filter = new Filter
 			{
-				AnyOfIndexes = new int[] { ComponentIndex<TComponent>.Index }
+				AllOfIndexes = new int[0],
+				AnyOfIndexes = new int[] { ComponentIndex<TComponent>.Index },
+				NoneOfIndexes = new int[0]
 			};
+			filter.GenerateHasCode();
 
 			return filter;
 		}
@@ -81,6 +91,7 @@
 			var filter = AnyOf<TComponent1>();
 
 			filter.AnyOfIndexes = MergeDistinctIndex(filter.AnyOfIndexes, ComponentIndex<TComponent2>.Index);
+			filter.GenerateHasCode();
 
 			return filter;
 		}
@@ -93,6 +104,7 @@
 			var filter = AnyOf<TComponent1, TComponent2>();
 
 			filter.AnyOfIndexes = MergeDistinctIndex(filter.AnyOfIndexes, ComponentIndex<TComponent3>.Index);
+			filter.GenerateHasCode();
 
 			return filter;
 		}
@@ -106,6 +118,7 @@
 			var filter = AnyOf<TComponent1, TComponent2, TComponent3>();
 
 			filter.AnyOfIndexes = MergeDistinctIndex(filter.AnyOfIndexes, ComponentIndex<TComponent4>.Index);
+			filter.GenerateHasCode();
 
 			return filter;
 		}
@@ -120,6 +133,7 @@
 			var filter = AnyOf<TComponent1, TComponent2, TComponent3, TComponent4>();
 
 			filter.AnyOfIndexes = MergeDistinctIndex(filter.AnyOfIndexes, ComponentIndex<TComponent5>.Index);
+			filter.GenerateHasCode();
 
 			return filter;
 		}
@@ -129,8 +143,11 @@
 		{
 			var filter = new Filter
 			{
+				AllOfIndexes = new int[0],
+				AnyOfIndexes = new int[0],
 				NoneOfIndexes = new int[] { ComponentIndex<TComponent>.Index }
 			};
+			filter.GenerateHasCode();
 
 			return filter;
 		}
@@ -142,6 +159,7 @@
 			var filter = NoneOf<TComponent1>();
 
 			filter.NoneOfIndexes = MergeDistinctIndex(filter.NoneOfIndexes, ComponentIndex<TComponent2>.Index);
+			filter.GenerateHasCode();
 
 			return filter;
 		}
@@ -154,6 +172,7 @@
 			var filter = NoneOf<TComponent1, TComponent2>();
 
 			filter.NoneOfIndexes = MergeDistinctIndex(filter.NoneOfIndexes, ComponentIndex<TComponent3>.Index);
+			filter.GenerateHasCode();
 
 			return filter;
 		}
@@ -167,6 +186,7 @@
 			var filter = NoneOf<TComponent1, TComponent2, TComponent3>();
 
 			filter.NoneOfIndexes = MergeDistinctIndex(filter.NoneOfIndexes, ComponentIndex<TComponent4>.Index);
+			filter.GenerateHasCode();
 
 			return filter;
 		}
@@ -181,6 +201,7 @@
 			var filter = NoneOf<TComponent1, TComponent2, TComponent3, TComponent4>();
 
 			filter.NoneOfIndexes = MergeDistinctIndex(filter.NoneOfIndexes, ComponentIndex<TComponent5>.Index);
+			filter.GenerateHasCode();
 
 			return filter;
 		}

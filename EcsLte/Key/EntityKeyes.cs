@@ -1,73 +1,47 @@
-﻿using EcsLte.Exceptions;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 
 namespace EcsLte
 {
-	internal static class EntityKeyes
+	internal class EntityKeyes
 	{
-		private static bool _isInitialized;
-		private static Dictionary<Type, EntityKeyInfo> _sharedKeyLookup;
-		private static Type[] _sharedKeyTypes;
+		private static EntityKeyes _instance;
 
-		internal static Type[] AllSharedEntityKeyTypes { get => _sharedKeyTypes; }
+		private Type[] _primaryKeyTypes;
+		private Type[] _sharedKeyTypes;
 
-		internal static EntityKeyInfo GetSharedEntityKeyInfo<TComponent>()
-			where TComponent : IComponent
-			=> _sharedKeyLookup[typeof(TComponent)];
+		private EntityKeyes() => Initialize();
 
-		internal static void Initialize()
+		public static EntityKeyes Instance
 		{
-			if (_isInitialized)
-				return;
+			get
+			{
+				if (_instance == null)
+					_instance = new EntityKeyes();
+				return _instance;
+			}
+		}
 
-			_sharedKeyLookup = new Dictionary<Type, EntityKeyInfo>();
+		internal Type[] AllPrimaryEntityKeyTypes { get => _primaryKeyTypes; }
+		internal Type[] AllSharedEntityKeyTypes { get => _sharedKeyTypes; }
 
-			ComponentIndexes.Initialize();
-
-			foreach (var type in ComponentIndexes.AllComponentTypes)
+		internal void Initialize()
+		{
+			var primaryKeyTypes = new List<Type>();
+			var sharedKeyTypes = new List<Type>();
+			foreach (var type in ComponentIndexes.Instance.AllComponentTypes)
 			{
 				var sharedKeyes = (SharedKeyAttribute[])type.GetCustomAttributes(typeof(SharedKeyAttribute), true);
 				if (sharedKeyes.Length > 0)
-				{
-					var key = sharedKeyes[0];
-					_sharedKeyLookup.Add(type, new EntityKeyInfo
-					{
-						ComponentType = type,
-						Members = GetKeyMembers(type, key)
-					});
-				}
+					sharedKeyTypes.Add(type);
+
+				var primaryKeyes = (PrimaryKeyAttribute[])type.GetCustomAttributes(typeof(PrimaryKeyAttribute), true);
+				if (primaryKeyes.Length > 0)
+					primaryKeyTypes.Add(type);
 			}
 
-			_isInitialized = true;
-			_sharedKeyTypes = _sharedKeyLookup.Keys.ToArray();
-		}
-
-		private static IKeyMember[] GetKeyMembers(Type type, BaseKeyAttribute key)
-		{
-			var noKeyMember = new List<string>();
-			var keyMemberBuffer = new List<IKeyMember>();
-			foreach (var memberName in key.MemberNames)
-			{
-				var fieldInfo = type.GetField(memberName, BindingFlags.Public);
-				var propInfo = type.GetProperty(memberName);
-
-				if (fieldInfo != null)
-					keyMemberBuffer.Add(new FieldKeyMember { Field = fieldInfo });
-				else if (propInfo != null && propInfo.CanRead)
-					keyMemberBuffer.Add(new PropertyKeyMember { Property = propInfo });
-				else
-					noKeyMember.Add(memberName);
-			}
-
-			if (noKeyMember.Count > 0)
-				throw new EntityKeyMissingMembersException(type, noKeyMember.ToArray());
-			if (keyMemberBuffer.Count == 0)
-				throw new Exception("Key has no members.");
-
-			return keyMemberBuffer.ToArray();
+			_primaryKeyTypes = primaryKeyTypes.ToArray();
+			_sharedKeyTypes = sharedKeyTypes.ToArray();
 		}
 	}
 }

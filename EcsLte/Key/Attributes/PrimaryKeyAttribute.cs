@@ -3,9 +3,9 @@
 namespace EcsLte
 {
 	[AttributeUsage(AttributeTargets.Struct, AllowMultiple = false)]
-	public class SharedKeyAttribute : Attribute
+	public class PrimaryKeyAttribute : Attribute
 	{
-		public SharedKeyAttribute()
+		public PrimaryKeyAttribute()
 		{
 		}
 	}
