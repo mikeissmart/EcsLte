@@ -1,94 +1,100 @@
-﻿using EcsLte.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using EcsLte.Component.Exceptions;
+using EcsLte.Exceptions;
 
 namespace EcsLte
 {
-	public class ComponentIndex<TComponent> where TComponent : IComponent
-	{
-		private static int _index = -1;
+    public class ComponentIndex<TComponent> where TComponent : IComponent
+    {
+        private static int _index = -1;
 
-		public static int Index
-		{
-			get
-			{
-				if (_index == -1)
-					_index = ComponentIndexes.Instance.GetComponentIndex<TComponent>();
-				return _index;
-			}
-		}
+        public static int Index
+        {
+            get
+            {
+                if (_index == -1)
+                    _index = ComponentIndexes.Instance.GetComponentIndex<TComponent>();
+                return _index;
+            }
+        }
 
-		public Type ComponentType { get => typeof(TComponent); }
-	}
+        public Type ComponentType => typeof(TComponent);
+    }
 
-	internal class ComponentIndexes
-	{
-		private static ComponentIndexes _instance;
+    internal class ComponentIndexes
+    {
+        private static ComponentIndexes _instance;
 
-		private Dictionary<Type, int> _componentIndexTypeLookup;
-		private Type[] _componentTypes;
-		private int[] _recordableComponentIndexes;
+        private Dictionary<Type, int> _componentIndexTypeLookup;
 
-		private ComponentIndexes() => Initialize();
+        private ComponentIndexes()
+        {
+            Initialize();
+        }
 
-		public static ComponentIndexes Instance
-		{
-			get
-			{
-				if (_instance == null)
-					_instance = new ComponentIndexes();
-				return _instance;
-			}
-		}
+        public static ComponentIndexes Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new ComponentIndexes();
+                return _instance;
+            }
+        }
 
-		public Type[] AllComponentTypes { get => _componentTypes; }
-		public int[] RecordableComponentIndexes { get => _recordableComponentIndexes; }
-		public int Count { get => _componentIndexTypeLookup.Count; }
+        public Type[] AllComponentTypes { get; private set; }
 
-		public int GetComponentIndex(Type componentType)
-			=> _componentIndexTypeLookup[componentType];
+        public int[] RecordableComponentIndexes { get; private set; }
 
-		public int GetComponentIndex<TComponent>() where TComponent : IComponent
-			=> _componentIndexTypeLookup[typeof(TComponent)];
+        public int Count => _componentIndexTypeLookup.Count;
 
-		private void Initialize()
-		{
-			var iComponentType = typeof(IComponent);
-			var iComponentRecordableType = typeof(IComponentRecordable);
-			var componentTypes = AppDomain.CurrentDomain.GetAssemblies()
-				   .SelectMany(x => x.GetTypes())
-				   .Where(x =>
-					   x.IsPublic &&
-					   !x.IsAbstract &&
-					   iComponentType.IsAssignableFrom(x));
+        public int GetComponentIndex(Type componentType)
+        {
+            return _componentIndexTypeLookup[componentType];
+        }
 
-			var componentsWrongType = new List<Type>();
-			foreach (var type in componentTypes)
-			{
-				if (!type.IsValueType)
-					componentsWrongType.Add(type);
-			}
-			if (componentsWrongType.Count != 0)
-				throw new ComponentNotStructException(componentsWrongType.ToArray());
+        public int GetComponentIndex<TComponent>() where TComponent : IComponent
+        {
+            return _componentIndexTypeLookup[typeof(TComponent)];
+        }
 
-			_componentIndexTypeLookup = new Dictionary<Type, int>();
-			var nameLookup = new Dictionary<string, int>();
-			var recordableComponentIndexes = new List<int>();
-			foreach (var type in componentTypes.OrderBy(x => x.FullName.ToString()))
-			{
-				_componentIndexTypeLookup.Add(type, _componentIndexTypeLookup.Count);
-				nameLookup.Add(type.Name, nameLookup.Count);
+        private void Initialize()
+        {
+            var iComponentType = typeof(IComponent);
+            var iComponentRecordableType = typeof(IComponentRecordable);
+            var componentTypes = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(x => x.GetTypes())
+                .Where(x =>
+                    x.IsPublic &&
+                    !x.IsAbstract &&
+                    iComponentType.IsAssignableFrom(x));
 
-				if (iComponentRecordableType.IsAssignableFrom(type))
-					recordableComponentIndexes.Add(_componentIndexTypeLookup.Count - 1);
-			}
+            var componentsWrongType = new List<Type>();
+            foreach (var type in componentTypes)
+                if (!type.IsValueType)
+                    componentsWrongType.Add(type);
+            if (componentsWrongType.Count != 0)
+                throw new ComponentNotStructException(componentsWrongType.ToArray());
 
-			if (_componentIndexTypeLookup.Keys.Count == 0)
-				throw new NoComponentsException();
+            _componentIndexTypeLookup = new Dictionary<Type, int>();
+            var nameLookup = new Dictionary<string, int>();
+            var recordableComponentIndexes = new List<int>();
+            foreach (var type in componentTypes.OrderBy(x => x.FullName.ToString()))
+            {
+                _componentIndexTypeLookup.Add(type, _componentIndexTypeLookup.Count);
+                nameLookup.Add(type.Name, nameLookup.Count);
 
-			_componentTypes = _componentIndexTypeLookup.Keys.ToArray();
-			_recordableComponentIndexes = recordableComponentIndexes.ToArray();
-		}
-	}
+                if (iComponentRecordableType.IsAssignableFrom(type))
+                    recordableComponentIndexes.Add(_componentIndexTypeLookup.Count - 1);
+            }
+
+            if (_componentIndexTypeLookup.Keys.Count == 0)
+                throw new ComponentNoneException();
+
+            AllComponentTypes = _componentIndexTypeLookup.Keys.ToArray();
+            RecordableComponentIndexes = recordableComponentIndexes.ToArray();
+        }
+    }
 }

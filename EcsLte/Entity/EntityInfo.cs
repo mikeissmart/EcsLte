@@ -1,82 +1,59 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using EcsLte.Utilities;
 
 namespace EcsLte
 {
-	internal class EntityInfo
-	{
-		private static List<IComponent> _componentsBuffer = new List<IComponent>();
+    internal class EntityInfo
+    {
+        private static readonly List<IComponent> _componentsBuffer = new List<IComponent>();
+        private readonly IComponent[] _components;
 
-		private IComponent[] _components;
-		private DataCache<IComponent[]> _componentsCache;
-		private EntityComponentChangedEvent _componentAddedEvent;
-		private EntityComponentChangedEvent _componentRemovedEvent;
-		private EntityComponentReplacedEvent _componentReplacedEvent;
+        private readonly DataCache<IComponent[]> _componentsCache;
 
-		public EntityInfo(int id, int generation, World world)
-		{
-			Id = id;
-			Generation = generation;
-			IsAlive = true;
-			World = world;
+        public EntityInfo()
+        {
+            _components = new IComponent[ComponentIndexes.Instance.Count];
+            _componentsCache = new DataCache<IComponent[]>(UpdateComponentsCache);
+        }
 
-			_componentAddedEvent = new EntityComponentChangedEvent();
-			_componentRemovedEvent = new EntityComponentChangedEvent();
-			_componentReplacedEvent = new EntityComponentReplacedEvent();
+        public int Id { get; set; }
+        public int Version { get; set; }
 
-			EntityWillBeDestroyedEvent = new EntityEvent();
+        public IComponent this[int componentIndex]
+        {
+            get => _components[componentIndex];
+            set
+            {
+                _components[componentIndex] = value;
+                _componentsCache.IsDirty = true;
+            }
+        }
 
-			_components = new IComponent[ComponentIndexes.Instance.Count];
-			_componentsCache = new DataCache<IComponent[]>(UpdateComponentsCache);
+        public IComponent[] GetComponents()
+        {
+            return _componentsCache.Data;
+        }
 
-			_componentReplacedEvent.Subscribe((entity, componentPoolIndex, prevComponent, newComponent) =>
-			{
-				_componentsCache.IsDirty = true;
-			});
-		}
+        public void ClearComponents()
+        {
+            Array.Clear(_components, 0, _components.Length);
+            _componentsCache.IsDirty = true;
+        }
 
-		public int Id { get; set; }
-		public int Generation { get; set; }
-		public bool IsAlive { get; set; }
-		public World World { get; set; }
+        public void Reset()
+        {
+            ClearComponents();
+        }
 
-		private EntityEvent EntityWillBeDestroyedEvent { get; set; }
+        private IComponent[] UpdateComponentsCache()
+        {
+            var components = new List<IComponent>();
+            for (var i = 0; i < _components.Length; i++)
+                if (_components[i] != null)
+                    _componentsBuffer.Add(_components[i]);
 
-		public IComponent this[int componentIndex]
-		{
-			get => _components[componentIndex];
-			set
-			{
-				_components[componentIndex] = value;
-				_componentsCache.IsDirty = true;
-			}
-		}
-
-		public IComponent[] GetComponents()
-			=> _componentsCache.Data;
-
-		public void Reset()
-		{
-			Array.Clear(_components, 0, _components.Length);
-			_componentAddedEvent.Clear();
-			_componentRemovedEvent.Clear();
-			_componentReplacedEvent.Clear();
-			EntityWillBeDestroyedEvent.Clear();
-			IsAlive = false;
-		}
-
-		private IComponent[] UpdateComponentsCache()
-		{
-			_componentsBuffer.Clear();
-			for (int i = 0; i < _components.Length; i++)
-			{
-				if (_components[i] != null)
-				{
-					_componentsBuffer.Add(_components[i]);
-				}
-			}
-
-			return _componentsBuffer.ToArray();
-		}
-	}
+            return components.ToArray();
+        }
+    }
 }

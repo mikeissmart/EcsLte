@@ -1,153 +1,129 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-	internal class Program
-	{
-		private readonly static string _fileName = "TestHistory.json";
-		private static Stopwatch _stopwatch;
-		private static List<TestHistory> _pastTestHistories;
-		private static List<TestHistory> _currentTestHistories;
+    internal class Program
+    {
+        private static Stopwatch _stopwatch;
 
-		private static void Main(string[] args)
-		{
-			Console.WriteLine("//Running performance tests...");
-			Console.WriteLine();
-			Console.WriteLine("//Name".PadRight(40) + "Cur Time".PadRight(12) + "Pre Time".PadRight(12) + "Diff");
-			_stopwatch = new Stopwatch();
-			_pastTestHistories = SaveLoadTestHistory.Load(_fileName);
-			_currentTestHistories = new List<TestHistory>();
+        private static void Main(string[] args)
+        {
+            Console.WriteLine("//Running performance tests...");
+            Console.WriteLine();
+            Console.WriteLine("//Name".PadRight(60) + "Time".PadRight(10) + "ParallelTime");
+            _stopwatch = new Stopwatch();
 
-			Run<EntityAddComponent>();
-			Run<EntityGetComponent>();
-			Run<EntityGetComponents>();
-			Run<EntityHasComponent>();
-			Run<EntityRemoveComponent>();
-			Run<EntityRemoveComponents>();
-			Run<EmptyTest>();
+            var baseTestType = typeof(BasePerformanceTest);
+            var tests = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(x => x.GetTypes())
+                .Where(x =>
+                    baseTestType.IsAssignableFrom(x) &&
+                    x != baseTestType)
+                .OrderBy(x => x.Name)
+                .GroupBy(x => x.Name.Split('_')[0])
+                .ToList();
 
-			Run<FilterEquals>();
-			Run<FilterFiltered>();
-			Run<FilterGetHasCode>();
-			Run<EmptyTest>();
+            foreach (var testGrouping in tests)
+            {
+                foreach (var test in testGrouping)
+                    Run(test);
+                Console.WriteLine("");
+            }
 
-			Run<GroupCreate>();
-			Run<GroupAutoUpdateAfterEntityCreate>();
-			Run<GroupAutoUpdateBeforeEntityCreate>();
-			Run<EmptyTest>();
+            // Pre Events
+            //Name                                                      Time      ParallelTime
+            //EntityComponent_AddComponent:                             201 ms    101 ms    
+            //EntityComponent_GetAllComponents:                         144 ms    146 ms    
+            //EntityComponent_GetComponent:                             62 ms     17 ms     
+            //EntityComponent_RemoveAllComponents:                      96 ms     23 ms     
+            //EntityComponent_RemoveComponent:                          72 ms     23 ms     
+            //EntityComponent_ReplaceComponent:                         198 ms    150 ms    
 
-			Run<PrimaryKeyCreate>();
-			Run<PrimaryKeyAfterEntitiesGetEntity>();
-			Run<PrimaryKeyeBeforeEntitiesGetEntity>();
-			Run<EmptyTest>();
+            //EntityLife_CreateEntities:                                573 ms    -1 ms     
+            //EntityLife_CreateEntity:                                  516 ms    689 ms    
+            //EntityLife_DestroyAllEntities:                            198 ms    -1 ms     
+            //EntityLife_DestroyEntities:                               150 ms    -1 ms     
+            //EntityLife_DestroyEntity:                                 169 ms    404 ms    
+            //EntityLife_HasEntity:                                     32 ms     17 ms     
 
-			Run<SharedKeyCreate>();
-			Run<SharedKeyAfterEntitiesGetEntities>();
-			Run<SharedKeyeBeforeEntitiesGetEntities>();
-			Run<EmptyTest>();
+            //Filter_Equals:                                            11 ms     6 ms      
+            //Filter_Filtered:                                          47 ms     15 ms
 
-			Run<WorldCreateEntity>();
-			Run<WorldDestroyEntity>();
-			Run<WorldDestroyAllEntities>();
-			Run<WorldGetEntity>();
-			Run<WorldHasEntity>();
-			//Run<WorldJsonSerialize>();
-			Run<EmptyTest>();
+            Console.WriteLine("Press any key to continue...");
+#if RELEASE
+            Console.ReadKey();
+#endif
+        }
 
-			Console.WriteLine("\nPress 1 to save time...");
-			if (Console.ReadKey().KeyChar == '1')
-				SaveLoadTestHistory.Save(_fileName, _currentTestHistories);
+        private static void Run(Type testType)
+        {
+            var loops = 5;
+            var times = new long[loops];
+            var paralleltimes = new long[loops];
+            long avgTime = 0;
+            long avgParallelTime = 0;
+            for (var i = 0; i < loops; i++)
+            {
+                var test = (BasePerformanceTest)Activator.CreateInstance(testType);
+                test.PreRun();
+                _stopwatch.Reset();
+                _stopwatch.Start();
+                test.Run();
+                _stopwatch.Stop();
+                test.PostRun();
 
-			//Running performance tests...
-			//Name                                  Cur Time    Pre Time    Diff
-			//EntityAddComponent:                   623 ms      583 ms      40
-			//EntityGetComponent:                   106 ms      104 ms      2
-			//EntityGetComponents:                  515 ms      536 ms      -21
-			//EntityHasComponent:                   80 ms       78 ms       2
-			//EntityRemoveComponent:                218 ms      232 ms      -14
-			//EntityRemoveComponents:               345 ms      568 ms      -223
+                times[i] = _stopwatch.ElapsedMilliseconds;
+                avgTime += _stopwatch.ElapsedMilliseconds;
 
-			//FilterEquals:                         12 ms       12 ms       0
-			//FilterFiltered:                       35 ms       36 ms       -1
-			//FilterGetHasCode:                     2 ms        2 ms        0
+                test = (BasePerformanceTest)Activator.CreateInstance(testType);
+                test.PreRun();
+                var parallelCount = test.ParallelRunCount();
+                if (parallelCount > 0)
+                {
+                    _stopwatch.Reset();
+                    _stopwatch.Start();
+                    ParallelRunner.RunParallel(parallelCount, test.RunParallel);
+                    _stopwatch.Stop();
 
-			//GroupCreate:                          53 ms       54 ms       -1
-			//GroupAutoUpdateAfterEntityCreate:     251 ms      92 ms       159
-			//GroupAutoUpdateBeforeEntityCreate:    2066 ms     2235 ms     -169
+                    paralleltimes[i] = _stopwatch.ElapsedMilliseconds;
+                    avgParallelTime += _stopwatch.ElapsedMilliseconds;
+                }
+                else
+                {
+                    avgParallelTime = -1;
+                }
 
-			//PrimaryKeyCreate:                     198 ms      0 ms        0
-			//PrimaryKeyAfterEntitiesGetEntity:     109 ms      0 ms        0
-			//PrimaryKeyeBeforeEntitiesGetEntity:   202 ms      0 ms        0
+                test.PostRun();
 
-			//SharedKeyCreate:                      119 ms      118 ms      1
-			//SharedKeyAfterEntitiesGetEntities:    636 ms      718 ms      -82
-			//SharedKeyeBeforeEntitiesGetEntities:  190 ms      190 ms      0
+#if RELEASE
+                string timesText = "";
+                for (int j = 0; j < loops; j++)
+                    timesText += $"({times[j]} / {paralleltimes[j]}) ".PadRight(14);
+                Console.SetCursorPosition(0, Console.CursorTop);
+                Console.Write(
+                    ($"//{testType.Name}: ") + timesText, 0);
+#endif
+            }
 
-			//WorldCreateEntity:                    1376 ms     1566 ms     -190
-			//WorldDestroyEntity:                   525 ms      766 ms      -241
-			//WorldDestroyAllEntities:              505 ms      746 ms      -241
-			//WorldGetEntity:                       46 ms       34 ms       12
-			//WorldHasEntity:                       46 ms       46 ms       0
-		}
+            avgTime /= loops;
+            avgParallelTime = avgParallelTime > 0
+                ? avgParallelTime /= loops
+                : -1;
 
-		private static void Run<TPerformanceTest>()
-			where TPerformanceTest : IPerformanceTest, new()
-		{
-			if (typeof(TPerformanceTest) == typeof(EmptyTest))
-			{
-				Console.WriteLine();
-				return;
-			}
+            // Clear line
+#if RELEASE
+            Console.SetCursorPosition(0, Console.CursorTop);
+            Console.Write("".PadRight(110));
 
-			TPerformanceTest test = default;
-
-			int loops = 5;
-			long[] times = new long[loops];
-			long avgTime = 0;
-			for (int i = 0; i < loops; i++)
-			{
-				test = new TPerformanceTest();
-				test.PreRun();
-				_stopwatch.Reset();
-				_stopwatch.Start();
-				test.Run();
-				_stopwatch.Stop();
-				test.PostRun();
-
-				times[i] = _stopwatch.ElapsedMilliseconds;
-				avgTime += _stopwatch.ElapsedMilliseconds;
-
-				string timesText = "";
-				foreach (var time in times)
-					timesText += $"{time}".PadRight(5);
-
-				Console.SetCursorPosition(0, Console.CursorTop);
-				Console.Write(
-					($"//{typeof(TPerformanceTest).Name}: ") + timesText, 0);
-			}
-			avgTime /= loops;
-
-			var testHistory = new TestHistory
-			{
-				Name = test.GetType().Name,
-				TimeMs = avgTime
-			};
-			_currentTestHistories.Add(testHistory);
-
-			long timeDiff = 0;
-			var prevTestHistory = _pastTestHistories.FirstOrDefault(x => x.Name == testHistory.Name);
-			if (prevTestHistory != null)
-				timeDiff = testHistory.TimeMs - prevTestHistory.TimeMs;
-
-			Console.SetCursorPosition(0, Console.CursorTop);
-			Console.WriteLine(
-				($"//{typeof(TPerformanceTest).Name}: ").PadRight(40) +
-				($"{avgTime} ms ").PadRight(12) +
-				($"{prevTestHistory?.TimeMs ?? 0} ms ").PadRight(12) +
-				$"{timeDiff}");
-		}
-	}
+            Console.SetCursorPosition(0, Console.CursorTop);
+#endif
+            Console.WriteLine(
+                $"//{testType.Name}: ".PadRight(60) +
+                $"{avgTime} ms".PadRight(10) +
+                $"{avgParallelTime} ms".PadRight(10));
+        }
+    }
 }

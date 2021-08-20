@@ -1,213 +1,310 @@
-﻿using EcsLte.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using EcsLte.Events;
+using EcsLte.Exceptions;
+using EcsLte.Utilities;
 
 namespace EcsLte
 {
-	public class EntityManager
-	{
-		private readonly List<EntityInfo> _entityInfos;
-		private readonly Queue<EntityInfo> _reuseableEntityInfos;
-		private readonly DataCache<Entity[]> _entitiesCache;
+    public class EntityManager
+    {
+        private readonly DataCache<Entity[]> _entitiesCache;
+        private readonly List<EntityInfo> _entityInfos;
+        private readonly Queue<EntityInfo> _reuseableEntityInfos;
+        private int _nextId;
 
-		internal EntityManager(World world)
-		{
-			_entityInfos = new List<EntityInfo>();
-			_reuseableEntityInfos = new Queue<EntityInfo>();
-			_entitiesCache = new DataCache<Entity[]>(UpdateEntitiesCache);
-			World = world;
+        internal EntityManager(World world)
+        {
+            _entityInfos = new List<EntityInfo>();
+            _reuseableEntityInfos = new Queue<EntityInfo>();
+            _entitiesCache = new DataCache<Entity[]>(UpdateEntitiesCache);
+            _nextId = 1;
 
-			AnyEntityCreated = new EntityEvent();
-			AnyEntityWillBeDestroyedEvent = new EntityEvent();
-			AnyComponentAddedEvent = new EntityComponentChangedEvent();
-			AnyComponentRemovedEvent = new EntityComponentChangedEvent();
-			AnyComponentReplacedEvent = new EntityComponentReplacedEvent();
+            CurrentWorld = world;
+            AnyEntityCreated = new EntityEvent();
+            AnyEntityWillBeDestroyedEvent = new EntityEvent();
+            AnyComponentAddedEvent = new EntityComponentChangedEvent();
+            AnyComponentRemovedEvent = new EntityComponentChangedEvent();
+            AnyComponentReplacedEvent = new EntityComponentReplacedEvent();
 
-			// Create place holder for null entity
-			var entityInfo = new EntityInfo(0, 0, world);
-			entityInfo.Reset();
-			_entityInfos.Add(entityInfo);
-		}
+            _entityInfos.Add(null);
+        }
 
-		public World World { get; private set; }
+        public World CurrentWorld { get; }
 
-		internal EntityEvent AnyEntityCreated { get; private set; }
-		internal EntityEvent AnyEntityWillBeDestroyedEvent { get; private set; }
-		internal EntityComponentChangedEvent AnyComponentAddedEvent { get; private set; }
-		internal EntityComponentChangedEvent AnyComponentRemovedEvent { get; private set; }
-		internal EntityComponentReplacedEvent AnyComponentReplacedEvent { get; private set; }
+        internal EntityEvent AnyEntityCreated { get; }
+        internal EntityEvent AnyEntityWillBeDestroyedEvent { get; }
+        internal EntityComponentChangedEvent AnyComponentAddedEvent { get; }
+        internal EntityComponentChangedEvent AnyComponentRemovedEvent { get; }
+        internal EntityComponentReplacedEvent AnyComponentReplacedEvent { get; }
 
-		public Entity CreateEntity()
-		{
-			if (World.IsDestroyed)
-				throw new WorldIsDestroyedException(World);
+        public bool HasEntity(Entity entity)
+        {
+            if (CurrentWorld.IsDestroyed)
+                throw new WorldIsDestroyedException(CurrentWorld);
+            if (entity.Id <= 0 && entity.Id >= _entityInfos.Count)
+                throw new ArgumentOutOfRangeException();
 
-			EntityInfo entityInfo;
-			if (_reuseableEntityInfos.Count > 0)
-			{
-				entityInfo = _reuseableEntityInfos.Dequeue();
-				entityInfo.Generation++;
-				entityInfo.IsAlive = true;
-			}
-			else
-			{
-				entityInfo = new EntityInfo(_entityInfos.Count, 1, World);
-				_entityInfos.Add(entityInfo);
-			}
-			var entity = new Entity { Info = entityInfo };
+            var entityInfo = _entityInfos[entity.Id];
+            return entityInfo != null && entityInfo.Version == entity.Version;
+        }
 
-			_entitiesCache.IsDirty = true;
-			AnyEntityCreated.Invoke(entity);
+        public bool EntityIsFiltered(Entity entity, Filter filter)
+        {
+            if (!HasEntity(entity))
+                throw new EntityDoesNotExistException(CurrentWorld, entity);
 
-			return entity;
-		}
+            return filter.Filtered(_entityInfos[entity.Id]);
+        }
 
-		public void DestroyEntity(Entity entity)
-		{
-			if (!HasEntity(entity))
-				throw new WorldDoesNotHaveEntityException(World, entity);
+        public Entity[] GetEntities()
+        {
+            if (CurrentWorld.IsDestroyed)
+                throw new WorldIsDestroyedException(CurrentWorld);
 
-			var entityInfo = entity.Info;
+            return _entitiesCache.Data;
+        }
 
-			AnyEntityWillBeDestroyedEvent.Invoke(entity);
-			RemoveAllComponents(entity);
-			entityInfo.Reset();
+        public Entity CreateEntity()
+        {
+            if (CurrentWorld.IsDestroyed)
+                throw new WorldIsDestroyedException(CurrentWorld);
 
-			_reuseableEntityInfos.Enqueue(entityInfo);
-			_entitiesCache.IsDirty = true;
-		}
+            EntityInfo entityInfo = null;
+            lock (_entityInfos)
+            {
+                if (_reuseableEntityInfos.Count > 0)
+                {
+                    entityInfo = _reuseableEntityInfos.Dequeue();
+                    entityInfo.Version++;
+                    _entityInfos[entityInfo.Id] = entityInfo;
+                }
+                else
+                {
+                    entityInfo = new EntityInfo
+                    {
+                        Id = _nextId++,
+                        Version = 1
+                    };
+                    _entityInfos.Add(entityInfo);
+                }
 
-		public void DestroyAllEntities()
-		{
-			if (World.IsDestroyed)
-				throw new WorldIsDestroyedException(World);
+                _entitiesCache.IsDirty = true;
+            }
 
-			var entities = GetEntities();
-			for (int i = 0; i < entities.Length; i++)
-				DestroyEntity(entities[i]);
-		}
+            var entity = Entity.CreateFromInfo(entityInfo);
+            AnyEntityCreated.Invoke(entity);
 
-		public Entity GetEntity(int id)
-		{
-			if (World.IsDestroyed)
-				throw new WorldIsDestroyedException(World);
-			if (id <= 0 && id >= _entityInfos.Count)
-				throw new ArgumentOutOfRangeException();
+            return entity;
+        }
 
-			var entity = new Entity { Info = _entityInfos[id] };
-			if (!entity.Info.IsAlive)
-				throw new WorldDoesNotHaveEntityException(World, entity);
+        public Entity[] CreateEntities(int count)
+        {
+            if (count < 0)
+                throw new ArgumentOutOfRangeException("Count must be greater than 0");
 
-			return entity;
-		}
+            var entities = new Entity[count];
+            lock (_entityInfos)
+            {
+                for (var i = 0; i < count; i++)
+                {
+                    EntityInfo entityInfo = null;
+                    if (_reuseableEntityInfos.Count > 0)
+                    {
+                        entityInfo = _reuseableEntityInfos.Dequeue();
+                        entityInfo.Version++;
+                        _entityInfos[entityInfo.Id] = entityInfo;
+                    }
+                    else
+                    {
+                        entityInfo = new EntityInfo
+                        {
+                            Id = _nextId++,
+                            Version = 1
+                        };
+                        _entityInfos.Add(entityInfo);
+                    }
 
-		public Entity[] GetEntities()
-		{
-			if (World.IsDestroyed)
-				throw new WorldIsDestroyedException(World);
+                    var entity = Entity.CreateFromInfo(entityInfo);
+                    AnyEntityCreated.Invoke(entity);
+                    entities[i] = entity;
+                }
 
-			return _entitiesCache.Data;
-		}
+                _entitiesCache.IsDirty = true;
+            }
 
-		public bool HasEntity(Entity entity)
-		{
-			if (World.IsDestroyed)
-				throw new WorldIsDestroyedException(World);
-			if (entity.Id <= 0 && entity.Id >= _entityInfos.Count)
-				throw new ArgumentOutOfRangeException();
-			return entity.WorldId == World.WorldId && entity.Info.IsAlive;
-		}
+            return entities;
+        }
 
-		public bool HasComponent<TComponent>(Entity entity)
-			where TComponent : IComponent
-		{
-			if (!HasEntity(entity))
-				throw new WorldDoesNotHaveEntityException(World, entity);
+        public void DestroyEntity(Entity entity)
+        {
+            if (!HasEntity(entity))
+                throw new EntityDoesNotExistException(CurrentWorld, entity);
 
-			return entity.Info[ComponentIndex<TComponent>.Index] != null;
-		}
+            RemoveAllComponents(entity);
 
-		public TComponent AddComponent<TComponent>(Entity entity, TComponent component = default)
-			where TComponent : IComponent
-		{
-			if (HasComponent<TComponent>(entity))
-				throw new EntityAlreadyHasComponentException(entity, typeof(TComponent));
+            AnyEntityWillBeDestroyedEvent.Invoke(entity);
+            var entityInfo = _entityInfos[entity.Id];
+            lock (entityInfo)
+            {
+                entityInfo.Reset();
+            }
 
-			var componentIndex = ComponentIndex<TComponent>.Index;
+            lock (_entityInfos)
+            {
+                _reuseableEntityInfos.Enqueue(entityInfo);
+                _entityInfos[entity.Id] = null;
+                _entitiesCache.IsDirty = true;
+            }
+        }
 
-			entity.Info[componentIndex] = component;
-			AnyComponentAddedEvent.Invoke(entity, componentIndex, component);
+        public void DestroyEntities(ICollection<Entity> entities)
+        {
+            lock (_entityInfos)
+            {
+                foreach (var entity in entities)
+                {
+                    if (!HasEntity(entity))
+                        throw new EntityDoesNotExistException(CurrentWorld, entity);
 
-			return component;
-		}
+                    RemoveAllComponents(entity);
 
-		public TComponent GetComponent<TComponent>(Entity entity)
-			where TComponent : IComponent
-		{
-			if (!HasComponent<TComponent>(entity))
-				throw new EntityNotHaveComponentException(entity, typeof(TComponent));
+                    AnyEntityWillBeDestroyedEvent.Invoke(entity);
+                    var entityInfo = _entityInfos[entity.Id];
+                    lock (entityInfo)
+                    {
+                        entityInfo.Reset();
+                    }
 
-			return (TComponent)entity.Info[ComponentIndex<TComponent>.Index];
-		}
+                    _reuseableEntityInfos.Enqueue(entityInfo);
+                    _entityInfos[entity.Id] = null;
+                }
 
-		public void RemoveComponent<TComponent>(Entity entity)
-			where TComponent : IComponent
-		{
-			if (!HasComponent<TComponent>(entity))
-				throw new EntityNotHaveComponentException(entity, typeof(TComponent));
+                _entitiesCache.IsDirty = true;
+            }
+        }
 
-			var componentIndex = ComponentIndex<TComponent>.Index;
-			var component = entity.Info[componentIndex];
+        public bool HasComponent<TComponent>(Entity entity)
+            where TComponent : IComponent
+        {
+            if (!HasEntity(entity))
+                throw new EntityDoesNotExistException(CurrentWorld, entity);
 
-			entity.Info[componentIndex] = null;
-			AnyComponentRemovedEvent.Invoke(entity, componentIndex, component);
-		}
+            return _entityInfos[entity.Id][ComponentIndex<TComponent>.Index] != null;
+        }
 
-		public void ReplaceComponent<TComponent>(Entity entity, TComponent newComponent)
-			where TComponent : IComponent
-		{
-			if (!HasComponent<TComponent>(entity))
-				AddComponent(entity, newComponent);
-			{
-				var componentIndex = ComponentIndex<TComponent>.Index;
-				var prevComponent = entity.Info[componentIndex];
+        public TComponent GetComponent<TComponent>(Entity entity)
+            where TComponent : IComponent
+        {
+            if (!HasComponent<TComponent>(entity))
+                throw new EntityNotHaveComponentException(entity, typeof(TComponent));
 
-				entity.Info[componentIndex] = newComponent;
-				AnyComponentReplacedEvent.Invoke(entity, componentIndex, prevComponent, newComponent);
-			}
-		}
+            return (TComponent)_entityInfos[entity.Id][ComponentIndex<TComponent>.Index];
+        }
 
-		public IComponent[] GetAllComponents(Entity entity)
-		{
-			if (!HasEntity(entity))
-				throw new WorldDoesNotHaveEntityException(World, entity);
-			return entity.Info.GetComponents();
-		}
+        public IComponent[] GetAllComponents(Entity entity)
+        {
+            if (!HasEntity(entity))
+                throw new EntityDoesNotExistException(CurrentWorld, entity);
 
-		public void RemoveAllComponents(Entity entity)
-		{
-			if (!HasEntity(entity))
-				throw new WorldDoesNotHaveEntityException(World, entity);
+            return _entityInfos[entity.Id].GetComponents();
+        }
 
-			for (int i = 0; i < ComponentIndexes.Instance.Count; i++)
-			{
-				var component = entity.Info[i];
-				if (component != null)
-				{
-					entity.Info[i] = null;
-					AnyComponentRemovedEvent.Invoke(entity, i, component);
-				}
-			}
-		}
+        public void AddComponent<TComponent>(Entity entity, TComponent component)
+            where TComponent : IComponent
+        {
+            if (HasComponent<TComponent>(entity))
+                throw new EntityAlreadyHasComponentException(entity, typeof(TComponent));
 
-		internal IComponent GetComponent(Entity entity, int componentPoolIndex)
-			=> entity.Info[componentPoolIndex];
+            var componentIndex = ComponentIndex<TComponent>.Index;
+            var entityInfo = _entityInfos[entity.Id];
+            lock (entityInfo)
+            {
+                entityInfo[componentIndex] = component;
+            }
 
-		private Entity[] UpdateEntitiesCache()
-			=> _entityInfos
-					.Where(x => x.IsAlive)
-					.Select(x => new Entity { Info = x })
-					.ToArray();
-	}
+            AnyComponentAddedEvent.Invoke(entity, componentIndex, component);
+        }
+
+        public void ReplaceComponent<TComponent>(Entity entity, TComponent newComponent)
+            where TComponent : IComponent
+        {
+            if (!HasComponent<TComponent>(entity))
+            {
+                AddComponent(entity, newComponent);
+            }
+            else
+            {
+                var componentIndex = ComponentIndex<TComponent>.Index;
+                var entityInfo = _entityInfos[entity.Id];
+                var prevComponent = entityInfo[componentIndex];
+                lock (entityInfo)
+                {
+                    entityInfo[componentIndex] = newComponent;
+                }
+
+                AnyComponentReplacedEvent.Invoke(entity, componentIndex, prevComponent, newComponent);
+            }
+        }
+
+        public void RemoveComponent<TComponent>(Entity entity) where TComponent : IComponent
+        {
+            if (!HasComponent<TComponent>(entity))
+                throw new EntityNotHaveComponentException(entity, typeof(TComponent));
+
+            var componentIndex = ComponentIndex<TComponent>.Index;
+            var entityInfo = _entityInfos[entity.Id];
+            var component = entityInfo[componentIndex];
+            lock (entityInfo)
+            {
+                entityInfo[componentIndex] = null;
+            }
+
+            AnyComponentRemovedEvent.Invoke(entity, componentIndex, component);
+        }
+
+        public void RemoveAllComponents(Entity entity)
+        {
+            if (!HasEntity(entity))
+                throw new EntityDoesNotExistException(CurrentWorld, entity);
+
+            var entityInfo = _entityInfos[entity.Id];
+            lock (entityInfo)
+            {
+                for (var i = 0; i < ComponentIndexes.Instance.Count; i++)
+                {
+                    var component = entityInfo[i];
+                    entityInfo[i] = null;
+                    if (component != null)
+                        AnyComponentRemovedEvent.Invoke(entity, i, component);
+                }
+            }
+        }
+
+        public void DestroyAllEntities()
+        {
+            foreach (var entity in GetEntities())
+                DestroyEntity(entity);
+        }
+
+        internal void InternalDestroy()
+        {
+            _entityInfos.Clear();
+
+            AnyEntityCreated.Clear();
+            AnyEntityWillBeDestroyedEvent.Clear();
+            AnyComponentAddedEvent.Clear();
+            AnyComponentRemovedEvent.Clear();
+            AnyComponentReplacedEvent.Clear();
+        }
+
+        private Entity[] UpdateEntitiesCache()
+        {
+            return _entityInfos
+                .Where(x => x != null)
+                .Select(x => Entity.CreateFromInfo(x))
+                .ToArray();
+        }
+    }
 }

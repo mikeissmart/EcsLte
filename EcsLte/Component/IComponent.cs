@@ -1,6 +1,10 @@
-﻿namespace EcsLte
+namespace EcsLte
 {
-	public interface IComponent { }
+    public interface IComponent
+    {
+    }
 
-	public interface IComponentRecordable { }
+    public interface IComponentRecordable : IComponent
+    {
+    }
 }
