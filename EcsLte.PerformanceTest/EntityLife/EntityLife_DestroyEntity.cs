@@ -1,3 +1,5 @@
+using EcsLte.Utilities;
+
 namespace EcsLte.PerformanceTest
 {
     internal class EntityLife_DestroyEntity : BasePerformanceTest
@@ -20,14 +22,16 @@ namespace EcsLte.PerformanceTest
                 _world.EntityManager.DestroyEntity(_entities[i]);
         }
 
-        public override int ParallelRunCount()
-        {
-            return TestConsts.EntityLoopCount;
-        }
+        public override bool CanRunParallel()
+            => true;
 
-        public override void RunParallel(int index, int startIndex, int endIndex)
+        public override void RunParallel()
         {
-            _world.EntityManager.DestroyEntity(_entities[index]);
+            ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
+                index =>
+                {
+                    _world.EntityManager.DestroyEntity(_entities[index]);
+                });
         }
 
         public override void PostRun()

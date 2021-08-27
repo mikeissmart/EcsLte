@@ -39,15 +39,15 @@ namespace EcsLte
             return _worldsLookup[name];
         }
 
-        public static World CreateWorld(string uniqueWorldName)
+        public static World CreateWorld(string name)
         {
             if (!ParallelRunner.IsMainThread)
-                throw new WorldCreateOffThreadException(uniqueWorldName);
-            if (HasWorld(uniqueWorldName))
-                throw new WorldNameAlreadyExistException(uniqueWorldName);
+                throw new WorldCreateOffThreadException(name);
+            if (HasWorld(name))
+                throw new WorldNameAlreadyExistException(name);
 
-            var world = new World(uniqueWorldName);
-            _worldsLookup.Add(uniqueWorldName, world);
+            var world = new World(name);
+            _worldsLookup.Add(name, world);
             _worldsCache.IsDirty = true;
 
             return world;

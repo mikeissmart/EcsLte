@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using EcsLte.Events;
 using EcsLte.Exceptions;
 using EcsLte.Utilities;
@@ -9,17 +11,22 @@ namespace EcsLte
 {
     public class EntityManager
     {
+        private readonly List<Entity> _entities;
         private readonly DataCache<Entity[]> _entitiesCache;
-        private readonly List<EntityInfo> _entityInfos;
-        private readonly Queue<EntityInfo> _reuseableEntityInfos;
+        private readonly Queue<Entity> _reuseableEntities;
+        private readonly List<IComponent>[] _componentPools;
+        private readonly Dictionary<string, EntityCommandPlayback> _entityCommandPlaybacks;
         private int _nextId;
 
         internal EntityManager(World world)
         {
-            _entityInfos = new List<EntityInfo>();
-            _reuseableEntityInfos = new Queue<EntityInfo>();
+            _entities = new List<Entity>();
             _entitiesCache = new DataCache<Entity[]>(UpdateEntitiesCache);
-            _nextId = 1;
+            _reuseableEntities = new Queue<Entity>();
+            _componentPools = new List<IComponent>[ComponentIndexes.Instance.Count];
+            for (int i = 0; i < _componentPools.Length; i++)
+                _componentPools[i] = new List<IComponent>();
+            _entityCommandPlaybacks = new Dictionary<string, EntityCommandPlayback>();
 
             CurrentWorld = world;
             AnyEntityCreated = new EntityEvent();
@@ -28,10 +35,15 @@ namespace EcsLte
             AnyComponentRemovedEvent = new EntityComponentChangedEvent();
             AnyComponentReplacedEvent = new EntityComponentReplacedEvent();
 
-            _entityInfos.Add(null);
+            // Create null entity
+            CreateEntity();
+            _entities[0] = Entity.Null;
+
+            DefaultEntityCommandPlayback = CreateOrGetEntityCommand("Default");
         }
 
         public World CurrentWorld { get; }
+        public EntityCommandPlayback DefaultEntityCommandPlayback { get; }
 
         internal EntityEvent AnyEntityCreated { get; }
         internal EntityEvent AnyEntityWillBeDestroyedEvent { get; }
@@ -39,15 +51,30 @@ namespace EcsLte
         internal EntityComponentChangedEvent AnyComponentRemovedEvent { get; }
         internal EntityComponentReplacedEvent AnyComponentReplacedEvent { get; }
 
-        public bool HasEntity(Entity entity)
+        public EntityCommandPlayback CreateOrGetEntityCommand(string name)
         {
             if (CurrentWorld.IsDestroyed)
                 throw new WorldIsDestroyedException(CurrentWorld);
-            if (entity.Id <= 0 && entity.Id >= _entityInfos.Count)
-                throw new ArgumentOutOfRangeException();
+            if (!ParallelRunner.IsMainThread)
+                throw new EntityCommandPlaybackOffThreadException(name);
 
-            var entityInfo = _entityInfos[entity.Id];
-            return entityInfo != null && entityInfo.Version == entity.Version;
+            if (_entityCommandPlaybacks.TryGetValue(name, out EntityCommandPlayback entityCommand))
+                return entityCommand;
+
+            entityCommand = new EntityCommandPlayback(CurrentWorld, name);
+            _entityCommandPlaybacks.Add(name, entityCommand);
+
+            return entityCommand;
+        }
+
+        public bool HasEntity(Entity entity)
+        {
+            if (CurrentWorld.IsDestroyed)
+                return false;
+            if (entity.Id <= 0 || entity.Id >= _entities.Count)
+                return false;
+
+            return _entities[entity.Id] == entity;
         }
 
         public bool EntityIsFiltered(Entity entity, Filter filter)
@@ -55,7 +82,9 @@ namespace EcsLte
             if (!HasEntity(entity))
                 throw new EntityDoesNotExistException(CurrentWorld, entity);
 
-            return filter.Filtered(_entityInfos[entity.Id]);
+            return FilteredAllOf(entity, filter) &&
+                   FilteredAnyOf(entity, filter) &&
+                   FilteredNoneOf(entity, filter);
         }
 
         public Entity[] GetEntities()
@@ -68,32 +97,14 @@ namespace EcsLte
 
         public Entity CreateEntity()
         {
-            if (CurrentWorld.IsDestroyed)
-                throw new WorldIsDestroyedException(CurrentWorld);
+            var entity = LocalCreateEntity();
 
-            EntityInfo entityInfo = null;
-            lock (_entityInfos)
+            lock (_entities)
             {
-                if (_reuseableEntityInfos.Count > 0)
-                {
-                    entityInfo = _reuseableEntityInfos.Dequeue();
-                    entityInfo.Version++;
-                    _entityInfos[entityInfo.Id] = entityInfo;
-                }
-                else
-                {
-                    entityInfo = new EntityInfo
-                    {
-                        Id = _nextId++,
-                        Version = 1
-                    };
-                    _entityInfos.Add(entityInfo);
-                }
-
+                _entities[entity.Id] = entity;
                 _entitiesCache.IsDirty = true;
             }
 
-            var entity = Entity.CreateFromInfo(entityInfo);
             AnyEntityCreated.Invoke(entity);
 
             return entity;
@@ -101,88 +112,69 @@ namespace EcsLte
 
         public Entity[] CreateEntities(int count)
         {
-            if (count < 0)
-                throw new ArgumentOutOfRangeException("Count must be greater than 0");
+            var entities = LocalCreateEntities(count);
 
-            var entities = new Entity[count];
-            lock (_entityInfos)
+            lock (_entities)
             {
-                for (var i = 0; i < count; i++)
-                {
-                    EntityInfo entityInfo = null;
-                    if (_reuseableEntityInfos.Count > 0)
-                    {
-                        entityInfo = _reuseableEntityInfos.Dequeue();
-                        entityInfo.Version++;
-                        _entityInfos[entityInfo.Id] = entityInfo;
-                    }
-                    else
-                    {
-                        entityInfo = new EntityInfo
-                        {
-                            Id = _nextId++,
-                            Version = 1
-                        };
-                        _entityInfos.Add(entityInfo);
-                    }
-
-                    var entity = Entity.CreateFromInfo(entityInfo);
-                    AnyEntityCreated.Invoke(entity);
-                    entities[i] = entity;
-                }
-
+                foreach (var entity in entities)
+                    _entities[entity.Id] = entity;
                 _entitiesCache.IsDirty = true;
             }
+
+            foreach (var entity in entities)
+                AnyEntityCreated.Invoke(entity);
 
             return entities;
         }
 
         public void DestroyEntity(Entity entity)
         {
+            if (CurrentWorld.IsDestroyed)
+                throw new WorldIsDestroyedException(CurrentWorld);
             if (!HasEntity(entity))
                 throw new EntityDoesNotExistException(CurrentWorld, entity);
 
             RemoveAllComponents(entity);
 
             AnyEntityWillBeDestroyedEvent.Invoke(entity);
-            var entityInfo = _entityInfos[entity.Id];
-            lock (entityInfo)
-            {
-                entityInfo.Reset();
-            }
 
-            lock (_entityInfos)
+            lock (_reuseableEntities)
+            { _reuseableEntities.Enqueue(entity); }
+            lock (_entities)
             {
-                _reuseableEntityInfos.Enqueue(entityInfo);
-                _entityInfos[entity.Id] = null;
+                _entities[entity.Id] = Entity.Null;
                 _entitiesCache.IsDirty = true;
             }
         }
 
         public void DestroyEntities(ICollection<Entity> entities)
         {
-            lock (_entityInfos)
+            if (CurrentWorld.IsDestroyed)
+                throw new WorldIsDestroyedException(CurrentWorld);
+
+            foreach (var entity in entities)
             {
-                foreach (var entity in entities)
+                if (!HasEntity(entity))
+                    throw new EntityDoesNotExistException(CurrentWorld, entity);
+
+                RemoveAllComponents(entity);
+
+                AnyEntityWillBeDestroyedEvent.Invoke(entity);
+
+                lock (_reuseableEntities)
                 {
-                    if (!HasEntity(entity))
-                        throw new EntityDoesNotExistException(CurrentWorld, entity);
-
-                    RemoveAllComponents(entity);
-
-                    AnyEntityWillBeDestroyedEvent.Invoke(entity);
-                    var entityInfo = _entityInfos[entity.Id];
-                    lock (entityInfo)
+                    lock (_entities)
                     {
-                        entityInfo.Reset();
+                        lock (_reuseableEntities)
+                        { _reuseableEntities.Enqueue(entity); }
+                        lock (_entities)
+                        {
+                            _entities[entity.Id] = Entity.Null;
+                        }
                     }
-
-                    _reuseableEntityInfos.Enqueue(entityInfo);
-                    _entityInfos[entity.Id] = null;
                 }
-
-                _entitiesCache.IsDirty = true;
             }
+            _entitiesCache.IsDirty = true;
         }
 
         public bool HasComponent<TComponent>(Entity entity)
@@ -191,7 +183,7 @@ namespace EcsLte
             if (!HasEntity(entity))
                 throw new EntityDoesNotExistException(CurrentWorld, entity);
 
-            return _entityInfos[entity.Id][ComponentIndex<TComponent>.Index] != null;
+            return _componentPools[ComponentIndex<TComponent>.Index][entity.Id] != null;
         }
 
         public TComponent GetComponent<TComponent>(Entity entity)
@@ -200,7 +192,7 @@ namespace EcsLte
             if (!HasComponent<TComponent>(entity))
                 throw new EntityNotHaveComponentException(entity, typeof(TComponent));
 
-            return (TComponent)_entityInfos[entity.Id][ComponentIndex<TComponent>.Index];
+            return (TComponent)_componentPools[ComponentIndex<TComponent>.Index][entity.Id];
         }
 
         public IComponent[] GetAllComponents(Entity entity)
@@ -208,7 +200,14 @@ namespace EcsLte
             if (!HasEntity(entity))
                 throw new EntityDoesNotExistException(CurrentWorld, entity);
 
-            return _entityInfos[entity.Id].GetComponents();
+            var components = new List<IComponent>();
+            foreach (var pool in _componentPools)
+            {
+                var component = pool[entity.Id];
+                if (component != null)
+                    components.Add(component);
+            }
+            return components.ToArray();
         }
 
         public void AddComponent<TComponent>(Entity entity, TComponent component)
@@ -218,11 +217,7 @@ namespace EcsLte
                 throw new EntityAlreadyHasComponentException(entity, typeof(TComponent));
 
             var componentIndex = ComponentIndex<TComponent>.Index;
-            var entityInfo = _entityInfos[entity.Id];
-            lock (entityInfo)
-            {
-                entityInfo[componentIndex] = component;
-            }
+            _componentPools[componentIndex][entity.Id] = component;
 
             AnyComponentAddedEvent.Invoke(entity, componentIndex, component);
         }
@@ -237,12 +232,9 @@ namespace EcsLte
             else
             {
                 var componentIndex = ComponentIndex<TComponent>.Index;
-                var entityInfo = _entityInfos[entity.Id];
-                var prevComponent = entityInfo[componentIndex];
-                lock (entityInfo)
-                {
-                    entityInfo[componentIndex] = newComponent;
-                }
+                var componentPool = _componentPools[componentIndex];
+                var prevComponent = componentPool[entity.Id];
+                componentPool[entity.Id] = newComponent;
 
                 AnyComponentReplacedEvent.Invoke(entity, componentIndex, prevComponent, newComponent);
             }
@@ -254,12 +246,9 @@ namespace EcsLte
                 throw new EntityNotHaveComponentException(entity, typeof(TComponent));
 
             var componentIndex = ComponentIndex<TComponent>.Index;
-            var entityInfo = _entityInfos[entity.Id];
-            var component = entityInfo[componentIndex];
-            lock (entityInfo)
-            {
-                entityInfo[componentIndex] = null;
-            }
+            var componentPool = _componentPools[componentIndex];
+            var component = componentPool[entity.Id];
+            componentPool[entity.Id] = null;
 
             AnyComponentRemovedEvent.Invoke(entity, componentIndex, component);
         }
@@ -269,28 +258,48 @@ namespace EcsLte
             if (!HasEntity(entity))
                 throw new EntityDoesNotExistException(CurrentWorld, entity);
 
-            var entityInfo = _entityInfos[entity.Id];
-            lock (entityInfo)
+            var invokeQueue = new List<Tuple<Entity, int, IComponent>>();
+            for (var i = 0; i < _componentPools.Length; i++)
             {
-                for (var i = 0; i < ComponentIndexes.Instance.Count; i++)
+                var pool = _componentPools[i];
+                var component = pool[entity.Id];
+                if (component != null)
                 {
-                    var component = entityInfo[i];
-                    entityInfo[i] = null;
-                    if (component != null)
-                        AnyComponentRemovedEvent.Invoke(entity, i, component);
+                    pool[entity.Id] = null;
+                    invokeQueue.Add(Tuple.Create(entity, i, component));
                 }
             }
+
+            foreach (var queue in invokeQueue)
+                AnyComponentRemovedEvent.Invoke(queue.Item1, queue.Item2, queue.Item3);
         }
 
-        public void DestroyAllEntities()
+        internal Entity EnqueueEntityFromCommand()
         {
-            foreach (var entity in GetEntities())
-                DestroyEntity(entity);
+            return LocalCreateEntity();
+        }
+
+        internal Entity[] EnqueueEntitiesFromCommand(int count)
+        {
+            return LocalCreateEntities(count);
+        }
+
+        internal void DequeueEntityFromCommand(Entity entity)
+        {
+            _entities[entity.Id] = entity;
+            _entitiesCache.IsDirty = true;
+
+            AnyEntityCreated.Invoke(entity);
         }
 
         internal void InternalDestroy()
         {
-            _entityInfos.Clear();
+            _entities.Clear();
+            _entitiesCache.IsDirty = true;
+            _reuseableEntities.Clear();
+            foreach (var pool in _componentPools)
+                pool.Clear();
+            _entityCommandPlaybacks.Clear();
 
             AnyEntityCreated.Clear();
             AnyEntityWillBeDestroyedEvent.Clear();
@@ -299,12 +308,148 @@ namespace EcsLte
             AnyComponentReplacedEvent.Clear();
         }
 
+        private Entity LocalCreateEntity()
+        {
+            if (CurrentWorld.IsDestroyed)
+                throw new WorldIsDestroyedException(CurrentWorld);
+
+            Entity entity;
+            lock (_reuseableEntities)
+            {
+                if (_reuseableEntities.Count > 0)
+                {
+                    entity = _reuseableEntities.Dequeue();
+                    entity.Version++;
+
+                    return entity;
+                }
+            }
+
+            lock (_entities) // use lock since _nextId is updating
+            {
+                entity = new Entity
+                {
+                    Id = _nextId++,
+                    Version = 1
+                };
+                _entities.Add(Entity.Null);
+            }
+            lock (_componentPools)
+            {
+                foreach (var pool in _componentPools)
+                    pool.Add(null);
+            }
+
+            return entity;
+        }
+
+        private Entity[] LocalCreateEntities(int count)
+        {
+            if (count < 0)
+                throw new ArgumentOutOfRangeException("Count must be greater than 0");
+            if (CurrentWorld.IsDestroyed)
+                throw new WorldIsDestroyedException(CurrentWorld);
+
+            var entities = new Entity[count];
+            lock (_reuseableEntities)
+            {
+                lock (_entities)
+                {
+                    int expandBy = 0;
+                    if (_reuseableEntities.Count < count)
+                    {
+                        expandBy = count - _reuseableEntities.Count;
+                        _entities.AddRange(
+                            Enumerable.Repeat<Entity>(Entity.Null, expandBy));
+
+                        lock (_componentPools)
+                        {
+                            foreach (var pool in _componentPools)
+                            {
+                                pool.AddRange(
+                                   Enumerable.Repeat<IComponent>(null, expandBy));
+                            }
+                        }
+                    }
+                    else
+                        expandBy = count;
+
+                    ParallelRunner.RunParallelFor(count,
+                        index =>
+                        {
+                            Entity entity;
+                            if (_reuseableEntities.Count > 0)
+                            {
+                                entity = _reuseableEntities.Dequeue();
+                                entity.Version++;
+                            }
+                            else
+                            {
+                                entity = new Entity
+                                {
+                                    Id = _nextId + index,
+                                    Version = 1
+                                };
+                            }
+                            entities[index] = entity;
+                        });
+                    _nextId += expandBy;
+                }
+            }
+
+            return entities;
+        }
+
+        private bool FilteredAllOf(Entity entity, Filter filter)
+        {
+            if (filter.AllOfIndexes == null || filter.AllOfIndexes.Length == 0)
+                return true;
+
+            foreach (var index in filter.Indexes)
+            {
+                if (_componentPools[index][entity.Id] == null)
+                    return false;
+            }
+
+            return true;
+        }
+
+        private bool FilteredAnyOf(Entity entity, Filter filter)
+        {
+            if (filter.AnyOfIndexes == null || filter.AnyOfIndexes.Length == 0)
+                return true;
+
+            foreach (var index in filter.Indexes)
+            {
+                if (_componentPools[index][entity.Id] != null)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private bool FilteredNoneOf(Entity entity, Filter filter)
+        {
+            if (filter.NoneOfIndexes == null || filter.NoneOfIndexes.Length == 0)
+                return true;
+
+            foreach (var index in filter.Indexes)
+            {
+                if (_componentPools[index][entity.Id] != null)
+                    return false;
+            }
+
+            return true;
+        }
+
         private Entity[] UpdateEntitiesCache()
         {
-            return _entityInfos
-                .Where(x => x != null)
-                .Select(x => Entity.CreateFromInfo(x))
-                .ToArray();
+            lock (_entities)
+            {
+                return _entities
+                    .Where(x => x != Entity.Null)
+                    .ToArray();
+            }
         }
     }
 }

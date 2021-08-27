@@ -1,3 +1,5 @@
+using EcsLte.Utilities;
+
 namespace EcsLte.PerformanceTest
 {
     internal class Filter_Equals : BasePerformanceTest
@@ -17,14 +19,16 @@ namespace EcsLte.PerformanceTest
                 _filter1.Equals(_filter2);
         }
 
-        public override int ParallelRunCount()
-        {
-            return TestConsts.EntityLoopCount;
-        }
+        public override bool CanRunParallel()
+            => true;
 
-        public override void RunParallel(int index, int startIndex, int endIndex)
+        public override void RunParallel()
         {
-            _filter1.Equals(_filter2);
+            ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
+                index =>
+                {
+                    var result = _filter1.Equals(_filter2);
+                });
         }
 
         public override void PostRun()

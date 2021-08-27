@@ -47,12 +47,7 @@ namespace EcsLte
 
         public override string ToString()
         {
-            return $"{Id}, {Version}";
-        }
-
-        internal static Entity CreateFromInfo(EntityInfo entityInfo)
-        {
-            return new Entity { Id = entityInfo.Id, Version = entityInfo.Version };
+            return $"({Id}, {Version})";
         }
     }
 }

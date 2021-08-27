@@ -9,16 +9,9 @@ namespace EcsLte.UnitTest.EntityManangerTests
         [TestInitialize]
         public void PreTest()
         {
-            World.DefaultWorld = World.DefaultWorld == null
-                ? World.CreateWorld("DefaultWorld")
-                : World.DefaultWorld;
-        }
-
-        [TestCleanup]
-        public void PostTest()
-        {
-            World.DestroyWorld(World.DefaultWorld);
-            World.DefaultWorld = null;
+            if (!World.DefaultWorld.IsDestroyed)
+                World.DestroyWorld(World.DefaultWorld);
+            World.DefaultWorld = World.CreateWorld("DefaultWorld");
         }
 
         [TestMethod]

@@ -23,7 +23,7 @@ namespace EcsLte
         public Type ComponentType => typeof(TComponent);
     }
 
-    internal class ComponentIndexes
+    public class ComponentIndexes
     {
         private static ComponentIndexes _instance;
 

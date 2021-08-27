@@ -1,3 +1,5 @@
+using EcsLte.Utilities;
+
 namespace EcsLte.PerformanceTest
 {
     internal class Filter_Filtered : BasePerformanceTest
@@ -19,14 +21,16 @@ namespace EcsLte.PerformanceTest
                 _world.EntityManager.EntityIsFiltered(_entity, _filter);
         }
 
-        public override int ParallelRunCount()
-        {
-            return TestConsts.EntityLoopCount;
-        }
+        public override bool CanRunParallel()
+            => true;
 
-        public override void RunParallel(int index, int startIndex, int endIndex)
+        public override void RunParallel()
         {
-            _world.EntityManager.EntityIsFiltered(_entity, _filter);
+            ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
+                index =>
+                {
+                    var result = _world.EntityManager.EntityIsFiltered(_entity, _filter);
+                });
         }
 
         public override void PostRun()

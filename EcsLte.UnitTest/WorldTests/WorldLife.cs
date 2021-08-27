@@ -1,4 +1,5 @@
 using EcsLte.Exceptions;
+using EcsLte.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace EcsLte.UnitTest.WorldTests
@@ -37,6 +38,31 @@ namespace EcsLte.UnitTest.WorldTests
         }
 
         [TestMethod]
+        public void Create_Parallel()
+        {
+            World world = null;
+            bool errorThrown = false;
+
+            ParallelRunner.RunParallelFor(1,
+                index =>
+                {
+                    try
+                    {
+                        world = World.CreateWorld("TestCreate: " + index);
+                    }
+                    catch (WorldCreateOffThreadException)
+                    {
+                        errorThrown = true;
+                    }
+                });
+
+            Assert.IsTrue(errorThrown);
+
+            if (world != null && !world.IsDestroyed)
+                World.DestroyWorld(world);
+        }
+
+        [TestMethod]
         public void CreateMultiple()
         {
             var world1 = World.CreateWorld("TestCreateMultiple1");
@@ -57,6 +83,32 @@ namespace EcsLte.UnitTest.WorldTests
             World.DestroyWorld(world);
 
             Assert.IsTrue(world != null && world.IsDestroyed);
+            Assert.IsFalse(World.HasWorld(world.Name));
+        }
+
+        [TestMethod]
+        public void Destroy_Parallel()
+        {
+            var world = World.CreateWorld("TestDestroy");
+            bool errorThrown = false;
+
+            ParallelRunner.RunParallelFor(1,
+                index =>
+                {
+                    try
+                    {
+                        World.DestroyWorld(world);
+                    }
+                    catch (WorldDestroyOffThreadException)
+                    {
+                        errorThrown = true;
+                    }
+                });
+
+            Assert.IsTrue(errorThrown);
+
+            if (world != null && !world.IsDestroyed)
+                World.DestroyWorld(world);
         }
 
         [TestMethod]

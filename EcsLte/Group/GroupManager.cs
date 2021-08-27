@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using EcsLte.Events;
 using EcsLte.Exceptions;
@@ -37,19 +38,26 @@ namespace EcsLte
             if (CurrentWorld.IsDestroyed)
                 throw new WorldIsDestroyedException(CurrentWorld);
 
-            if (!_groupLookup.TryGetValue(filter, out var group))
+            Group group;
+            lock (_groupLookup)
             {
-                lock (_groupLookup)
+                if (!_groupLookup.TryGetValue(filter, out group))
                 {
                     group = new Group(this, filter);
                     _groupLookup.Add(filter, group);
 
-                    foreach (var index in group.Filter.Indexes)
-                        _groupComponentIndexes[index].Add(group);
-                }
+                    lock (_groupComponentIndexes)
+                    {
+                        foreach (var index in group.Filter.Indexes)
+                            _groupComponentIndexes[index].Add(group);
+                    }
 
-                ParallelRunner.RunParallelForEach(_entityManager.GetEntities(),
-                    entity => group.FilterEntitySilent(entity));
+                    ParallelRunner.RunParallelForEach(_entityManager.GetEntities(),
+                        entity => group.FilterEntitySilent(entity));
+
+                    /*foreach (var entity in _entityManager.GetEntities())
+                        group.FilterEntitySilent(entity);*/
+                }
             }
 
             return group;
@@ -73,18 +81,14 @@ namespace EcsLte
                 _groupLookup.Remove(group.Filter);
             }
 
-            ParallelRunner.RunParallelForEach(
-                group.Filter.Indexes,
-                componentIndex =>
+            foreach (var componentIndex in group.Filter.Indexes)
+            {
+                var groups = _groupComponentIndexes[componentIndex];
+                lock (groups)
                 {
-                    var groups = _groupComponentIndexes[componentIndex];
-                    lock (groups)
-                    {
-                        groups.Remove(group);
-                    }
-
-                    ;
-                });
+                    groups.Remove(group);
+                }
+            }
 
             AnyGroupDestroyed.Invoke(group);
         }
@@ -95,23 +99,22 @@ namespace EcsLte
             _entityManager.AnyComponentRemovedEvent.Unsubscribe(OnEntityComponentAddedOrRemoved);
             _entityManager.AnyComponentReplacedEvent.Unsubscribe(OnEntityComponentReplaced);
 
-            ParallelRunner.RunParallelForEach(_groupLookup.Values, group => group.InternalDestroy());
+            foreach (var group in _groupLookup.Values)
+                group.InternalDestroy();
             _groupLookup.Clear();
         }
 
         private void OnEntityComponentAddedOrRemoved(Entity entity, int componentPoolIndex, IComponent component)
         {
-            ParallelRunner.RunParallelForEach(
-                _groupComponentIndexes[componentPoolIndex],
-                group => group.FilterEntity(entity, componentPoolIndex, component));
+            foreach (var group in _groupComponentIndexes[componentPoolIndex])
+                group.FilterEntity(entity, componentPoolIndex, component);
         }
 
         private void OnEntityComponentReplaced(Entity entity, int componentPoolIndex, IComponent prevComponent,
             IComponent newComponent)
         {
-            ParallelRunner.RunParallelForEach(
-                _groupComponentIndexes[componentPoolIndex],
-                group => group.UpdateEntity(entity, componentPoolIndex, prevComponent, newComponent));
+            foreach (var group in _groupComponentIndexes[componentPoolIndex])
+                group.UpdateEntity(entity, componentPoolIndex, prevComponent, newComponent);
         }
     }
 }

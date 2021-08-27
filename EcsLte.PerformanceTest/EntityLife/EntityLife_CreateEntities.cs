@@ -14,12 +14,10 @@ namespace EcsLte.PerformanceTest
             var a = _world.EntityManager.CreateEntities(TestConsts.EntityLoopCount);
         }
 
-        public override int ParallelRunCount()
-        {
-            return -1;
-        }
+        public override bool CanRunParallel()
+            => false;
 
-        public override void RunParallel(int index, int startIndex, int endIndex)
+        public override void RunParallel()
         {
         }
 
