@@ -1,3 +1,5 @@
+using EcsLte.Utilities;
+
 namespace EcsLte.PerformanceTest
 {
     internal class EntityComponent_RemoveComponent : BasePerformanceTest
@@ -23,14 +25,16 @@ namespace EcsLte.PerformanceTest
                 _world.EntityManager.RemoveComponent<TestComponent1>(_entities[i]);
         }
 
-        public override int ParallelRunCount()
-        {
-            return TestConsts.EntityLoopCount;
-        }
+        public override bool CanRunParallel()
+            => true;
 
-        public override void RunParallel(int index, int startIndex, int endIndex)
+        public override void RunParallel()
         {
-            _world.EntityManager.RemoveComponent<TestComponent1>(_entities[index]);
+            ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
+                index =>
+                {
+                    _world.EntityManager.RemoveComponent<TestComponent1>(_entities[index]);
+                });
         }
 
         public override void PostRun()

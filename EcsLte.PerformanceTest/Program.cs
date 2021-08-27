@@ -28,29 +28,53 @@ namespace EcsLte.PerformanceTest
 
             foreach (var testGrouping in tests)
             {
-                foreach (var test in testGrouping)
-                    Run(test);
-                Console.WriteLine("");
+                if (true)//(testGrouping.Key == "EntityCommandPlayback")
+                {
+                    foreach (var test in testGrouping)
+                        Run(test);
+                    Console.WriteLine("");
+                }
             }
 
-            // Pre Events
             //Name                                                      Time      ParallelTime
-            //EntityComponent_AddComponent:                             201 ms    101 ms    
-            //EntityComponent_GetAllComponents:                         144 ms    146 ms    
-            //EntityComponent_GetComponent:                             62 ms     17 ms     
-            //EntityComponent_RemoveAllComponents:                      96 ms     23 ms     
-            //EntityComponent_RemoveComponent:                          72 ms     23 ms     
-            //EntityComponent_ReplaceComponent:                         198 ms    150 ms    
+            //EntityCommandPlayback_EntityComponent_AddComponent        381 ms    622 ms
+            //EntityCommandPlayback_EntityComponent_RemoveComponent     287 ms    490 ms
+            //EntityCommandPlayback_EntityComponent_ReplaceComponent    382 ms    619 ms
+            //EntityCommandPlayback_EntityLife_CreateEntities           171 ms    -1 ms
+            //EntityCommandPlayback_EntityLife_CreateEntity             235 ms    555 ms
+            //EntityCommandPlayback_EntityLife_DestroyEntities          189 ms    -1 ms
+            //EntityCommandPlayback_EntityLife_DestroyEntity            325 ms    572 ms
 
-            //EntityLife_CreateEntities:                                573 ms    -1 ms     
-            //EntityLife_CreateEntity:                                  516 ms    689 ms    
-            //EntityLife_DestroyAllEntities:                            198 ms    -1 ms     
-            //EntityLife_DestroyEntities:                               150 ms    -1 ms     
-            //EntityLife_DestroyEntity:                                 169 ms    404 ms    
-            //EntityLife_HasEntity:                                     32 ms     17 ms     
+            //EntityComponent_AddComponent                              245 ms    181 ms
+            //EntityComponent_GetAllComponents                          196 ms    81 ms
+            //EntityComponent_GetComponent                              68 ms     6 ms
+            //EntityComponent_RemoveAllComponents                       258 ms    131 ms
+            //EntityComponent_RemoveComponent                           120 ms    52 ms
+            //EntityComponent_ReplaceComponent                          270 ms    190 ms
 
-            //Filter_Equals:                                            11 ms     6 ms      
-            //Filter_Filtered:                                          47 ms     15 ms
+            //EntityLife_CreateEntities                                 76 ms     -1 ms
+            //EntityLife_CreateEntity                                   119 ms    801 ms
+            //EntityLife_DestroyEntities                                191 ms    -1 ms
+            //EntityLife_DestroyEntity                                  194 ms    400 ms
+            //EntityLife_HasEntity                                      34 ms     4 ms
+
+            //Filter_Equals                                             15 ms     2 ms
+            //Filter_Filtered                                           220 ms    393 ms
+
+            //Group_ContainsEntity                                      20 ms     3 ms
+            //Group_CreateGet                                           71 ms     255 ms
+            //Group_CreateGetAfterEntities                              755 ms    1055 ms
+            //Group_CreateGetBeforeEntities                             895 ms    957 ms
+
+            //Misc_ConcurrentDic_TryAdd                                 0 ms      175 ms
+            //Misc_ConcurrentDic_TryGetValue_DoesHave                   0 ms      2 ms
+            //Misc_ConcurrentDic_TryGetValue_DoesntHave                 0 ms      1 ms
+            //Misc_ListLock                                             0 ms      153 ms
+
+
+
+
+
 
             Console.WriteLine("Press any key to continue...");
 #if RELEASE
@@ -60,6 +84,7 @@ namespace EcsLte.PerformanceTest
 
         private static void Run(Type testType)
         {
+            //Console.WriteLine($"//{testType.Name}");
             var loops = 5;
             var times = new long[loops];
             var paralleltimes = new long[loops];
@@ -79,14 +104,15 @@ namespace EcsLte.PerformanceTest
                 avgTime += _stopwatch.ElapsedMilliseconds;
 
                 test = (BasePerformanceTest)Activator.CreateInstance(testType);
-                test.PreRun();
-                var parallelCount = test.ParallelRunCount();
-                if (parallelCount > 0)
+                var parallelCount = test.CanRunParallel();
+                if (test.CanRunParallel())
                 {
+                    test.PreRun();
                     _stopwatch.Reset();
                     _stopwatch.Start();
-                    ParallelRunner.RunParallel(parallelCount, test.RunParallel);
+                    test.RunParallel();
                     _stopwatch.Stop();
+                    test.PostRun();
 
                     paralleltimes[i] = _stopwatch.ElapsedMilliseconds;
                     avgParallelTime += _stopwatch.ElapsedMilliseconds;
@@ -96,34 +122,21 @@ namespace EcsLte.PerformanceTest
                     avgParallelTime = -1;
                 }
 
-                test.PostRun();
-
-#if RELEASE
-                string timesText = "";
-                for (int j = 0; j < loops; j++)
-                    timesText += $"({times[j]} / {paralleltimes[j]}) ".PadRight(14);
-                Console.SetCursorPosition(0, Console.CursorTop);
-                Console.Write(
-                    ($"//{testType.Name}: ") + timesText, 0);
-#endif
+                /*Console.WriteLine(
+                    "//".PadRight(60) +
+                    $"{times[i]} ms".PadRight(10) +
+                    $"{paralleltimes[i]} ms");*/
             }
 
             avgTime /= loops;
             avgParallelTime = avgParallelTime > 0
                 ? avgParallelTime /= loops
                 : -1;
-
-            // Clear line
-#if RELEASE
-            Console.SetCursorPosition(0, Console.CursorTop);
-            Console.Write("".PadRight(110));
-
-            Console.SetCursorPosition(0, Console.CursorTop);
-#endif
             Console.WriteLine(
-                $"//{testType.Name}: ".PadRight(60) +
+                //"//" + new String('-', 57) + " " +
+                $"//{testType.Name}".PadRight(60) +
                 $"{avgTime} ms".PadRight(10) +
-                $"{avgParallelTime} ms".PadRight(10));
+                $"{avgParallelTime} ms");
         }
     }
 }

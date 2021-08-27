@@ -10,7 +10,7 @@ namespace EcsLte
 {
     public partial struct Filter : IEquatable<Filter>
     {
-        private static HashSet<int> _distinctIndicesBuffer;
+        private static HashSet<int> _distinctIndicesBuffer = new HashSet<int>();
 
         private int _hashCode;
         private int[] _indexes;
@@ -73,13 +73,6 @@ namespace EcsLte
             return string.Join(", ", Indexes);
         }
 
-        internal bool Filtered(EntityInfo entityInfo)
-        {
-            return FilteredAllOf(entityInfo) &&
-                   FilteredAnyOf(entityInfo) &&
-                   FilteredNoneOf(entityInfo);
-        }
-
         private static int[] MergeDistinctIndex(int[] indices, int index)
         {
             if (indices == null)
@@ -101,69 +94,25 @@ namespace EcsLte
 
         private static int[] MergeDistinctIndices(params int[][] allIndices)
         {
-            if (_distinctIndicesBuffer == null)
-                _distinctIndicesBuffer = new HashSet<int>();
-            else
+            int[] mergedIndices = null;
+            lock (_distinctIndicesBuffer)
+            {
                 _distinctIndicesBuffer.Clear();
+                foreach (var indices in allIndices)
+                {
+                    if (indices != null)
+                    {
+                        foreach (var index in indices)
+                            _distinctIndicesBuffer.Add(index);
+                    }
+                }
 
-            foreach (var indices in allIndices)
-                if (indices != null)
-                    foreach (var index in indices)
-                        _distinctIndicesBuffer.Add(index);
-
-            var mergedIndices = new int[_distinctIndicesBuffer.Count];
-            _distinctIndicesBuffer.CopyTo(mergedIndices);
+                mergedIndices = new int[_distinctIndicesBuffer.Count];
+                _distinctIndicesBuffer.CopyTo(mergedIndices);
+            }
             Array.Sort(mergedIndices);
 
             return mergedIndices;
-        }
-
-        private bool FilteredAllOf(EntityInfo entityInfo)
-        {
-            if (AllOfIndexes == null || AllOfIndexes.Length == 0)
-                return true;
-
-            var isOk = true;
-            foreach (var index in AllOfIndexes)
-                if (entityInfo[index] == null)
-                {
-                    isOk = false;
-                    break;
-                }
-
-            return isOk;
-        }
-
-        private bool FilteredAnyOf(EntityInfo entityInfo)
-        {
-            if (AnyOfIndexes == null || AnyOfIndexes.Length == 0)
-                return true;
-
-            var isOk = false;
-            foreach (var index in AnyOfIndexes)
-                if (entityInfo[index] != null)
-                {
-                    isOk = true;
-                    break;
-                }
-
-            return isOk;
-        }
-
-        private bool FilteredNoneOf(EntityInfo entityInfo)
-        {
-            if (NoneOfIndexes == null || NoneOfIndexes.Length == 0)
-                return true;
-
-            var isOk = true;
-            foreach (var index in NoneOfIndexes)
-                if (entityInfo[index] != null)
-                {
-                    isOk = false;
-                    break;
-                }
-
-            return isOk;
         }
 
         private void GenerateHasCode()

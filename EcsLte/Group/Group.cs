@@ -1,4 +1,5 @@
-using System.Collections.Generic;
+using System.Linq;
+using System.Collections.Concurrent;
 using EcsLte.Events;
 using EcsLte.Exceptions;
 using EcsLte.Utilities;
@@ -7,13 +8,13 @@ namespace EcsLte
 {
     public class Group
     {
-        private readonly HashSet<Entity> _entities;
+        private readonly ConcurrentDictionary<int, Entity> _entities;
         private readonly DataCache<Entity[]> _entitiesCache;
         private readonly EntityManager _entityManager;
 
         internal Group(GroupManager groupManager, Filter filter)
         {
-            _entities = new HashSet<Entity>();
+            _entities = new ConcurrentDictionary<int, Entity>();
             _entitiesCache = new DataCache<Entity[]>(UpdateEntitiesCache);
             _entityManager = groupManager.CurrentWorld.EntityManager;
 
@@ -41,7 +42,7 @@ namespace EcsLte
             if (IsDestroyed)
                 throw new GroupIsDestroyedException(this);
 
-            return _entities.Contains(entity);
+            return _entities.TryGetValue(entity.Id, out var value);
         }
 
         public bool Equals(Group other)
@@ -59,23 +60,21 @@ namespace EcsLte
         internal void FilterEntitySilent(Entity entity)
         {
             if (_entityManager.EntityIsFiltered(entity, Filter))
-                lock (_entities)
-                {
-                    if (_entities.Add(entity))
-                        _entitiesCache.IsDirty = true;
-                }
-            else if (_entities.Contains(entity))
-                lock (_entities)
-                {
-                    if (_entities.Remove(entity))
-                        _entitiesCache.IsDirty = true;
-                }
+            {
+                if (_entities.TryAdd(entity.Id, entity))
+                    _entitiesCache.IsDirty = true;
+            }
+            else if (ContainsEntity(entity))
+            {
+                if (_entities.TryRemove(entity.Id, out var value))
+                    _entitiesCache.IsDirty = true;
+            }
         }
 
         internal void UpdateEntity(Entity entity, int componentPoolIndex, IComponent prevComponent,
             IComponent newComponent)
         {
-            if (_entities.Contains(entity))
+            if (ContainsEntity(entity))
                 EntityUpdatedEvent.Invoke(entity, componentPoolIndex, prevComponent, newComponent);
         }
 
@@ -85,23 +84,18 @@ namespace EcsLte
                 throw new GroupIsDestroyedException(this);
 
             if (_entityManager.EntityIsFiltered(entity, Filter))
-                lock (_entities)
+            {
+                if (_entities.TryAdd(entity.Id, entity))
                 {
-                    if (_entities.Add(entity))
-                    {
-                        _entitiesCache.IsDirty = true;
-                        EntityAddedEvent.Invoke(entity, componentPoolIndex, component);
-                    }
+                    _entitiesCache.IsDirty = true;
+                    EntityAddedEvent.Invoke(entity, componentPoolIndex, component);
                 }
-            else if (_entities.Contains(entity))
-                lock (_entities)
-                {
-                    if (_entities.Remove(entity))
-                    {
-                        _entitiesCache.IsDirty = true;
-                        EntityRemovedEvent.Invoke(entity, componentPoolIndex, component);
-                    }
-                }
+            }
+            else if (_entities.TryRemove(entity.Id, out var value))
+            {
+                _entitiesCache.IsDirty = true;
+                EntityRemovedEvent.Invoke(entity, componentPoolIndex, component);
+            }
         }
 
         internal void InternalDestroy()
@@ -114,10 +108,10 @@ namespace EcsLte
 
         private Entity[] UpdateEntitiesCache()
         {
-            var entites = new Entity[_entities.Count];
-            _entities.CopyTo(entites);
-
-            return entites;
+            lock (_entities)
+            {
+                return _entities.Values.ToArray();
+            }
         }
     }
 }

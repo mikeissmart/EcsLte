@@ -1,3 +1,5 @@
+using EcsLte.Utilities;
+
 namespace EcsLte.PerformanceTest
 {
     internal class EntityComponent_ReplaceComponent : BasePerformanceTest
@@ -23,14 +25,16 @@ namespace EcsLte.PerformanceTest
                 _world.EntityManager.ReplaceComponent(_entities[i], new TestComponent1());
         }
 
-        public override int ParallelRunCount()
-        {
-            return TestConsts.EntityLoopCount;
-        }
+        public override bool CanRunParallel()
+            => true;
 
-        public override void RunParallel(int index, int startIndex, int endIndex)
+        public override void RunParallel()
         {
-            _world.EntityManager.ReplaceComponent(_entities[index], new TestComponent1());
+            ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
+                index =>
+                {
+                    _world.EntityManager.ReplaceComponent(_entities[index], new TestComponent1());
+                });
         }
 
         public override void PostRun()

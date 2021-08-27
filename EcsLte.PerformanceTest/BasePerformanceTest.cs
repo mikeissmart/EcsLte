@@ -6,9 +6,9 @@ namespace EcsLte.PerformanceTest
 
         public abstract void Run();
 
-        public abstract int ParallelRunCount();
+        public abstract bool CanRunParallel();
 
-        public abstract void RunParallel(int index, int startIndex, int endIndex);
+        public abstract void RunParallel();
 
         public abstract void PostRun();
     }
