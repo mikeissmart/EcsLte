@@ -20,25 +20,20 @@ namespace EcsLte.UnitTest.EntityManangerTests
         [TestMethod]
         public void Create()
         {
-            var eventCalled = false;
             var world = World.DefaultWorld;
 
-            world.EntityManager.AnyEntityCreated.Subscribe(entity => eventCalled = true);
             var entity = world.EntityManager.CreateEntity();
 
             Assert.IsTrue(world.EntityManager.HasEntity(entity));
             Assert.IsTrue(entity.Id == 1);
-            Assert.IsTrue(eventCalled);
         }
 
         [TestMethod]
         public void Create_Parallel()
         {
-            var eventCalled = 0;
             var world = World.DefaultWorld;
             var entities = new Entity[TestConsts.EntityLoopCount];
 
-            world.EntityManager.AnyEntityCreated.Subscribe(entity => Interlocked.Increment(ref eventCalled));
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
                 index => entities[index] = world.EntityManager.CreateEntity());
 
@@ -48,8 +43,6 @@ namespace EcsLte.UnitTest.EntityManangerTests
                 Assert.IsTrue(world.EntityManager.HasEntity(entities[i]));
                 Assert.IsTrue(entities[i].Id == i + 1);
             }
-
-            Assert.IsTrue(eventCalled == TestConsts.EntityLoopCount);
         }
 
         [TestMethod]
@@ -70,10 +63,8 @@ namespace EcsLte.UnitTest.EntityManangerTests
         [TestMethod]
         public void CreateEntities()
         {
-            var eventCalled = 0;
             var world = World.DefaultWorld;
 
-            world.EntityManager.AnyEntityCreated.Subscribe(entity => eventCalled++);
             var entities = world.EntityManager.CreateEntities(2);
 
             Assert.IsTrue(world.EntityManager.HasEntity(entities[0]));
@@ -81,7 +72,6 @@ namespace EcsLte.UnitTest.EntityManangerTests
             Assert.IsTrue(world.EntityManager.HasEntity(entities[1]));
             Assert.IsTrue(entities[1].Id == 2);
             Assert.IsTrue(entities[0] != entities[1]);
-            Assert.IsTrue(eventCalled == 2);
         }
 
         [TestMethod]
@@ -118,46 +108,37 @@ namespace EcsLte.UnitTest.EntityManangerTests
         [TestMethod]
         public void Destroy()
         {
-            var eventCalled = false;
             var world = World.DefaultWorld;
             var entity = world.EntityManager.CreateEntity();
 
-            world.EntityManager.AnyEntityWillBeDestroyedEvent.Subscribe(entity => eventCalled = true);
             world.EntityManager.DestroyEntity(entity);
 
             Assert.IsFalse(world.EntityManager.HasEntity(entity));
-            Assert.IsTrue(eventCalled);
         }
 
         [TestMethod]
         public void Destroy_Parallel()
         {
-            var eventCalled = 0;
             var world = World.DefaultWorld;
             var entites = world.EntityManager.CreateEntities(TestConsts.EntityLoopCount);
 
-            world.EntityManager.AnyEntityWillBeDestroyedEvent.Subscribe(entity => Interlocked.Increment(ref eventCalled));
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
                 index => world.EntityManager.DestroyEntity(entites[index]));
 
             for (int i = 0; i < TestConsts.EntityLoopCount; i++)
                 Assert.IsFalse(world.EntityManager.HasEntity(entites[i]));
-            Assert.IsTrue(eventCalled == TestConsts.EntityLoopCount);
         }
 
         [TestMethod]
         public void DestroyEntities()
         {
-            var eventCalled = 0;
             var world = World.DefaultWorld;
             var entities = world.EntityManager.CreateEntities(2);
 
-            world.EntityManager.AnyEntityWillBeDestroyedEvent.Subscribe(entity => eventCalled++);
             world.EntityManager.DestroyEntities(entities);
 
             Assert.IsFalse(world.EntityManager.HasEntity(entities[0]));
             Assert.IsFalse(world.EntityManager.HasEntity(entities[1]));
-            Assert.IsTrue(eventCalled == 2);
         }
 
         [TestMethod]

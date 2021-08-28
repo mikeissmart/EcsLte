@@ -63,18 +63,13 @@ namespace EcsLte.PerformanceTest
 
             //Group_ContainsEntity                                      20 ms     3 ms
             //Group_CreateGet                                           71 ms     255 ms
-            //Group_CreateGetAfterEntities                              755 ms    1055 ms
-            //Group_CreateGetBeforeEntities                             895 ms    957 ms
+            //Group_CreateGetAfterEntities                              329 ms    622 ms
+            //Group_CreateGetBeforeEntities                             566 ms    770 ms
 
             //Misc_ConcurrentDic_TryAdd                                 0 ms      175 ms
             //Misc_ConcurrentDic_TryGetValue_DoesHave                   0 ms      2 ms
             //Misc_ConcurrentDic_TryGetValue_DoesntHave                 0 ms      1 ms
             //Misc_ListLock                                             0 ms      153 ms
-
-
-
-
-
 
             Console.WriteLine("Press any key to continue...");
 #if RELEASE

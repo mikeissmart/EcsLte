@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using EcsLte.Events;
 using EcsLte.Exceptions;
 using EcsLte.Utilities;
 
@@ -9,29 +7,21 @@ namespace EcsLte
 {
     public class GroupManager
     {
-        private readonly EntityManager _entityManager;
         private readonly List<Group>[] _groupComponentIndexes;
         private readonly Dictionary<Filter, Group> _groupLookup;
 
-        internal GroupManager(EntityManager entityManager)
+        internal GroupManager(World world)
         {
             _groupLookup = new Dictionary<Filter, Group>();
             _groupComponentIndexes = new List<Group>[ComponentIndexes.Instance.Count];
-            _entityManager = entityManager;
 
-            CurrentWorld = _entityManager.CurrentWorld;
+            CurrentWorld = world;
 
             for (var i = 0; i < ComponentIndexes.Instance.Count; i++)
                 _groupComponentIndexes[i] = new List<Group>();
-
-            _entityManager.AnyComponentAddedEvent.Subscribe(OnEntityComponentAddedOrRemoved);
-            _entityManager.AnyComponentRemovedEvent.Subscribe(OnEntityComponentAddedOrRemoved);
-            _entityManager.AnyComponentReplacedEvent.Subscribe(OnEntityComponentReplaced);
         }
 
         public World CurrentWorld { get; }
-
-        internal GroupEvent AnyGroupDestroyed { get; private set; }
 
         public Group GetGroup(Filter filter)
         {
@@ -52,11 +42,11 @@ namespace EcsLte
                             _groupComponentIndexes[index].Add(group);
                     }
 
-                    ParallelRunner.RunParallelForEach(_entityManager.GetEntities(),
-                        entity => group.FilterEntitySilent(entity));
+                    /*ParallelRunner.RunParallelForEach(CurrentWorld.EntityManager.GetEntities(),
+                        entity => group.FilterEntity(entity));*/
 
-                    /*foreach (var entity in _entityManager.GetEntities())
-                        group.FilterEntitySilent(entity);*/
+                    foreach (var entity in CurrentWorld.EntityManager.GetEntities())
+                        group.FilterEntity(entity);
                 }
             }
 
@@ -89,32 +79,25 @@ namespace EcsLte
                     groups.Remove(group);
                 }
             }
+        }
 
-            AnyGroupDestroyed.Invoke(group);
+        internal void OnEntityComponentAddedOrRemoved(Entity entity, int componentPoolIndex)
+        {
+            foreach (var group in _groupComponentIndexes[componentPoolIndex])
+                group.FilterEntity(entity);
+        }
+
+        internal void OnEntityComponentReplaced(Entity entity, int componentPoolIndex)
+        {
+            foreach (var group in _groupComponentIndexes[componentPoolIndex])
+                group.UpdateEntity(entity);
         }
 
         internal void InternalDestroy()
         {
-            _entityManager.AnyComponentAddedEvent.Unsubscribe(OnEntityComponentAddedOrRemoved);
-            _entityManager.AnyComponentRemovedEvent.Unsubscribe(OnEntityComponentAddedOrRemoved);
-            _entityManager.AnyComponentReplacedEvent.Unsubscribe(OnEntityComponentReplaced);
-
             foreach (var group in _groupLookup.Values)
                 group.InternalDestroy();
             _groupLookup.Clear();
-        }
-
-        private void OnEntityComponentAddedOrRemoved(Entity entity, int componentPoolIndex, IComponent component)
-        {
-            foreach (var group in _groupComponentIndexes[componentPoolIndex])
-                group.FilterEntity(entity, componentPoolIndex, component);
-        }
-
-        private void OnEntityComponentReplaced(Entity entity, int componentPoolIndex, IComponent prevComponent,
-            IComponent newComponent)
-        {
-            foreach (var group in _groupComponentIndexes[componentPoolIndex])
-                group.UpdateEntity(entity, componentPoolIndex, prevComponent, newComponent);
         }
     }
 }

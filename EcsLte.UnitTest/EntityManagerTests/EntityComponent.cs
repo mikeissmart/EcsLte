@@ -17,19 +17,12 @@ namespace EcsLte.UnitTest.EntityManangerTests
         [TestMethod]
         public void AddComponent()
         {
-            var eventCalled = false;
             var world = World.DefaultWorld;
             var entity = world.EntityManager.CreateEntity();
-            world.EntityManager.AnyComponentAddedEvent.Subscribe(
-                (entity, componentPoolIndex, component) =>
-                {
-                    eventCalled = true;
-                });
 
             world.EntityManager.AddComponent(entity, new TestComponent1());
 
             Assert.IsTrue(world.EntityManager.HasComponent<TestComponent1>(entity));
-            Assert.IsTrue(eventCalled);
         }
 
         [TestMethod]
@@ -68,33 +61,20 @@ namespace EcsLte.UnitTest.EntityManangerTests
         [TestMethod]
         public void RemoveComponent()
         {
-            var eventCalled = false;
             var world = World.DefaultWorld;
             var entity = world.EntityManager.CreateEntity();
-            world.EntityManager.AnyComponentRemovedEvent.Subscribe(
-                (entity, componentPoolIndex, component) =>
-                {
-                    eventCalled = true;
-                });
 
             world.EntityManager.AddComponent(entity, new TestComponent1());
             world.EntityManager.RemoveComponent<TestComponent1>(entity);
 
             Assert.IsFalse(world.EntityManager.HasComponent<TestComponent1>(entity));
-            Assert.IsTrue(eventCalled);
         }
 
         [TestMethod]
         public void RemoveAllComponents()
         {
-            var eventCalled = 0;
             var world = World.DefaultWorld;
             var entity = world.EntityManager.CreateEntity();
-            world.EntityManager.AnyComponentRemovedEvent.Subscribe(
-                (entity, componentPoolIndex, component) =>
-                {
-                    eventCalled++;
-                });
 
             world.EntityManager.AddComponent(entity, new TestComponent1());
             world.EntityManager.AddComponent(entity, new TestComponent2());
@@ -102,7 +82,6 @@ namespace EcsLte.UnitTest.EntityManangerTests
 
             Assert.IsFalse(world.EntityManager.HasComponent<TestComponent1>(entity));
             Assert.IsFalse(world.EntityManager.HasComponent<TestComponent2>(entity));
-            Assert.IsTrue(eventCalled == 2);
         }
 
         [TestMethod]
@@ -118,20 +97,13 @@ namespace EcsLte.UnitTest.EntityManangerTests
         [TestMethod]
         public void ReplaceComponent()
         {
-            var eventCalled = false;
             var world = World.DefaultWorld;
             var entity = world.EntityManager.CreateEntity();
-            world.EntityManager.AnyComponentReplacedEvent.Subscribe(
-                (entity, componentPoolIndex, preComponent, newComponent) =>
-                {
-                    eventCalled = true;
-                });
 
             world.EntityManager.AddComponent(entity, new TestComponent1());
             world.EntityManager.ReplaceComponent(entity, new TestComponent1 { Prop = 1 });
 
             Assert.IsTrue(world.EntityManager.GetComponent<TestComponent1>(entity).Prop == 1);
-            Assert.IsTrue(eventCalled);
         }
     }
 }

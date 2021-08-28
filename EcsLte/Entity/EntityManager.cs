@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using EcsLte.Events;
 using EcsLte.Exceptions;
 using EcsLte.Utilities;
 
@@ -29,11 +26,6 @@ namespace EcsLte
             _entityCommandPlaybacks = new Dictionary<string, EntityCommandPlayback>();
 
             CurrentWorld = world;
-            AnyEntityCreated = new EntityEvent();
-            AnyEntityWillBeDestroyedEvent = new EntityEvent();
-            AnyComponentAddedEvent = new EntityComponentChangedEvent();
-            AnyComponentRemovedEvent = new EntityComponentChangedEvent();
-            AnyComponentReplacedEvent = new EntityComponentReplacedEvent();
 
             // Create null entity
             CreateEntity();
@@ -44,12 +36,6 @@ namespace EcsLte
 
         public World CurrentWorld { get; }
         public EntityCommandPlayback DefaultEntityCommandPlayback { get; }
-
-        internal EntityEvent AnyEntityCreated { get; }
-        internal EntityEvent AnyEntityWillBeDestroyedEvent { get; }
-        internal EntityComponentChangedEvent AnyComponentAddedEvent { get; }
-        internal EntityComponentChangedEvent AnyComponentRemovedEvent { get; }
-        internal EntityComponentReplacedEvent AnyComponentReplacedEvent { get; }
 
         public EntityCommandPlayback CreateOrGetEntityCommand(string name)
         {
@@ -92,7 +78,7 @@ namespace EcsLte
             if (CurrentWorld.IsDestroyed)
                 throw new WorldIsDestroyedException(CurrentWorld);
 
-            return _entitiesCache.Data;
+            return _entitiesCache.CachedData;
         }
 
         public Entity CreateEntity()
@@ -104,8 +90,6 @@ namespace EcsLte
                 _entities[entity.Id] = entity;
                 _entitiesCache.IsDirty = true;
             }
-
-            AnyEntityCreated.Invoke(entity);
 
             return entity;
         }
@@ -121,9 +105,6 @@ namespace EcsLte
                 _entitiesCache.IsDirty = true;
             }
 
-            foreach (var entity in entities)
-                AnyEntityCreated.Invoke(entity);
-
             return entities;
         }
 
@@ -135,8 +116,6 @@ namespace EcsLte
                 throw new EntityDoesNotExistException(CurrentWorld, entity);
 
             RemoveAllComponents(entity);
-
-            AnyEntityWillBeDestroyedEvent.Invoke(entity);
 
             lock (_reuseableEntities)
             { _reuseableEntities.Enqueue(entity); }
@@ -158,8 +137,6 @@ namespace EcsLte
                     throw new EntityDoesNotExistException(CurrentWorld, entity);
 
                 RemoveAllComponents(entity);
-
-                AnyEntityWillBeDestroyedEvent.Invoke(entity);
 
                 lock (_reuseableEntities)
                 {
@@ -219,7 +196,7 @@ namespace EcsLte
             var componentIndex = ComponentIndex<TComponent>.Index;
             _componentPools[componentIndex][entity.Id] = component;
 
-            AnyComponentAddedEvent.Invoke(entity, componentIndex, component);
+            CurrentWorld.GroupManager.OnEntityComponentAddedOrRemoved(entity, componentIndex);
         }
 
         public void ReplaceComponent<TComponent>(Entity entity, TComponent newComponent)
@@ -236,7 +213,7 @@ namespace EcsLte
                 var prevComponent = componentPool[entity.Id];
                 componentPool[entity.Id] = newComponent;
 
-                AnyComponentReplacedEvent.Invoke(entity, componentIndex, prevComponent, newComponent);
+                CurrentWorld.GroupManager.OnEntityComponentReplaced(entity, componentIndex);
             }
         }
 
@@ -250,7 +227,7 @@ namespace EcsLte
             var component = componentPool[entity.Id];
             componentPool[entity.Id] = null;
 
-            AnyComponentRemovedEvent.Invoke(entity, componentIndex, component);
+            CurrentWorld.GroupManager.OnEntityComponentAddedOrRemoved(entity, componentIndex);
         }
 
         public void RemoveAllComponents(Entity entity)
@@ -258,7 +235,6 @@ namespace EcsLte
             if (!HasEntity(entity))
                 throw new EntityDoesNotExistException(CurrentWorld, entity);
 
-            var invokeQueue = new List<Tuple<Entity, int, IComponent>>();
             for (var i = 0; i < _componentPools.Length; i++)
             {
                 var pool = _componentPools[i];
@@ -266,12 +242,9 @@ namespace EcsLte
                 if (component != null)
                 {
                     pool[entity.Id] = null;
-                    invokeQueue.Add(Tuple.Create(entity, i, component));
+                    CurrentWorld.GroupManager.OnEntityComponentAddedOrRemoved(entity, i);
                 }
             }
-
-            foreach (var queue in invokeQueue)
-                AnyComponentRemovedEvent.Invoke(queue.Item1, queue.Item2, queue.Item3);
         }
 
         internal Entity EnqueueEntityFromCommand()
@@ -288,8 +261,6 @@ namespace EcsLte
         {
             _entities[entity.Id] = entity;
             _entitiesCache.IsDirty = true;
-
-            AnyEntityCreated.Invoke(entity);
         }
 
         internal void InternalDestroy()
@@ -300,12 +271,6 @@ namespace EcsLte
             foreach (var pool in _componentPools)
                 pool.Clear();
             _entityCommandPlaybacks.Clear();
-
-            AnyEntityCreated.Clear();
-            AnyEntityWillBeDestroyedEvent.Clear();
-            AnyComponentAddedEvent.Clear();
-            AnyComponentRemovedEvent.Clear();
-            AnyComponentReplacedEvent.Clear();
         }
 
         private Entity LocalCreateEntity()

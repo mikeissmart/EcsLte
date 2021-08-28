@@ -15,10 +15,10 @@ namespace EcsLte
         {
             Name = name;
             EntityManager = new EntityManager(this);
-            GroupManager = new GroupManager(EntityManager);
+            GroupManager = new GroupManager(this);
         }
 
-        public static World[] Worlds => _worldsCache.Data;
+        public static World[] Worlds => _worldsCache.CachedData;
         public static World DefaultWorld { get; set; } = CreateWorld("Default");
 
         public string Name { get; }
