@@ -4,21 +4,21 @@ namespace EcsLte.PerformanceTest
 {
     internal class Filter_Filtered : BasePerformanceTest
     {
-        private Entity _entity;
+        private Entity[] _entities;
         private Filter _filter;
         private World _world;
 
         public override void PreRun()
         {
             _world = World.CreateWorld("Test");
-            _entity = _world.EntityManager.CreateEntity();
+            _entities = _world.EntityManager.CreateEntities(TestConsts.EntityLoopCount);
             _filter = Filter.AllOf<TestComponent1, TestComponent2, TestRecordableComponent1>();
         }
 
         public override void Run()
         {
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                _world.EntityManager.EntityIsFiltered(_entity, _filter);
+                _world.EntityManager.EntityIsFiltered(_entities[i], _filter);
         }
 
         public override bool CanRunParallel()
@@ -29,7 +29,7 @@ namespace EcsLte.PerformanceTest
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
                 index =>
                 {
-                    var result = _world.EntityManager.EntityIsFiltered(_entity, _filter);
+                    var result = _world.EntityManager.EntityIsFiltered(_entities[index], _filter);
                 });
         }
 

@@ -8,11 +8,11 @@ namespace EcsLte
     public class GroupManager
     {
         private readonly List<Group>[] _groupComponentIndexes;
-        private readonly Dictionary<Filter, Group> _groupLookup;
+        private readonly Dictionary<Filter, Group> _groups;
 
         internal GroupManager(World world)
         {
-            _groupLookup = new Dictionary<Filter, Group>();
+            _groups = new Dictionary<Filter, Group>();
             _groupComponentIndexes = new List<Group>[ComponentIndexes.Instance.Count];
 
             CurrentWorld = world;
@@ -29,12 +29,12 @@ namespace EcsLte
                 throw new WorldIsDestroyedException(CurrentWorld);
 
             Group group;
-            lock (_groupLookup)
+            lock (_groups)
             {
-                if (!_groupLookup.TryGetValue(filter, out group))
+                if (!_groups.TryGetValue(filter, out group))
                 {
                     group = new Group(this, filter);
-                    _groupLookup.Add(filter, group);
+                    _groups.Add(filter, group);
 
                     lock (_groupComponentIndexes)
                     {
@@ -42,11 +42,8 @@ namespace EcsLte
                             _groupComponentIndexes[index].Add(group);
                     }
 
-                    /*ParallelRunner.RunParallelForEach(CurrentWorld.EntityManager.GetEntities(),
-                        entity => group.FilterEntity(entity));*/
-
                     foreach (var entity in CurrentWorld.EntityManager.GetEntities())
-                        group.FilterEntity(entity);
+                        group.FilterEntity(entity, 0, false);
                 }
             }
 
@@ -66,9 +63,9 @@ namespace EcsLte
 
             group.InternalDestroy();
 
-            lock (_groupLookup)
+            lock (_groups)
             {
-                _groupLookup.Remove(group.Filter);
+                _groups.Remove(group.Filter);
             }
 
             foreach (var componentIndex in group.Filter.Indexes)
@@ -84,20 +81,20 @@ namespace EcsLte
         internal void OnEntityComponentAddedOrRemoved(Entity entity, int componentPoolIndex)
         {
             foreach (var group in _groupComponentIndexes[componentPoolIndex])
-                group.FilterEntity(entity);
+                group.FilterEntity(entity, componentPoolIndex, false);
         }
 
         internal void OnEntityComponentReplaced(Entity entity, int componentPoolIndex)
         {
             foreach (var group in _groupComponentIndexes[componentPoolIndex])
-                group.UpdateEntity(entity);
+                group.UpdateEntity(entity, componentPoolIndex);
         }
 
         internal void InternalDestroy()
         {
-            foreach (var group in _groupLookup.Values)
+            foreach (var group in _groups.Values)
                 group.InternalDestroy();
-            _groupLookup.Clear();
+            _groups.Clear();
         }
     }
 }

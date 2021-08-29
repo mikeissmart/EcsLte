@@ -3,52 +3,79 @@ using System.Linq;
 using System.Collections.Concurrent;
 using EcsLte.Exceptions;
 using EcsLte.Utilities;
+using System;
 
 namespace EcsLte
 {
     public class Group
     {
-        private readonly Dictionary<int, Entity> _entities;
-        /*private readonly Dictionary<int, Entity> _newlyAddedEntities;
-        private readonly Dictionary<int, Entity> _newlyRemoveEntities;
-        private readonly Dictionary<int, Entity> _newlyUpdatedEntities;*/
-        private readonly DataCache<Entity[]> _entitiesCache;
-        /*private readonly DataCache<Entity[]> _newlyAddedEntitiesCache;
-        private readonly DataCache<Entity[]> _newlyRemovedEntitiesCache;
-        private readonly DataCache<Entity[]> _newlyUpdatedEntitiesCache;*/
+        private readonly DataCache<Dictionary<int, Entity>, Entity[]> _entities;
+        private readonly Dictionary<CollectorTrigger, Collector> _collectors;
+        private readonly List<Collector>[] _collectorCommponentIndexes;
 
         internal Group(GroupManager groupManager, Filter filter)
         {
-            _entities = new Dictionary<int, Entity>();
-            /*_newlyAddedEntities = new Dictionary<int, Entity>();
-            _newlyRemoveEntities = new Dictionary<int, Entity>();
-            _newlyUpdatedEntities = new Dictionary<int, Entity>();*/
-            _entitiesCache = new DataCache<Entity[]>(UpdateEntitiesCache);
-            /*_newlyAddedEntitiesCache = new DataCache<Entity[]>(UpdateAddedEntitiesCache);
-            _newlyRemovedEntitiesCache = new DataCache<Entity[]>(UpdateRemovedEntitiesCache);
-            _newlyUpdatedEntitiesCache = new DataCache<Entity[]>(UpdateUpdatedEntitiesCache);*/
+            _entities = new DataCache<Dictionary<int, Entity>, Entity[]>(new Dictionary<int, Entity>(), UpdateEntitiesCache);
+            _collectors = new Dictionary<CollectorTrigger, Collector>();
+            _collectorCommponentIndexes = new List<Collector>[ComponentIndexes.Instance.Count];
 
             CurrentWorld = groupManager.CurrentWorld;
             Filter = filter;
+
+            for (var i = 0; i < ComponentIndexes.Instance.Count; i++)
+                _collectorCommponentIndexes[i] = new List<Collector>();
         }
 
         public World CurrentWorld { get; }
         public Filter Filter { get; }
-        public Entity[] Entities => _entitiesCache.CachedData;
-        /*public Entity[] NewlyAddedEntities => _newlyAddedEntitiesCache.CachedData;
-        public Entity[] NewlyRemovedEntities => _newlyRemovedEntitiesCache.CachedData;
-        public Entity[] NewlyUpdatedEntities => _newlyUpdatedEntitiesCache.CachedData;*/
-        public bool IsDestroyed { get; internal set; }
+        public Entity[] Entities => _entities.CachedData;
+        public bool IsDestroyed { get; private set; }
 
-        public bool ContainsEntity(Entity entity)
+        public Collector GetCollector(CollectorTrigger trigger)
         {
-            if (CurrentWorld.IsDestroyed)
-                throw new WorldIsDestroyedException(CurrentWorld);
+            Collector collector;
+            lock (_collectors)
+            {
+                if (!_collectors.TryGetValue(trigger, out collector))
+                {
+                    collector = new Collector(this, trigger);
+                    _collectors.Add(trigger, collector);
+
+                    lock (_collectorCommponentIndexes)
+                    {
+                        foreach (var index in trigger.Indexes)
+                            _collectorCommponentIndexes[index].Add(collector);
+                    }
+                }
+            }
+
+            return collector;
+        }
+
+        public void RemoveCollector(Collector collector)
+        {
             if (IsDestroyed)
                 throw new GroupIsDestroyedException(this);
+            if (collector == null)
+                throw new ArgumentNullException();
+            if (collector.IsDestroyed)
+                throw new CollectorIsDestroyedException(collector);
 
-            lock (_entities)
-            { return _entities.ContainsKey(entity.Id); }
+            collector.InternalDestroy();
+
+            lock (_collectors)
+            {
+                _collectors.Remove(collector.CollectorTrigger);
+            }
+
+            foreach (var componentIndex in collector.CollectorTrigger.Indexes)
+            {
+                var collectors = _collectorCommponentIndexes[componentIndex];
+                lock (collectors)
+                {
+                    collectors.Remove(collector);
+                }
+            }
         }
 
         public bool Equals(Group other)
@@ -63,72 +90,58 @@ namespace EcsLte
             return Filter.ToString();
         }
 
-        internal void FilterEntity(Entity entity)
+        internal void FilterEntity(Entity entity, int componentPoolIndex, bool isSilent)
         {
+            if (IsDestroyed)
+                throw new GroupIsDestroyedException(this);
+
             if (CurrentWorld.EntityManager.EntityIsFiltered(entity, Filter))
             {
                 lock (_entities)
                 {
-                    if (!_entities.ContainsKey(entity.Id))
+                    if (!_entities.UncachedData.ContainsKey(entity.Id))
                     {
-                        _entities.Add(entity.Id, entity);
-                        _entitiesCache.IsDirty = true;
+                        _entities.UncachedData.Add(entity.Id, entity);
+                        _entities.IsDirty = true;
                     }
                 }
-                /*lock (_newlyAddedEntities)
+                if (!isSilent)
                 {
-                    if (!_newlyAddedEntities.ContainsKey(entity.Id))
-                    {
-                        _newlyAddedEntities.Add(entity.Id, entity);
-                        _newlyAddedEntitiesCache.IsDirty = true;
-                    }
-                }*/
+                    foreach (var collector in _collectorCommponentIndexes[componentPoolIndex])
+                        collector.AddedEntity(entity, componentPoolIndex);
+                }
             }
-            else if (ContainsEntity(entity))
+            else
             {
                 lock (_entities)
                 {
-                    _entities.Remove(entity.Id);
-                    _entitiesCache.IsDirty = true;
-                }
-                /*lock (_newlyRemoveEntities)
-                {
-                    if (!_newlyRemoveEntities.ContainsKey(entity.Id))
+                    if (_entities.UncachedData.ContainsKey(entity.Id))
                     {
-                        _newlyRemoveEntities.Add(entity.Id, entity);
-                        _newlyRemovedEntitiesCache.IsDirty = true;
+                        _entities.UncachedData.Remove(entity.Id);
+                        _entities.IsDirty = true;
                     }
-                }*/
+                    if (!isSilent)
+                    {
+                        foreach (var collector in _collectorCommponentIndexes[componentPoolIndex])
+                            collector.RemovedEntity(entity, componentPoolIndex);
+                    }
+                }
             }
         }
 
-        internal void UpdateEntity(Entity entity)
+        internal void UpdateEntity(Entity entity, int componentPoolIndex)
         {
-            if (!ContainsEntity(entity))
-            {
-                FilterEntity(entity);
-                return;
-            }
-            /*lock (_newlyUpdatedEntities)
-            {
-                if (_newlyUpdatedEntities.ContainsKey(entity.Id))
-                {
-                    _newlyUpdatedEntities.Add(entity.Id, entity);
-                    _newlyUpdatedEntitiesCache.IsDirty = true;
-                }
-            }*/
+            foreach (var collector in _collectorCommponentIndexes[componentPoolIndex])
+                collector.UpdatedEntity(entity, componentPoolIndex);
         }
 
         internal void InternalDestroy()
         {
-            _entities.Clear();
-            /*_newlyAddedEntities.Clear();
-            _newlyRemoveEntities.Clear();
-            _newlyUpdatedEntities.Clear();*/
-            _entitiesCache.IsDirty = true;
-            /*_newlyAddedEntitiesCache.IsDirty = true;
-            _newlyRemovedEntitiesCache.IsDirty = true;
-            _newlyUpdatedEntitiesCache.IsDirty = true;*/
+            _entities.UncachedData.Clear();
+            _entities.IsDirty = true;
+            foreach (var collector in _collectors.Values)
+                collector.InternalDestroy();
+            _collectors.Clear();
 
             IsDestroyed = true;
         }
@@ -136,25 +149,7 @@ namespace EcsLte
         private Entity[] UpdateEntitiesCache()
         {
             lock (_entities)
-            { return _entities.Values.ToArray(); }
+            { return _entities.UncachedData.Values.ToArray(); }
         }
-
-        /*private Entity[] UpdateAddedEntitiesCache()
-        {
-            lock (_newlyAddedEntities)
-            { return _newlyAddedEntities.Values.ToArray(); }
-        }
-
-        private Entity[] UpdateRemovedEntitiesCache()
-        {
-            lock (_newlyRemoveEntities)
-            { return _newlyRemoveEntities.Values.ToArray(); }
-        }
-
-        private Entity[] UpdateUpdatedEntitiesCache()
-        {
-            lock (_newlyUpdatedEntities)
-            { return _newlyUpdatedEntities.Values.ToArray(); }
-        }*/
     }
 }

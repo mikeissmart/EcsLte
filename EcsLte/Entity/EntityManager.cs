@@ -8,28 +8,26 @@ namespace EcsLte
 {
     public class EntityManager
     {
-        private readonly List<Entity> _entities;
-        private readonly DataCache<Entity[]> _entitiesCache;
+        private readonly DataCache<Entity[], Entity[]> _entities;
         private readonly Queue<Entity> _reuseableEntities;
-        private readonly List<IComponent>[] _componentPools;
+        private readonly IComponent[][] _componentPools;
         private readonly Dictionary<string, EntityCommandPlayback> _entityCommandPlaybacks;
         private int _nextId;
 
         internal EntityManager(World world)
         {
-            _entities = new List<Entity>();
-            _entitiesCache = new DataCache<Entity[]>(UpdateEntitiesCache);
+            _entities = new DataCache<Entity[], Entity[]>(new Entity[4], UpdateEntitiesCache);
             _reuseableEntities = new Queue<Entity>();
-            _componentPools = new List<IComponent>[ComponentIndexes.Instance.Count];
+            _componentPools = new IComponent[ComponentIndexes.Instance.Count][];
             for (int i = 0; i < _componentPools.Length; i++)
-                _componentPools[i] = new List<IComponent>();
+                _componentPools[i] = new IComponent[4];
             _entityCommandPlaybacks = new Dictionary<string, EntityCommandPlayback>();
 
             CurrentWorld = world;
 
             // Create null entity
             CreateEntity();
-            _entities[0] = Entity.Null;
+            _entities.UncachedData[0] = Entity.Null;
 
             DefaultEntityCommandPlayback = CreateOrGetEntityCommand("Default");
         }
@@ -57,16 +55,16 @@ namespace EcsLte
         {
             if (CurrentWorld.IsDestroyed)
                 return false;
-            if (entity.Id <= 0 || entity.Id >= _entities.Count)
+            if (entity.Id <= 0 || entity.Id >= _entities.UncachedData.Length)
                 return false;
 
-            return _entities[entity.Id] == entity;
+            return _entities.UncachedData[entity.Id] == entity;
         }
 
         public bool EntityIsFiltered(Entity entity, Filter filter)
         {
             if (!HasEntity(entity))
-                throw new EntityDoesNotExistException(CurrentWorld, entity);
+                return false;
 
             return FilteredAllOf(entity, filter) &&
                    FilteredAnyOf(entity, filter) &&
@@ -78,18 +76,15 @@ namespace EcsLte
             if (CurrentWorld.IsDestroyed)
                 throw new WorldIsDestroyedException(CurrentWorld);
 
-            return _entitiesCache.CachedData;
+            return _entities.CachedData;
         }
 
         public Entity CreateEntity()
         {
             var entity = LocalCreateEntity();
 
-            lock (_entities)
-            {
-                _entities[entity.Id] = entity;
-                _entitiesCache.IsDirty = true;
-            }
+            _entities.UncachedData[entity.Id] = entity;
+            _entities.IsDirty = true;
 
             return entity;
         }
@@ -98,12 +93,9 @@ namespace EcsLte
         {
             var entities = LocalCreateEntities(count);
 
-            lock (_entities)
-            {
-                foreach (var entity in entities)
-                    _entities[entity.Id] = entity;
-                _entitiesCache.IsDirty = true;
-            }
+            foreach (var entity in entities)
+                _entities.UncachedData[entity.Id] = entity;
+            _entities.IsDirty = true;
 
             return entities;
         }
@@ -119,11 +111,8 @@ namespace EcsLte
 
             lock (_reuseableEntities)
             { _reuseableEntities.Enqueue(entity); }
-            lock (_entities)
-            {
-                _entities[entity.Id] = Entity.Null;
-                _entitiesCache.IsDirty = true;
-            }
+            _entities.UncachedData[entity.Id] = Entity.Null;
+            _entities.IsDirty = true;
         }
 
         public void DestroyEntities(ICollection<Entity> entities)
@@ -131,27 +120,20 @@ namespace EcsLte
             if (CurrentWorld.IsDestroyed)
                 throw new WorldIsDestroyedException(CurrentWorld);
 
-            foreach (var entity in entities)
+            lock (_reuseableEntities)
             {
-                if (!HasEntity(entity))
-                    throw new EntityDoesNotExistException(CurrentWorld, entity);
-
-                RemoveAllComponents(entity);
-
-                lock (_reuseableEntities)
+                foreach (var entity in entities)
                 {
-                    lock (_entities)
-                    {
-                        lock (_reuseableEntities)
-                        { _reuseableEntities.Enqueue(entity); }
-                        lock (_entities)
-                        {
-                            _entities[entity.Id] = Entity.Null;
-                        }
-                    }
+                    if (!HasEntity(entity))
+                        throw new EntityDoesNotExistException(CurrentWorld, entity);
+
+                    RemoveAllComponents(entity);
+
+                    _reuseableEntities.Enqueue(entity);
+                    _entities.UncachedData[entity.Id] = Entity.Null;
                 }
             }
-            _entitiesCache.IsDirty = true;
+            _entities.IsDirty = true;
         }
 
         public bool HasComponent<TComponent>(Entity entity)
@@ -259,17 +241,17 @@ namespace EcsLte
 
         internal void DequeueEntityFromCommand(Entity entity)
         {
-            _entities[entity.Id] = entity;
-            _entitiesCache.IsDirty = true;
+            _entities.UncachedData[entity.Id] = entity;
+            _entities.IsDirty = true;
         }
 
         internal void InternalDestroy()
         {
-            _entities.Clear();
-            _entitiesCache.IsDirty = true;
+            Array.Clear(_entities.UncachedData, 0, _entities.UncachedData.Length);
+            _entities.IsDirty = true;
             _reuseableEntities.Clear();
             foreach (var pool in _componentPools)
-                pool.Clear();
+                Array.Clear(pool, 0, pool.Length);
             _entityCommandPlaybacks.Clear();
         }
 
@@ -297,12 +279,16 @@ namespace EcsLte
                     Id = _nextId++,
                     Version = 1
                 };
-                _entities.Add(Entity.Null);
-            }
-            lock (_componentPools)
-            {
-                foreach (var pool in _componentPools)
-                    pool.Add(null);
+                if (_entities.UncachedData.Length == _nextId)
+                {
+                    Array.Resize(ref _entities.UncachedData, _entities.UncachedData.Length << 1);
+                    lock (_componentPools)
+                    {
+                        for (int i = 0; i < _componentPools.Length; i++)
+                            Array.Resize(ref _componentPools[i], _componentPools[i].Length << 1);
+                    }
+                }
+                _entities.UncachedData[entity.Id] = Entity.Null;
             }
 
             return entity;
@@ -320,45 +306,40 @@ namespace EcsLte
             {
                 lock (_entities)
                 {
-                    int expandBy = 0;
+                    int newSize = 0;
                     if (_reuseableEntities.Count < count)
                     {
-                        expandBy = count - _reuseableEntities.Count;
-                        _entities.AddRange(
-                            Enumerable.Repeat<Entity>(Entity.Null, expandBy));
+                        newSize = count - _reuseableEntities.Count;
+                        newSize = (int)Math.Pow(2, (int)Math.Log(_entities.UncachedData.Length + newSize, 2) + 1);
+                        Array.Resize(ref _entities.UncachedData, newSize);
 
                         lock (_componentPools)
                         {
-                            foreach (var pool in _componentPools)
-                            {
-                                pool.AddRange(
-                                   Enumerable.Repeat<IComponent>(null, expandBy));
-                            }
+                            for (int i = 0; i < _componentPools.Length; i++)
+                                Array.Resize(ref _componentPools[i], newSize);
                         }
                     }
                     else
-                        expandBy = count;
+                        newSize = count;
 
-                    ParallelRunner.RunParallelFor(count,
-                        index =>
+                    for (int i = 0; i < count; i++)
+                    {
+                        Entity entity;
+                        if (_reuseableEntities.Count > 0)
                         {
-                            Entity entity;
-                            if (_reuseableEntities.Count > 0)
+                            entity = _reuseableEntities.Dequeue();
+                            entity.Version++;
+                        }
+                        else
+                        {
+                            entity = new Entity
                             {
-                                entity = _reuseableEntities.Dequeue();
-                                entity.Version++;
-                            }
-                            else
-                            {
-                                entity = new Entity
-                                {
-                                    Id = _nextId + index,
-                                    Version = 1
-                                };
-                            }
-                            entities[index] = entity;
-                        });
-                    _nextId += expandBy;
+                                Id = _nextId++,
+                                Version = 1
+                            };
+                        }
+                        entities[i] = entity;
+                    }
                 }
             }
 
@@ -411,7 +392,7 @@ namespace EcsLte
         {
             lock (_entities)
             {
-                return _entities
+                return _entities.UncachedData
                     .Where(x => x != Entity.Null)
                     .ToArray();
             }

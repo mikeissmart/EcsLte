@@ -57,7 +57,7 @@ namespace EcsLte.UnitTest.EntityManangerTests
         [TestMethod]
         public void CreateNoWorld()
         {
-            Assert.IsFalse(World.DefaultWorld.EntityManager.HasEntity(new Entity()));
+            Assert.IsFalse(World.DefaultWorld.EntityManager.HasEntity(Entity.Null));
         }
 
         [TestMethod]

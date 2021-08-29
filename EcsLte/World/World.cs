@@ -8,8 +8,7 @@ namespace EcsLte
 {
     public class World
     {
-        private static readonly Dictionary<string, World> _worldsLookup = new Dictionary<string, World>();
-        private static readonly DataCache<World[]> _worldsCache = new DataCache<World[]>(UpdateWorldsCache);
+        private static readonly DataCache<Dictionary<string, World>, World[]> _worlds = new DataCache<Dictionary<string, World>, World[]>(new Dictionary<string, World>(), UpdateWorldsCache);
 
         private World(string name)
         {
@@ -18,7 +17,7 @@ namespace EcsLte
             GroupManager = new GroupManager(this);
         }
 
-        public static World[] Worlds => _worldsCache.CachedData;
+        public static World[] Worlds => _worlds.CachedData;
         public static World DefaultWorld { get; set; } = CreateWorld("Default");
 
         public string Name { get; }
@@ -28,7 +27,7 @@ namespace EcsLte
 
         public static bool HasWorld(string name)
         {
-            return _worldsLookup.ContainsKey(name);
+            return _worlds.UncachedData.ContainsKey(name);
         }
 
         public static World GetWorld(string name)
@@ -36,7 +35,7 @@ namespace EcsLte
             if (!HasWorld(name))
                 throw new WorldDoesNotExistException(name);
 
-            return _worldsLookup[name];
+            return _worlds.UncachedData[name];
         }
 
         public static World CreateWorld(string name)
@@ -47,8 +46,8 @@ namespace EcsLte
                 throw new WorldNameAlreadyExistException(name);
 
             var world = new World(name);
-            _worldsLookup.Add(name, world);
-            _worldsCache.IsDirty = true;
+            _worlds.UncachedData.Add(name, world);
+            _worlds.IsDirty = true;
 
             return world;
         }
@@ -64,8 +63,8 @@ namespace EcsLte
 
             world.SelfDestroy();
 
-            _worldsLookup.Remove(world.Name);
-            _worldsCache.IsDirty = true;
+            _worlds.UncachedData.Remove(world.Name);
+            _worlds.IsDirty = true;
         }
 
         public override string ToString()
@@ -75,7 +74,7 @@ namespace EcsLte
 
         private static World[] UpdateWorldsCache()
         {
-            return _worldsLookup.Values.ToArray();
+            return _worlds.UncachedData.Values.ToArray();
         }
 
         private void SelfDestroy()

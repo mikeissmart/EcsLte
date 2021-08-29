@@ -3,24 +3,23 @@ using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class Group_CreateGetBeforeEntities : BasePerformanceTest
+    internal class Collector_CreateGet : BasePerformanceTest
     {
         private World _world;
-        private Entity[] _entities;
+        private Group _group;
+        private CollectorTrigger _collectorTrigger;
 
         public override void PreRun()
         {
             _world = World.CreateWorld("Test");
-            _world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
-            _entities = _world.EntityManager.CreateEntities(TestConsts.EntityLoopCount);
+            _group = _world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
+            _collectorTrigger = CollectorTrigger.Added<TestComponent1>();
         }
 
         public override void Run()
         {
             for (int i = 0; i < TestConsts.EntityLoopCount; i++)
-            {
-                _world.EntityManager.AddComponent(_entities[i], new TestComponent1());
-            }
+            { var collector = _group.GetCollector(_collectorTrigger); }
         }
 
         public override bool CanRunParallel()
@@ -31,7 +30,7 @@ namespace EcsLte.PerformanceTest
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
                 index =>
                 {
-                    _world.EntityManager.AddComponent(_entities[index], new TestComponent1());
+                    var collector = _group.GetCollector(_collectorTrigger);
                 });
         }
 

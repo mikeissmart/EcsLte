@@ -1,3 +1,5 @@
+using EcsLte.Utilities;
+
 namespace EcsLte
 {
     public partial struct Filter
@@ -22,7 +24,7 @@ namespace EcsLte
         {
             var filter = AllOf<TComponent1>();
 
-            filter.AllOfIndexes = MergeDistinctIndex(filter.AllOfIndexes, ComponentIndex<TComponent2>.Index);
+            filter.AllOfIndexes = Helpers.MergeDistinctIndex(filter.AllOfIndexes, ComponentIndex<TComponent2>.Index);
             filter.GenerateHasCode();
 
             return filter;
@@ -35,7 +37,7 @@ namespace EcsLte
         {
             var filter = AllOf<TComponent1, TComponent2>();
 
-            filter.AllOfIndexes = MergeDistinctIndex(filter.AllOfIndexes, ComponentIndex<TComponent3>.Index);
+            filter.AllOfIndexes = Helpers.MergeDistinctIndex(filter.AllOfIndexes, ComponentIndex<TComponent3>.Index);
             filter.GenerateHasCode();
 
             return filter;
@@ -49,7 +51,7 @@ namespace EcsLte
         {
             var filter = AllOf<TComponent1, TComponent2, TComponent3>();
 
-            filter.AllOfIndexes = MergeDistinctIndex(filter.AllOfIndexes, ComponentIndex<TComponent4>.Index);
+            filter.AllOfIndexes = Helpers.MergeDistinctIndex(filter.AllOfIndexes, ComponentIndex<TComponent4>.Index);
             filter.GenerateHasCode();
 
             return filter;
@@ -75,7 +77,7 @@ namespace EcsLte
         {
             var filter = AnyOf<TComponent1>();
 
-            filter.AnyOfIndexes = MergeDistinctIndex(filter.AnyOfIndexes, ComponentIndex<TComponent2>.Index);
+            filter.AnyOfIndexes = Helpers.MergeDistinctIndex(filter.AnyOfIndexes, ComponentIndex<TComponent2>.Index);
             filter.GenerateHasCode();
 
             return filter;
@@ -88,7 +90,7 @@ namespace EcsLte
         {
             var filter = AnyOf<TComponent1, TComponent2>();
 
-            filter.AnyOfIndexes = MergeDistinctIndex(filter.AnyOfIndexes, ComponentIndex<TComponent3>.Index);
+            filter.AnyOfIndexes = Helpers.MergeDistinctIndex(filter.AnyOfIndexes, ComponentIndex<TComponent3>.Index);
             filter.GenerateHasCode();
 
             return filter;
@@ -102,7 +104,7 @@ namespace EcsLte
         {
             var filter = AnyOf<TComponent1, TComponent2, TComponent3>();
 
-            filter.AnyOfIndexes = MergeDistinctIndex(filter.AnyOfIndexes, ComponentIndex<TComponent4>.Index);
+            filter.AnyOfIndexes = Helpers.MergeDistinctIndex(filter.AnyOfIndexes, ComponentIndex<TComponent4>.Index);
             filter.GenerateHasCode();
 
             return filter;
@@ -128,7 +130,7 @@ namespace EcsLte
         {
             var filter = NoneOf<TComponent1>();
 
-            filter.NoneOfIndexes = MergeDistinctIndex(filter.NoneOfIndexes, ComponentIndex<TComponent2>.Index);
+            filter.NoneOfIndexes = Helpers.MergeDistinctIndex(filter.NoneOfIndexes, ComponentIndex<TComponent2>.Index);
             filter.GenerateHasCode();
 
             return filter;
@@ -141,7 +143,7 @@ namespace EcsLte
         {
             var filter = NoneOf<TComponent1, TComponent2>();
 
-            filter.NoneOfIndexes = MergeDistinctIndex(filter.NoneOfIndexes, ComponentIndex<TComponent3>.Index);
+            filter.NoneOfIndexes = Helpers.MergeDistinctIndex(filter.NoneOfIndexes, ComponentIndex<TComponent3>.Index);
             filter.GenerateHasCode();
 
             return filter;
@@ -155,7 +157,7 @@ namespace EcsLte
         {
             var filter = NoneOf<TComponent1, TComponent2, TComponent3>();
 
-            filter.NoneOfIndexes = MergeDistinctIndex(filter.NoneOfIndexes, ComponentIndex<TComponent4>.Index);
+            filter.NoneOfIndexes = Helpers.MergeDistinctIndex(filter.NoneOfIndexes, ComponentIndex<TComponent4>.Index);
             filter.GenerateHasCode();
 
             return filter;
