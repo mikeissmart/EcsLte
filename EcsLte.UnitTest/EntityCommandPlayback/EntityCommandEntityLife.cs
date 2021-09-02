@@ -1,51 +1,37 @@
-using System;
-using System.Threading;
 using System.Linq;
-using EcsLte.Exceptions;
-using EcsLte.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace EcsLte.UnitTest.EntityCommandPlayback
 {
     [TestClass]
-    public class EntityCommandEntityLife
+    public class EntityCommandEntityLife : BasePrePostTest
     {
-        [TestInitialize]
-        public void PreTest()
-        {
-            if (!World.DefaultWorld.IsDestroyed)
-                World.DestroyWorld(World.DefaultWorld);
-            World.DefaultWorld = World.CreateWorld("DefaultWorld");
-        }
-
         [TestMethod]
         public void Create()
         {
-            var world = World.DefaultWorld;
-            var entity = world.EntityManager.DefaultEntityCommandPlayback.CreateEntity();
-            Assert.IsFalse(world.EntityManager.HasEntity(entity));
+            var entity = _world.EntityManager.DefaultEntityCommandPlayback.CreateEntity();
+            Assert.IsFalse(_world.EntityManager.HasEntity(entity));
 
-            world.EntityManager.DefaultEntityCommandPlayback.RunCommands();
-            Assert.IsTrue(world.EntityManager.HasEntity(entity));
+            _world.EntityManager.DefaultEntityCommandPlayback.RunCommands();
+            Assert.IsTrue(_world.EntityManager.HasEntity(entity));
             Assert.IsTrue(entity.Id == 1, $"Entity.id = {entity.Id}, Entities:  " +
-                String.Join(", ", world.EntityManager.GetEntities()));
+                string.Join(", ", _world.EntityManager.GetEntities()));
         }
 
         [TestMethod]
         public void CreateEntities()
         {
-            var world = World.DefaultWorld;
-            var entities = world.EntityManager.DefaultEntityCommandPlayback
+            var entities = _world.EntityManager.DefaultEntityCommandPlayback
                 .CreateEntities(TestConsts.EntityLoopCount);
 
             entities = entities.OrderBy(x => x.Id).ToArray();
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
-                Assert.IsFalse(world.EntityManager.HasEntity(entities[i]));
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
+                Assert.IsFalse(_world.EntityManager.HasEntity(entities[i]));
 
-            world.EntityManager.DefaultEntityCommandPlayback.RunCommands();
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            _world.EntityManager.DefaultEntityCommandPlayback.RunCommands();
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
             {
-                Assert.IsTrue(world.EntityManager.HasEntity(entities[i]));
+                Assert.IsTrue(_world.EntityManager.HasEntity(entities[i]));
                 Assert.IsTrue(entities[i].Id == i + 1);
             }
         }
@@ -53,31 +39,29 @@ namespace EcsLte.UnitTest.EntityCommandPlayback
         [TestMethod]
         public void Destroy()
         {
-            var world = World.DefaultWorld;
-            var entity = world.EntityManager.CreateEntity();
+            var entity = _world.EntityManager.CreateEntity();
 
-            world.EntityManager.DefaultEntityCommandPlayback.DestroyEntity(entity);
-            Assert.IsTrue(world.EntityManager.HasEntity(entity));
+            _world.EntityManager.DefaultEntityCommandPlayback.DestroyEntity(entity);
+            Assert.IsTrue(_world.EntityManager.HasEntity(entity));
 
-            world.EntityManager.DefaultEntityCommandPlayback.RunCommands();
-            Assert.IsFalse(world.EntityManager.HasEntity(entity));
+            _world.EntityManager.DefaultEntityCommandPlayback.RunCommands();
+            Assert.IsFalse(_world.EntityManager.HasEntity(entity));
         }
 
         [TestMethod]
         public void DestroyEntities()
         {
-            var world = World.DefaultWorld;
-            var entities = world.EntityManager.CreateEntities(TestConsts.EntityLoopCount);
+            var entities = _world.EntityManager.CreateEntities(TestConsts.EntityLoopCount);
 
             entities = entities.OrderBy(x => x.Id).ToArray();
-            world.EntityManager.DefaultEntityCommandPlayback.DestroyEntities(entities);
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
-                Assert.IsTrue(world.EntityManager.HasEntity(entities[i]));
+            _world.EntityManager.DefaultEntityCommandPlayback.DestroyEntities(entities);
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
+                Assert.IsTrue(_world.EntityManager.HasEntity(entities[i]));
 
-            world.EntityManager.DefaultEntityCommandPlayback.RunCommands();
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            _world.EntityManager.DefaultEntityCommandPlayback.RunCommands();
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
             {
-                Assert.IsFalse(world.EntityManager.HasEntity(entities[i]));
+                Assert.IsFalse(_world.EntityManager.HasEntity(entities[i]));
                 Assert.IsTrue(entities[i].Id == i + 1);
             }
         }

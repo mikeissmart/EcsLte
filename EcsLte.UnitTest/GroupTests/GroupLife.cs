@@ -1,62 +1,68 @@
-using System.Threading;
-using System.Linq;
+using System;
 using EcsLte.Exceptions;
-using EcsLte.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace EcsLte.UnitTest.GroupTests
 {
     [TestClass]
-    public class GroupLife
+    public class GroupLife : BasePrePostTest
     {
-        [TestInitialize]
-        public void PreTest()
-        {
-            if (!World.DefaultWorld.IsDestroyed)
-                World.DestroyWorld(World.DefaultWorld);
-            World.DefaultWorld = World.CreateWorld("DefaultWorld");
-        }
-
         [TestMethod]
-        public void Create()
+        public void GetGroup()
         {
-            var world = World.DefaultWorld;
-            var group = world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
+            var _filter = Filter.AllOf<TestComponent1>();
 
+            var group = _world.GroupManager.GetGroup(_filter);
+
+            // Not null
             Assert.IsTrue(group != null);
+            // Correct count
+            Assert.IsTrue(_world.GroupManager.Groups.Length == 1);
+            // Has group
+            Assert.IsTrue(_world.GroupManager.Groups[0] == group);
+            // Get same group
+            Assert.IsTrue(_world.GroupManager.GetGroup(_filter) == group);
+            // World is destroyed
+            Assert.ThrowsException<WorldIsDestroyedException>(() =>
+                _destroyedWorld.GroupManager.GetGroup(_filter));
         }
 
         [TestMethod]
-        public void GetSame()
+        public void RemoveGroup()
         {
-            var world = World.DefaultWorld;
-            var group1 = world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
-            var group2 = world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
+            var _filter = Filter.AllOf<TestComponent1>();
+            var group = _world.GroupManager.GetGroup(_filter);
 
-            Assert.IsTrue(group1 == group2);
+            _world.GroupManager.RemoveGroup(group);
+
+            // Correct count
+            Assert.IsTrue(_world.GroupManager.Groups.Length == 0);
+            // Remove group again
+            Assert.ThrowsException<GroupIsDestroyedException>(() =>
+                _world.GroupManager.RemoveGroup(group));
+            // Remove different world group
+            Assert.ThrowsException<GroupDoesNotExistException>(() =>
+                _world.GroupManager.RemoveGroup(World.DefaultWorld.GroupManager.GetGroup(_filter)));
+            // Error on null
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _world.GroupManager.RemoveGroup(null));
+            // World is destroyed
+            Assert.ThrowsException<WorldIsDestroyedException>(() =>
+                _destroyedWorld.GroupManager.RemoveGroup(group));
+
+            World.DefaultWorld.GroupManager.RemoveGroup(
+                World.DefaultWorld.GroupManager.GetGroup(_filter));
         }
 
         [TestMethod]
-        public void SelfDestroy()
+        public void InternalDestroy()
         {
-            var world = World.DefaultWorld;
-            var group = world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
+            var group = _world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
 
-            world.GroupManager.RemoveGroup(group);
+            World.DestroyWorld(_world);
 
+            // Group destroyed
             Assert.IsTrue(group.IsDestroyed);
-        }
-
-        [TestMethod]
-        public void WorldDestroy()
-        {
-            var world = World.DefaultWorld;
-            var group = world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
-            var collector = group.GetCollector(CollectorTrigger.Added<TestComponent1>());
-
-            World.DestroyWorld(world);
-
-            Assert.IsTrue(collector.IsDestroyed);
         }
     }
 }

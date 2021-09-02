@@ -41,7 +41,7 @@ namespace EcsLte.UnitTest.WorldTests
         public void Create_Parallel()
         {
             World world = null;
-            bool errorThrown = false;
+            var errorThrown = false;
 
             ParallelRunner.RunParallelFor(1,
                 index =>
@@ -90,7 +90,7 @@ namespace EcsLte.UnitTest.WorldTests
         public void Destroy_Parallel()
         {
             var world = World.CreateWorld("TestDestroy");
-            bool errorThrown = false;
+            var errorThrown = false;
 
             ParallelRunner.RunParallelFor(1,
                 index =>

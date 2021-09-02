@@ -1,4 +1,5 @@
 using System;
+
 namespace EcsLte.PerformanceTest.Misc
 {
     internal class Misc_GrowArray : BasePerformanceTest
@@ -21,7 +22,9 @@ namespace EcsLte.PerformanceTest.Misc
         }
 
         public override bool CanRunParallel()
-            => false;
+        {
+            return false;
+        }
 
         public override void RunParallel()
         {

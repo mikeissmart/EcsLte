@@ -1,21 +1,21 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Collections.Concurrent;
 using EcsLte.Exceptions;
 using EcsLte.Utilities;
-using System;
 
 namespace EcsLte
 {
     public class Group
     {
-        private readonly DataCache<Dictionary<int, Entity>, Entity[]> _entities;
-        private readonly Dictionary<CollectorTrigger, Collector> _collectors;
         private readonly List<Collector>[] _collectorCommponentIndexes;
+        private readonly Dictionary<CollectorTrigger, Collector> _collectors;
+        private readonly DataCache<Dictionary<int, Entity>, Entity[]> _entities;
 
         internal Group(GroupManager groupManager, Filter filter)
         {
-            _entities = new DataCache<Dictionary<int, Entity>, Entity[]>(new Dictionary<int, Entity>(), UpdateEntitiesCache);
+            _entities = new DataCache<Dictionary<int, Entity>, Entity[]>(new Dictionary<int, Entity>(),
+                UpdateEntitiesCache);
             _collectors = new Dictionary<CollectorTrigger, Collector>();
             _collectorCommponentIndexes = new List<Collector>[ComponentIndexes.Instance.Count];
 
@@ -28,8 +28,111 @@ namespace EcsLte
 
         public World CurrentWorld { get; }
         public Filter Filter { get; }
-        public Entity[] Entities => _entities.CachedData;
         public bool IsDestroyed { get; private set; }
+
+        public Entity[] GetEntities()
+        {
+            if (IsDestroyed)
+                throw new GroupIsDestroyedException(this);
+
+            return _entities.CachedData;
+        }
+
+        public bool Equals(Group other)
+        {
+            if (other == null)
+                return false;
+            return Filter == other.Filter && CurrentWorld == other.CurrentWorld;
+        }
+
+        public override string ToString()
+        {
+            return Filter.ToString();
+        }
+
+        internal void OnEntityWillBeDestroyed(Entity entity)
+        {
+            lock (_entities)
+            {
+                if (_entities.UncachedData.ContainsKey(entity.Id))
+                {
+                    _entities.UncachedData.Remove(entity.Id);
+                    _entities.IsDirty = true;
+
+                    lock (_collectors)
+                    {
+                        foreach (var collector in _collectors.Values)
+                            collector.OnEntityWillBeDestroyed(entity);
+                    }
+                }
+            }
+        }
+
+        internal void FilterEntity(Entity entity, int componentPoolIndex)
+        {
+            if (IsDestroyed)
+                throw new GroupIsDestroyedException(this);
+
+            if (CurrentWorld.EntityManager.EntityIsFiltered(entity, Filter))
+                lock (_entities)
+                {
+                    if (!_entities.UncachedData.ContainsKey(entity.Id))
+                    {
+                        _entities.UncachedData.Add(entity.Id, entity);
+                        _entities.IsDirty = true;
+
+                        if (componentPoolIndex != -1)
+                            lock (_collectorCommponentIndexes)
+                            {
+                                foreach (var collector in _collectorCommponentIndexes[componentPoolIndex])
+                                    collector.AddedEntity(entity, componentPoolIndex);
+                            }
+                    }
+                }
+            else
+                lock (_entities)
+                {
+                    if (_entities.UncachedData.ContainsKey(entity.Id))
+                    {
+                        _entities.UncachedData.Remove(entity.Id);
+                        _entities.IsDirty = true;
+
+                        if (componentPoolIndex != -1)
+                            lock (_collectorCommponentIndexes)
+                            {
+                                foreach (var collector in _collectorCommponentIndexes[componentPoolIndex])
+                                    collector.RemovedEntity(entity, componentPoolIndex);
+                            }
+                    }
+                }
+        }
+
+        internal void UpdateEntity(Entity entity, int componentPoolIndex)
+        {
+            foreach (var collector in _collectorCommponentIndexes[componentPoolIndex])
+                collector.UpdatedEntity(entity, componentPoolIndex);
+        }
+
+        internal void InternalDestroy()
+        {
+            _entities.UncachedData.Clear();
+            _entities.IsDirty = true;
+            foreach (var collector in _collectors.Values)
+                collector.InternalDestroy();
+            _collectors.Clear();
+
+            IsDestroyed = true;
+        }
+
+        private Entity[] UpdateEntitiesCache()
+        {
+            lock (_entities)
+            {
+                return _entities.UncachedData.Values.ToArray();
+            }
+        }
+
+        #region CollectorLife
 
         public Collector GetCollector(CollectorTrigger trigger)
         {
@@ -78,78 +181,6 @@ namespace EcsLte
             }
         }
 
-        public bool Equals(Group other)
-        {
-            if (other == null)
-                return false;
-            return Filter == other.Filter && CurrentWorld == other.CurrentWorld;
-        }
-
-        public override string ToString()
-        {
-            return Filter.ToString();
-        }
-
-        internal void FilterEntity(Entity entity, int componentPoolIndex, bool isSilent)
-        {
-            if (IsDestroyed)
-                throw new GroupIsDestroyedException(this);
-
-            if (CurrentWorld.EntityManager.EntityIsFiltered(entity, Filter))
-            {
-                lock (_entities)
-                {
-                    if (!_entities.UncachedData.ContainsKey(entity.Id))
-                    {
-                        _entities.UncachedData.Add(entity.Id, entity);
-                        _entities.IsDirty = true;
-                    }
-                }
-                if (!isSilent)
-                {
-                    foreach (var collector in _collectorCommponentIndexes[componentPoolIndex])
-                        collector.AddedEntity(entity, componentPoolIndex);
-                }
-            }
-            else
-            {
-                lock (_entities)
-                {
-                    if (_entities.UncachedData.ContainsKey(entity.Id))
-                    {
-                        _entities.UncachedData.Remove(entity.Id);
-                        _entities.IsDirty = true;
-                    }
-                    if (!isSilent)
-                    {
-                        foreach (var collector in _collectorCommponentIndexes[componentPoolIndex])
-                            collector.RemovedEntity(entity, componentPoolIndex);
-                    }
-                }
-            }
-        }
-
-        internal void UpdateEntity(Entity entity, int componentPoolIndex)
-        {
-            foreach (var collector in _collectorCommponentIndexes[componentPoolIndex])
-                collector.UpdatedEntity(entity, componentPoolIndex);
-        }
-
-        internal void InternalDestroy()
-        {
-            _entities.UncachedData.Clear();
-            _entities.IsDirty = true;
-            foreach (var collector in _collectors.Values)
-                collector.InternalDestroy();
-            _collectors.Clear();
-
-            IsDestroyed = true;
-        }
-
-        private Entity[] UpdateEntitiesCache()
-        {
-            lock (_entities)
-            { return _entities.UncachedData.Values.ToArray(); }
-        }
+        #endregion
     }
 }

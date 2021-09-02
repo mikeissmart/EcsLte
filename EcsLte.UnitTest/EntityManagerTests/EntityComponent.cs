@@ -1,109 +1,149 @@
 using EcsLte.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace EcsLte.UnitTest.EntityManangerTests
+namespace EcsLte.UnitTest.EntityManagerTests
 {
     [TestClass]
-    public class EntityComponent
+    public class EntityComponent : BasePrePostTest
     {
-        [TestInitialize]
-        public void PreTest()
-        {
-            if (!World.DefaultWorld.IsDestroyed)
-                World.DestroyWorld(World.DefaultWorld);
-            World.DefaultWorld = World.CreateWorld("DefaultWorld");
-        }
-
         [TestMethod]
-        public void AddComponent()
+        public void HasComponent()
         {
-            var world = World.DefaultWorld;
-            var entity = world.EntityManager.CreateEntity();
+            var entity = _world.EntityManager.CreateEntity();
+            _world.EntityManager.AddComponent(entity, new TestComponent1());
 
-            world.EntityManager.AddComponent(entity, new TestComponent1());
-
-            Assert.IsTrue(world.EntityManager.HasComponent<TestComponent1>(entity));
-        }
-
-        [TestMethod]
-        public void AddComponentAlready()
-        {
-            var world = World.DefaultWorld;
-            var entity = world.EntityManager.CreateEntity();
-
-            world.EntityManager.AddComponent(entity, new TestComponent1());
-
-            Assert.ThrowsException<EntityAlreadyHasComponentException>(() =>
-                world.EntityManager.AddComponent(entity, new TestComponent1()));
+            // Has component
+            Assert.IsTrue(_world.EntityManager.HasComponent<TestComponent1>(entity));
+            // Entity does not exist
+            Assert.ThrowsException<EntityDoesNotExistException>(() =>
+                _world.EntityManager.HasComponent<TestComponent1>(Entity.Null));
+            // World is destroyed
+            Assert.ThrowsException<WorldIsDestroyedException>(() =>
+                _destroyedWorld.EntityManager.HasComponent<TestComponent1>(Entity.Null));
         }
 
         [TestMethod]
         public void GetComponent()
         {
-            var world = World.DefaultWorld;
-            var entity = world.EntityManager.CreateEntity();
+            var entity = _world.EntityManager.CreateEntity();
+            var component = new TestComponent1 {Prop = 1};
+            _world.EntityManager.AddComponent(entity, component);
 
-            world.EntityManager.AddComponent(entity, new TestComponent1 { Prop = 1 });
-
-            Assert.IsTrue(world.EntityManager.GetComponent<TestComponent1>(entity).Prop == 1);
+            // Correct component
+            Assert.IsTrue(
+                _world.EntityManager.GetComponent<TestComponent1>(entity).Prop == component.Prop);
+            // Entity does not exist
+            Assert.ThrowsException<EntityDoesNotExistException>(() =>
+                _world.EntityManager.GetComponent<TestComponent1>(Entity.Null));
+            // World is destroyed
+            Assert.ThrowsException<WorldIsDestroyedException>(() =>
+                _destroyedWorld.EntityManager.GetComponent<TestComponent1>(Entity.Null));
         }
 
         [TestMethod]
-        public void GetComponentNotAdded()
+        public void GetAllComponents()
         {
-            var world = World.DefaultWorld;
-            var entity = world.EntityManager.CreateEntity();
+            var entity = _world.EntityManager.CreateEntity();
+            var component = new TestComponent1 {Prop = 1};
+            _world.EntityManager.AddComponent(entity, component);
 
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
-                world.EntityManager.GetComponent<TestComponent1>(entity));
+            // Correct component count
+            Assert.IsTrue(_world.EntityManager.GetAllComponents(entity).Length == 1);
+            // Correct component
+            Assert.IsTrue(((TestComponent1) _world.EntityManager.GetAllComponents(entity)[0]).Prop == component.Prop);
+            // Entity does not exist
+            Assert.ThrowsException<EntityDoesNotExistException>(() =>
+                _world.EntityManager.GetAllComponents(Entity.Null));
+            // World is destroyed
+            Assert.ThrowsException<WorldIsDestroyedException>(() =>
+                _destroyedWorld.EntityManager.GetAllComponents(Entity.Null));
         }
 
         [TestMethod]
-        public void RemoveComponent()
+        public void AddComponent()
         {
-            var world = World.DefaultWorld;
-            var entity = world.EntityManager.CreateEntity();
+            var entity = _world.EntityManager.CreateEntity();
+            var component = new TestComponent1 {Prop = 1};
 
-            world.EntityManager.AddComponent(entity, new TestComponent1());
-            world.EntityManager.RemoveComponent<TestComponent1>(entity);
+            _world.EntityManager.AddComponent(entity, component);
 
-            Assert.IsFalse(world.EntityManager.HasComponent<TestComponent1>(entity));
-        }
-
-        [TestMethod]
-        public void RemoveAllComponents()
-        {
-            var world = World.DefaultWorld;
-            var entity = world.EntityManager.CreateEntity();
-
-            world.EntityManager.AddComponent(entity, new TestComponent1());
-            world.EntityManager.AddComponent(entity, new TestComponent2());
-            world.EntityManager.RemoveAllComponents(entity);
-
-            Assert.IsFalse(world.EntityManager.HasComponent<TestComponent1>(entity));
-            Assert.IsFalse(world.EntityManager.HasComponent<TestComponent2>(entity));
-        }
-
-        [TestMethod]
-        public void RemoveComponentNotAdded()
-        {
-            var world = World.DefaultWorld;
-            var entity = world.EntityManager.CreateEntity();
-
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
-                world.EntityManager.RemoveComponent<TestComponent1>(entity));
+            // Correct component
+            Assert.IsTrue(
+                _world.EntityManager.GetComponent<TestComponent1>(entity).Prop == component.Prop);
+            // Already has component
+            Assert.ThrowsException<EntityAlreadyHasComponentException>(() =>
+                _world.EntityManager.AddComponent(entity, component));
+            // Entity does not exist
+            Assert.ThrowsException<EntityDoesNotExistException>(() =>
+                _world.EntityManager.AddComponent(Entity.Null, component));
+            // World is destroyed
+            Assert.ThrowsException<WorldIsDestroyedException>(() =>
+                _destroyedWorld.EntityManager.AddComponent(Entity.Null, component));
         }
 
         [TestMethod]
         public void ReplaceComponent()
         {
-            var world = World.DefaultWorld;
-            var entity = world.EntityManager.CreateEntity();
+            var entity = _world.EntityManager.CreateEntity();
+            var component1 = new TestComponent1 {Prop = 1};
+            var component2 = new TestComponent2 {Prop = 2};
+            _world.EntityManager.AddComponent(entity, new TestComponent1());
 
-            world.EntityManager.AddComponent(entity, new TestComponent1());
-            world.EntityManager.ReplaceComponent(entity, new TestComponent1 { Prop = 1 });
+            _world.EntityManager.ReplaceComponent(entity, component1);
 
-            Assert.IsTrue(world.EntityManager.GetComponent<TestComponent1>(entity).Prop == 1);
+            // Correct component
+            Assert.IsTrue(
+                _world.EntityManager.GetComponent<TestComponent1>(entity).Prop == component1.Prop);
+            // Also adds component
+            _world.EntityManager.ReplaceComponent(entity, component2);
+            Assert.IsTrue(
+                _world.EntityManager.GetComponent<TestComponent2>(entity).Prop == component2.Prop);
+            // Entity does not exist
+            Assert.ThrowsException<EntityDoesNotExistException>(() =>
+                _world.EntityManager.ReplaceComponent(Entity.Null, component1));
+            // World is destroyed
+            Assert.ThrowsException<WorldIsDestroyedException>(() =>
+                _destroyedWorld.EntityManager.ReplaceComponent(Entity.Null, component1));
+        }
+
+        [TestMethod]
+        public void RemoveComponent()
+        {
+            var entity = _world.EntityManager.CreateEntity();
+            _world.EntityManager.AddComponent(entity, new TestComponent1());
+
+            _world.EntityManager.RemoveComponent<TestComponent1>(entity);
+
+            // Correctly removes component
+            Assert.IsFalse(_world.EntityManager.HasComponent<TestComponent1>(entity));
+            // Cannot remove component entiy doesnt have
+            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+                _world.EntityManager.RemoveComponent<TestComponent1>(entity));
+            // Entity does not exist
+            Assert.ThrowsException<EntityDoesNotExistException>(() =>
+                _world.EntityManager.RemoveComponent<TestComponent1>(Entity.Null));
+            // World is destroyed
+            Assert.ThrowsException<WorldIsDestroyedException>(() =>
+                _destroyedWorld.EntityManager.RemoveComponent<TestComponent1>(Entity.Null));
+        }
+
+        [TestMethod]
+        public void RemoveAllComponents()
+        {
+            var entity = _world.EntityManager.CreateEntity();
+            _world.EntityManager.AddComponent(entity, new TestComponent1());
+
+            _world.EntityManager.RemoveAllComponents(entity);
+
+            // Correctly removes components
+            Assert.IsTrue(_world.EntityManager.GetAllComponents(entity).Length == 0);
+            Assert.IsFalse(_world.EntityManager.HasComponent<TestComponent1>(entity));
+            // Entity does not exist
+            Assert.ThrowsException<EntityDoesNotExistException>(() =>
+                _world.EntityManager.RemoveAllComponents(Entity.Null));
+            // World is destroyed
+            Assert.ThrowsException<WorldIsDestroyedException>(() =>
+                _destroyedWorld.EntityManager.RemoveAllComponents(Entity.Null));
         }
     }
 }

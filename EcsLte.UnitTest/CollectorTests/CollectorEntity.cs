@@ -1,50 +1,81 @@
-using System.Threading;
-using System.Linq;
-using EcsLte.Exceptions;
-using EcsLte.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace EcsLte.UnitTest.CollectorTests
 {
     [TestClass]
-    public class CollectorEntity
+    public class CollectorEntity : BasePrePostTest
     {
-        [TestInitialize]
-        public void PreTest()
+        [TestMethod]
+        public void AddedEntity()
         {
-            if (!World.DefaultWorld.IsDestroyed)
-                World.DestroyWorld(World.DefaultWorld);
-            World.DefaultWorld = World.CreateWorld("DefaultWorld");
+            var group = _world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
+            var collector = group.GetCollector(CollectorTrigger.Added<TestComponent1>());
+            var entity = _world.EntityManager.CreateEntity();
+
+            _world.EntityManager.AddComponent(entity, new TestComponent1());
+
+            // Has entity
+            Assert.IsTrue(collector.GetEntities().Length == 1);
+            // Correct entity
+            Assert.IsTrue(collector.GetEntities()[0] == entity);
         }
 
         [TestMethod]
-        public void AddEntity()
+        public void ClearEntities()
         {
-            var world = World.DefaultWorld;
-            var group = world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
+            var group = _world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
             var collector = group.GetCollector(CollectorTrigger.Added<TestComponent1>());
-            var entity = world.EntityManager.CreateEntity();
+            var entity = _world.EntityManager.CreateEntity();
+            _world.EntityManager.AddComponent(entity, new TestComponent1());
 
-            world.EntityManager.AddComponent(entity, new TestComponent1());
+            collector.ClearEntities();
 
-            Assert.IsTrue(collector.Entities.Length == 1);
-            Assert.IsTrue(collector.Entities[0] == entity);
+            // Correct count
+            Assert.IsTrue(collector.GetEntities().Length == 0);
         }
 
         [TestMethod]
         public void AddCollectorTriggeredEntity()
         {
-            var world = World.DefaultWorld;
-            var group = world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
+            var group = _world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
             var collector = group.GetCollector(CollectorTrigger.Added<TestComponent1>());
-            var entity1 = world.EntityManager.CreateEntity();
-            var entity2 = world.EntityManager.CreateEntity();
+            var entity1 = _world.EntityManager.CreateEntity();
+            var entity2 = _world.EntityManager.CreateEntity();
 
-            world.EntityManager.AddComponent(entity1, new TestComponent1());
-            world.EntityManager.AddComponent(entity2, new TestComponent2());
+            _world.EntityManager.AddComponent(entity1, new TestComponent1());
+            _world.EntityManager.AddComponent(entity2, new TestComponent2());
 
-            Assert.IsTrue(group.Entities.Length == 1);
-            Assert.IsTrue(group.Entities[0] != entity2);
+            Assert.IsTrue(group.GetEntities().Length == 1);
+            Assert.IsTrue(group.GetEntities()[0] == entity1);
+        }
+
+        [TestMethod]
+        public void RemovedCollectorTriggeredEntity()
+        {
+            var group = _world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
+            var entity = _world.EntityManager.CreateEntity();
+            _world.EntityManager.AddComponent(entity, new TestComponent1());
+
+            _world.EntityManager.RemoveComponent<TestComponent1>(entity);
+
+            // No longer has entity
+            Assert.IsTrue(group.GetEntities().Length == 0);
+        }
+
+        [TestMethod]
+        public void RemovedDeletedEntity()
+        {
+            var group = _world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
+            var collector = group.GetCollector(CollectorTrigger.Added<TestComponent1>());
+            var entity = _world.EntityManager.CreateEntity();
+            _world.EntityManager.AddComponent(entity, new TestComponent1());
+
+            Assert.IsTrue(collector.GetEntities().Length == 1);
+            Assert.IsTrue(collector.GetEntities()[0] == entity);
+
+            _world.EntityManager.DestroyEntity(entity);
+
+            Assert.IsTrue(collector.GetEntities().Length == 0);
         }
     }
 }

@@ -3,9 +3,11 @@ namespace EcsLte
     internal abstract class EntityCommand
     {
         protected EntityCommand(Entity entity)
-            => QueuedEntity = entity;
+        {
+            QueuedEntity = entity;
+        }
 
-        public Entity QueuedEntity { get; private set; }
+        public Entity QueuedEntity { get; }
 
         public abstract void ExecuteCommand(World world);
     }
@@ -17,7 +19,9 @@ namespace EcsLte
         }
 
         public override void ExecuteCommand(World world)
-            => world.EntityManager.DequeueEntityFromCommand(QueuedEntity);
+        {
+            world.EntityManager.DequeueEntityFromCommand(QueuedEntity);
+        }
     }
 
     internal class DestroyEntityCommand : EntityCommand
@@ -27,40 +31,53 @@ namespace EcsLte
         }
 
         public override void ExecuteCommand(World world)
-            => world.EntityManager.DestroyEntity(QueuedEntity);
+        {
+            world.EntityManager.DestroyEntity(QueuedEntity);
+        }
     }
 
     internal class AddComponentEntityCommand<TComponent> : EntityCommand
         where TComponent : IComponent
     {
-        private TComponent _component;
+        private readonly TComponent _component;
 
         public AddComponentEntityCommand(Entity queuedEntity, TComponent component) : base(queuedEntity)
-            => _component = component;
+        {
+            _component = component;
+        }
 
         public override void ExecuteCommand(World world)
-            => world.EntityManager.AddComponent(QueuedEntity, _component);
+        {
+            world.EntityManager.AddComponent(QueuedEntity, _component);
+        }
     }
 
     internal class ReplaceComponentEntityCommand<TComponent> : EntityCommand
         where TComponent : IComponent
     {
-        private TComponent _newComponent;
+        private readonly TComponent _newComponent;
 
         public ReplaceComponentEntityCommand(Entity queuedEntity, TComponent newComponent) : base(queuedEntity)
-            => _newComponent = newComponent;
+        {
+            _newComponent = newComponent;
+        }
 
         public override void ExecuteCommand(World world)
-            => world.EntityManager.ReplaceComponent(QueuedEntity, _newComponent);
+        {
+            world.EntityManager.ReplaceComponent(QueuedEntity, _newComponent);
+        }
     }
 
     internal class RemoveComponentEntityCommand<TComponent> : EntityCommand
         where TComponent : IComponent
     {
         public RemoveComponentEntityCommand(Entity queuedEntity) : base(queuedEntity)
-        { }
+        {
+        }
 
         public override void ExecuteCommand(World world)
-            => world.EntityManager.RemoveComponent<TComponent>(QueuedEntity);
+        {
+            world.EntityManager.RemoveComponent<TComponent>(QueuedEntity);
+        }
     }
 }

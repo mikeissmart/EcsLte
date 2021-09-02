@@ -2,23 +2,25 @@ using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class Collector_CreateGetBeforeEntities : BasePerformanceTest
+    internal class Collector_GetEntities : BasePerformanceTest
     {
+        private Collector _collector;
         private Entity[] _entities;
         private World _world;
 
         public override void PreRun()
         {
             _world = World.CreateWorld("Test");
-            _world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>())
+            _collector = _world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>())
                 .GetCollector(CollectorTrigger.Added<TestComponent1>());
             _entities = _world.EntityManager.CreateEntities(TestConsts.EntityLoopCount);
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
+                _world.EntityManager.AddComponent(_entities[i], new TestComponent1());
         }
 
         public override void Run()
         {
-            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                _world.EntityManager.AddComponent(_entities[i], new TestComponent1());
+            _entities = _collector.GetEntities();
         }
 
         public override bool CanRunParallel()
@@ -29,7 +31,7 @@ namespace EcsLte.PerformanceTest
         public override void RunParallel()
         {
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                index => { _world.EntityManager.AddComponent(_entities[index], new TestComponent1()); });
+                index => { _entities = _collector.GetEntities(); });
         }
 
         public override void PostRun()

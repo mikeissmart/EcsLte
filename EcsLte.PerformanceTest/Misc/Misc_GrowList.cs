@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+
 namespace EcsLte.PerformanceTest.Misc
 {
     internal class Misc_GrowList : BasePerformanceTest
@@ -17,7 +18,9 @@ namespace EcsLte.PerformanceTest.Misc
         }
 
         public override bool CanRunParallel()
-            => false;
+        {
+            return false;
+        }
 
         public override void RunParallel()
         {

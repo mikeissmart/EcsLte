@@ -17,7 +17,9 @@ namespace EcsLte.PerformanceTest.EntityLife
         }
 
         public override bool CanRunParallel()
-            => false;
+        {
+            return false;
+        }
 
         public override void RunParallel()
         {

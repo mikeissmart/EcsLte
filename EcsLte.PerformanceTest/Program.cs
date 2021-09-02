@@ -7,6 +7,7 @@ namespace EcsLte.PerformanceTest
     internal class Program
     {
         private static Stopwatch _stopwatch;
+        private static string _toCsv = "";
 
         private static void Main(string[] args)
         {
@@ -25,52 +26,65 @@ namespace EcsLte.PerformanceTest
                 .GroupBy(x => x.Name.Split('_')[0])
                 .ToList();
 
+            var a = new Abc {Prop = 1};
+            var b = new Abc {Prop = 1};
+
+            var e1 = a == b;
+            var e2 = a.GetHashCode() == b.GetHashCode();
+
             foreach (var testGrouping in tests)
-            {
                 if (testGrouping.Key != "Misc")
                 {
                     foreach (var test in testGrouping)
                         Run(test);
                     Console.WriteLine("");
                 }
-            }
 
             //Name                                                      Time      ParallelTime
-            //Collector_CreateGet                                       50 ms     132 ms
-            //Collector_CreateGetBeforeEntities                         977 ms    867 ms
+            //Collector_CreateGet                                       198 ms    325 ms
+            //Collector_CreateGetBeforeEntities                         563 ms    1001 ms
+            //Collector_GetEntities                                     3 ms      96 ms
 
-            //CollectorTrigger_Equals                                   15 ms     2 ms
+            //CollectorTrigger_Create                                   955 ms    1164 ms
+            //CollectorTrigger_Equals                                   168 ms    15 ms
 
-            //EntityCommandPlayback_EntityComponent_AddComponent        319 ms    524 ms
-            //EntityCommandPlayback_EntityComponent_RemoveComponent     207 ms    460 ms
-            //EntityCommandPlayback_EntityComponent_ReplaceComponent    287 ms    520 ms
-            //EntityCommandPlayback_EntityLife_CreateEntities           141 ms    -1 ms
-            //EntityCommandPlayback_EntityLife_CreateEntity             201 ms    540 ms
-            //EntityCommandPlayback_EntityLife_DestroyEntities          152 ms    -1 ms
-            //EntityCommandPlayback_EntityLife_DestroyEntity            242 ms    517 ms
+            //EntityCommandPlayback_EntityComponent_AddComponent        302 ms    564 ms
+            //EntityCommandPlayback_EntityComponent_RemoveComponent     222 ms    512 ms
+            //EntityCommandPlayback_EntityComponent_ReplaceComponent    314 ms    509 ms
+            //EntityCommandPlayback_EntityLife_CreateEntities           152 ms    -1 ms
+            //EntityCommandPlayback_EntityLife_CreateEntity             225 ms    460 ms
+            //EntityCommandPlayback_EntityLife_DestroyEntities          193 ms    -1 ms
+            //EntityCommandPlayback_EntityLife_DestroyEntity            721 ms    929 ms
 
-            //EntityComponent_AddComponent                              140 ms    45 ms
-            //EntityComponent_GetAllComponents                          161 ms    39 ms
-            //EntityComponent_GetComponent                              66 ms     6 ms
-            //EntityComponent_RemoveAllComponents                       90 ms     8 ms
-            //EntityComponent_RemoveComponent                           94 ms     8 ms
-            //EntityComponent_ReplaceComponent                          161 ms    54 ms
+            //EntityComponent_AddComponent                              145 ms    48 ms
+            //EntityComponent_GetAllComponents                          186 ms    66 ms
+            //EntityComponent_GetComponent                              62 ms     6 ms
+            //EntityComponent_GetRandEntityComponent                    416 ms    133 ms
+            //EntityComponent_RemoveAllComponents                       474 ms    100 ms
+            //EntityComponent_RemoveComponent                           95 ms     8 ms
+            //EntityComponent_ReplaceComponent                          153 ms    66 ms
 
-            //EntityLife_CreateEntities                                 27 ms     -1 ms
-            //EntityLife_CreateEntity                                   79 ms     365 ms
-            //EntityLife_DestroyEntities                                120 ms    -1 ms
-            //EntityLife_DestroyEntity                                  132 ms    379 ms
-            //EntityLife_GetEntities                                    20 ms     -1 ms
+            //EntityLife_CreateEntities                                 18 ms     -1 ms
+            //EntityLife_CreateEntity                                   108 ms    512 ms
+            //EntityLife_DestroyEntities                                510 ms    -1 ms
+            //EntityLife_DestroyEntity                                  537 ms    571 ms
+            //EntityLife_GetEntities                                    22 ms     -1 ms
             //EntityLife_HasEntity                                      32 ms     3 ms
-            //EntityLife_ReuseEntities                                  19 ms     -1 ms
+            //EntityLife_ReuseEntities                                  18 ms     -1 ms
 
-            //Filter_Equals                                             15 ms     2 ms
-            //Filter_Filtered                                           329 ms    65 ms
+            //Filter_Create                                             923 ms    1195 ms
+            //Filter_Equals                                             162 ms    15 ms
+            //Filter_Filtered                                           58 ms     6 ms
 
-            //Group_CreateGet                                           58 ms     239 ms
-            //Group_CreateGetAfterEntities                              500 ms    697 ms
-            //Group_CreateGetBeforeEntities                             788 ms    719 ms
+            //Group_CreateGet                                           193 ms    320 ms
+            //Group_CreateGetAfterEntities                              200 ms    334 ms
+            //Group_CreateGetBeforeEntities                             430 ms    558 ms
+            //Group_GetEntities                                         2 ms      88 ms
 
+
+            /*Console.WriteLine("");
+            Console.WriteLine("ToCsv");
+            Console.WriteLine(_toCsv);*/
 
             Console.WriteLine("Press any key to continue...");
 #if RELEASE
@@ -88,7 +102,7 @@ namespace EcsLte.PerformanceTest
             long avgParallelTime = 0;
             for (var i = 0; i < loops; i++)
             {
-                var test = (BasePerformanceTest)Activator.CreateInstance(testType);
+                var test = (BasePerformanceTest) Activator.CreateInstance(testType);
                 test.PreRun();
                 _stopwatch.Reset();
                 _stopwatch.Start();
@@ -99,7 +113,7 @@ namespace EcsLte.PerformanceTest
                 times[i] = _stopwatch.ElapsedMilliseconds;
                 avgTime += _stopwatch.ElapsedMilliseconds;
 
-                test = (BasePerformanceTest)Activator.CreateInstance(testType);
+                test = (BasePerformanceTest) Activator.CreateInstance(testType);
                 var parallelCount = test.CanRunParallel();
                 if (test.CanRunParallel())
                 {
@@ -133,6 +147,32 @@ namespace EcsLte.PerformanceTest
                 $"//{testType.Name}".PadRight(60) +
                 $"{avgTime} ms".PadRight(10) +
                 $"{avgParallelTime} ms");
+            _toCsv += $"{testType.Name}\t{avgTime}\t{avgParallelTime}{Environment.NewLine}";
+        }
+
+        private struct Abc
+        {
+            public int Prop { get; set; }
+
+            public static bool operator !=(Abc lhs, Abc rhs)
+            {
+                return !(lhs == rhs);
+            }
+
+            public static bool operator ==(Abc lhs, Abc rhs)
+            {
+                return lhs.Prop == rhs.Prop;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is Abc other && this == other;
+            }
+
+            public override int GetHashCode()
+            {
+                return Prop.GetHashCode();
+            }
         }
     }
 }

@@ -2,8 +2,8 @@ namespace EcsLte.PerformanceTest.EntityLife
 {
     internal class EntityLife_ReuseEntities : BasePerformanceTest
     {
-        private World _world;
         private Entity[] _entities;
+        private World _world;
 
         public override void PreRun()
         {
@@ -18,7 +18,9 @@ namespace EcsLte.PerformanceTest.EntityLife
         }
 
         public override bool CanRunParallel()
-            => false;
+        {
+            return false;
+        }
 
         public override void RunParallel()
         {

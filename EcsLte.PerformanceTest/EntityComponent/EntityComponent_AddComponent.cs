@@ -23,15 +23,14 @@ namespace EcsLte.PerformanceTest
         }
 
         public override bool CanRunParallel()
-            => true;
+        {
+            return true;
+        }
 
         public override void RunParallel()
         {
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                index =>
-                {
-                    _world.EntityManager.AddComponent(_entities[index], new TestComponent1());
-                });
+                index => { _world.EntityManager.AddComponent(_entities[index], new TestComponent1()); });
         }
 
         public override void PostRun()

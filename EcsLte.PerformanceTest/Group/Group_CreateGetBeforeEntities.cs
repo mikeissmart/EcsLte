@@ -1,12 +1,11 @@
-using System;
 using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
     internal class Group_CreateGetBeforeEntities : BasePerformanceTest
     {
-        private World _world;
         private Entity[] _entities;
+        private World _world;
 
         public override void PreRun()
         {
@@ -17,25 +16,24 @@ namespace EcsLte.PerformanceTest
 
         public override void Run()
         {
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
-            {
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 _world.EntityManager.AddComponent(_entities[i], new TestComponent1());
-            }
         }
 
         public override bool CanRunParallel()
-            => true;
+        {
+            return true;
+        }
 
         public override void RunParallel()
         {
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                index =>
-                {
-                    _world.EntityManager.AddComponent(_entities[index], new TestComponent1());
-                });
+                index => { _world.EntityManager.AddComponent(_entities[index], new TestComponent1()); });
         }
 
         public override void PostRun()
-            => World.DestroyWorld(_world);
+        {
+            World.DestroyWorld(_world);
+        }
     }
 }

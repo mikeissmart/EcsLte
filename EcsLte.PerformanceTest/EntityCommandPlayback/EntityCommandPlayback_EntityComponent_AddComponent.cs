@@ -12,6 +12,7 @@ namespace EcsLte.PerformanceTest.EntityCommandPlayback
             _world = World.CreateWorld("Test");
             _entities = _world.EntityManager.CreateEntities(TestConsts.EntityLoopCount);
         }
+
         public override void Run()
         {
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
@@ -20,14 +21,17 @@ namespace EcsLte.PerformanceTest.EntityCommandPlayback
         }
 
         public override bool CanRunParallel()
-            => true;
+        {
+            return true;
+        }
 
         public override void RunParallel()
         {
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
                 index =>
                 {
-                    _world.EntityManager.DefaultEntityCommandPlayback.AddComponent(_entities[index], new TestComponent1());
+                    _world.EntityManager.DefaultEntityCommandPlayback.AddComponent(_entities[index],
+                        new TestComponent1());
                 });
             _world.EntityManager.DefaultEntityCommandPlayback.RunCommands();
         }

@@ -2,21 +2,20 @@ using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class Group_CreateGet : BasePerformanceTest
+    internal class CollectorTrigger_Create : BasePerformanceTest
     {
-        private Filter _filter;
-        private World _world;
+        private CollectorTrigger[] _collectorTriggers;
 
         public override void PreRun()
         {
-            _world = World.CreateWorld("Test");
-            _filter = Filter.AllOf<TestComponent1>();
+            _collectorTriggers = new CollectorTrigger[TestConsts.EntityLoopCount];
         }
 
         public override void Run()
         {
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                _world.GroupManager.GetGroup(_filter);
+                _collectorTriggers[i] = CollectorTrigger
+                    .Added<TestComponent1, TestComponent2, TestRecordableComponent1, TestRecordableComponent2>();
         }
 
         public override bool CanRunParallel()
@@ -29,13 +28,13 @@ namespace EcsLte.PerformanceTest
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
                 index =>
                 {
-                    var group = _world.GroupManager.GetGroup(_filter);
+                    _collectorTriggers[index] = CollectorTrigger
+                        .Added<TestComponent1, TestComponent2, TestRecordableComponent1, TestRecordableComponent2>();
                 });
         }
 
         public override void PostRun()
         {
-            World.DestroyWorld(_world);
         }
     }
 }

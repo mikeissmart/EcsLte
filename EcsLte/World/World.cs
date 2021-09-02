@@ -8,7 +8,8 @@ namespace EcsLte
 {
     public class World
     {
-        private static readonly DataCache<Dictionary<string, World>, World[]> _worlds = new DataCache<Dictionary<string, World>, World[]>(new Dictionary<string, World>(), UpdateWorldsCache);
+        private static readonly DataCache<Dictionary<string, World>, World[]> _worlds =
+            new DataCache<Dictionary<string, World>, World[]>(new Dictionary<string, World>(), UpdateWorldsCache);
 
         private World(string name)
         {

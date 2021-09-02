@@ -1,48 +1,68 @@
-using System.Threading;
-using System.Linq;
 using EcsLte.Exceptions;
-using EcsLte.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace EcsLte.UnitTest.GroupTests
 {
     [TestClass]
-    public class GroupEntity
+    public class GroupEntity : BasePrePostTest
     {
-        [TestInitialize]
-        public void PreTest()
+        [TestMethod]
+        public void FilteredEntity()
         {
-            if (!World.DefaultWorld.IsDestroyed)
-                World.DestroyWorld(World.DefaultWorld);
-            World.DefaultWorld = World.CreateWorld("DefaultWorld");
+            var group = _world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
+            var entity1 = _world.EntityManager.CreateEntity();
+            var entity2 = _world.EntityManager.CreateEntity();
+            _world.EntityManager.AddComponent(entity1, new TestComponent1());
+
+            // Has entity
+            Assert.IsTrue(group.GetEntities().Length == 1);
+            // Correct entity
+            Assert.IsTrue(group.GetEntities()[0] == entity1);
+            // Group is destroyed
+            _world.GroupManager.RemoveGroup(group);
+            Assert.ThrowsException<GroupIsDestroyedException>(() =>
+                group.GetEntities());
         }
 
         [TestMethod]
-        public void AddEntity()
+        public void RemovedUnfilteredEntity()
         {
-            var world = World.DefaultWorld;
-            var group = world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
-            var entity = world.EntityManager.CreateEntity();
+            var group = _world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
+            var entity = _world.EntityManager.CreateEntity();
+            _world.EntityManager.AddComponent(entity, new TestComponent1());
 
-            world.EntityManager.AddComponent(entity, new TestComponent1());
+            _world.EntityManager.RemoveComponent<TestComponent1>(entity);
 
-            Assert.IsTrue(group.Entities.Length == 1);
-            Assert.IsTrue(group.Entities[0] == entity);
+            // No longer has entity
+            Assert.IsTrue(group.GetEntities().Length == 0);
         }
 
         [TestMethod]
-        public void AddFilteredEntity()
+        public void KeepUpdatedEntity()
         {
-            var world = World.DefaultWorld;
-            var group = world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
-            var entity1 = world.EntityManager.CreateEntity();
-            var entity2 = world.EntityManager.CreateEntity();
+            var group = _world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
+            var entity = _world.EntityManager.CreateEntity();
+            _world.EntityManager.AddComponent(entity, new TestComponent1());
 
-            world.EntityManager.AddComponent(entity1, new TestComponent1());
-            world.EntityManager.AddComponent(entity2, new TestComponent2());
+            _world.EntityManager.ReplaceComponent(entity, new TestComponent1());
 
-            Assert.IsTrue(group.Entities.Length == 1);
-            Assert.IsTrue(group.Entities[0] != entity2);
+            // No longer has entity
+            Assert.IsTrue(group.GetEntities().Length == 1);
+            // Correct entity
+            Assert.IsTrue(group.GetEntities()[0] == entity);
+        }
+
+        [TestMethod]
+        public void RemovedDeletedEntity()
+        {
+            var group = _world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
+            var entity = _world.EntityManager.CreateEntity();
+            _world.EntityManager.AddComponent(entity, new TestComponent1());
+
+            _world.EntityManager.DestroyEntity(entity);
+
+            // No longer has entity
+            Assert.IsTrue(group.GetEntities().Length == 0);
         }
     }
 }

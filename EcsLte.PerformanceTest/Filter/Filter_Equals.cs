@@ -9,25 +9,31 @@ namespace EcsLte.PerformanceTest
 
         public override void PreRun()
         {
-            _filter1 = Filter.AllOf<TestComponent1, TestComponent2, TestRecordableComponent1>();
-            _filter2 = Filter.AllOf<TestComponent1, TestComponent2, TestRecordableComponent1>();
+            _filter1 =
+                Filter.AllOf<TestComponent1, TestComponent2, TestRecordableComponent1, TestRecordableComponent2>();
+            _filter2 =
+                Filter.AllOf<TestComponent1, TestComponent2, TestRecordableComponent1, TestRecordableComponent2>();
         }
 
         public override void Run()
         {
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                _filter1.Equals(_filter2);
+            {
+                var result = _filter1 == _filter2;
+            }
         }
 
         public override bool CanRunParallel()
-            => true;
+        {
+            return true;
+        }
 
         public override void RunParallel()
         {
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
                 index =>
                 {
-                    var result = _filter1.Equals(_filter2);
+                    var result = _filter1 == _filter2;
                 });
         }
 

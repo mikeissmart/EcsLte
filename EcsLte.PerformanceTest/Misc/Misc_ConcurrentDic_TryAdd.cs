@@ -17,15 +17,14 @@ namespace EcsLte.PerformanceTest.Misc
         }
 
         public override bool CanRunParallel()
-            => true;
+        {
+            return true;
+        }
 
         public override void RunParallel()
         {
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                index =>
-                {
-                    _dic.TryAdd(index, index);
-                });
+                index => { _dic.TryAdd(index, index); });
         }
 
         public override void PostRun()

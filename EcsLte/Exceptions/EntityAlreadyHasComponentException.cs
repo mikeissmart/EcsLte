@@ -6,7 +6,7 @@ namespace EcsLte.Exceptions
     {
         public EntityAlreadyHasComponentException(Entity entity, Type componentType)
             : base($"Entity '{entity}' already has component '{componentType.Name}'.",
-                "Check if entity has component before addind component or use replace component.")
+                "Check if entity has component before adding component or use replace component.")
         {
         }
     }

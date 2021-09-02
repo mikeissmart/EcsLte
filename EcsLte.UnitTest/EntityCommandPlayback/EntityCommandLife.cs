@@ -5,47 +5,37 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace EcsLte.UnitTest.EntityCommandPlayback
 {
     [TestClass]
-    public class EntityCommandLife
+    public class EntityCommandLife : BasePrePostTest
     {
-        [TestInitialize]
-        public void PreTest()
-        {
-            if (!World.DefaultWorld.IsDestroyed)
-                World.DestroyWorld(World.DefaultWorld);
-            World.DefaultWorld = World.CreateWorld("DefaultWorld");
-        }
-
         [TestMethod]
         public void Create()
         {
-            var world = World.DefaultWorld;
-            var entityCmd = world.EntityManager.CreateOrGetEntityCommand("Test");
+            var entityCmd = _world.EntityManager.CreateOrGetEntityCommand("Test");
 
-            Assert.IsTrue(entityCmd == world.EntityManager.CreateOrGetEntityCommand("Test"));
+            Assert.IsTrue(entityCmd == _world.EntityManager.CreateOrGetEntityCommand("Test"));
         }
 
         [TestMethod]
         public void CreateAfterWorldDestroy()
         {
-            var world = World.DefaultWorld;
-            World.DestroyWorld(world);
+            World.DestroyWorld(_world);
 
-            Assert.ThrowsException<WorldIsDestroyedException>(() => world.EntityManager.CreateOrGetEntityCommand("Test"));
+            Assert.ThrowsException<WorldIsDestroyedException>(() =>
+                _world.EntityManager.CreateOrGetEntityCommand("Test"));
         }
 
         [TestMethod]
         public void Create_Parallel()
         {
-            var world = World.DefaultWorld;
-            var entityCmd = world.EntityManager.CreateOrGetEntityCommand("Test");
-            bool errorThrown = false;
+            var entityCmd = _world.EntityManager.CreateOrGetEntityCommand("Test");
+            var errorThrown = false;
 
             ParallelRunner.RunParallelFor(1,
                 index =>
                 {
                     try
                     {
-                        world.EntityManager.CreateOrGetEntityCommand("Test");
+                        _world.EntityManager.CreateOrGetEntityCommand("Test");
                     }
                     catch (EntityCommandPlaybackOffThreadException)
                     {

@@ -1,7 +1,4 @@
-using System.Threading;
-using System.Linq;
 using EcsLte.Exceptions;
-using EcsLte.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace EcsLte.UnitTest.CollectorTests
@@ -33,7 +30,8 @@ namespace EcsLte.UnitTest.CollectorTests
             var world = World.DefaultWorld;
             var group = world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
 
-            Assert.ThrowsException<CollectorGroupMissingComponent>(() => group.GetCollector(CollectorTrigger.Added<TestComponent2>()));
+            Assert.ThrowsException<CollectorGroupMissingComponent>(() =>
+                group.GetCollector(CollectorTrigger.Added<TestComponent2>()));
         }
 
         [TestMethod]

@@ -7,13 +7,10 @@ namespace EcsLte
         public static Filter AllOf<TComponent>()
             where TComponent : IComponent
         {
-            var filter = new Filter
-            {
-                AllOfIndexes = new[] { ComponentIndex<TComponent>.Index },
-                AnyOfIndexes = new int[0],
-                NoneOfIndexes = new int[0]
-            };
-            filter.GenerateHasCode();
+            var filter = AllOfNoHashCode(
+                ComponentIndex<TComponent>.Index
+            );
+            filter.CalculateHashCode();
 
             return filter;
         }
@@ -22,10 +19,11 @@ namespace EcsLte
             where TComponent1 : IComponent
             where TComponent2 : IComponent
         {
-            var filter = AllOf<TComponent1>();
-
-            filter.AllOfIndexes = Helpers.MergeDistinctIndex(filter.AllOfIndexes, ComponentIndex<TComponent2>.Index);
-            filter.GenerateHasCode();
+            var filter = AllOfNoHashCode(
+                ComponentIndex<TComponent1>.Index,
+                ComponentIndex<TComponent2>.Index
+            );
+            filter.CalculateHashCode();
 
             return filter;
         }
@@ -35,10 +33,12 @@ namespace EcsLte
             where TComponent2 : IComponent
             where TComponent3 : IComponent
         {
-            var filter = AllOf<TComponent1, TComponent2>();
-
-            filter.AllOfIndexes = Helpers.MergeDistinctIndex(filter.AllOfIndexes, ComponentIndex<TComponent3>.Index);
-            filter.GenerateHasCode();
+            var filter = AllOfNoHashCode(
+                ComponentIndex<TComponent1>.Index,
+                ComponentIndex<TComponent2>.Index,
+                ComponentIndex<TComponent3>.Index
+            );
+            filter.CalculateHashCode();
 
             return filter;
         }
@@ -49,10 +49,13 @@ namespace EcsLte
             where TComponent3 : IComponent
             where TComponent4 : IComponent
         {
-            var filter = AllOf<TComponent1, TComponent2, TComponent3>();
-
-            filter.AllOfIndexes = Helpers.MergeDistinctIndex(filter.AllOfIndexes, ComponentIndex<TComponent4>.Index);
-            filter.GenerateHasCode();
+            var filter = AllOfNoHashCode(
+                ComponentIndex<TComponent1>.Index,
+                ComponentIndex<TComponent2>.Index,
+                ComponentIndex<TComponent3>.Index,
+                ComponentIndex<TComponent4>.Index
+            );
+            filter.CalculateHashCode();
 
             return filter;
         }
@@ -60,13 +63,10 @@ namespace EcsLte
         public static Filter AnyOf<TComponent>()
             where TComponent : IComponent
         {
-            var filter = new Filter
-            {
-                AllOfIndexes = new int[0],
-                AnyOfIndexes = new[] { ComponentIndex<TComponent>.Index },
-                NoneOfIndexes = new int[0]
-            };
-            filter.GenerateHasCode();
+            var filter = AnyOfNoHashCode(
+                ComponentIndex<TComponent>.Index
+            );
+            filter.CalculateHashCode();
 
             return filter;
         }
@@ -75,10 +75,11 @@ namespace EcsLte
             where TComponent1 : IComponent
             where TComponent2 : IComponent
         {
-            var filter = AnyOf<TComponent1>();
-
-            filter.AnyOfIndexes = Helpers.MergeDistinctIndex(filter.AnyOfIndexes, ComponentIndex<TComponent2>.Index);
-            filter.GenerateHasCode();
+            var filter = AnyOfNoHashCode(
+                ComponentIndex<TComponent1>.Index,
+                ComponentIndex<TComponent2>.Index
+            );
+            filter.CalculateHashCode();
 
             return filter;
         }
@@ -88,10 +89,12 @@ namespace EcsLte
             where TComponent2 : IComponent
             where TComponent3 : IComponent
         {
-            var filter = AnyOf<TComponent1, TComponent2>();
-
-            filter.AnyOfIndexes = Helpers.MergeDistinctIndex(filter.AnyOfIndexes, ComponentIndex<TComponent3>.Index);
-            filter.GenerateHasCode();
+            var filter = AnyOfNoHashCode(
+                ComponentIndex<TComponent1>.Index,
+                ComponentIndex<TComponent2>.Index,
+                ComponentIndex<TComponent3>.Index
+            );
+            filter.CalculateHashCode();
 
             return filter;
         }
@@ -102,10 +105,13 @@ namespace EcsLte
             where TComponent3 : IComponent
             where TComponent4 : IComponent
         {
-            var filter = AnyOf<TComponent1, TComponent2, TComponent3>();
-
-            filter.AnyOfIndexes = Helpers.MergeDistinctIndex(filter.AnyOfIndexes, ComponentIndex<TComponent4>.Index);
-            filter.GenerateHasCode();
+            var filter = AnyOfNoHashCode(
+                ComponentIndex<TComponent1>.Index,
+                ComponentIndex<TComponent2>.Index,
+                ComponentIndex<TComponent3>.Index,
+                ComponentIndex<TComponent4>.Index
+            );
+            filter.CalculateHashCode();
 
             return filter;
         }
@@ -113,13 +119,10 @@ namespace EcsLte
         public static Filter NoneOf<TComponent>()
             where TComponent : IComponent
         {
-            var filter = new Filter
-            {
-                AllOfIndexes = new int[0],
-                AnyOfIndexes = new int[0],
-                NoneOfIndexes = new[] { ComponentIndex<TComponent>.Index }
-            };
-            filter.GenerateHasCode();
+            var filter = NoneOfNoHashCode(
+                ComponentIndex<TComponent>.Index
+            );
+            filter.CalculateHashCode();
 
             return filter;
         }
@@ -128,10 +131,11 @@ namespace EcsLte
             where TComponent1 : IComponent
             where TComponent2 : IComponent
         {
-            var filter = NoneOf<TComponent1>();
-
-            filter.NoneOfIndexes = Helpers.MergeDistinctIndex(filter.NoneOfIndexes, ComponentIndex<TComponent2>.Index);
-            filter.GenerateHasCode();
+            var filter = NoneOfNoHashCode(
+                ComponentIndex<TComponent1>.Index,
+                ComponentIndex<TComponent2>.Index
+            );
+            filter.CalculateHashCode();
 
             return filter;
         }
@@ -141,10 +145,12 @@ namespace EcsLte
             where TComponent2 : IComponent
             where TComponent3 : IComponent
         {
-            var filter = NoneOf<TComponent1, TComponent2>();
-
-            filter.NoneOfIndexes = Helpers.MergeDistinctIndex(filter.NoneOfIndexes, ComponentIndex<TComponent3>.Index);
-            filter.GenerateHasCode();
+            var filter = NoneOfNoHashCode(
+                ComponentIndex<TComponent1>.Index,
+                ComponentIndex<TComponent2>.Index,
+                ComponentIndex<TComponent3>.Index
+            );
+            filter.CalculateHashCode();
 
             return filter;
         }
@@ -155,10 +161,58 @@ namespace EcsLte
             where TComponent3 : IComponent
             where TComponent4 : IComponent
         {
-            var filter = NoneOf<TComponent1, TComponent2, TComponent3>();
+            var filter = NoneOfNoHashCode(
+                ComponentIndex<TComponent1>.Index,
+                ComponentIndex<TComponent2>.Index,
+                ComponentIndex<TComponent3>.Index,
+                ComponentIndex<TComponent4>.Index
+            );
+            filter.CalculateHashCode();
 
-            filter.NoneOfIndexes = Helpers.MergeDistinctIndex(filter.NoneOfIndexes, ComponentIndex<TComponent4>.Index);
-            filter.GenerateHasCode();
+            return filter;
+        }
+
+        internal static Filter AllOfNoHashCode(params int[] indexes)
+        {
+            var hashed = IndexHelpers.HashIndexes(indexes);
+
+            var filter = new Filter
+            {
+                Indexes = hashed,
+                AllOfIndexes = hashed,
+                AnyOfIndexes = new int[0],
+                NoneOfIndexes = new int[0]
+            };
+
+            return filter;
+        }
+
+        internal static Filter AnyOfNoHashCode(params int[] indexes)
+        {
+            var hashed = IndexHelpers.HashIndexes(indexes);
+
+            var filter = new Filter
+            {
+                Indexes = hashed,
+                AllOfIndexes = new int[0],
+                AnyOfIndexes = hashed,
+                NoneOfIndexes = new int[0]
+            };
+
+            return filter;
+        }
+
+        internal static Filter NoneOfNoHashCode(params int[] indexes)
+        {
+            var hashed = IndexHelpers.HashIndexes(indexes);
+
+            var filter = new Filter
+            {
+                Indexes = hashed,
+                AllOfIndexes = new int[0],
+                AnyOfIndexes = new int[0],
+                NoneOfIndexes = hashed
+            };
 
             return filter;
         }

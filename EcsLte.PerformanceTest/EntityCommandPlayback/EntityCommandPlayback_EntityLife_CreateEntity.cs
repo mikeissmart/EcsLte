@@ -4,8 +4,8 @@ namespace EcsLte.PerformanceTest.EntityCommandPlayback
 {
     internal class EntityCommandPlayback_EntityLife_CreateEntity : BasePerformanceTest
     {
-        private World _world;
         private Entity[] _entities;
+        private World _world;
 
         public override void PreRun()
         {
@@ -21,15 +21,14 @@ namespace EcsLte.PerformanceTest.EntityCommandPlayback
         }
 
         public override bool CanRunParallel()
-            => true;
+        {
+            return true;
+        }
 
         public override void RunParallel()
         {
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                index =>
-                {
-                    _entities[index] = _world.EntityManager.DefaultEntityCommandPlayback.CreateEntity();
-                });
+                index => { _entities[index] = _world.EntityManager.DefaultEntityCommandPlayback.CreateEntity(); });
             _world.EntityManager.DefaultEntityCommandPlayback.RunCommands();
         }
 

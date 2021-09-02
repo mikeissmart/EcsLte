@@ -4,16 +4,16 @@ namespace EcsLte.PerformanceTest
 {
     internal class Group_CreateGetAfterEntities : BasePerformanceTest
     {
-        private World _world;
-        private Filter _filter;
         private Entity[] _entities;
+        private Filter _filter;
+        private World _world;
 
         public override void PreRun()
         {
             _world = World.CreateWorld("Test");
             _filter = Filter.AllOf<TestComponent1>();
             _entities = _world.EntityManager.CreateEntities(TestConsts.EntityLoopCount);
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 _world.EntityManager.AddComponent(_entities[i], new TestComponent1());
         }
 
@@ -23,7 +23,9 @@ namespace EcsLte.PerformanceTest
         }
 
         public override bool CanRunParallel()
-            => true;
+        {
+            return true;
+        }
 
         public override void RunParallel()
         {
@@ -35,6 +37,8 @@ namespace EcsLte.PerformanceTest
         }
 
         public override void PostRun()
-            => World.DestroyWorld(_world);
+        {
+            World.DestroyWorld(_world);
+        }
     }
 }

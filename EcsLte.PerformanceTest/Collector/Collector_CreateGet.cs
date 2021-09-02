@@ -1,13 +1,12 @@
-using System;
 using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
     internal class Collector_CreateGet : BasePerformanceTest
     {
-        private World _world;
-        private Group _group;
         private CollectorTrigger _collectorTrigger;
+        private Group _group;
+        private World _world;
 
         public override void PreRun()
         {
@@ -18,12 +17,16 @@ namespace EcsLte.PerformanceTest
 
         public override void Run()
         {
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
-            { var collector = _group.GetCollector(_collectorTrigger); }
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
+            {
+                var collector = _group.GetCollector(_collectorTrigger);
+            }
         }
 
         public override bool CanRunParallel()
-            => true;
+        {
+            return true;
+        }
 
         public override void RunParallel()
         {
@@ -35,6 +38,8 @@ namespace EcsLte.PerformanceTest
         }
 
         public override void PostRun()
-            => World.DestroyWorld(_world);
+        {
+            World.DestroyWorld(_world);
+        }
     }
 }

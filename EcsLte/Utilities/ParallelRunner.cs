@@ -13,15 +13,13 @@ namespace EcsLte.Utilities
     public static class ParallelRunner
     {
         private static readonly int _mainThreadId = Thread.CurrentThread.ManagedThreadId;
-        private static readonly int _threadCount = (int)(Environment.ProcessorCount * 0.75);
+        private static readonly int _threadCount = (int) (Environment.ProcessorCount * 0.75);
         private static readonly object _parallelCountLock = new object();
-        private static int _parallelCount = 0;
+        private static int _parallelCount;
 
-        public static bool IsMainThread
-        {
-            get => _mainThreadId == Thread.CurrentThread.ManagedThreadId
-                && _parallelCount == 0;
-        }
+        public static bool IsMainThread =>
+            _mainThreadId == Thread.CurrentThread.ManagedThreadId
+            && _parallelCount == 0;
 
         /// <summary>
         ///     Incase I dont attempt to run independant systems seperatly
@@ -34,9 +32,10 @@ namespace EcsLte.Utilities
                 {
                     _parallelCount++;
                 }
+
                 var result = Parallel.ForEach(
                     sources,
-                    new ParallelOptions { MaxDegreeOfParallelism = _threadCount },
+                    new ParallelOptions {MaxDegreeOfParallelism = _threadCount},
                     callback);
                 while (!result.IsCompleted) Thread.Sleep(1);
                 lock (_parallelCountLock)
@@ -51,10 +50,10 @@ namespace EcsLte.Utilities
             var batches = new List<ParallelForBatch>();
 
             var batchCount = count / _threadCount +
-                (count % _threadCount != 0
-                    ? 1
-                    : 0);
-            for (int i = 0; i < _threadCount; i++)
+                             (count % _threadCount != 0
+                                 ? 1
+                                 : 0);
+            for (var i = 0; i < _threadCount; i++)
             {
                 var batchStartIndex = i * batchCount;
                 var batchEndIndex = batchStartIndex + batchCount > count
@@ -75,12 +74,13 @@ namespace EcsLte.Utilities
             {
                 _parallelCount++;
             }
+
             var result = Parallel.ForEach(
                 batches,
-                new ParallelOptions { MaxDegreeOfParallelism = _threadCount },
+                new ParallelOptions {MaxDegreeOfParallelism = _threadCount},
                 batchIndex =>
                 {
-                    for (int i = batchIndex.StartIndex; i < batchIndex.EndIndex; i++)
+                    for (var i = batchIndex.StartIndex; i < batchIndex.EndIndex; i++)
                         callback.Invoke(i);
                 });
             while (!result.IsCompleted) Thread.Sleep(1);

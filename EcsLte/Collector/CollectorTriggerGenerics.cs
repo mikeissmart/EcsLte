@@ -7,12 +7,9 @@ namespace EcsLte
         public static CollectorTrigger Added<TComponent>()
             where TComponent : IComponent
         {
-            var collectorTrigger = new CollectorTrigger
-            {
-                AddedIndexes = new[] { ComponentIndex<TComponent>.Index },
-                RemovedIndexes = new int[0],
-                UpdatedIndexes = new int[0]
-            };
+            var collectorTrigger = AddedNoHashCode(
+                ComponentIndex<TComponent>.Index
+            );
             collectorTrigger.GenerateHasCode();
 
             return collectorTrigger;
@@ -22,9 +19,10 @@ namespace EcsLte
             where TComponent1 : IComponent
             where TComponent2 : IComponent
         {
-            var collectorTrigger = Added<TComponent1>();
-
-            collectorTrigger.AddedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.AddedIndexes, ComponentIndex<TComponent2>.Index);
+            var collectorTrigger = AddedNoHashCode(
+                ComponentIndex<TComponent1>.Index,
+                ComponentIndex<TComponent2>.Index
+            );
             collectorTrigger.GenerateHasCode();
 
             return collectorTrigger;
@@ -35,9 +33,11 @@ namespace EcsLte
             where TComponent2 : IComponent
             where TComponent3 : IComponent
         {
-            var collectorTrigger = Added<TComponent1, TComponent2>();
-
-            collectorTrigger.AddedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.AddedIndexes, ComponentIndex<TComponent3>.Index);
+            var collectorTrigger = AddedNoHashCode(
+                ComponentIndex<TComponent1>.Index,
+                ComponentIndex<TComponent2>.Index,
+                ComponentIndex<TComponent3>.Index
+            );
             collectorTrigger.GenerateHasCode();
 
             return collectorTrigger;
@@ -49,9 +49,12 @@ namespace EcsLte
             where TComponent3 : IComponent
             where TComponent4 : IComponent
         {
-            var collectorTrigger = Added<TComponent1, TComponent2, TComponent3>();
-
-            collectorTrigger.AddedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.AddedIndexes, ComponentIndex<TComponent4>.Index);
+            var collectorTrigger = AddedNoHashCode(
+                ComponentIndex<TComponent1>.Index,
+                ComponentIndex<TComponent2>.Index,
+                ComponentIndex<TComponent3>.Index,
+                ComponentIndex<TComponent4>.Index
+            );
             collectorTrigger.GenerateHasCode();
 
             return collectorTrigger;
@@ -60,12 +63,9 @@ namespace EcsLte
         public static CollectorTrigger Removed<TComponent>()
             where TComponent : IComponent
         {
-            var collectorTrigger = new CollectorTrigger
-            {
-                AddedIndexes = new int[0],
-                RemovedIndexes = new[] { ComponentIndex<TComponent>.Index },
-                UpdatedIndexes = new int[0]
-            };
+            var collectorTrigger = RemovedNoHashCode(
+                ComponentIndex<TComponent>.Index
+            );
             collectorTrigger.GenerateHasCode();
 
             return collectorTrigger;
@@ -75,9 +75,10 @@ namespace EcsLte
             where TComponent1 : IComponent
             where TComponent2 : IComponent
         {
-            var collectorTrigger = Removed<TComponent1>();
-
-            collectorTrigger.RemovedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.RemovedIndexes, ComponentIndex<TComponent2>.Index);
+            var collectorTrigger = RemovedNoHashCode(
+                ComponentIndex<TComponent1>.Index,
+                ComponentIndex<TComponent2>.Index
+            );
             collectorTrigger.GenerateHasCode();
 
             return collectorTrigger;
@@ -88,9 +89,11 @@ namespace EcsLte
             where TComponent2 : IComponent
             where TComponent3 : IComponent
         {
-            var collectorTrigger = Removed<TComponent1, TComponent2>();
-
-            collectorTrigger.RemovedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.RemovedIndexes, ComponentIndex<TComponent3>.Index);
+            var collectorTrigger = RemovedNoHashCode(
+                ComponentIndex<TComponent1>.Index,
+                ComponentIndex<TComponent2>.Index,
+                ComponentIndex<TComponent3>.Index
+            );
             collectorTrigger.GenerateHasCode();
 
             return collectorTrigger;
@@ -102,291 +105,114 @@ namespace EcsLte
             where TComponent3 : IComponent
             where TComponent4 : IComponent
         {
-            var collectorTrigger = Removed<TComponent1, TComponent2, TComponent3>();
-
-            collectorTrigger.RemovedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.RemovedIndexes, ComponentIndex<TComponent4>.Index);
+            var collectorTrigger = RemovedNoHashCode(
+                ComponentIndex<TComponent1>.Index,
+                ComponentIndex<TComponent2>.Index,
+                ComponentIndex<TComponent3>.Index,
+                ComponentIndex<TComponent4>.Index
+            );
             collectorTrigger.GenerateHasCode();
 
             return collectorTrigger;
         }
 
-        public static CollectorTrigger Updated<TComponent>()
+        public static CollectorTrigger Replaced<TComponent>()
             where TComponent : IComponent
         {
+            var collectorTrigger = ReplacedNoHashCode(
+                ComponentIndex<TComponent>.Index
+            );
+            collectorTrigger.GenerateHasCode();
+
+            return collectorTrigger;
+        }
+
+        public static CollectorTrigger Replaced<TComponent1, TComponent2>()
+            where TComponent1 : IComponent
+            where TComponent2 : IComponent
+        {
+            var collectorTrigger = ReplacedNoHashCode(
+                ComponentIndex<TComponent1>.Index,
+                ComponentIndex<TComponent2>.Index
+            );
+            collectorTrigger.GenerateHasCode();
+
+            return collectorTrigger;
+        }
+
+        public static CollectorTrigger Replaced<TComponent1, TComponent2, TComponent3>()
+            where TComponent1 : IComponent
+            where TComponent2 : IComponent
+            where TComponent3 : IComponent
+        {
+            var collectorTrigger = ReplacedNoHashCode(
+                ComponentIndex<TComponent1>.Index,
+                ComponentIndex<TComponent2>.Index,
+                ComponentIndex<TComponent3>.Index
+            );
+            collectorTrigger.GenerateHasCode();
+
+            return collectorTrigger;
+        }
+
+        public static CollectorTrigger Replaced<TComponent1, TComponent2, TComponent3, TComponent4>()
+            where TComponent1 : IComponent
+            where TComponent2 : IComponent
+            where TComponent3 : IComponent
+            where TComponent4 : IComponent
+        {
+            var collectorTrigger = ReplacedNoHashCode(
+                ComponentIndex<TComponent1>.Index,
+                ComponentIndex<TComponent2>.Index,
+                ComponentIndex<TComponent3>.Index,
+                ComponentIndex<TComponent4>.Index
+            );
+            collectorTrigger.GenerateHasCode();
+
+            return collectorTrigger;
+        }
+
+        internal static CollectorTrigger AddedNoHashCode(params int[] indexes)
+        {
+            var hashed = IndexHelpers.HashIndexes(indexes);
+
             var collectorTrigger = new CollectorTrigger
             {
+                Indexes = hashed,
+                AddedIndexes = hashed,
+                RemovedIndexes = new int[0],
+                ReplacedIndexes = new int[0]
+            };
+
+            return collectorTrigger;
+        }
+
+        internal static CollectorTrigger RemovedNoHashCode(params int[] indexes)
+        {
+            var hashed = IndexHelpers.HashIndexes(indexes);
+
+            var collectorTrigger = new CollectorTrigger
+            {
+                Indexes = hashed,
+                AddedIndexes = new int[0],
+                RemovedIndexes = hashed,
+                ReplacedIndexes = new int[0]
+            };
+
+            return collectorTrigger;
+        }
+
+        internal static CollectorTrigger ReplacedNoHashCode(params int[] indexes)
+        {
+            var hashed = IndexHelpers.HashIndexes(indexes);
+
+            var collectorTrigger = new CollectorTrigger
+            {
+                Indexes = hashed,
                 AddedIndexes = new int[0],
                 RemovedIndexes = new int[0],
-                UpdatedIndexes = new[] { ComponentIndex<TComponent>.Index }
+                ReplacedIndexes = hashed
             };
-            collectorTrigger.GenerateHasCode();
-
-            return collectorTrigger;
-        }
-
-        public static CollectorTrigger Updated<TComponent1, TComponent2>()
-            where TComponent1 : IComponent
-            where TComponent2 : IComponent
-        {
-            var collectorTrigger = Updated<TComponent1>();
-
-            collectorTrigger.UpdatedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.UpdatedIndexes, ComponentIndex<TComponent2>.Index);
-            collectorTrigger.GenerateHasCode();
-
-            return collectorTrigger;
-        }
-
-        public static CollectorTrigger Updated<TComponent1, TComponent2, TComponent3>()
-            where TComponent1 : IComponent
-            where TComponent2 : IComponent
-            where TComponent3 : IComponent
-        {
-            var collectorTrigger = Updated<TComponent1, TComponent2>();
-
-            collectorTrigger.UpdatedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.UpdatedIndexes, ComponentIndex<TComponent3>.Index);
-            collectorTrigger.GenerateHasCode();
-
-            return collectorTrigger;
-        }
-
-        public static CollectorTrigger Updated<TComponent1, TComponent2, TComponent3, TComponent4>()
-            where TComponent1 : IComponent
-            where TComponent2 : IComponent
-            where TComponent3 : IComponent
-            where TComponent4 : IComponent
-        {
-            var collectorTrigger = Updated<TComponent1, TComponent2, TComponent3>();
-
-            collectorTrigger.UpdatedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.UpdatedIndexes, ComponentIndex<TComponent4>.Index);
-            collectorTrigger.GenerateHasCode();
-
-            return collectorTrigger;
-        }
-
-        public static CollectorTrigger AddedOrUpdated<TComponent>()
-            where TComponent : IComponent
-        {
-            var collectorTrigger = new CollectorTrigger
-            {
-                AddedIndexes = new[] { ComponentIndex<TComponent>.Index },
-                RemovedIndexes = new int[0],
-                UpdatedIndexes = new[] { ComponentIndex<TComponent>.Index }
-            };
-            collectorTrigger.GenerateHasCode();
-
-            return collectorTrigger;
-        }
-
-        public static CollectorTrigger AddedOrUpdated<TComponent1, TComponent2>()
-            where TComponent1 : IComponent
-            where TComponent2 : IComponent
-        {
-            var collectorTrigger = AddedOrUpdated<TComponent1>();
-
-            collectorTrigger.AddedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.AddedIndexes, ComponentIndex<TComponent2>.Index);
-            collectorTrigger.UpdatedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.UpdatedIndexes, ComponentIndex<TComponent2>.Index);
-            collectorTrigger.GenerateHasCode();
-
-            return collectorTrigger;
-        }
-
-        public static CollectorTrigger AddedOrUpdated<TComponent1, TComponent2, TComponent3>()
-            where TComponent1 : IComponent
-            where TComponent2 : IComponent
-            where TComponent3 : IComponent
-        {
-            var collectorTrigger = AddedOrUpdated<TComponent1, TComponent2>();
-
-            collectorTrigger.AddedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.AddedIndexes, ComponentIndex<TComponent3>.Index);
-            collectorTrigger.UpdatedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.UpdatedIndexes, ComponentIndex<TComponent3>.Index);
-            collectorTrigger.GenerateHasCode();
-
-            return collectorTrigger;
-        }
-
-        public static CollectorTrigger AddedOrUpdated<TComponent1, TComponent2, TComponent3, TComponent4>()
-            where TComponent1 : IComponent
-            where TComponent2 : IComponent
-            where TComponent3 : IComponent
-            where TComponent4 : IComponent
-        {
-            var collectorTrigger = AddedOrUpdated<TComponent1, TComponent2, TComponent3>();
-
-            collectorTrigger.AddedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.AddedIndexes, ComponentIndex<TComponent4>.Index);
-            collectorTrigger.UpdatedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.UpdatedIndexes, ComponentIndex<TComponent4>.Index);
-            collectorTrigger.GenerateHasCode();
-
-            return collectorTrigger;
-        }
-
-        public static CollectorTrigger AddedOrRemoved<TComponent>()
-            where TComponent : IComponent
-        {
-            var collectorTrigger = new CollectorTrigger
-            {
-                AddedIndexes = new[] { ComponentIndex<TComponent>.Index },
-                RemovedIndexes = new[] { ComponentIndex<TComponent>.Index },
-                UpdatedIndexes = new int[0]
-            };
-            collectorTrigger.GenerateHasCode();
-
-            return collectorTrigger;
-        }
-
-        public static CollectorTrigger AddedOrRemoved<TComponent1, TComponent2>()
-            where TComponent1 : IComponent
-            where TComponent2 : IComponent
-        {
-            var collectorTrigger = AddedOrRemoved<TComponent1>();
-
-            collectorTrigger.AddedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.AddedIndexes, ComponentIndex<TComponent2>.Index);
-            collectorTrigger.RemovedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.RemovedIndexes, ComponentIndex<TComponent2>.Index);
-            collectorTrigger.GenerateHasCode();
-
-            return collectorTrigger;
-        }
-
-        public static CollectorTrigger AddedOrRemoved<TComponent1, TComponent2, TComponent3>()
-            where TComponent1 : IComponent
-            where TComponent2 : IComponent
-            where TComponent3 : IComponent
-        {
-            var collectorTrigger = AddedOrRemoved<TComponent1, TComponent2>();
-
-            collectorTrigger.AddedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.AddedIndexes, ComponentIndex<TComponent3>.Index);
-            collectorTrigger.RemovedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.RemovedIndexes, ComponentIndex<TComponent3>.Index);
-            collectorTrigger.GenerateHasCode();
-
-            return collectorTrigger;
-        }
-
-        public static CollectorTrigger AddedOrRemoved<TComponent1, TComponent2, TComponent3, TComponent4>()
-            where TComponent1 : IComponent
-            where TComponent2 : IComponent
-            where TComponent3 : IComponent
-            where TComponent4 : IComponent
-        {
-            var collectorTrigger = AddedOrRemoved<TComponent1, TComponent2, TComponent3>();
-
-            collectorTrigger.AddedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.AddedIndexes, ComponentIndex<TComponent4>.Index);
-            collectorTrigger.RemovedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.RemovedIndexes, ComponentIndex<TComponent4>.Index);
-            collectorTrigger.GenerateHasCode();
-
-            return collectorTrigger;
-        }
-
-        public static CollectorTrigger RemovedOrUpdated<TComponent>()
-            where TComponent : IComponent
-        {
-            var collectorTrigger = new CollectorTrigger
-            {
-                AddedIndexes = new int[0],
-                RemovedIndexes = new[] { ComponentIndex<TComponent>.Index },
-                UpdatedIndexes = new[] { ComponentIndex<TComponent>.Index }
-            };
-            collectorTrigger.GenerateHasCode();
-
-            return collectorTrigger;
-        }
-
-        public static CollectorTrigger RemovedOrUpdated<TComponent1, TComponent2>()
-            where TComponent1 : IComponent
-            where TComponent2 : IComponent
-        {
-            var collectorTrigger = RemovedOrUpdated<TComponent1>();
-
-            collectorTrigger.RemovedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.RemovedIndexes, ComponentIndex<TComponent2>.Index);
-            collectorTrigger.UpdatedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.UpdatedIndexes, ComponentIndex<TComponent2>.Index);
-            collectorTrigger.GenerateHasCode();
-
-            return collectorTrigger;
-        }
-
-        public static CollectorTrigger RemovedOrUpdated<TComponent1, TComponent2, TComponent3>()
-            where TComponent1 : IComponent
-            where TComponent2 : IComponent
-            where TComponent3 : IComponent
-        {
-            var collectorTrigger = RemovedOrUpdated<TComponent1, TComponent2>();
-
-            collectorTrigger.RemovedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.RemovedIndexes, ComponentIndex<TComponent3>.Index);
-            collectorTrigger.UpdatedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.UpdatedIndexes, ComponentIndex<TComponent3>.Index);
-            collectorTrigger.GenerateHasCode();
-
-            return collectorTrigger;
-        }
-
-        public static CollectorTrigger RemovedOrUpdated<TComponent1, TComponent2, TComponent3, TComponent4>()
-            where TComponent1 : IComponent
-            where TComponent2 : IComponent
-            where TComponent3 : IComponent
-            where TComponent4 : IComponent
-        {
-            var collectorTrigger = RemovedOrUpdated<TComponent1, TComponent2, TComponent3>();
-
-            collectorTrigger.RemovedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.RemovedIndexes, ComponentIndex<TComponent4>.Index);
-            collectorTrigger.UpdatedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.UpdatedIndexes, ComponentIndex<TComponent4>.Index);
-            collectorTrigger.GenerateHasCode();
-
-            return collectorTrigger;
-        }
-        //
-
-        public static CollectorTrigger AddedOrRemovedOrUpdated<TComponent>()
-            where TComponent : IComponent
-        {
-            var collectorTrigger = new CollectorTrigger
-            {
-                AddedIndexes = new[] { ComponentIndex<TComponent>.Index },
-                RemovedIndexes = new[] { ComponentIndex<TComponent>.Index },
-                UpdatedIndexes = new[] { ComponentIndex<TComponent>.Index }
-            };
-            collectorTrigger.GenerateHasCode();
-
-            return collectorTrigger;
-        }
-
-        public static CollectorTrigger AddedOrRemovedOrUpdated<TComponent1, TComponent2>()
-            where TComponent1 : IComponent
-            where TComponent2 : IComponent
-        {
-            var collectorTrigger = AddedOrRemovedOrUpdated<TComponent1>();
-
-            collectorTrigger.AddedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.AddedIndexes, ComponentIndex<TComponent2>.Index);
-            collectorTrigger.RemovedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.RemovedIndexes, ComponentIndex<TComponent2>.Index);
-            collectorTrigger.UpdatedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.UpdatedIndexes, ComponentIndex<TComponent2>.Index);
-            collectorTrigger.GenerateHasCode();
-
-            return collectorTrigger;
-        }
-
-        public static CollectorTrigger AddedOrRemovedOrUpdated<TComponent1, TComponent2, TComponent3>()
-            where TComponent1 : IComponent
-            where TComponent2 : IComponent
-            where TComponent3 : IComponent
-        {
-            var collectorTrigger = AddedOrRemovedOrUpdated<TComponent1, TComponent2>();
-
-            collectorTrigger.AddedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.AddedIndexes, ComponentIndex<TComponent3>.Index);
-            collectorTrigger.RemovedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.RemovedIndexes, ComponentIndex<TComponent3>.Index);
-            collectorTrigger.UpdatedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.UpdatedIndexes, ComponentIndex<TComponent3>.Index);
-            collectorTrigger.GenerateHasCode();
-
-            return collectorTrigger;
-        }
-
-        public static CollectorTrigger AddedOrRemovedOrUpdated<TComponent1, TComponent2, TComponent3, TComponent4>()
-            where TComponent1 : IComponent
-            where TComponent2 : IComponent
-            where TComponent3 : IComponent
-            where TComponent4 : IComponent
-        {
-            var collectorTrigger = AddedOrRemovedOrUpdated<TComponent1, TComponent2, TComponent3>();
-
-            collectorTrigger.AddedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.AddedIndexes, ComponentIndex<TComponent4>.Index);
-            collectorTrigger.RemovedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.RemovedIndexes, ComponentIndex<TComponent4>.Index);
-            collectorTrigger.UpdatedIndexes = Helpers.MergeDistinctIndex(collectorTrigger.UpdatedIndexes, ComponentIndex<TComponent4>.Index);
-            collectorTrigger.GenerateHasCode();
 
             return collectorTrigger;
         }

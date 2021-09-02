@@ -15,7 +15,9 @@ namespace EcsLte.PerformanceTest
         }
 
         public override bool CanRunParallel()
-            => false;
+        {
+            return false;
+        }
 
         public override void RunParallel()
         {

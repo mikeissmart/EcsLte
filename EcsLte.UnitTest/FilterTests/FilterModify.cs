@@ -62,6 +62,9 @@ namespace EcsLte.UnitTest.FilterTests
                 Filter.NoneOf<TestRecordableComponent1>());
 
             Assert.IsTrue(filter.Indexes.Length == 3);
+            Assert.IsTrue(filter.AllOfIndexes.Length == 1);
+            Assert.IsTrue(filter.AnyOfIndexes.Length == 1);
+            Assert.IsTrue(filter.NoneOfIndexes.Length == 1);
         }
 
         [TestMethod]

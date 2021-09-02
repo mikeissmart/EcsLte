@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using EcsLte.Exceptions;
-using EcsLte.Utilities;
 
 namespace EcsLte
 {
@@ -22,6 +22,7 @@ namespace EcsLte
         }
 
         public World CurrentWorld { get; }
+        public Group[] Groups => _groups.Values.ToArray();
 
         public Group GetGroup(Filter filter)
         {
@@ -41,11 +42,15 @@ namespace EcsLte
                         foreach (var index in group.Filter.Indexes)
                             _groupComponentIndexes[index].Add(group);
                     }
-
-                    foreach (var entity in CurrentWorld.EntityManager.GetEntities())
-                        group.FilterEntity(entity, 0, false);
+                }
+                else
+                {
+                    return group;
                 }
             }
+
+            foreach (var entity in CurrentWorld.EntityManager.GetEntities())
+                group.FilterEntity(entity, -1);
 
             return group;
         }
@@ -78,10 +83,16 @@ namespace EcsLte
             }
         }
 
+        internal void OnEntityWillBeDestroyed(Entity entity)
+        {
+            foreach (var group in _groups.Values)
+                group.OnEntityWillBeDestroyed(entity);
+        }
+
         internal void OnEntityComponentAddedOrRemoved(Entity entity, int componentPoolIndex)
         {
             foreach (var group in _groupComponentIndexes[componentPoolIndex])
-                group.FilterEntity(entity, componentPoolIndex, false);
+                group.FilterEntity(entity, componentPoolIndex);
         }
 
         internal void OnEntityComponentReplaced(Entity entity, int componentPoolIndex)
@@ -95,6 +106,18 @@ namespace EcsLte
             foreach (var group in _groups.Values)
                 group.InternalDestroy();
             _groups.Clear();
+        }
+
+        private void OnComponentAddedEvent(Entity entity, int componentPoolIndex)
+        {
+            foreach (var group in _groupComponentIndexes[componentPoolIndex])
+                group.FilterEntity(entity, componentPoolIndex);
+        }
+
+        private void OnComponentRemovedEvent(Entity entity, int componentPoolIndex)
+        {
+            foreach (var group in _groupComponentIndexes[componentPoolIndex])
+                group.FilterEntity(entity, componentPoolIndex);
         }
     }
 }

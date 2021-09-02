@@ -1,11 +1,9 @@
-using EcsLte.Utilities;
-
 namespace EcsLte.PerformanceTest.EntityCommandPlayback
 {
     internal class EntityCommandPlayback_EntityLife_CreateEntities : BasePerformanceTest
     {
-        private World _world;
         private Entity[] _entities;
+        private World _world;
 
         public override void PreRun()
         {
@@ -19,7 +17,9 @@ namespace EcsLte.PerformanceTest.EntityCommandPlayback
         }
 
         public override bool CanRunParallel()
-            => false;
+        {
+            return false;
+        }
 
         public override void RunParallel()
         {

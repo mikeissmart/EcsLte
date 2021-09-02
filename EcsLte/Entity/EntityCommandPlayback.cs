@@ -14,8 +14,8 @@ namespace EcsLte
             CurrentWorld = world;
         }
 
-        public string Name { get; private set; }
-        public World CurrentWorld { get; private set; }
+        public string Name { get; }
+        public World CurrentWorld { get; }
 
         public Entity CreateEntity()
         {

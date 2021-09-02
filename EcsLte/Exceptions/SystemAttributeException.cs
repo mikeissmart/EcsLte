@@ -7,6 +7,7 @@ namespace EcsLte.Exceptions
         public SystemAttributeException(Type systemType)
             : base($"System '{nameof(systemType)}' must inherit from ISystem.",
                 "Inherit ISystem.")
-        { }
+        {
+        }
     }
 }

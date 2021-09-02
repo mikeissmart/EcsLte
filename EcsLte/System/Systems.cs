@@ -9,23 +9,12 @@ namespace EcsLte
         private readonly List<ISystem> _unsortedSystems;
         private List<ISystem> _sortedSystems;
 
-        public bool IsSorted { get; private set; }
-
-        public List<ISystem> GetSystems()
-        {
-            Sort();
-            return _sortedSystems;
-        }
-
-        public SystemSorter[] GetSystemSorters()
-        {
-            return SortBeforeAndAfter(GetChildSystems()).ToArray();
-        }
-
         public Systems()
         {
             _unsortedSystems = new List<ISystem>();
         }
+
+        public bool IsSorted { get; private set; }
 
         public virtual void Cleanup()
         {
@@ -53,6 +42,17 @@ namespace EcsLte
             Sort();
             foreach (var system in _sortedSystems)
                 system.TearDown();
+        }
+
+        public List<ISystem> GetSystems()
+        {
+            Sort();
+            return _sortedSystems;
+        }
+
+        public SystemSorter[] GetSystemSorters()
+        {
+            return SortBeforeAndAfter(GetChildSystems()).ToArray();
         }
 
         public virtual Systems Add(ISystem system)
@@ -97,26 +97,18 @@ namespace EcsLte
             foreach (var sorter in systemSorters)
             {
                 // Add befores
-                foreach (var attr in (BeforeSystemAttribute[])sorter.System.GetType()
-                     .GetCustomAttributes(typeof(BeforeSystemAttribute), true))
-                {
-                    foreach (var linkedSorter in systemSorters
-                        .Where(x => attr.Systems.Contains(x.System.GetType())))
-                    {
-                        sorter.AddBefore(linkedSorter);
-                    }
-                }
+                foreach (var attr in (BeforeSystemAttribute[]) sorter.System.GetType()
+                    .GetCustomAttributes(typeof(BeforeSystemAttribute), true))
+                foreach (var linkedSorter in systemSorters
+                    .Where(x => attr.Systems.Contains(x.System.GetType())))
+                    sorter.AddBefore(linkedSorter);
 
                 // Add afters
-                foreach (var attr in (AfterSystemAttribute[])sorter.System.GetType()
-                     .GetCustomAttributes(typeof(AfterSystemAttribute), true))
-                {
-                    foreach (var linkedSorter in systemSorters
-                        .Where(x => attr.Systems.Contains(x.System.GetType())))
-                    {
-                        sorter.AddAfter(linkedSorter);
-                    }
-                }
+                foreach (var attr in (AfterSystemAttribute[]) sorter.System.GetType()
+                    .GetCustomAttributes(typeof(AfterSystemAttribute), true))
+                foreach (var linkedSorter in systemSorters
+                    .Where(x => attr.Systems.Contains(x.System.GetType())))
+                    sorter.AddAfter(linkedSorter);
 
                 var error = sorter.CheckErrors();
                 if (error != null)

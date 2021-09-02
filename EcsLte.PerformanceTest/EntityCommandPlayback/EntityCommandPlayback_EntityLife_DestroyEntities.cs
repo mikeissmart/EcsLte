@@ -18,7 +18,9 @@ namespace EcsLte.PerformanceTest.EntityCommandPlayback
         }
 
         public override bool CanRunParallel()
-            => false;
+        {
+            return false;
+        }
 
         public override void RunParallel()
         {

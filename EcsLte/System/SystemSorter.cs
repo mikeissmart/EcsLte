@@ -6,15 +6,27 @@ namespace EcsLte
 {
     public class SystemSorter : IComparable<SystemSorter>
     {
-        private readonly HashSet<SystemSorter> m_befores = new HashSet<SystemSorter>();
         private readonly HashSet<SystemSorter> m_afters = new HashSet<SystemSorter>();
+        private readonly HashSet<SystemSorter> m_befores = new HashSet<SystemSorter>();
 
-        public SystemSorter[] LinkBefores { get { return m_befores.ToArray(); } }
-        public SystemSorter[] LinkAfters { get { return m_afters.ToArray(); } }
+        public SystemSorter(ISystem system)
+        {
+            System = system;
+        }
+
+        public SystemSorter[] LinkBefores => m_befores.ToArray();
+        public SystemSorter[] LinkAfters => m_afters.ToArray();
         public ISystem System { get; protected set; }
-        public string SystemName { get { return System.GetType().Name; } }
+        public string SystemName => System.GetType().Name;
 
-        public SystemSorter(ISystem system) { System = system; }
+        public int CompareTo(SystemSorter other)
+        {
+            return other == null
+                ? 0
+                : InAfters(other)
+                    ? 1
+                    : -1;
+        }
 
         private bool InBefores(SystemSorter systemSorter)
         {
@@ -22,10 +34,8 @@ namespace EcsLte
                 return true;
 
             foreach (var link in m_befores)
-            {
                 if (link.InBefores(systemSorter))
                     return true;
-            }
 
             return false;
         }
@@ -36,10 +46,8 @@ namespace EcsLte
                 return true;
 
             foreach (var link in m_afters)
-            {
                 if (link.InAfters(systemSorter))
                     return true;
-            }
 
             return false;
         }
@@ -56,7 +64,7 @@ namespace EcsLte
 
             foreach (var link in m_befores)
             {
-                string error = link.CheckBefores(systemSorter, alreadyChecked);
+                var error = link.CheckBefores(systemSorter, alreadyChecked);
                 if (error != null)
                     return SystemName + "->" + error;
             }
@@ -76,7 +84,7 @@ namespace EcsLte
 
             foreach (var link in m_afters)
             {
-                string error = link.CheckAfters(systemSorter, alreadyChecked);
+                var error = link.CheckAfters(systemSorter, alreadyChecked);
                 if (error != null)
                     return SystemName + "->" + error;
             }
@@ -99,13 +107,11 @@ namespace EcsLte
         public string CheckErrors()
         {
             foreach (var before in m_befores)
-            {
                 if (m_afters.Contains(before))
                     return string.Format("'{0}' : system can't have '{1}' system set before and after.",
                         SystemName, before.SystemName);
-            }
 
-            string error = CheckBefores(this, new HashSet<SystemSorter>());
+            var error = CheckBefores(this, new HashSet<SystemSorter>());
             if (error != null)
                 return error;
 
@@ -116,15 +122,9 @@ namespace EcsLte
             return null;
         }
 
-        public int CompareTo(SystemSorter other)
+        public override string ToString()
         {
-            return other == null
-                ? 0
-                : InAfters(other)
-                    ? 1
-                    : -1;
+            return SystemName;
         }
-
-        public override string ToString() { return SystemName; }
     }
 }

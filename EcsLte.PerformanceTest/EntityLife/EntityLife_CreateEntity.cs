@@ -4,8 +4,8 @@ namespace EcsLte.PerformanceTest
 {
     internal class EntityLife_CreateEntity : BasePerformanceTest
     {
-        private World _world;
         private Entity[] _entities;
+        private World _world;
 
         public override void PreRun()
         {
@@ -20,15 +20,14 @@ namespace EcsLte.PerformanceTest
         }
 
         public override bool CanRunParallel()
-            => true;
+        {
+            return true;
+        }
 
         public override void RunParallel()
         {
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                index =>
-                {
-                    _entities[index] = _world.EntityManager.CreateEntity();
-                });
+                index => { _entities[index] = _world.EntityManager.CreateEntity(); });
         }
 
         public override void PostRun()
