@@ -241,6 +241,17 @@ namespace EcsLte
 
         #region ComponentLife
 
+        public void AddAllComponents(Entity entity)
+        {
+            for (int i = 0; i < ComponentIndexes.Instance.Count; i++)
+            {
+                var type = ComponentIndexes.Instance.AllComponentTypes[i];
+                var com = (IComponent)Activator.CreateInstance(type);
+
+                _componentPools[i][entity.Id] = com;
+            }
+        }
+
         public bool HasComponent<TComponent>(Entity entity)
             where TComponent : IComponent
         {
@@ -256,7 +267,7 @@ namespace EcsLte
             if (!HasComponent<TComponent>(entity))
                 throw new EntityNotHaveComponentException(entity, typeof(TComponent));
 
-            return (TComponent) _componentPools[ComponentIndex<TComponent>.Index][entity.Id];
+            return (TComponent)_componentPools[ComponentIndex<TComponent>.Index][entity.Id];
         }
 
         public IComponent[] GetAllComponents(Entity entity)
@@ -329,13 +340,13 @@ namespace EcsLte
             for (var i = 0; i < _componentPools.Length; i++)
             {
                 var pool = _componentPools[i];
-                var component = pool[entity.Id];
-                if (ComponentIndexes.Instance.UniqueComponentIndexes.Any(x => x == i) &&
-                    _uniqueEntities[i] == entity)
-                    _uniqueEntities[i] = Entity.Null;
-                if (component != null)
+                if (pool[entity.Id] != null)
                 {
-                    _componentPools[i][entity.Id] = null;
+                    if (ComponentIndexes.Instance.UniqueComponentIndexes.Any(x => x == i) &&
+                        _uniqueEntities[i] == entity)
+                        _uniqueEntities[i] = Entity.Null;
+
+                    pool[entity.Id] = null;
                     CurrentWorld.GroupManager.OnEntityComponentAddedOrRemoved(entity, i);
                 }
             }
@@ -421,7 +432,7 @@ namespace EcsLte
                     if (_reuseableEntities.Count < count)
                     {
                         newSize = count - _reuseableEntities.Count;
-                        newSize = (int) Math.Pow(2, (int) Math.Log(_entities.UncachedData.Length + newSize, 2) + 1);
+                        newSize = (int)Math.Pow(2, (int)Math.Log(_entities.UncachedData.Length + newSize, 2) + 1);
                         Array.Resize(ref _entities.UncachedData, newSize);
 
                         lock (_componentPools)

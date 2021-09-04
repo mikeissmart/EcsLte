@@ -76,6 +76,7 @@ namespace EcsLte
         }
 
         public Type[] AllComponentTypes { get; private set; }
+        public int[] AllComponentIndexes { get; private set; }
         public int[] RecordableComponentIndexes { get; private set; }
         public int[] UniqueComponentIndexes { get; private set; }
         public int Count => _componentIndexTypeLookup.Count;
@@ -143,6 +144,7 @@ namespace EcsLte
                 throw new ComponentNoneException();
 
             AllComponentTypes = _componentIndexTypeLookup.Keys.ToArray();
+            AllComponentIndexes = _componentIndexTypeLookup.Values.ToArray();
             RecordableComponentIndexes = recordableComponentIndexes.ToArray();
             UniqueComponentIndexes = uniqueComponentIndexes.ToArray();
         }

@@ -26,19 +26,14 @@ namespace EcsLte.PerformanceTest
                 .GroupBy(x => x.Name.Split('_')[0])
                 .ToList();
 
-            var a = new Abc {Prop = 1};
-            var b = new Abc {Prop = 1};
-
-            var e1 = a == b;
-            var e2 = a.GetHashCode() == b.GetHashCode();
-
-            foreach (var testGrouping in tests)
+            /*foreach (var testGrouping in tests)
                 if (testGrouping.Key != "Misc")
                 {
                     foreach (var test in testGrouping)
                         Run(test);
                     Console.WriteLine("");
-                }
+                }*/
+            Run(typeof(EntityComponent_RemoveAllComponents));
 
             //Name                                                      Time      ParallelTime
             //Collector_CreateGet                                       198 ms    325 ms
@@ -102,7 +97,7 @@ namespace EcsLte.PerformanceTest
             long avgParallelTime = 0;
             for (var i = 0; i < loops; i++)
             {
-                var test = (BasePerformanceTest) Activator.CreateInstance(testType);
+                var test = (BasePerformanceTest)Activator.CreateInstance(testType);
                 test.PreRun();
                 _stopwatch.Reset();
                 _stopwatch.Start();
@@ -113,7 +108,7 @@ namespace EcsLte.PerformanceTest
                 times[i] = _stopwatch.ElapsedMilliseconds;
                 avgTime += _stopwatch.ElapsedMilliseconds;
 
-                test = (BasePerformanceTest) Activator.CreateInstance(testType);
+                test = (BasePerformanceTest)Activator.CreateInstance(testType);
                 var parallelCount = test.CanRunParallel();
                 if (test.CanRunParallel())
                 {
@@ -148,31 +143,6 @@ namespace EcsLte.PerformanceTest
                 $"{avgTime} ms".PadRight(10) +
                 $"{avgParallelTime} ms");
             _toCsv += $"{testType.Name}\t{avgTime}\t{avgParallelTime}{Environment.NewLine}";
-        }
-
-        private struct Abc
-        {
-            public int Prop { get; set; }
-
-            public static bool operator !=(Abc lhs, Abc rhs)
-            {
-                return !(lhs == rhs);
-            }
-
-            public static bool operator ==(Abc lhs, Abc rhs)
-            {
-                return lhs.Prop == rhs.Prop;
-            }
-
-            public override bool Equals(object obj)
-            {
-                return obj is Abc other && this == other;
-            }
-
-            public override int GetHashCode()
-            {
-                return Prop.GetHashCode();
-            }
         }
     }
 }

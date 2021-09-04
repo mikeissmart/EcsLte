@@ -4,6 +4,13 @@ namespace EcsLte
 {
     public partial struct Filter
     {
+        public static Filter AllOf(int[] indexes)
+        {
+            var filter = AllOfNoHashCode(indexes);
+
+            return filter;
+        }
+
         public static Filter AllOf<TComponent>()
             where TComponent : IComponent
         {
