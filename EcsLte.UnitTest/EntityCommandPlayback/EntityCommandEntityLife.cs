@@ -15,7 +15,7 @@ namespace EcsLte.UnitTest.EntityCommandPlayback
             _world.EntityManager.DefaultEntityCommandPlayback.RunCommands();
             Assert.IsTrue(_world.EntityManager.HasEntity(entity));
             Assert.IsTrue(entity.Id == 1, $"Entity.id = {entity.Id}, Entities:  " +
-                string.Join(", ", _world.EntityManager.GetEntities()));
+                                          string.Join(", ", _world.EntityManager.GetEntities()));
         }
 
         [TestMethod]

@@ -6,8 +6,8 @@ namespace EcsLte.Utilities
     public class ObjectPool<T>
     {
         private readonly Func<T> _factoryMethod;
-        private readonly Action<T> _resetMethod;
         private readonly Stack<T> _objectPool;
+        private readonly Action<T> _resetMethod;
 
         public ObjectPool(Func<T> factoryMethod, Action<T> resetMethod = null)
         {
@@ -21,8 +21,8 @@ namespace EcsLte.Utilities
             lock (_objectPool)
             {
                 return _objectPool.Count == 0
-                   ? _factoryMethod()
-                   : _objectPool.Pop();
+                    ? _factoryMethod()
+                    : _objectPool.Pop();
             }
         }
 
@@ -30,10 +30,7 @@ namespace EcsLte.Utilities
         {
             lock (_objectPool)
             {
-                if (_resetMethod != null)
-                {
-                    _resetMethod(obj);
-                }
+                if (_resetMethod != null) _resetMethod(obj);
                 _objectPool.Push(obj);
             }
         }

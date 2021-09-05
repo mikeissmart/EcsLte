@@ -13,11 +13,15 @@ namespace EcsLte
         private readonly Dictionary<string, EntityCommandPlayback> _entityCommandPlaybacks;
         private readonly Queue<Entity> _reuseableEntities;
         private readonly Entity[] _uniqueEntities;
+        private List<int>[] _entityComponentIndexes;
         private int _nextId;
 
         internal EntityManager(World world)
         {
             _entities = new DataCache<Entity[], Entity[]>(new Entity[4], UpdateEntitiesCache);
+            _entityComponentIndexes = new List<int>[4];
+            for (var i = 0; i < _entityComponentIndexes.Length; i++)
+                _entityComponentIndexes[i] = new List<int>();
             _reuseableEntities = new Queue<Entity>();
             _uniqueEntities = new Entity[ComponentIndexes.Instance.Count];
             _componentPools = new IComponent[ComponentIndexes.Instance.Count][];
@@ -243,7 +247,7 @@ namespace EcsLte
 
         public void AddAllComponents(Entity entity)
         {
-            for (int i = 0; i < ComponentIndexes.Instance.Count; i++)
+            for (var i = 0; i < ComponentIndexes.Instance.Count; i++)
             {
                 var type = ComponentIndexes.Instance.AllComponentTypes[i];
                 var com = (IComponent)Activator.CreateInstance(type);
@@ -275,15 +279,15 @@ namespace EcsLte
             if (!HasEntity(entity))
                 throw new EntityDoesNotExistException(CurrentWorld, entity);
 
-            var components = new List<IComponent>();
-            foreach (var pool in _componentPools)
+            var componentIndexes = _entityComponentIndexes[entity.Id].ToArray();
+            var components = new IComponent[componentIndexes.Length];
+            for (var i = 0; i < components.Length; i++)
             {
-                var component = pool[entity.Id];
-                if (component != null)
-                    components.Add(component);
+                var index = componentIndexes[i];
+                components[i] = _componentPools[index][entity.Id];
             }
 
-            return components.ToArray();
+            return components;
         }
 
         public void AddComponent<TComponent>(Entity entity, TComponent component)
@@ -298,6 +302,12 @@ namespace EcsLte
                 if (_uniqueEntities[componentPoolIndex] != Entity.Null)
                     throw new EntityAlreadyHasComponentUniqueException(typeof(TComponent));
                 _uniqueEntities[componentPoolIndex] = entity;
+            }
+
+            var entityIndexes = _entityComponentIndexes[entity.Id];
+            lock (entityIndexes)
+            {
+                entityIndexes.Add(componentPoolIndex);
             }
 
             _componentPools[componentPoolIndex][entity.Id] = component;
@@ -328,6 +338,12 @@ namespace EcsLte
             if (ComponentIndex<TComponent>.IsUnique && _uniqueEntities[componentPoolIndex] == entity)
                 _uniqueEntities[componentPoolIndex] = Entity.Null;
 
+            var entityIndexes = _entityComponentIndexes[entity.Id];
+            lock (entityIndexes)
+            {
+                entityIndexes.Remove(componentPoolIndex);
+            }
+
             _componentPools[componentPoolIndex][entity.Id] = null;
             CurrentWorld.GroupManager.OnEntityComponentAddedOrRemoved(entity, componentPoolIndex);
         }
@@ -337,18 +353,25 @@ namespace EcsLte
             if (!HasEntity(entity))
                 throw new EntityDoesNotExistException(CurrentWorld, entity);
 
-            for (var i = 0; i < _componentPools.Length; i++)
+            var entityIndexes = _entityComponentIndexes[entity.Id];
+            int[] componentIndexes;
+            lock (entityIndexes)
             {
-                var pool = _componentPools[i];
-                if (pool[entity.Id] != null)
-                {
-                    if (ComponentIndexes.Instance.UniqueComponentIndexes.Any(x => x == i) &&
-                        _uniqueEntities[i] == entity)
-                        _uniqueEntities[i] = Entity.Null;
+                componentIndexes = entityIndexes.ToArray();
+                entityIndexes.Clear();
+            }
 
-                    pool[entity.Id] = null;
-                    CurrentWorld.GroupManager.OnEntityComponentAddedOrRemoved(entity, i);
-                }
+            var components = new IComponent[componentIndexes.Length];
+            for (var i = 0; i < components.Length; i++)
+            {
+                var index = componentIndexes[i];
+
+                if (ComponentIndexes.Instance.UniqueComponentIndexes.Any(x => x == index) &&
+                    _uniqueEntities[index] == entity)
+                    _uniqueEntities[index] = Entity.Null;
+
+                _componentPools[index][entity.Id] = null;
+                CurrentWorld.GroupManager.OnEntityComponentAddedOrRemoved(entity, index);
             }
         }
 
@@ -403,6 +426,12 @@ namespace EcsLte
                 if (_entities.UncachedData.Length == _nextId)
                 {
                     Array.Resize(ref _entities.UncachedData, _entities.UncachedData.Length << 1);
+
+                    var oldSize = _entityComponentIndexes.Length;
+                    Array.Resize(ref _entityComponentIndexes, _entityComponentIndexes.Length << 1);
+                    for (var i = oldSize; i < _entityComponentIndexes.Length; i++)
+                        _entityComponentIndexes[i] = new List<int>();
+
                     lock (_componentPools)
                     {
                         for (var i = 0; i < _componentPools.Length; i++)
@@ -434,6 +463,11 @@ namespace EcsLte
                         newSize = count - _reuseableEntities.Count;
                         newSize = (int)Math.Pow(2, (int)Math.Log(_entities.UncachedData.Length + newSize, 2) + 1);
                         Array.Resize(ref _entities.UncachedData, newSize);
+
+                        var oldSize = _entityComponentIndexes.Length;
+                        Array.Resize(ref _entityComponentIndexes, newSize);
+                        for (var i = oldSize; i < _entityComponentIndexes.Length; i++)
+                            _entityComponentIndexes[i] = new List<int>();
 
                         lock (_componentPools)
                         {

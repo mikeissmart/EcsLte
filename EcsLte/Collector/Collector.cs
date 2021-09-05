@@ -19,7 +19,7 @@ namespace EcsLte
             CollectorTrigger = trigger;
 
             foreach (var index in trigger.Indexes)
-                if (!@group.Filter.AllOfIndexes.Contains(index) || @group.Filter.AnyOfIndexes.Contains(index))
+                if (!group.Filter.AllOfIndexes.Contains(index) || group.Filter.AnyOfIndexes.Contains(index))
                     throw new CollectorGroupMissingComponent();
         }
 

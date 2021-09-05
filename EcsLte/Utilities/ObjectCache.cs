@@ -7,16 +7,6 @@ namespace EcsLte.Utilities
     {
         private static ObjectCache _instance;
 
-        public static ObjectCache Instance
-        {
-            get
-            {
-                if (_instance == null)
-                    _instance = new ObjectCache();
-                return _instance;
-            }
-        }
-
         private readonly Dictionary<Type, object> _objectPools = new Dictionary<Type, object>();
 
         private ObjectCache()
@@ -31,6 +21,16 @@ namespace EcsLte.Utilities
             ));
         }
 
+        public static ObjectCache Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new ObjectCache();
+                return _instance;
+            }
+        }
+
         public ObjectPool<T> GetObjectPool<T>() where T : new()
         {
             object objectPool;
@@ -39,14 +39,12 @@ namespace EcsLte.Utilities
             lock (_objectPools)
             {
                 if (!_objectPools.TryGetValue(type, out objectPool))
-                {
                     throw new Exception("ObjectPool does not exist");
-                    /*objectPool = new ObjectPool<T>(() => new T());
+                /*objectPool = new ObjectPool<T>(() => new T());
                     _objectPools.Add(type, objectPool);*/
-                }
             }
 
-            return ((ObjectPool<T>)objectPool);
+            return (ObjectPool<T>) objectPool;
         }
 
         public T Get<T>() where T : new()

@@ -1,13 +1,12 @@
-using System.Linq;
 using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
     internal class Filter_Filtered_ManyComponents : BasePerformanceTest
     {
+        private Entity _entity;
         private Filter _filter;
         private World _world;
-        private Entity _entity;
 
         public override void PreRun()
         {
@@ -21,9 +20,7 @@ namespace EcsLte.PerformanceTest
         {
             bool result;
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-            {
                 result = _world.EntityManager.EntityIsFiltered(_entity, _filter);
-            }
         }
 
         public override bool CanRunParallel()
@@ -35,10 +32,7 @@ namespace EcsLte.PerformanceTest
         {
             bool result;
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                index =>
-                {
-                    result = _world.EntityManager.EntityIsFiltered(_entity, _filter);
-                });
+                index => { result = _world.EntityManager.EntityIsFiltered(_entity, _filter); });
         }
 
         public override void PostRun()
