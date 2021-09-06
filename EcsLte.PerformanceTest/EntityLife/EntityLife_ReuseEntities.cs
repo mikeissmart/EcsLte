@@ -1,4 +1,4 @@
-namespace EcsLte.PerformanceTest.EntityLife
+namespace EcsLte.PerformanceTest
 {
     internal class EntityLife_ReuseEntities : BasePerformanceTest
     {

@@ -8,26 +8,27 @@ namespace EcsLte
 {
     public class Group
     {
-        private readonly List<Collector>[] _collectorCommponentIndexes;
-        private readonly Dictionary<CollectorTrigger, Collector> _collectors;
-        private readonly DataCache<Dictionary<int, Entity>, Entity[]> _entities;
+        private GroupData _data;
 
-        internal Group(GroupManager groupManager, Filter filter)
+        internal Group() { }
+
+        internal void Initialize(GroupManager groupManager, Filter filter, Entity[] entities)
         {
-            _entities = new DataCache<Dictionary<int, Entity>, Entity[]>(new Dictionary<int, Entity>(),
-                UpdateEntitiesCache);
-            _collectors = new Dictionary<CollectorTrigger, Collector>();
-            _collectorCommponentIndexes = new List<Collector>[ComponentIndexes.Instance.Count];
+            _data = ObjectCache.Pop<GroupData>();
+
+            if (_data.Entities.UncachedData.Length < groupManager.CurrentWorld.EntityManager.EntityArrayLength)
+                Array.Resize(ref _data.Entities.UncachedData, groupManager.CurrentWorld.EntityManager.EntityArrayLength);
+
+            foreach (var entity in entities)
+                _data.Entities.UncachedData[entity.Id] = entity;
+            _data.Entities.IsDirty = true;
 
             CurrentWorld = groupManager.CurrentWorld;
             Filter = filter;
-
-            for (var i = 0; i < ComponentIndexes.Instance.Count; i++)
-                _collectorCommponentIndexes[i] = new List<Collector>();
         }
 
-        public World CurrentWorld { get; }
-        public Filter Filter { get; }
+        public World CurrentWorld { get; private set; }
+        public Filter Filter { get; private set; }
         public bool IsDestroyed { get; private set; }
 
         public Entity[] GetEntities()
@@ -35,7 +36,7 @@ namespace EcsLte
             if (IsDestroyed)
                 throw new GroupIsDestroyedException(this);
 
-            return _entities.CachedData;
+            return _data.Entities.CachedData;
         }
 
         public bool Equals(Group other)
@@ -50,18 +51,32 @@ namespace EcsLte
             return Filter.ToString();
         }
 
+        internal void OnEntityArrayResize(int newSize)
+        {
+            lock (_data.Entities)
+            {
+                if (_data.Entities.UncachedData.Length < newSize)
+                    Array.Resize(ref _data.Entities.UncachedData, newSize);
+            }
+            lock (_data.Collectors)
+            {
+                foreach (var collector in _data.Collectors.Values)
+                    collector.OnEntityArrayResize(newSize);
+            }
+        }
+
         internal void OnEntityWillBeDestroyed(Entity entity)
         {
-            lock (_entities)
+            lock (_data.Entities)
             {
-                if (_entities.UncachedData.ContainsKey(entity.Id))
+                if (_data.Entities.UncachedData[entity.Id] == entity)
                 {
-                    _entities.UncachedData.Remove(entity.Id);
-                    _entities.IsDirty = true;
+                    _data.Entities.UncachedData[entity.Id] = Entity.Null;
+                    _data.Entities.IsDirty = true;
 
-                    lock (_collectors)
+                    lock (_data.Collectors)
                     {
-                        foreach (var collector in _collectors.Values)
+                        foreach (var collector in _data.Collectors.Values)
                             collector.OnEntityWillBeDestroyed(entity);
                     }
                 }
@@ -74,33 +89,33 @@ namespace EcsLte
                 throw new GroupIsDestroyedException(this);
 
             if (CurrentWorld.EntityManager.EntityIsFiltered(entity, Filter))
-                lock (_entities)
+                lock (_data.Entities)
                 {
-                    if (!_entities.UncachedData.ContainsKey(entity.Id))
+                    if (_data.Entities.UncachedData[entity.Id] != entity)
                     {
-                        _entities.UncachedData.Add(entity.Id, entity);
-                        _entities.IsDirty = true;
+                        _data.Entities.UncachedData[entity.Id] = entity;
+                        _data.Entities.IsDirty = true;
 
                         if (componentPoolIndex != -1)
-                            lock (_collectorCommponentIndexes)
+                            lock (_data.CollectorCommponentIndexes)
                             {
-                                foreach (var collector in _collectorCommponentIndexes[componentPoolIndex])
+                                foreach (var collector in _data.CollectorCommponentIndexes[componentPoolIndex])
                                     collector.AddedEntity(entity, componentPoolIndex);
                             }
                     }
                 }
             else
-                lock (_entities)
+                lock (_data.Entities)
                 {
-                    if (_entities.UncachedData.ContainsKey(entity.Id))
+                    if (_data.Entities.UncachedData[entity.Id] == entity)
                     {
-                        _entities.UncachedData.Remove(entity.Id);
-                        _entities.IsDirty = true;
+                        _data.Entities.UncachedData[entity.Id] = Entity.Null;
+                        _data.Entities.IsDirty = true;
 
                         if (componentPoolIndex != -1)
-                            lock (_collectorCommponentIndexes)
+                            lock (_data.CollectorCommponentIndexes)
                             {
-                                foreach (var collector in _collectorCommponentIndexes[componentPoolIndex])
+                                foreach (var collector in _data.CollectorCommponentIndexes[componentPoolIndex])
                                     collector.RemovedEntity(entity, componentPoolIndex);
                             }
                     }
@@ -109,27 +124,24 @@ namespace EcsLte
 
         internal void UpdateEntity(Entity entity, int componentPoolIndex)
         {
-            foreach (var collector in _collectorCommponentIndexes[componentPoolIndex])
+            foreach (var collector in _data.CollectorCommponentIndexes[componentPoolIndex])
                 collector.UpdatedEntity(entity, componentPoolIndex);
         }
 
         internal void InternalDestroy()
         {
-            _entities.UncachedData.Clear();
-            _entities.IsDirty = true;
-            foreach (var collector in _collectors.Values)
+            foreach (var collector in _data.Collectors.Values)
                 collector.InternalDestroy();
-            _collectors.Clear();
+
+            _data.Reset();
+            ObjectCache.Push(_data);
 
             IsDestroyed = true;
         }
 
-        private Entity[] UpdateEntitiesCache()
+        private static Entity[] UpdateEntitiesCache(Dictionary<int, Entity> uncachedData)
         {
-            lock (_entities)
-            {
-                return _entities.UncachedData.Values.ToArray();
-            }
+            return uncachedData.Values.ToArray();
         }
 
         #region CollectorLife
@@ -137,17 +149,18 @@ namespace EcsLte
         public Collector GetCollector(CollectorTrigger trigger)
         {
             Collector collector;
-            lock (_collectors)
+            lock (_data.Collectors)
             {
-                if (!_collectors.TryGetValue(trigger, out collector))
+                if (!_data.Collectors.TryGetValue(trigger, out collector))
                 {
-                    collector = new Collector(this, trigger);
-                    _collectors.Add(trigger, collector);
+                    collector = new Collector();
+                    collector.Initialize(this, trigger);
+                    _data.Collectors.Add(trigger, collector);
 
-                    lock (_collectorCommponentIndexes)
+                    lock (_data.CollectorCommponentIndexes)
                     {
                         foreach (var index in trigger.Indexes)
-                            _collectorCommponentIndexes[index].Add(collector);
+                            _data.CollectorCommponentIndexes[index].Add(collector);
                     }
                 }
             }
@@ -166,14 +179,14 @@ namespace EcsLte
 
             collector.InternalDestroy();
 
-            lock (_collectors)
+            lock (_data.Collectors)
             {
-                _collectors.Remove(collector.CollectorTrigger);
+                _data.Collectors.Remove(collector.CollectorTrigger);
             }
 
             foreach (var componentIndex in collector.CollectorTrigger.Indexes)
             {
-                var collectors = _collectorCommponentIndexes[componentIndex];
+                var collectors = _data.CollectorCommponentIndexes[componentIndex];
                 lock (collectors)
                 {
                     collectors.Remove(collector);

@@ -6,6 +6,7 @@ namespace EcsLte.PerformanceTest
     {
         private Entity[] _entities;
         private World _world;
+        private TestComponent1 _component;
 
         public override void PreRun()
         {
@@ -14,12 +15,13 @@ namespace EcsLte.PerformanceTest
 
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 _entities[i] = _world.EntityManager.CreateEntity();
+            _component = new TestComponent1();
         }
 
         public override void Run()
         {
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                _world.EntityManager.AddComponent(_entities[i], new TestComponent1());
+                _world.EntityManager.AddComponent(_entities[i], _component);
         }
 
         public override bool CanRunParallel()
@@ -30,7 +32,7 @@ namespace EcsLte.PerformanceTest
         public override void RunParallel()
         {
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                index => { _world.EntityManager.AddComponent(_entities[index], new TestComponent1()); });
+                index => { _world.EntityManager.AddComponent(_entities[index], _component); });
         }
 
         public override void PostRun()

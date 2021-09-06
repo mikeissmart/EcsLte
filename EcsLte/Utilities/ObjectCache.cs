@@ -1,70 +1,44 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 namespace EcsLte.Utilities
 {
-    public class ObjectCache
+    public static class ObjectCache
     {
-        private static ObjectCache _instance;
+        private static readonly ConcurrentDictionary<Type, ConcurrentQueue<object>> _objectPools
+            = new ConcurrentDictionary<Type, ConcurrentQueue<object>>();
 
-        private readonly Dictionary<Type, object> _objectPools = new Dictionary<Type, object>();
+        public static bool IsCacheEnabled { get; set; } = true;
 
-        private ObjectCache()
+        public static T Pop<T>() where T : new()
         {
-            RegisterCustomObjectPool(new ObjectPool<HashSet<int>>(
-                () => new HashSet<int>(),
-                x => x.Clear()
-            ));
-            RegisterCustomObjectPool(new ObjectPool<Entity[]>(
-                () => new Entity[0],
-                x => Array.Clear(x, 0, x.Length)
-            ));
-        }
-
-        public static ObjectCache Instance
-        {
-            get
+            if (IsCacheEnabled)
             {
-                if (_instance == null)
-                    _instance = new ObjectCache();
-                return _instance;
+                var type = typeof(T);
+                if (!_objectPools.TryGetValue(type, out var cacheables))
+                {
+                    cacheables = new ConcurrentQueue<object>();
+                    _objectPools.TryAdd(type, cacheables);
+                }
+
+                if (cacheables.TryDequeue(out var result))
+                    return (T)result;
             }
+            return new T();
         }
 
-        public ObjectPool<T> GetObjectPool<T>() where T : new()
+        public static void Push<T>(T obj) where T : new()
         {
-            object objectPool;
-            var type = typeof(T);
-
-            lock (_objectPools)
+            if (IsCacheEnabled)
             {
-                if (!_objectPools.TryGetValue(type, out objectPool))
-                    throw new Exception("ObjectPool does not exist");
-                /*objectPool = new ObjectPool<T>(() => new T());
-                    _objectPools.Add(type, objectPool);*/
+                var type = typeof(T);
+                if (!_objectPools.TryGetValue(type, out var cacheables))
+                {
+                    cacheables = new ConcurrentQueue<object>();
+                    _objectPools.TryAdd(type, cacheables);
+                }
+                cacheables.Enqueue(obj);
             }
-
-            return (ObjectPool<T>) objectPool;
-        }
-
-        public T Get<T>() where T : new()
-        {
-            return GetObjectPool<T>().Get();
-        }
-
-        public void Push<T>(T obj) where T : new()
-        {
-            GetObjectPool<T>().Push(obj);
-        }
-
-        private void RegisterCustomObjectPool<T>(ObjectPool<T> objectPool)
-        {
-            _objectPools.Add(typeof(T), objectPool);
-        }
-
-        public void Reset()
-        {
-            _objectPools.Clear();
         }
     }
 }

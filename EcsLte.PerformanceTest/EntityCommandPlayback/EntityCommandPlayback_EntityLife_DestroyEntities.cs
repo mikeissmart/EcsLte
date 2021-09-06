@@ -13,7 +13,7 @@ namespace EcsLte.PerformanceTest.EntityCommandPlayback
 
         public override void Run()
         {
-            _entities = _world.EntityManager.DefaultEntityCommandPlayback.CreateEntities(TestConsts.EntityLoopCount);
+            _world.EntityManager.DefaultEntityCommandPlayback.DestroyEntities(_entities);
             _world.EntityManager.DefaultEntityCommandPlayback.RunCommands();
         }
 

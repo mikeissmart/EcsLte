@@ -73,9 +73,9 @@ namespace EcsLte
             return Name;
         }
 
-        private static World[] UpdateWorldsCache()
+        private static World[] UpdateWorldsCache(Dictionary<string, World> uncached)
         {
-            return _worlds.UncachedData.Values.ToArray();
+            return uncached.Values.ToArray();
         }
 
         private void SelfDestroy()

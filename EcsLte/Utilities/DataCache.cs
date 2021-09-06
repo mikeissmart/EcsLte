@@ -5,13 +5,13 @@ namespace EcsLte.Utilities
     public class DataCache<TUncached, TCached>
     {
         private readonly object _isDirtyLock;
-        private readonly Func<TCached> _recacheFunc;
+        private readonly Func<TUncached, TCached> _recacheFunc;
         private TCached _cachedData;
         private bool _isDirty;
 
         public TUncached UncachedData;
 
-        public DataCache(TUncached initializeUncache, Func<TCached> recacheFunc)
+        public DataCache(TUncached initializeUncache, Func<TUncached, TCached> recacheFunc)
         {
             _recacheFunc = recacheFunc;
             _isDirty = true;
@@ -20,20 +20,20 @@ namespace EcsLte.Utilities
             UncachedData = initializeUncache;
         }
 
-        public DataCache(bool initializeDirty, TUncached initializeUncache, Func<TCached> recacheFunc) : this(
+        public DataCache(bool initializeDirty, TUncached initializeUncache, Func<TUncached, TCached> recacheFunc) : this(
             initializeUncache, recacheFunc)
         {
             _isDirty = initializeDirty;
         }
 
-        public DataCache(TCached initializeCache, TUncached initializeUncache, Func<TCached> recacheFunc) : this(false,
+        public DataCache(TCached initializeCache, TUncached initializeUncache, Func<TUncached, TCached> recacheFunc) : this(false,
             initializeUncache, recacheFunc)
         {
             _cachedData = initializeCache;
         }
 
         public DataCache(bool initializeDirty, TCached initializeCache, TUncached initializeUncache,
-            Func<TCached> recacheFunc) : this(initializeDirty,
+            Func<TUncached, TCached> recacheFunc) : this(initializeDirty,
             initializeUncache, recacheFunc)
         {
             _cachedData = initializeCache;
@@ -47,7 +47,10 @@ namespace EcsLte.Utilities
                 {
                     if (IsDirty)
                     {
-                        _cachedData = _recacheFunc();
+                        lock (this)
+                        {
+                            _cachedData = _recacheFunc(UncachedData);
+                        }
                         _isDirty = false;
                     }
                 }

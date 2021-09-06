@@ -2,27 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EcsLte.Exceptions;
+using EcsLte.Utilities;
 
 namespace EcsLte
 {
     public class GroupManager
     {
-        private readonly List<Group>[] _groupComponentIndexes;
-        private readonly Dictionary<Filter, Group> _groups;
+        private readonly GroupManagerData _data;
 
         internal GroupManager(World world)
         {
-            _groups = new Dictionary<Filter, Group>();
-            _groupComponentIndexes = new List<Group>[ComponentIndexes.Instance.Count];
+            _data = ObjectCache.Pop<GroupManagerData>();
 
             CurrentWorld = world;
-
-            for (var i = 0; i < ComponentIndexes.Instance.Count; i++)
-                _groupComponentIndexes[i] = new List<Group>();
         }
 
         public World CurrentWorld { get; }
-        public Group[] Groups => _groups.Values.ToArray();
+        public Group[] Groups => _data.Groups.Values.ToArray();
 
         public Group GetGroup(Filter filter)
         {
@@ -30,17 +26,23 @@ namespace EcsLte
                 throw new WorldIsDestroyedException(CurrentWorld);
 
             Group group;
-            lock (_groups)
+            lock (_data.Groups)
             {
-                if (!_groups.TryGetValue(filter, out group))
+                if (!_data.Groups.TryGetValue(filter, out group))
                 {
-                    group = new Group(this, filter);
-                    _groups.Add(filter, group);
+                    var entities = CurrentWorld.EntityManager.GetEntities()
+                        .AsParallel()
+                        .Where(x => CurrentWorld.EntityManager.EntityIsFiltered(x, filter))
+                        .ToArray();
 
-                    lock (_groupComponentIndexes)
+                    group = new Group();
+                    group.Initialize(this, filter, entities);
+                    _data.Groups.Add(filter, group);
+
+                    lock (_data.GroupComponentIndexes)
                     {
                         foreach (var index in group.Filter.Indexes)
-                            _groupComponentIndexes[index].Add(group);
+                            _data.GroupComponentIndexes[index].Add(group);
                     }
                 }
                 else
@@ -48,9 +50,6 @@ namespace EcsLte
                     return group;
                 }
             }
-
-            foreach (var entity in CurrentWorld.EntityManager.GetEntities())
-                group.FilterEntity(entity, -1);
 
             return group;
         }
@@ -68,14 +67,14 @@ namespace EcsLte
 
             group.InternalDestroy();
 
-            lock (_groups)
+            lock (_data.Groups)
             {
-                _groups.Remove(group.Filter);
+                _data.Groups.Remove(group.Filter);
             }
 
             foreach (var componentIndex in group.Filter.Indexes)
             {
-                var groups = _groupComponentIndexes[componentIndex];
+                var groups = _data.GroupComponentIndexes[componentIndex];
                 lock (groups)
                 {
                     groups.Remove(group);
@@ -83,41 +82,39 @@ namespace EcsLte
             }
         }
 
+        internal void OnEntityArrayResize(int newSize)
+        {
+            lock (_data.Groups)
+            {
+                foreach (var group in _data.Groups.Values)
+                    group.OnEntityArrayResize(newSize);
+            }
+        }
+
         internal void OnEntityWillBeDestroyed(Entity entity)
         {
-            foreach (var group in _groups.Values)
+            foreach (var group in _data.Groups.Values)
                 group.OnEntityWillBeDestroyed(entity);
         }
 
         internal void OnEntityComponentAddedOrRemoved(Entity entity, int componentPoolIndex)
         {
-            foreach (var group in _groupComponentIndexes[componentPoolIndex])
+            foreach (var group in _data.GroupComponentIndexes[componentPoolIndex])
                 group.FilterEntity(entity, componentPoolIndex);
         }
 
         internal void OnEntityComponentReplaced(Entity entity, int componentPoolIndex)
         {
-            foreach (var group in _groupComponentIndexes[componentPoolIndex])
+            foreach (var group in _data.GroupComponentIndexes[componentPoolIndex])
                 group.UpdateEntity(entity, componentPoolIndex);
         }
 
         internal void InternalDestroy()
         {
-            foreach (var group in _groups.Values)
+            foreach (var group in _data.Groups.Values)
                 group.InternalDestroy();
-            _groups.Clear();
-        }
-
-        private void OnComponentAddedEvent(Entity entity, int componentPoolIndex)
-        {
-            foreach (var group in _groupComponentIndexes[componentPoolIndex])
-                group.FilterEntity(entity, componentPoolIndex);
-        }
-
-        private void OnComponentRemovedEvent(Entity entity, int componentPoolIndex)
-        {
-            foreach (var group in _groupComponentIndexes[componentPoolIndex])
-                group.FilterEntity(entity, componentPoolIndex);
+            _data.Reset();
+            ObjectCache.Push(_data);
         }
     }
 }

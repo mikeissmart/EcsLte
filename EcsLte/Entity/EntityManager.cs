@@ -8,38 +8,25 @@ namespace EcsLte
 {
     public class EntityManager
     {
-        private readonly IComponent[][] _componentPools;
-        private readonly DataCache<Entity[], Entity[]> _entities;
-        private readonly Dictionary<string, EntityCommandPlayback> _entityCommandPlaybacks;
-        private readonly Queue<Entity> _reuseableEntities;
-        private readonly Entity[] _uniqueEntities;
-        private List<int>[] _entityComponentIndexes;
-        private int _nextId;
+        private EntityManagerData _data;
 
         internal EntityManager(World world)
         {
-            _entities = new DataCache<Entity[], Entity[]>(new Entity[4], UpdateEntitiesCache);
-            _entityComponentIndexes = new List<int>[4];
-            for (var i = 0; i < _entityComponentIndexes.Length; i++)
-                _entityComponentIndexes[i] = new List<int>();
-            _reuseableEntities = new Queue<Entity>();
-            _uniqueEntities = new Entity[ComponentIndexes.Instance.Count];
-            _componentPools = new IComponent[ComponentIndexes.Instance.Count][];
-            for (var i = 0; i < _componentPools.Length; i++)
-                _componentPools[i] = new IComponent[4];
-            _entityCommandPlaybacks = new Dictionary<string, EntityCommandPlayback>();
+            _data = ObjectCache.Pop<EntityManagerData>();
 
             CurrentWorld = world;
 
             // Create null entity
             CreateEntity();
-            _entities.UncachedData[0] = Entity.Null;
+            _data.Entities.UncachedData[0] = Entity.Null;
 
             DefaultEntityCommandPlayback = CreateOrGetEntityCommand("Default");
         }
 
         public World CurrentWorld { get; }
         public EntityCommandPlayback DefaultEntityCommandPlayback { get; }
+
+        internal int EntityArrayLength { get => _data.Entities.UncachedData.Length; }
 
         public EntityCommandPlayback CreateOrGetEntityCommand(string name)
         {
@@ -48,11 +35,11 @@ namespace EcsLte
             if (!ParallelRunner.IsMainThread)
                 throw new EntityCommandPlaybackOffThreadException(name);
 
-            if (_entityCommandPlaybacks.TryGetValue(name, out var entityCommand))
+            if (_data.EntityCommandPlaybacks.TryGetValue(name, out var entityCommand))
                 return entityCommand;
 
             entityCommand = new EntityCommandPlayback(CurrentWorld, name);
-            _entityCommandPlaybacks.Add(name, entityCommand);
+            _data.EntityCommandPlaybacks.Add(name, entityCommand);
 
             return entityCommand;
         }
@@ -69,22 +56,17 @@ namespace EcsLte
 
         internal void InternalDestroy()
         {
-            Array.Clear(_entities.UncachedData, 0, _entities.UncachedData.Length);
-            _entities.IsDirty = true;
-            _reuseableEntities.Clear();
-            foreach (var pool in _componentPools)
-                Array.Clear(pool, 0, pool.Length);
-            Array.Clear(_uniqueEntities, 0, _uniqueEntities.Length);
-            _entityCommandPlaybacks.Clear();
+            _data.Reset();
+            ObjectCache.Push(_data);
         }
 
         #region UpdateCache
 
         private Entity[] UpdateEntitiesCache()
         {
-            lock (_entities)
+            lock (_data.Entities)
             {
-                return _entities.UncachedData
+                return _data.Entities.UncachedData
                     .Where(x => x != Entity.Null)
                     .ToArray();
             }
@@ -98,10 +80,10 @@ namespace EcsLte
         {
             if (CurrentWorld.IsDestroyed)
                 throw new WorldIsDestroyedException(CurrentWorld);
-            if (entity.Id <= 0 || entity.Id >= _entities.UncachedData.Length)
+            if (entity.Id <= 0 || entity.Id >= _data.Entities.UncachedData.Length)
                 return false;
 
-            return _entities.UncachedData[entity.Id] == entity;
+            return _data.Entities.UncachedData[entity.Id] == entity;
         }
 
         public Entity[] GetEntities()
@@ -109,15 +91,15 @@ namespace EcsLte
             if (CurrentWorld.IsDestroyed)
                 throw new WorldIsDestroyedException(CurrentWorld);
 
-            return _entities.CachedData;
+            return _data.Entities.CachedData;
         }
 
         public Entity CreateEntity()
         {
             var entity = LocalCreateEntity();
 
-            _entities.UncachedData[entity.Id] = entity;
-            _entities.IsDirty = true;
+            _data.Entities.UncachedData[entity.Id] = entity;
+            _data.Entities.IsDirty = true;
 
             return entity;
         }
@@ -126,8 +108,8 @@ namespace EcsLte
         {
             var entities = LocalCreateEntities(count);
 
-            foreach (var entity in entities) _entities.UncachedData[entity.Id] = entity;
-            _entities.IsDirty = true;
+            foreach (var entity in entities) _data.Entities.UncachedData[entity.Id] = entity;
+            _data.Entities.IsDirty = true;
 
             return entities;
         }
@@ -142,13 +124,13 @@ namespace EcsLte
             CurrentWorld.GroupManager.OnEntityWillBeDestroyed(entity);
             RemoveAllComponents(entity);
 
-            lock (_reuseableEntities)
+            lock (_data.ReuseableEntities)
             {
-                _reuseableEntities.Enqueue(entity);
+                _data.ReuseableEntities.Enqueue(entity);
             }
 
-            _entities.UncachedData[entity.Id] = Entity.Null;
-            _entities.IsDirty = true;
+            _data.Entities.UncachedData[entity.Id] = Entity.Null;
+            _data.Entities.IsDirty = true;
         }
 
         public void DestroyEntities(ICollection<Entity> entities)
@@ -156,7 +138,7 @@ namespace EcsLte
             if (CurrentWorld.IsDestroyed)
                 throw new WorldIsDestroyedException(CurrentWorld);
 
-            lock (_reuseableEntities)
+            lock (_data.ReuseableEntities)
             {
                 foreach (var entity in entities)
                 {
@@ -166,12 +148,12 @@ namespace EcsLte
                     CurrentWorld.GroupManager.OnEntityWillBeDestroyed(entity);
                     RemoveAllComponents(entity);
 
-                    _reuseableEntities.Enqueue(entity);
-                    _entities.UncachedData[entity.Id] = Entity.Null;
+                    _data.ReuseableEntities.Enqueue(entity);
+                    _data.Entities.UncachedData[entity.Id] = Entity.Null;
                 }
             }
 
-            _entities.IsDirty = true;
+            _data.Entities.IsDirty = true;
         }
 
         #endregion
@@ -184,7 +166,7 @@ namespace EcsLte
             if (CurrentWorld.IsDestroyed)
                 throw new WorldIsDestroyedException(CurrentWorld);
 
-            return _uniqueEntities[ComponentIndex<TComponentUnique>.Index] != Entity.Null;
+            return _data.UniqueEntities[ComponentIndex<TComponentUnique>.Index] != Entity.Null;
         }
 
         public TComponentUnique GetUniqueComponent<TComponentUnique>()
@@ -200,7 +182,7 @@ namespace EcsLte
             if (!HasUniqueComponent<TComponentUnique>())
                 throw new EntityNotHaveComponentUniqueException(typeof(TComponentUnique));
 
-            return _uniqueEntities[ComponentIndex<TComponentUnique>.Index];
+            return _data.UniqueEntities[ComponentIndex<TComponentUnique>.Index];
         }
 
         public Entity AddUniqueComponent<TComponentUnique>(TComponentUnique componentUnique)
@@ -252,7 +234,7 @@ namespace EcsLte
                 var type = ComponentIndexes.Instance.AllComponentTypes[i];
                 var com = (IComponent)Activator.CreateInstance(type);
 
-                _componentPools[i][entity.Id] = com;
+                _data.ComponentPools[i][entity.Id] = com;
             }
         }
 
@@ -262,7 +244,7 @@ namespace EcsLte
             if (!HasEntity(entity))
                 throw new EntityDoesNotExistException(CurrentWorld, entity);
 
-            return _componentPools[ComponentIndex<TComponent>.Index][entity.Id] != null;
+            return _data.ComponentPools[ComponentIndex<TComponent>.Index][entity.Id] != null;
         }
 
         public TComponent GetComponent<TComponent>(Entity entity)
@@ -271,7 +253,7 @@ namespace EcsLte
             if (!HasComponent<TComponent>(entity))
                 throw new EntityNotHaveComponentException(entity, typeof(TComponent));
 
-            return (TComponent)_componentPools[ComponentIndex<TComponent>.Index][entity.Id];
+            return (TComponent)_data.ComponentPools[ComponentIndex<TComponent>.Index][entity.Id];
         }
 
         public IComponent[] GetAllComponents(Entity entity)
@@ -279,12 +261,12 @@ namespace EcsLte
             if (!HasEntity(entity))
                 throw new EntityDoesNotExistException(CurrentWorld, entity);
 
-            var componentIndexes = _entityComponentIndexes[entity.Id].ToArray();
+            var componentIndexes = _data.EntityComponentIndexes[entity.Id].ToArray();
             var components = new IComponent[componentIndexes.Length];
             for (var i = 0; i < components.Length; i++)
             {
                 var index = componentIndexes[i];
-                components[i] = _componentPools[index][entity.Id];
+                components[i] = _data.ComponentPools[index][entity.Id];
             }
 
             return components;
@@ -299,18 +281,18 @@ namespace EcsLte
             var componentPoolIndex = ComponentIndex<TComponent>.Index;
             if (ComponentIndex<TComponent>.IsUnique)
             {
-                if (_uniqueEntities[componentPoolIndex] != Entity.Null)
+                if (_data.UniqueEntities[componentPoolIndex] != Entity.Null)
                     throw new EntityAlreadyHasComponentUniqueException(typeof(TComponent));
-                _uniqueEntities[componentPoolIndex] = entity;
+                _data.UniqueEntities[componentPoolIndex] = entity;
             }
 
-            var entityIndexes = _entityComponentIndexes[entity.Id];
+            var entityIndexes = _data.EntityComponentIndexes[entity.Id];
             lock (entityIndexes)
             {
                 entityIndexes.Add(componentPoolIndex);
             }
 
-            _componentPools[componentPoolIndex][entity.Id] = component;
+            _data.ComponentPools[componentPoolIndex][entity.Id] = component;
             CurrentWorld.GroupManager.OnEntityComponentAddedOrRemoved(entity, componentPoolIndex);
         }
 
@@ -324,7 +306,7 @@ namespace EcsLte
             else
             {
                 var componentPoolIndex = ComponentIndex<TComponent>.Index;
-                _componentPools[componentPoolIndex][entity.Id] = newComponent;
+                _data.ComponentPools[componentPoolIndex][entity.Id] = newComponent;
                 CurrentWorld.GroupManager.OnEntityComponentReplaced(entity, componentPoolIndex);
             }
         }
@@ -335,16 +317,16 @@ namespace EcsLte
                 throw new EntityNotHaveComponentException(entity, typeof(TComponent));
 
             var componentPoolIndex = ComponentIndex<TComponent>.Index;
-            if (ComponentIndex<TComponent>.IsUnique && _uniqueEntities[componentPoolIndex] == entity)
-                _uniqueEntities[componentPoolIndex] = Entity.Null;
+            if (ComponentIndex<TComponent>.IsUnique && _data.UniqueEntities[componentPoolIndex] == entity)
+                _data.UniqueEntities[componentPoolIndex] = Entity.Null;
 
-            var entityIndexes = _entityComponentIndexes[entity.Id];
+            var entityIndexes = _data.EntityComponentIndexes[entity.Id];
             lock (entityIndexes)
             {
                 entityIndexes.Remove(componentPoolIndex);
             }
 
-            _componentPools[componentPoolIndex][entity.Id] = null;
+            _data.ComponentPools[componentPoolIndex][entity.Id] = null;
             CurrentWorld.GroupManager.OnEntityComponentAddedOrRemoved(entity, componentPoolIndex);
         }
 
@@ -353,7 +335,7 @@ namespace EcsLte
             if (!HasEntity(entity))
                 throw new EntityDoesNotExistException(CurrentWorld, entity);
 
-            var entityIndexes = _entityComponentIndexes[entity.Id];
+            var entityIndexes = _data.EntityComponentIndexes[entity.Id];
             int[] componentIndexes;
             lock (entityIndexes)
             {
@@ -367,10 +349,10 @@ namespace EcsLte
                 var index = componentIndexes[i];
 
                 if (ComponentIndexes.Instance.UniqueComponentIndexes.Any(x => x == index) &&
-                    _uniqueEntities[index] == entity)
-                    _uniqueEntities[index] = Entity.Null;
+                    _data.UniqueEntities[index] == entity)
+                    _data.UniqueEntities[index] = Entity.Null;
 
-                _componentPools[index][entity.Id] = null;
+                _data.ComponentPools[index][entity.Id] = null;
                 CurrentWorld.GroupManager.OnEntityComponentAddedOrRemoved(entity, index);
             }
         }
@@ -391,8 +373,8 @@ namespace EcsLte
 
         internal void DequeueEntityFromCommand(Entity entity)
         {
-            _entities.UncachedData[entity.Id] = entity;
-            _entities.IsDirty = true;
+            _data.Entities.UncachedData[entity.Id] = entity;
+            _data.Entities.IsDirty = true;
         }
 
         #endregion
@@ -405,41 +387,40 @@ namespace EcsLte
                 throw new WorldIsDestroyedException(CurrentWorld);
 
             Entity entity;
-            lock (_reuseableEntities)
+            lock (_data.ReuseableEntities)
             {
-                if (_reuseableEntities.Count > 0)
+                if (_data.ReuseableEntities.Count > 0)
                 {
-                    entity = _reuseableEntities.Dequeue();
+                    entity = _data.ReuseableEntities.Dequeue();
                     entity.Version++;
 
                     return entity;
                 }
             }
 
-            lock (_entities) // use lock since _nextId is updating
+            lock (_data.Entities)
             {
                 entity = new Entity
                 {
-                    Id = _nextId++,
+                    Id = _data.NextId++,
                     Version = 1
                 };
-                if (_entities.UncachedData.Length == _nextId)
+                if (_data.Entities.UncachedData.Length == _data.NextId)
                 {
-                    Array.Resize(ref _entities.UncachedData, _entities.UncachedData.Length << 1);
+                    Array.Resize(ref _data.Entities.UncachedData, _data.Entities.UncachedData.Length * 2);
 
-                    var oldSize = _entityComponentIndexes.Length;
-                    Array.Resize(ref _entityComponentIndexes, _entityComponentIndexes.Length << 1);
-                    for (var i = oldSize; i < _entityComponentIndexes.Length; i++)
-                        _entityComponentIndexes[i] = new List<int>();
+                    var oldSize = _data.EntityComponentIndexes.Length;
+                    Array.Resize(ref _data.EntityComponentIndexes, _data.EntityComponentIndexes.Length * 2);
+                    for (var i = oldSize; i < _data.EntityComponentIndexes.Length; i++)
+                        _data.EntityComponentIndexes[i] = new List<int>();
 
-                    lock (_componentPools)
-                    {
-                        for (var i = 0; i < _componentPools.Length; i++)
-                            Array.Resize(ref _componentPools[i], _componentPools[i].Length << 1);
-                    }
+                    for (var i = 0; i < _data.ComponentPools.Length; i++)
+                        Array.Resize(ref _data.ComponentPools[i], _data.ComponentPools[i].Length * 2);
+
+                    CurrentWorld.GroupManager.OnEntityArrayResize(_data.Entities.UncachedData.Length * 2);
                 }
 
-                _entities.UncachedData[entity.Id] = Entity.Null;
+                _data.Entities.UncachedData[entity.Id] = Entity.Null;
             }
 
             return entity;
@@ -453,27 +434,27 @@ namespace EcsLte
                 throw new WorldIsDestroyedException(CurrentWorld);
 
             var entities = new Entity[count];
-            lock (_reuseableEntities)
+            lock (_data.ReuseableEntities)
             {
-                lock (_entities)
+                lock (_data.Entities)
                 {
-                    var newSize = 0;
-                    if (_reuseableEntities.Count < count)
+                    int newSize = 0;
+                    var activeEntityCount = _data.Entities.UncachedData.Length - (_data.ReuseableEntities.Count - _data.NextId);
+                    if (activeEntityCount < count)
                     {
-                        newSize = count - _reuseableEntities.Count;
-                        newSize = (int)Math.Pow(2, (int)Math.Log(_entities.UncachedData.Length + newSize, 2) + 1);
-                        Array.Resize(ref _entities.UncachedData, newSize);
+                        newSize = count - activeEntityCount;
+                        newSize = (int)Math.Pow(2, (int)Math.Log(_data.Entities.UncachedData.Length + newSize, 2) + 1);
+                        Array.Resize(ref _data.Entities.UncachedData, newSize);
 
-                        var oldSize = _entityComponentIndexes.Length;
-                        Array.Resize(ref _entityComponentIndexes, newSize);
-                        for (var i = oldSize; i < _entityComponentIndexes.Length; i++)
-                            _entityComponentIndexes[i] = new List<int>();
+                        var oldSize = _data.EntityComponentIndexes.Length;
+                        Array.Resize(ref _data.EntityComponentIndexes, newSize);
+                        for (var i = oldSize; i < _data.EntityComponentIndexes.Length; i++)
+                            _data.EntityComponentIndexes[i] = new List<int>();
 
-                        lock (_componentPools)
-                        {
-                            for (var i = 0; i < _componentPools.Length; i++)
-                                Array.Resize(ref _componentPools[i], newSize);
-                        }
+                        for (var i = 0; i < _data.ComponentPools.Length; i++)
+                            Array.Resize(ref _data.ComponentPools[i], newSize);
+
+                        CurrentWorld.GroupManager.OnEntityArrayResize(newSize);
                     }
                     else
                     {
@@ -483,16 +464,16 @@ namespace EcsLte
                     for (var i = 0; i < count; i++)
                     {
                         Entity entity;
-                        if (_reuseableEntities.Count > 0)
+                        if (_data.ReuseableEntities.Count > 0)
                         {
-                            entity = _reuseableEntities.Dequeue();
+                            entity = _data.ReuseableEntities.Dequeue();
                             entity.Version++;
                         }
                         else
                         {
                             entity = new Entity
                             {
-                                Id = _nextId++,
+                                Id = _data.NextId++,
                                 Version = 1
                             };
                         }
@@ -515,7 +496,7 @@ namespace EcsLte
                 return true;
 
             foreach (var index in filter.AllOfIndexes)
-                if (_componentPools[index][entity.Id] == null)
+                if (_data.ComponentPools[index][entity.Id] == null)
                     return false;
 
             return true;
@@ -527,7 +508,7 @@ namespace EcsLte
                 return true;
 
             foreach (var index in filter.AnyOfIndexes)
-                if (_componentPools[index][entity.Id] != null)
+                if (_data.ComponentPools[index][entity.Id] != null)
                     return true;
 
             return false;
@@ -539,7 +520,7 @@ namespace EcsLte
                 return true;
 
             foreach (var index in filter.NoneOfIndexes)
-                if (_componentPools[index][entity.Id] != null)
+                if (_data.ComponentPools[index][entity.Id] != null)
                     return false;
 
             return true;
