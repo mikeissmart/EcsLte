@@ -2,7 +2,7 @@ using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class Filter_Create : BasePerformanceTest
+    /*internal class Filter_Create : BasePerformanceTest
     {
         private Filter[] _filters;
 
@@ -38,5 +38,5 @@ namespace EcsLte.PerformanceTest
         public override void PostRun()
         {
         }
-    }
+    }*/
 }

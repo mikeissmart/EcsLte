@@ -105,6 +105,19 @@ namespace EcsLte
             return _componentIndexTypeLookup[typeof(TComponent)];
         }
 
+        internal IComponentPool[] CreateComponentPools(int initialSize)
+        {
+            var componentPools = new IComponentPool[Count];
+            var poolType = typeof(ComponentPool<>);
+            var args = new object[] { initialSize };
+            for (int i = 0; i < Count; i++)
+            {
+                componentPools[i] = (IComponentPool)Activator.CreateInstance(poolType.MakeGenericType(AllComponentTypes[i]), args);
+            }
+
+            return componentPools;
+        }
+
         private void Initialize()
         {
             var iComponentType = typeof(IComponent);

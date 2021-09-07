@@ -234,7 +234,7 @@ namespace EcsLte
                 var type = ComponentIndexes.Instance.AllComponentTypes[i];
                 var com = (IComponent)Activator.CreateInstance(type);
 
-                _data.ComponentPools[i][entity.Id] = com;
+                _data.ComponentPools[i].AddComponent(entity.Id, com);
             }
         }
 
@@ -244,7 +244,7 @@ namespace EcsLte
             if (!HasEntity(entity))
                 throw new EntityDoesNotExistException(CurrentWorld, entity);
 
-            return _data.ComponentPools[ComponentIndex<TComponent>.Index][entity.Id] != null;
+            return _data.ComponentPools[ComponentIndex<TComponent>.Index].HasComponent(entity.Id);
         }
 
         public TComponent GetComponent<TComponent>(Entity entity)
@@ -253,7 +253,7 @@ namespace EcsLte
             if (!HasComponent<TComponent>(entity))
                 throw new EntityNotHaveComponentException(entity, typeof(TComponent));
 
-            return (TComponent)_data.ComponentPools[ComponentIndex<TComponent>.Index][entity.Id];
+            return (TComponent)_data.ComponentPools[ComponentIndex<TComponent>.Index].GetComponent(entity.Id);
         }
 
         public IComponent[] GetAllComponents(Entity entity)
@@ -266,7 +266,7 @@ namespace EcsLte
             for (var i = 0; i < components.Length; i++)
             {
                 var index = componentIndexes[i];
-                components[i] = _data.ComponentPools[index][entity.Id];
+                components[i] = _data.ComponentPools[index].GetComponent(entity.Id);
             }
 
             return components;
@@ -292,7 +292,7 @@ namespace EcsLte
                 entityIndexes.Add(componentPoolIndex);
             }
 
-            _data.ComponentPools[componentPoolIndex][entity.Id] = component;
+            _data.ComponentPools[componentPoolIndex].AddComponent(entity.Id, component);
             CurrentWorld.GroupManager.OnEntityComponentAddedOrRemoved(entity, componentPoolIndex);
         }
 
@@ -306,7 +306,7 @@ namespace EcsLte
             else
             {
                 var componentPoolIndex = ComponentIndex<TComponent>.Index;
-                _data.ComponentPools[componentPoolIndex][entity.Id] = newComponent;
+                _data.ComponentPools[componentPoolIndex].ReplaceComponent(entity.Id, newComponent);
                 CurrentWorld.GroupManager.OnEntityComponentReplaced(entity, componentPoolIndex);
             }
         }
@@ -326,7 +326,7 @@ namespace EcsLte
                 entityIndexes.Remove(componentPoolIndex);
             }
 
-            _data.ComponentPools[componentPoolIndex][entity.Id] = null;
+            _data.ComponentPools[componentPoolIndex].RemoveComponent(entity.Id);
             CurrentWorld.GroupManager.OnEntityComponentAddedOrRemoved(entity, componentPoolIndex);
         }
 
@@ -352,7 +352,7 @@ namespace EcsLte
                     _data.UniqueEntities[index] == entity)
                     _data.UniqueEntities[index] = Entity.Null;
 
-                _data.ComponentPools[index][entity.Id] = null;
+                _data.ComponentPools[index].RemoveComponent(entity.Id);
                 CurrentWorld.GroupManager.OnEntityComponentAddedOrRemoved(entity, index);
             }
         }
@@ -407,20 +407,19 @@ namespace EcsLte
                 };
                 if (_data.Entities.UncachedData.Length == _data.NextId)
                 {
-                    Array.Resize(ref _data.Entities.UncachedData, _data.Entities.UncachedData.Length * 2);
+                    int newSize = _data.Entities.UncachedData.Length * 2;
+                    Array.Resize(ref _data.Entities.UncachedData, newSize);
 
                     var oldSize = _data.EntityComponentIndexes.Length;
-                    Array.Resize(ref _data.EntityComponentIndexes, _data.EntityComponentIndexes.Length * 2);
+                    Array.Resize(ref _data.EntityComponentIndexes, newSize);
                     for (var i = oldSize; i < _data.EntityComponentIndexes.Length; i++)
                         _data.EntityComponentIndexes[i] = new List<int>();
 
                     for (var i = 0; i < _data.ComponentPools.Length; i++)
-                        Array.Resize(ref _data.ComponentPools[i], _data.ComponentPools[i].Length * 2);
+                        _data.ComponentPools[i].Resize(newSize);
 
-                    CurrentWorld.GroupManager.OnEntityArrayResize(_data.Entities.UncachedData.Length * 2);
+                    CurrentWorld.GroupManager.OnEntityArrayResize(newSize);
                 }
-
-                _data.Entities.UncachedData[entity.Id] = Entity.Null;
             }
 
             return entity;
@@ -452,7 +451,7 @@ namespace EcsLte
                             _data.EntityComponentIndexes[i] = new List<int>();
 
                         for (var i = 0; i < _data.ComponentPools.Length; i++)
-                            Array.Resize(ref _data.ComponentPools[i], newSize);
+                            _data.ComponentPools[i].Resize(newSize);
 
                         CurrentWorld.GroupManager.OnEntityArrayResize(newSize);
                     }
@@ -496,7 +495,7 @@ namespace EcsLte
                 return true;
 
             foreach (var index in filter.AllOfIndexes)
-                if (_data.ComponentPools[index][entity.Id] == null)
+                if (!_data.ComponentPools[index].HasComponent(entity.Id))
                     return false;
 
             return true;
@@ -508,7 +507,7 @@ namespace EcsLte
                 return true;
 
             foreach (var index in filter.AnyOfIndexes)
-                if (_data.ComponentPools[index][entity.Id] != null)
+                if (_data.ComponentPools[index].HasComponent(entity.Id))
                     return true;
 
             return false;
@@ -520,7 +519,7 @@ namespace EcsLte
                 return true;
 
             foreach (var index in filter.NoneOfIndexes)
-                if (_data.ComponentPools[index][entity.Id] != null)
+                if (_data.ComponentPools[index].HasComponent(entity.Id))
                     return false;
 
             return true;

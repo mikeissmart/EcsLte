@@ -9,7 +9,7 @@ namespace EcsLte
     {
         private const int _arrayInitSize = 4;
 
-        public IComponent[][] ComponentPools = new IComponent[ComponentIndexes.Instance.Count][];
+        public IComponentPool[] ComponentPools = new IComponentPool[ComponentIndexes.Instance.Count];
         public DataCache<Entity[], Entity[]> Entities = new DataCache<Entity[], Entity[]>(new Entity[_arrayInitSize], UpdateEntitiesCache);
         public Dictionary<string, EntityCommandPlayback> EntityCommandPlaybacks = new Dictionary<string, EntityCommandPlayback>();
         public Queue<Entity> ReuseableEntities = new Queue<Entity>();
@@ -21,8 +21,7 @@ namespace EcsLte
         {
             for (var i = 0; i < EntityComponentIndexes.Length; i++)
                 EntityComponentIndexes[i] = new List<int>();
-            for (var i = 0; i < ComponentPools.Length; i++)
-                ComponentPools[i] = new IComponent[_arrayInitSize];
+            ComponentPools = ComponentIndexes.Instance.CreateComponentPools(_arrayInitSize);
         }
 
         public void Reset()
@@ -37,7 +36,7 @@ namespace EcsLte
             foreach (var entityIndexes in EntityComponentIndexes)
                 entityIndexes.Clear();
             foreach (var pool in ComponentPools)
-                Array.Clear(pool, 0, pool.Length);
+                pool.Clear();
         }
 
         private static Entity[] UpdateEntitiesCache(Entity[] uncachedData)
