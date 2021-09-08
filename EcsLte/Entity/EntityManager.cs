@@ -49,9 +49,11 @@ namespace EcsLte
             if (!HasEntity(entity))
                 return false;
 
-            return FilteredAllOf(entity, filter) &&
-                   FilteredAnyOf(entity, filter) &&
-                   FilteredNoneOf(entity, filter);
+            var componentIndexes = _data.EntityComponentIndexes[entity.Id]
+                .ToArray();
+            return FilteredAllOf(componentIndexes, filter) &&
+                   FilteredAnyOf(componentIndexes, filter) &&
+                   FilteredNoneOf(componentIndexes, filter);
         }
 
         internal void InternalDestroy()
@@ -489,37 +491,37 @@ namespace EcsLte
 
         #region FilterEntity
 
-        private bool FilteredAllOf(Entity entity, Filter filter)
+        private bool FilteredAllOf(int[] componentIndexes, Filter filter)
         {
             if (filter.AllOfIndexes == null || filter.AllOfIndexes.Length == 0)
                 return true;
 
             foreach (var index in filter.AllOfIndexes)
-                if (!_data.ComponentPools[index].HasComponent(entity.Id))
+                if (!componentIndexes.Contains(index))
                     return false;
 
             return true;
         }
 
-        private bool FilteredAnyOf(Entity entity, Filter filter)
+        private bool FilteredAnyOf(int[] componentIndexes, Filter filter)
         {
             if (filter.AnyOfIndexes == null || filter.AnyOfIndexes.Length == 0)
                 return true;
 
             foreach (var index in filter.AnyOfIndexes)
-                if (_data.ComponentPools[index].HasComponent(entity.Id))
+                if (componentIndexes.Contains(index))
                     return true;
 
             return false;
         }
 
-        private bool FilteredNoneOf(Entity entity, Filter filter)
+        private bool FilteredNoneOf(int[] componentIndexes, Filter filter)
         {
             if (filter.NoneOfIndexes == null || filter.NoneOfIndexes.Length == 0)
                 return true;
 
             foreach (var index in filter.NoneOfIndexes)
-                if (_data.ComponentPools[index].HasComponent(entity.Id))
+                if (componentIndexes.Contains(index))
                     return false;
 
             return true;

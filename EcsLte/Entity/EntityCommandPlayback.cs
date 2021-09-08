@@ -1,4 +1,7 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
+using EcsLte.Utilities;
 
 namespace EcsLte
 {
@@ -20,7 +23,10 @@ namespace EcsLte
         public Entity CreateEntity()
         {
             var entity = CurrentWorld.EntityManager.EnqueueEntityFromCommand();
-            AppendCommand(entity, new CreateEntityCommand(entity));
+            AppendCommand(entity, new CreateEntityCommand
+            {
+                QueuedEntity = entity
+            });
 
             return entity;
         }
@@ -29,32 +35,49 @@ namespace EcsLte
         {
             var entities = CurrentWorld.EntityManager.EnqueueEntitiesFromCommand(count);
             foreach (var entity in entities)
-                AppendCommand(entity, new CreateEntityCommand(entity));
+                AppendCommand(entity, new CreateEntityCommand
+                {
+                    QueuedEntity = entity
+                });
 
             return entities;
         }
 
         public void DestroyEntity(Entity entity)
         {
-            AppendCommand(entity, new DestroyEntityCommand(entity));
+            AppendCommand(entity, new DestroyEntityCommand
+            {
+                QueuedEntity = entity
+            });
         }
 
         public void DestroyEntities(Entity[] entities)
         {
             foreach (var entity in entities)
-                AppendCommand(entity, new DestroyEntityCommand(entity));
+                AppendCommand(entity, new DestroyEntityCommand
+                {
+                    QueuedEntity = entity
+                });
         }
 
         public void AddComponent<TComponent>(Entity entity, TComponent component)
             where TComponent : IComponent
         {
-            AppendCommand(entity, new AddComponentEntityCommand<TComponent>(entity, component));
+            AppendCommand(entity, new AddComponentEntityCommand<TComponent>
+            {
+                QueuedEntity = entity,
+                Component = component
+            });
         }
 
         public void ReplaceComponent<TComponent>(Entity entity, TComponent component)
             where TComponent : IComponent
         {
-            AppendCommand(entity, new ReplaceComponentEntityCommand<TComponent>(entity, component));
+            AppendCommand(entity, new ReplaceComponentEntityCommand<TComponent>
+            {
+                QueuedEntity = entity,
+                Component = component
+            });
         }
 
         public void RemoveComponent<TComponent>(Entity entity)
@@ -67,8 +90,8 @@ namespace EcsLte
         {
             lock (_commands)
             {
-                foreach (var command in _commands)
-                    command.ExecuteCommand(CurrentWorld);
+                for (int i = 0; i < _commands.Count; i++)
+                    _commands[i].ExecuteCommand(CurrentWorld);
                 _commands.Clear();
             }
         }

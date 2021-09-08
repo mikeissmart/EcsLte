@@ -1,22 +1,24 @@
 using EcsLte.Utilities;
 
-namespace EcsLte.PerformanceTest.EntityCommandPlayback
+namespace EcsLte.PerformanceTest
 {
     internal class EntityCommandPlayback_EntityComponent_AddComponent : BasePerformanceTest
     {
         private Entity[] _entities;
         private World _world;
+        private TestComponent1 _component;
 
         public override void PreRun()
         {
             _world = World.CreateWorld("Test");
             _entities = _world.EntityManager.CreateEntities(TestConsts.EntityLoopCount);
+            _component = new TestComponent1();
         }
 
         public override void Run()
         {
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                _world.EntityManager.DefaultEntityCommandPlayback.AddComponent(_entities[i], new TestComponent1());
+                _world.EntityManager.DefaultEntityCommandPlayback.AddComponent(_entities[i], _component);
             _world.EntityManager.DefaultEntityCommandPlayback.RunCommands();
         }
 
@@ -31,7 +33,7 @@ namespace EcsLte.PerformanceTest.EntityCommandPlayback
                 index =>
                 {
                     _world.EntityManager.DefaultEntityCommandPlayback.AddComponent(_entities[index],
-                        new TestComponent1());
+                        _component);
                 });
             _world.EntityManager.DefaultEntityCommandPlayback.RunCommands();
         }

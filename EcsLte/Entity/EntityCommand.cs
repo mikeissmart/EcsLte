@@ -1,81 +1,66 @@
 namespace EcsLte
 {
-    internal abstract class EntityCommand
+    internal interface EntityCommand
     {
-        protected EntityCommand(Entity entity)
-        {
-            QueuedEntity = entity;
-        }
 
-        public Entity QueuedEntity { get; }
-
-        public abstract void ExecuteCommand(World world);
+        void ExecuteCommand(World world);
     }
 
-    internal class CreateEntityCommand : EntityCommand
+    internal struct CreateEntityCommand : EntityCommand
     {
-        public CreateEntityCommand(Entity queuedEntity) : base(queuedEntity)
-        {
-        }
+        public Entity QueuedEntity { get; set; }
 
-        public override void ExecuteCommand(World world)
+        public void ExecuteCommand(World world)
         {
             world.EntityManager.DequeueEntityFromCommand(QueuedEntity);
         }
     }
 
-    internal class DestroyEntityCommand : EntityCommand
+    internal struct DestroyEntityCommand : EntityCommand
     {
-        public DestroyEntityCommand(Entity queuedEntity) : base(queuedEntity)
-        {
-        }
+        public Entity QueuedEntity { get; set; }
 
-        public override void ExecuteCommand(World world)
+        public void ExecuteCommand(World world)
         {
             world.EntityManager.DestroyEntity(QueuedEntity);
         }
     }
 
-    internal class AddComponentEntityCommand<TComponent> : EntityCommand
+    internal struct AddComponentEntityCommand<TComponent> : EntityCommand
         where TComponent : IComponent
     {
-        private readonly TComponent _component;
+        public TComponent Component { get; set; }
+        public Entity QueuedEntity { get; set; }
 
-        public AddComponentEntityCommand(Entity queuedEntity, TComponent component) : base(queuedEntity)
+        public void ExecuteCommand(World world)
         {
-            _component = component;
-        }
-
-        public override void ExecuteCommand(World world)
-        {
-            world.EntityManager.AddComponent(QueuedEntity, _component);
+            world.EntityManager.AddComponent(QueuedEntity, Component);
         }
     }
 
-    internal class ReplaceComponentEntityCommand<TComponent> : EntityCommand
+    internal struct ReplaceComponentEntityCommand<TComponent> : EntityCommand
         where TComponent : IComponent
     {
-        private readonly TComponent _newComponent;
+        public TComponent Component { get; set; }
+        public Entity QueuedEntity { get; set; }
 
-        public ReplaceComponentEntityCommand(Entity queuedEntity, TComponent newComponent) : base(queuedEntity)
+        public void ExecuteCommand(World world)
         {
-            _newComponent = newComponent;
-        }
-
-        public override void ExecuteCommand(World world)
-        {
-            world.EntityManager.ReplaceComponent(QueuedEntity, _newComponent);
+            world.EntityManager.ReplaceComponent(QueuedEntity, Component);
         }
     }
 
-    internal class RemoveComponentEntityCommand<TComponent> : EntityCommand
+    internal struct RemoveComponentEntityCommand<TComponent> : EntityCommand
         where TComponent : IComponent
     {
-        public RemoveComponentEntityCommand(Entity queuedEntity) : base(queuedEntity)
+        public Entity QueuedEntity { get; set; }
+
+        public RemoveComponentEntityCommand(Entity queuedEntity)
         {
+            QueuedEntity = queuedEntity;
         }
 
-        public override void ExecuteCommand(World world)
+        public void ExecuteCommand(World world)
         {
             world.EntityManager.RemoveComponent<TComponent>(QueuedEntity);
         }

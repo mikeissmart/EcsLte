@@ -72,10 +72,7 @@ namespace EcsLte.Utilities
             get => _isDirty;
             set
             {
-                lock (_isDirtyLock)
-                {
-                    _isDirty = value;
-                }
+                _isDirty = value;
             }
         }
     }

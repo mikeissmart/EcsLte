@@ -1,6 +1,6 @@
 using EcsLte.Utilities;
 
-namespace EcsLte.PerformanceTest.EntityCommandPlayback
+namespace EcsLte.PerformanceTest
 {
     internal class EntityCommandPlayback_EntityComponent_ReplaceComponent : BasePerformanceTest
     {

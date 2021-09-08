@@ -1,4 +1,4 @@
-namespace EcsLte.PerformanceTest.EntityCommandPlayback
+namespace EcsLte.PerformanceTest
 {
     internal class EntityCommandPlayback_EntityLife_DestroyEntities : BasePerformanceTest
     {

@@ -99,14 +99,16 @@ namespace EcsLte
 
         internal void OnEntityComponentAddedOrRemoved(Entity entity, int componentPoolIndex)
         {
-            foreach (var group in _data.GroupComponentIndexes[componentPoolIndex])
-                group.FilterEntity(entity, componentPoolIndex);
+            var groups = _data.GroupComponentIndexes[componentPoolIndex];
+            for (int i = 0; i < groups.Count; i++)
+                groups[i].FilterEntity(entity, componentPoolIndex);
         }
 
         internal void OnEntityComponentReplaced(Entity entity, int componentPoolIndex)
         {
-            foreach (var group in _data.GroupComponentIndexes[componentPoolIndex])
-                group.UpdateEntity(entity, componentPoolIndex);
+            var groups = _data.GroupComponentIndexes[componentPoolIndex];
+            for (int i = 0; i < groups.Count; i++)
+                groups[i].UpdateEntity(entity, componentPoolIndex);
         }
 
         internal void InternalDestroy()
