@@ -18,7 +18,8 @@
             "stopAtEntry": false,
             "logging": {
                 "moduleLoad": false
-             }
+             },
+             "enableStepFiltering": false
         },
         {
             "name": ".NET Core Attach",

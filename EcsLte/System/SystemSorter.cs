@@ -9,14 +9,14 @@ namespace EcsLte
         private readonly HashSet<SystemSorter> m_afters = new HashSet<SystemSorter>();
         private readonly HashSet<SystemSorter> m_befores = new HashSet<SystemSorter>();
 
-        public SystemSorter(ISystem system)
+        public SystemSorter(SystemBase system)
         {
             System = system;
         }
 
         public SystemSorter[] LinkBefores => m_befores.ToArray();
         public SystemSorter[] LinkAfters => m_afters.ToArray();
-        public ISystem System { get; protected set; }
+        public SystemBase System { get; protected set; }
         public string SystemName => System.GetType().Name;
 
         public int CompareTo(SystemSorter other)

@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using EcsLte.Exceptions;
 
 namespace EcsLte
 {
-    public class AfterSystemAttribute : BaseSystemAttribute
+    public class AfterSystemAttribute : SystemBaseAttribute
     {
         public AfterSystemAttribute(params Type[] systems) :
             base(systems)
@@ -11,7 +13,7 @@ namespace EcsLte
         }
     }
 
-    public class BeforeSystemAttribute : BaseSystemAttribute
+    public class BeforeSystemAttribute : SystemBaseAttribute
     {
         public BeforeSystemAttribute(params Type[] systems) :
             base(systems)
@@ -19,17 +21,27 @@ namespace EcsLte
         }
     }
 
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface, AllowMultiple = true)]
-    public abstract class BaseSystemAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+    public abstract class SystemBaseAttribute : Attribute
     {
-        public BaseSystemAttribute(params Type[] systems)
+        public SystemBaseAttribute(params Type[] systems)
         {
+            var hash = new HashSet<Type>();
             foreach (var system in systems)
-                if (system.GetInterface(nameof(ISystem)) == null)
+            {
+                if (!system.IsSubclassOf(typeof(SystemBase)))
                     throw new SystemAttributeException(system);
-            Systems = systems;
+                hash.Add(system);
+            }
+            Systems = hash.ToArray();
         }
 
         public Type[] Systems { get; }
+    }
+
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+    public class SystemAutoAddAttribute : Attribute
+    {
+
     }
 }
