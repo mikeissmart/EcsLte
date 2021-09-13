@@ -33,14 +33,6 @@ namespace EcsLte.UnitTest.FilterTests
         }
 
         [TestMethod]
-        public void EqualsNull()
-        {
-            var filter = Filter.AllOf<TestComponent1>();
-
-            Assert.IsFalse(filter.Equals(null));
-        }
-
-        [TestMethod]
         public void HashCode()
         {
             var filter1 = Filter.AllOf<TestComponent1, TestComponent2>();

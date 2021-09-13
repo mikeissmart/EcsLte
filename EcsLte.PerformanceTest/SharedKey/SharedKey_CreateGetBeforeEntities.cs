@@ -2,7 +2,7 @@ using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class Collector_DestroyEntity : BasePerformanceTest
+    internal class SharedKey_CreateGetBeforeEntities : BasePerformanceTest
     {
         private Entity[] _entities;
         private World _world;
@@ -10,16 +10,14 @@ namespace EcsLte.PerformanceTest
         public override void PreRun()
         {
             _world = World.CreateWorld("Test");
-            _world.CollectorManager.GetCollector(CollectorTrigger.Added(Filter.AllOf<TestComponent1>()));
+            _world.KeyManager.GetSharedKey<TestSharedKeyComponent1>();
             _entities = _world.EntityManager.CreateEntities(TestConsts.EntityLoopCount);
-            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                _world.EntityManager.AddComponent(_entities[i], new TestComponent1());
         }
 
         public override void Run()
         {
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                _world.EntityManager.DestroyEntity(_entities[i]);
+                _world.EntityManager.AddComponent(_entities[i], new TestSharedKeyComponent1());
         }
 
         public override bool CanRunParallel()
@@ -30,7 +28,7 @@ namespace EcsLte.PerformanceTest
         public override void RunParallel()
         {
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                index => { _world.EntityManager.DestroyEntity(_entities[index]); });
+                index => { _world.EntityManager.AddComponent(_entities[index], new TestSharedKeyComponent1()); });
         }
 
         public override void PostRun()

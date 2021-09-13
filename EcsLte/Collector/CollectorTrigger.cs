@@ -4,32 +4,48 @@ using EcsLte.Utilities;
 
 namespace EcsLte
 {
-    public partial struct CollectorTrigger : IEquatable<CollectorTrigger>
+    public enum CollectorTriggerEvent
     {
-        private int _hashCode;
+        None = 0,
+        Added = 1,
+        Removed = 2,
+        Updated = 4
+    }
 
-        internal int[] Indexes { get; private set; }
-        internal int[] AddedIndexes { get; private set; }
-        internal int[] RemovedIndexes { get; private set; }
-        internal int[] ReplacedIndexes { get; private set; }
-
-        public static CollectorTrigger Combine(params CollectorTrigger[] collectorTriggers)
+    public struct CollectorTrigger : IEquatable<CollectorTrigger>
+    {
+        public static CollectorTrigger Added(Filter filter)
         {
-            var collectorTrigger = new CollectorTrigger();
-            foreach (var f in collectorTriggers)
-                collectorTrigger.Indexes = IndexHelpers.MergeDistinctIndexes(collectorTrigger.Indexes, f.Indexes);
-            foreach (var f in collectorTriggers)
-                collectorTrigger.AddedIndexes =
-                    IndexHelpers.MergeDistinctIndexes(collectorTrigger.AddedIndexes, f.AddedIndexes);
-            foreach (var f in collectorTriggers)
-                collectorTrigger.RemovedIndexes =
-                    IndexHelpers.MergeDistinctIndexes(collectorTrigger.RemovedIndexes, f.RemovedIndexes);
-            foreach (var f in collectorTriggers)
-                collectorTrigger.ReplacedIndexes =
-                    IndexHelpers.MergeDistinctIndexes(collectorTrigger.ReplacedIndexes, f.ReplacedIndexes);
-            collectorTrigger.GenerateHasCode();
+            return new CollectorTrigger(filter, CollectorTriggerEvent.Added);
+        }
 
-            return collectorTrigger;
+        public static CollectorTrigger Removed(Filter filter)
+        {
+            return new CollectorTrigger(filter, CollectorTriggerEvent.Removed);
+        }
+
+        public static CollectorTrigger Updated(Filter filter)
+        {
+            return new CollectorTrigger(filter, CollectorTriggerEvent.Updated);
+        }
+
+        public static CollectorTrigger AddedOrRemoved(Filter filter)
+        {
+            return new CollectorTrigger(filter, CollectorTriggerEvent.Added | CollectorTriggerEvent.Removed);
+        }
+
+        public static CollectorTrigger AddedOrUpdated(Filter filter)
+        {
+            return new CollectorTrigger(filter, CollectorTriggerEvent.Added | CollectorTriggerEvent.Updated);
+        }
+
+        public Filter Filter { get; private set; }
+        public CollectorTriggerEvent Trigger { get; private set; }
+
+        public CollectorTrigger(Filter filter, CollectorTriggerEvent triggerEvent)
+        {
+            Filter = filter;
+            Trigger = triggerEvent;
         }
 
         public static bool operator !=(CollectorTrigger lhs, CollectorTrigger rhs)
@@ -39,9 +55,7 @@ namespace EcsLte
 
         public static bool operator ==(CollectorTrigger lhs, CollectorTrigger rhs)
         {
-            return lhs.AddedIndexes.SequenceEqual(rhs.AddedIndexes) &&
-                   lhs.RemovedIndexes.SequenceEqual(rhs.RemovedIndexes) &&
-                   lhs.ReplacedIndexes.SequenceEqual(rhs.ReplacedIndexes);
+            return lhs.Trigger == rhs.Trigger && lhs.Filter == rhs.Filter;
         }
 
         public bool Equals(CollectorTrigger other)
@@ -56,26 +70,15 @@ namespace EcsLte
 
         public override int GetHashCode()
         {
-            return _hashCode;
+            int hashCode = -1663471673;
+            hashCode = hashCode * -1521134295 + Filter.GetHashCode();
+            hashCode = hashCode * -1521134295 + Trigger.GetHashCode();
+            return hashCode;
         }
 
         public override string ToString()
         {
-            return string.Join(", ", Indexes);
-        }
-
-        private void GenerateHasCode()
-        {
-            _hashCode = -1663471673;
-            _hashCode = _hashCode * -1521134295 + AddedIndexes.Length;
-            _hashCode = _hashCode * -1521134295 + RemovedIndexes.Length;
-            _hashCode = _hashCode * -1521134295 + ReplacedIndexes.Length;
-            foreach (var index in AddedIndexes)
-                _hashCode = _hashCode * -1521134295 + index.GetHashCode();
-            foreach (var index in RemovedIndexes)
-                _hashCode = _hashCode * -1521134295 + index.GetHashCode();
-            foreach (var index in ReplacedIndexes)
-                _hashCode = _hashCode * -1521134295 + index.GetHashCode();
+            return $"{Trigger.ToString()},  {Filter.ToString()}";
         }
     }
 }

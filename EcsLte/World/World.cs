@@ -17,6 +17,8 @@ namespace EcsLte
             EntityManager = new EntityManager(this);
             GroupManager = new GroupManager(this);
             SystemManager = new SystemManager(this);
+            KeyManager = new KeyManager(this);
+            CollectorManager = new CollectorManager(this);
         }
 
         public static World[] Worlds => _worlds.CachedData;
@@ -27,6 +29,8 @@ namespace EcsLte
         public EntityManager EntityManager { get; }
         public GroupManager GroupManager { get; }
         public SystemManager SystemManager { get; }
+        public KeyManager KeyManager { get; }
+        public CollectorManager CollectorManager { get; }
 
         public static bool HasWorld(string name)
         {
@@ -85,6 +89,8 @@ namespace EcsLte
             GroupManager.InternalDestroy();
             EntityManager.InternalDestroy();
             SystemManager.InternalDestroy();
+            KeyManager.InternalDestroy();
+            CollectorManager.InternalDestroy();
 
             IsDestroyed = true;
         }

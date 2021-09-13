@@ -295,6 +295,10 @@ namespace EcsLte
             }
 
             _data.ComponentPools[componentPoolIndex].AddComponent(entity.Id, component);
+
+            if (ComponentIndex<TComponent>.IsSharedKey || ComponentIndex<TComponent>.IsPrimaryKey)
+                CurrentWorld.KeyManager.OnEntityComponentAdded<TComponent>(entity, component);
+
             CurrentWorld.GroupManager.OnEntityComponentAddedOrRemoved(entity, componentPoolIndex);
         }
 
@@ -308,7 +312,13 @@ namespace EcsLte
             else
             {
                 var componentPoolIndex = ComponentIndex<TComponent>.Index;
+                var oldComponent = _data.ComponentPools[componentPoolIndex].GetComponent(entity.Id);
                 _data.ComponentPools[componentPoolIndex].ReplaceComponent(entity.Id, newComponent);
+
+                if (ComponentIndex<TComponent>.IsSharedKey || ComponentIndex<TComponent>.IsPrimaryKey)
+                    CurrentWorld.KeyManager.OnEntityComponentReplaced<TComponent>(entity,
+                        (TComponent)oldComponent, newComponent);
+
                 CurrentWorld.GroupManager.OnEntityComponentReplaced(entity, componentPoolIndex);
             }
         }
@@ -328,7 +338,12 @@ namespace EcsLte
                 entityIndexes.Remove(componentPoolIndex);
             }
 
+            var oldComponent = _data.ComponentPools[componentPoolIndex].GetComponent(entity.Id);
             _data.ComponentPools[componentPoolIndex].RemoveComponent(entity.Id);
+
+            if (ComponentIndex<TComponent>.IsSharedKey || ComponentIndex<TComponent>.IsPrimaryKey)
+                CurrentWorld.KeyManager.OnEntityComponentRemoved<TComponent>(entity, (TComponent)oldComponent);
+
             CurrentWorld.GroupManager.OnEntityComponentAddedOrRemoved(entity, componentPoolIndex);
         }
 
@@ -357,6 +372,11 @@ namespace EcsLte
                 _data.ComponentPools[index].RemoveComponent(entity.Id);
                 CurrentWorld.GroupManager.OnEntityComponentAddedOrRemoved(entity, index);
             }
+        }
+
+        internal IComponentPool GetComponentPool(int componentPoolIndex)
+        {
+            return _data.ComponentPools[componentPoolIndex];
         }
 
         #endregion

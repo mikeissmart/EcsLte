@@ -20,6 +20,7 @@ namespace EcsLte
         public void Reset()
         {
             Systems.UncachedData.Clear();
+            Systems.IsDirty = true;
             Array.Clear(Systems.CachedData, 0, Systems.CachedData.Length);
         }
 

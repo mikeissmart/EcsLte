@@ -51,6 +51,22 @@ namespace EcsLte
             return Filter.ToString();
         }
 
+        internal void AttachCollector(SubCollector subCollector)
+        {
+            lock (_data.SubCollectors)
+            {
+                _data.SubCollectors.Add(subCollector);
+            }
+        }
+
+        internal void DetachCollector(SubCollector subCollector)
+        {
+            lock (_data.SubCollectors)
+            {
+                _data.SubCollectors.Remove(subCollector);
+            }
+        }
+
         internal void OnEntityArrayResize(int newSize)
         {
             lock (_data.Entities)
@@ -58,10 +74,10 @@ namespace EcsLte
                 if (_data.Entities.UncachedData.Length < newSize)
                     Array.Resize(ref _data.Entities.UncachedData, newSize);
             }
-            lock (_data.Collectors)
+            lock (_data.SubCollectors)
             {
-                foreach (var collector in _data.Collectors.Values)
-                    collector.OnEntityArrayResize(newSize);
+                foreach (var subCollector in _data.SubCollectors)
+                    subCollector.OnEntityArrayResize(newSize);
             }
         }
 
@@ -73,13 +89,12 @@ namespace EcsLte
                 {
                     _data.Entities.UncachedData[entity.Id] = Entity.Null;
                     _data.Entities.IsDirty = true;
-
-                    lock (_data.Collectors)
-                    {
-                        foreach (var collector in _data.Collectors.Values)
-                            collector.OnEntityWillBeDestroyed(entity);
-                    }
                 }
+            }
+            lock (_data.SubCollectors)
+            {
+                foreach (var subCollector in _data.SubCollectors)
+                    subCollector.OnEntityWillBeDestroyed(entity);
             }
         }
 
@@ -96,12 +111,11 @@ namespace EcsLte
                         _data.Entities.UncachedData[entity.Id] = entity;
                         _data.Entities.IsDirty = true;
 
-                        if (componentPoolIndex != -1)
-                            lock (_data.CollectorCommponentIndexes)
-                            {
-                                foreach (var collector in _data.CollectorCommponentIndexes[componentPoolIndex])
-                                    collector.AddedEntity(entity, componentPoolIndex);
-                            }
+                        lock (_data.SubCollectors)
+                        {
+                            foreach (var subCollector in _data.SubCollectors)
+                                subCollector.AddedEntity(this, entity);
+                        }
                     }
                 }
             else
@@ -112,26 +126,28 @@ namespace EcsLte
                         _data.Entities.UncachedData[entity.Id] = Entity.Null;
                         _data.Entities.IsDirty = true;
 
-                        if (componentPoolIndex != -1)
-                            lock (_data.CollectorCommponentIndexes)
-                            {
-                                foreach (var collector in _data.CollectorCommponentIndexes[componentPoolIndex])
-                                    collector.RemovedEntity(entity, componentPoolIndex);
-                            }
+                        lock (_data.SubCollectors)
+                        {
+                            foreach (var subCollector in _data.SubCollectors)
+                                subCollector.RemovedEntity(this, entity);
+                        }
                     }
                 }
         }
 
         internal void UpdateEntity(Entity entity, int componentPoolIndex)
         {
-            foreach (var collector in _data.CollectorCommponentIndexes[componentPoolIndex])
-                collector.UpdatedEntity(entity, componentPoolIndex);
+            lock (_data.SubCollectors)
+            {
+                foreach (var collector in _data.SubCollectors)
+                    collector.UpdatedEntity(this, entity);
+            }
         }
 
         internal void InternalDestroy()
         {
-            foreach (var collector in _data.Collectors.Values)
-                collector.InternalDestroy();
+            foreach (var subCollector in _data.SubCollectors)
+                subCollector.InternalDestroy();
 
             _data.Reset();
             ObjectCache.Push(_data);
@@ -143,57 +159,5 @@ namespace EcsLte
         {
             return uncachedData.Values.ToArray();
         }
-
-        #region CollectorLife
-
-        public Collector GetCollector(CollectorTrigger trigger)
-        {
-            Collector collector;
-            lock (_data.Collectors)
-            {
-                if (!_data.Collectors.TryGetValue(trigger, out collector))
-                {
-                    collector = new Collector();
-                    collector.Initialize(this, trigger);
-                    _data.Collectors.Add(trigger, collector);
-
-                    lock (_data.CollectorCommponentIndexes)
-                    {
-                        foreach (var index in trigger.Indexes)
-                            _data.CollectorCommponentIndexes[index].Add(collector);
-                    }
-                }
-            }
-
-            return collector;
-        }
-
-        public void RemoveCollector(Collector collector)
-        {
-            if (IsDestroyed)
-                throw new GroupIsDestroyedException(this);
-            if (collector == null)
-                throw new ArgumentNullException();
-            if (collector.IsDestroyed)
-                throw new CollectorIsDestroyedException(collector);
-
-            collector.InternalDestroy();
-
-            lock (_data.Collectors)
-            {
-                _data.Collectors.Remove(collector.CollectorTrigger);
-            }
-
-            foreach (var componentIndex in collector.CollectorTrigger.Indexes)
-            {
-                var collectors = _data.CollectorCommponentIndexes[componentIndex];
-                lock (collectors)
-                {
-                    collectors.Remove(collector);
-                }
-            }
-        }
-
-        #endregion
     }
 }

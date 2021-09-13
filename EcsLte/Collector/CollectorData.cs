@@ -7,6 +7,7 @@ namespace EcsLte
 {
     internal class CollectorData
     {
+        public List<SubCollector> SubCollectors;
         public DataCache<Entity[], Entity[]> Entities = new DataCache<Entity[], Entity[]>(new Entity[4],
             UpdateEntitiesCache);
 
@@ -17,6 +18,7 @@ namespace EcsLte
 
         public void Reset()
         {
+            SubCollectors.Clear();
             Array.Clear(Entities.UncachedData, 0, Entities.UncachedData.Length);
             Entities.IsDirty = true;
         }

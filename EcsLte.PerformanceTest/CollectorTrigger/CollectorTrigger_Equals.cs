@@ -2,7 +2,7 @@ using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class CollectorTrigger_Equals : BasePerformanceTest
+    /*internal class CollectorTrigger_Equals : BasePerformanceTest
     {
         private CollectorTrigger _collectorTrigger1;
         private CollectorTrigger _collectorTrigger2;
@@ -40,5 +40,5 @@ namespace EcsLte.PerformanceTest
         public override void PostRun()
         {
         }
-    }
+    }*/
 }

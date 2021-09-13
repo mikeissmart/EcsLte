@@ -6,12 +6,12 @@ namespace EcsLte.PerformanceTest
     {
         private Entity[] _entities;
         private World _world;
+        private Collector _collector;
 
         public override void PreRun()
         {
             _world = World.CreateWorld("Test");
-            _world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>())
-                .GetCollector(CollectorTrigger.Added<TestComponent1>());
+            _collector = _world.CollectorManager.GetCollector(CollectorTrigger.Added(Filter.AllOf<TestComponent1>()));
             _entities = _world.EntityManager.CreateEntities(TestConsts.EntityLoopCount);
         }
 

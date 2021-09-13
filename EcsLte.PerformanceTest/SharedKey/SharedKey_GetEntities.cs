@@ -2,24 +2,26 @@ using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class Collector_DestroyEntity : BasePerformanceTest
+    internal class SharedKey_GetEntities : BasePerformanceTest
     {
         private Entity[] _entities;
+        private Filter _filter;
         private World _world;
+        private SharedKey<TestSharedKeyComponent1> _key;
 
         public override void PreRun()
         {
             _world = World.CreateWorld("Test");
-            _world.CollectorManager.GetCollector(CollectorTrigger.Added(Filter.AllOf<TestComponent1>()));
+            _filter = Filter.AllOf<TestComponent1>();
             _entities = _world.EntityManager.CreateEntities(TestConsts.EntityLoopCount);
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                _world.EntityManager.AddComponent(_entities[i], new TestComponent1());
+                _world.EntityManager.AddComponent(_entities[i], new TestSharedKeyComponent1());
+            _key = _world.KeyManager.GetSharedKey<TestSharedKeyComponent1>();
         }
 
         public override void Run()
         {
-            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                _world.EntityManager.DestroyEntity(_entities[i]);
+            _entities = _key.GetEntities(new TestSharedKeyComponent1());
         }
 
         public override bool CanRunParallel()
@@ -30,7 +32,10 @@ namespace EcsLte.PerformanceTest
         public override void RunParallel()
         {
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                index => { _world.EntityManager.DestroyEntity(_entities[index]); });
+                index =>
+                {
+                    _entities = _key.GetEntities(new TestSharedKeyComponent1());
+                });
         }
 
         public override void PostRun()

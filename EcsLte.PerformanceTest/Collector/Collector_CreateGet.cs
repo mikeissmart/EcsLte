@@ -5,21 +5,19 @@ namespace EcsLte.PerformanceTest
     internal class Collector_CreateGet : BasePerformanceTest
     {
         private CollectorTrigger _collectorTrigger;
-        private Group _group;
         private World _world;
 
         public override void PreRun()
         {
             _world = World.CreateWorld("Test");
-            _group = _world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>());
-            _collectorTrigger = CollectorTrigger.Added<TestComponent1>();
+            _collectorTrigger = CollectorTrigger.Added(Filter.AllOf<TestComponent1>());
         }
 
         public override void Run()
         {
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
             {
-                var collector = _group.GetCollector(_collectorTrigger);
+                var collector = _world.CollectorManager.GetCollector(_collectorTrigger);
             }
         }
 
@@ -33,7 +31,7 @@ namespace EcsLte.PerformanceTest
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
                 index =>
                 {
-                    var collector = _group.GetCollector(_collectorTrigger);
+                    var collector = _world.CollectorManager.GetCollector(_collectorTrigger);
                 });
         }
 

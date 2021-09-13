@@ -11,6 +11,8 @@ namespace EcsLte
         private static int _index = -1;
         private static bool _isRecordable;
         private static bool _isUnique;
+        private static bool _isSharedKey;
+        private static bool _isPrimaryKey;
 
         public static int Index
         {
@@ -42,6 +44,26 @@ namespace EcsLte
             }
         }
 
+        public static bool IsSharedKey
+        {
+            get
+            {
+                if (_index == -1)
+                    GetData();
+                return _isSharedKey;
+            }
+        }
+
+        public static bool IsPrimaryKey
+        {
+            get
+            {
+                if (_index == -1)
+                    GetData();
+                return _isPrimaryKey;
+            }
+        }
+
         public Type ComponentType => typeof(TComponent);
 
         private static void GetData()
@@ -50,6 +72,10 @@ namespace EcsLte
             _isRecordable = ComponentIndexes.Instance.RecordableComponentIndexes
                 .Any(x => x == _index);
             _isUnique = ComponentIndexes.Instance.UniqueComponentIndexes
+                .Any(x => x == _index);
+            _isSharedKey = ComponentIndexes.Instance.SharedKeyComponentIndexes
+                .Any(x => x == _index);
+            _isPrimaryKey = ComponentIndexes.Instance.PrimaryKeyComponentIndexes
                 .Any(x => x == _index);
         }
     }
@@ -79,7 +105,14 @@ namespace EcsLte
         public int[] AllComponentIndexes { get; private set; }
         public int[] RecordableComponentIndexes { get; private set; }
         public int[] UniqueComponentIndexes { get; private set; }
+        public int[] SharedKeyComponentIndexes { get; private set; }
+        public int[] PrimaryKeyComponentIndexes { get; private set; }
         public int Count => _componentIndexTypeLookup.Count;
+
+        public int GetComponentIndex<TComponent>() where TComponent : IComponent
+        {
+            return _componentIndexTypeLookup[typeof(TComponent)];
+        }
 
         public int GetComponentIndex(Type componentType)
         {
@@ -100,9 +133,18 @@ namespace EcsLte
                 .Any(x => x == index);
         }
 
-        public int GetComponentIndex<TComponent>() where TComponent : IComponent
+        public bool IsSharedKey(Type componentType)
         {
-            return _componentIndexTypeLookup[typeof(TComponent)];
+            var index = _componentIndexTypeLookup[componentType];
+            return SharedKeyComponentIndexes
+                .Any(x => x == index);
+        }
+
+        public bool IsPrimaryKey(Type componentType)
+        {
+            var index = _componentIndexTypeLookup[componentType];
+            return PrimaryKeyComponentIndexes
+                .Any(x => x == index);
         }
 
         internal IComponentPool[] CreateComponentPools(int initialSize)
@@ -123,6 +165,8 @@ namespace EcsLte
             var iComponentType = typeof(IComponent);
             var iComponentRecordableType = typeof(IComponentRecordable);
             var iComponentUniqueType = typeof(IComponentUnique);
+            var iComponentSharedKeyType = typeof(IComponentSharedKey);
+            var iComponentPrimaryKeyType = typeof(IComponentPrimaryKey);
             var componentTypes = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(x => x.GetTypes())
                 .Where(x =>
@@ -141,16 +185,24 @@ namespace EcsLte
             //var nameLookup = new Dictionary<string, int>();
             var recordableComponentIndexes = new List<int>();
             var uniqueComponentIndexes = new List<int>();
+            var sharedKeyComponentIndexes = new List<int>();
+            var primaryKeyComponentIndexes = new List<int>();
             foreach (var type in componentTypes.OrderBy(x => x.FullName.ToString()))
             {
-                _componentIndexTypeLookup.Add(type, _componentIndexTypeLookup.Count);
-                //nameLookup.Add(type.Name, nameLookup.Count);
-
                 if (iComponentRecordableType.IsAssignableFrom(type))
-                    recordableComponentIndexes.Add(_componentIndexTypeLookup.Count - 1);
+                    recordableComponentIndexes.Add(_componentIndexTypeLookup.Count);
 
                 if (iComponentUniqueType.IsAssignableFrom(type))
-                    uniqueComponentIndexes.Add(_componentIndexTypeLookup.Count - 1);
+                    uniqueComponentIndexes.Add(_componentIndexTypeLookup.Count);
+
+                if (type.IsAssignableFrom(iComponentSharedKeyType))
+                    sharedKeyComponentIndexes.Add(_componentIndexTypeLookup.Count);
+
+                if (type.IsAssignableFrom(iComponentPrimaryKeyType))
+                    primaryKeyComponentIndexes.Add(_componentIndexTypeLookup.Count);
+
+                _componentIndexTypeLookup.Add(type, _componentIndexTypeLookup.Count);
+                //nameLookup.Add(type.Name, nameLookup.Count);
             }
 
             if (_componentIndexTypeLookup.Keys.Count == 0)
@@ -160,6 +212,8 @@ namespace EcsLte
             AllComponentIndexes = _componentIndexTypeLookup.Values.ToArray();
             RecordableComponentIndexes = recordableComponentIndexes.ToArray();
             UniqueComponentIndexes = uniqueComponentIndexes.ToArray();
+            SharedKeyComponentIndexes = sharedKeyComponentIndexes.ToArray();
+            PrimaryKeyComponentIndexes = primaryKeyComponentIndexes.ToArray();
         }
     }
 }

@@ -11,4 +11,12 @@ namespace EcsLte
     public interface IComponentUnique : IComponent
     {
     }
+
+    public interface IComponentSharedKey : IComponent
+    {
+    }
+
+    public interface IComponentPrimaryKey : IComponent
+    {
+    }
 }

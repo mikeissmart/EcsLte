@@ -39,51 +39,54 @@ namespace EcsLte.PerformanceTest
                 }
 
             //Name                                                      Time      ParallelTime
-            //Collector_CreateGet                                       211 ms    363 ms
-            //Collector_CreateGetBeforeEntities                         781 ms    800 ms
-            //Collector_DestroyEntities                                 661 ms    -1 ms
-            //Collector_DestroyEntity                                   656 ms    954 ms
-            //Collector_GetEntities                                     20 ms     151 ms
+            //Collector_CreateGet                                       1636 ms   1927 ms
+            //Collector_CreateGetBeforeEntities                         806 ms    923 ms
+            //Collector_DestroyEntities                                 658 ms    -1 ms
+            //Collector_DestroyEntity                                   664 ms    857 ms
+            //Collector_GetEntities                                     21 ms     121 ms
 
-            //CollectorTrigger_Create                                   1116 ms   1190 ms
-            //CollectorTrigger_Equals                                   187 ms    16 ms
+            //EntityCommandPlayback_EntityComponent_AddComponent        530 ms    765 ms
+            //EntityCommandPlayback_EntityComponent_RemoveComponent     332 ms    565 ms
+            //EntityCommandPlayback_EntityComponent_ReplaceComponent    373 ms    556 ms
+            //EntityCommandPlayback_EntityLife_CreateEntities           284 ms    -1 ms
+            //EntityCommandPlayback_EntityLife_CreateEntity             604 ms    859 ms
+            //EntityCommandPlayback_EntityLife_DestroyEntities          325 ms    -1 ms
+            //EntityCommandPlayback_EntityLife_DestroyEntity            370 ms    526 ms
 
-            //EntityCommandPlayback_EntityComponent_AddComponent        541 ms    785 ms
-            //EntityCommandPlayback_EntityComponent_RemoveComponent     309 ms    506 ms
-            //EntityCommandPlayback_EntityComponent_ReplaceComponent    326 ms    527 ms
-            //EntityCommandPlayback_EntityLife_CreateEntities           292 ms    -1 ms
-            //EntityCommandPlayback_EntityLife_CreateEntity             535 ms    775 ms
-            //EntityCommandPlayback_EntityLife_DestroyEntities          360 ms    -1 ms
-            //EntityCommandPlayback_EntityLife_DestroyEntity            375 ms    543 ms
+            //EntityComponent_AddComponent                              405 ms    208 ms
+            //EntityComponent_GetAllComponents                          147 ms    118 ms
+            //EntityComponent_GetComponent                              116 ms    58 ms
+            //EntityComponent_GetRandEntityComponent                    320 ms    108 ms
+            //EntityComponent_HasComponent                              53 ms     5 ms
+            //EntityComponent_RemoveAllComponents                       241 ms    117 ms
+            //EntityComponent_RemoveComponent                           199 ms    62 ms
+            //EntityComponent_ReplaceComponent                          147 ms    91 ms
 
-            //EntityComponent_AddComponent                              356 ms    202 ms
-            //EntityComponent_GetAllComponents                          159 ms    52 ms
-            //EntityComponent_GetComponent                              120 ms    62 ms
-            //EntityComponent_GetRandEntityComponent                    316 ms    123 ms
-            //EntityComponent_HasComponent                              56 ms     5 ms
-            //EntityComponent_RemoveAllComponents                       289 ms    60 ms
-            //EntityComponent_RemoveComponent                           133 ms    10 ms
-            //EntityComponent_ReplaceComponent                          154 ms    61 ms
+            //EntityLife_CreateEntities                                 161 ms    -1 ms
+            //EntityLife_CreateEntity                                   432 ms    764 ms
+            //EntityLife_DestroyEntities                                169 ms    -1 ms
+            //EntityLife_DestroyEntity                                  179 ms    486 ms
+            //EntityLife_GetEntities                                    21 ms     -1 ms
+            //EntityLife_HasEntity                                      32 ms     3 ms
+            //EntityLife_ReuseEntities                                  28 ms     -1 ms
 
-            //EntityLife_CreateEntities                                 155 ms    -1 ms
-            //EntityLife_CreateEntity                                   408 ms    761 ms
-            //EntityLife_DestroyEntities                                185 ms    -1 ms
-            //EntityLife_DestroyEntity                                  182 ms    346 ms
-            //EntityLife_GetEntities                                    22 ms     -1 ms
-            //EntityLife_HasEntity                                      32 ms     4 ms
-            //EntityLife_ReuseEntities                                  25 ms     -1 ms
-
-            //Filter_Equals                                             202 ms    17 ms
-            //Filter_Filtered                                           87 ms     8 ms
+            //Filter_Equals                                             156 ms    15 ms
+            //Filter_Filtered                                           85 ms     7 ms
             //Filter_Filtered_ManyComponents                            85 ms     35 ms
 
-            //Group_CreateGet                                           257 ms    403 ms
-            //Group_CreateGetAfterEntities                              118 ms    489 ms
-            //Group_CreateGetBeforeEntities                             691 ms    662 ms
-            //Group_DestroyEntities                                     355 ms    -1 ms
-            //Group_DestroyEntity                                       336 ms    450 ms
-            //Group_GetEntities                                         20 ms     121 ms
+            //Group_CreateGet                                           239 ms    384 ms
+            //Group_CreateGetAfterEntities                              115 ms    497 ms
+            //Group_CreateGetBeforeEntities                             747 ms    724 ms
+            //Group_DestroyEntities                                     325 ms    -1 ms
+            //Group_DestroyEntity                                       348 ms    514 ms
+            //Group_GetEntities                                         21 ms     129 ms
 
+            //PrimaryKey_CreateGetAfterEntities                         212 ms    453 ms
+            //PrimaryKey_CreateGetBeforeEntities                        369 ms    201 ms
+
+            //SharedKey_CreateGetAfterEntities                          155 ms    335 ms
+            //SharedKey_CreateGetBeforeEntities                         386 ms    220 ms
+            //SharedKey_GetEntities                                     1 ms      194 ms
 
             Console.WriteLine("");
             Console.WriteLine("ToCsv");

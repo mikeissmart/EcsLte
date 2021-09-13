@@ -4,6 +4,8 @@ namespace EcsLte
 {
     internal interface IComponentPool
     {
+        int Length { get; }
+
         bool HasComponent(int entityId);
         IComponent GetComponent(int entityid);
         void AddComponent(int entityId, IComponent component);
@@ -18,6 +20,8 @@ namespace EcsLte
     {
         private TComponent[] _components;
         private bool[] _hasComponents;
+
+        public int Length { get => _components.Length; }
 
         public ComponentPool(int initialSize)
         {

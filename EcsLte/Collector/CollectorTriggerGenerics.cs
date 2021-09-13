@@ -2,7 +2,7 @@ using EcsLte.Utilities;
 
 namespace EcsLte
 {
-    public partial struct CollectorTrigger
+    /*public partial struct CollectorTrigger
     {
         public static CollectorTrigger Added<TComponent>()
             where TComponent : IComponent
@@ -216,5 +216,5 @@ namespace EcsLte
 
             return collectorTrigger;
         }
-    }
+    }*/
 }

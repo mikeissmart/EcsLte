@@ -11,8 +11,7 @@ namespace EcsLte.PerformanceTest
         public override void PreRun()
         {
             _world = World.CreateWorld("Test");
-            _collector = _world.GroupManager.GetGroup(Filter.AllOf<TestComponent1>())
-                .GetCollector(CollectorTrigger.Added<TestComponent1>());
+            _collector = _world.CollectorManager.GetCollector(CollectorTrigger.Added(Filter.AllOf<TestComponent1>()));
             _entities = _world.EntityManager.CreateEntities(TestConsts.EntityLoopCount);
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 _world.EntityManager.AddComponent(_entities[i], new TestComponent1());
