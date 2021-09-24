@@ -4,7 +4,7 @@ using EcsLte.Utilities;
 
 namespace EcsLte
 {
-    /*internal class EntityCollection
+    internal class EntityCollection
     {
         private DataCache<Entity[], Entity[]> _entities;
 
@@ -17,20 +17,24 @@ namespace EcsLte
             set
             {
                 _entities.UncachedData[index] = value;
-                _entities.IsDirty = true;
+                _entities.SetDirty();
             }
         }
+        internal int Length { get => _entities.UncachedData.Length; }
 
-        internal Entity[] GetAllEntities()
+        internal Entity[] GetEntities()
         {
             return _entities.CachedData;
         }
 
-        internal EntityCollection(int initialEntitySize)
+        internal void Initialize(int initialEntitySize)
         {
-            _entities = new DataCache<EcsLte.Entity[], EcsLte.Entity[]>(
-                new Entity[initialEntitySize],
-                UpdateEntitiesCache);
+            if (_entities == null)
+                _entities = new DataCache<EcsLte.Entity[], EcsLte.Entity[]>(
+                    new Entity[initialEntitySize],
+                    UpdateEntitiesCache);
+            else
+                Resize(initialEntitySize);
         }
 
         internal void Resize(int newSize)
@@ -42,7 +46,7 @@ namespace EcsLte
         internal void Reset()
         {
             Array.Clear(_entities.UncachedData, 0, _entities.UncachedData.Length);
-            _entities.IsDirty = true;
+            _entities.SetDirty();
         }
 
         private static Entity[] UpdateEntitiesCache(Entity[] uncachedData)
@@ -51,5 +55,5 @@ namespace EcsLte
                 .Where(x => x != Entity.Null)
                 .ToArray();
         }
-    }*/
+    }
 }

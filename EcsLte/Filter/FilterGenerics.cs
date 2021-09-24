@@ -1,12 +1,18 @@
+using System.Runtime.CompilerServices;
 using EcsLte.Utilities;
+
+[assembly: InternalsVisibleTo("EcsLte.PerformanceTest")]
 
 namespace EcsLte
 {
     public partial struct Filter
     {
-        public static Filter AllOf(int[] indexes)
+        internal static Filter AllOfComponentIndexes()
         {
-            var filter = AllOfNoHashCode(indexes);
+            var filter = AllOfNoHashCode(
+                ComponentIndexes.Instance.AllComponentIndexes
+            );
+            filter.CalculateHashCode();
 
             return filter;
         }

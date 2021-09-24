@@ -1,6 +1,6 @@
 using EcsLte;
 
-public class SystemTest : SystemBase
+/*public class SystemTest : SystemBase
 {
     public bool CostructorCalled { get; set; }
     public int CleanupCalled { get; set; }
@@ -80,4 +80,4 @@ public class TestSortLoopSystem1 : SystemTest
 public class TestSortLoopSystem2 : SystemTest
 { }
 
-#endregion
+#endregion*/

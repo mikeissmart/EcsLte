@@ -45,7 +45,7 @@ namespace EcsLte.Utilities
             {
                 lock (_isDirtyLock)
                 {
-                    if (IsDirty)
+                    if (_isDirty)
                     {
                         lock (this)
                         {
@@ -57,23 +57,11 @@ namespace EcsLte.Utilities
 
                 return _cachedData;
             }
-            set
-            {
-                lock (_isDirtyLock)
-                {
-                    _isDirty = false;
-                    _cachedData = value;
-                }
-            }
         }
 
-        public bool IsDirty
+        public void SetDirty()
         {
-            get => _isDirty;
-            set
-            {
-                _isDirty = value;
-            }
+            _isDirty = true;
         }
     }
 }

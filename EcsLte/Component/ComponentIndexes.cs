@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using EcsLte.Component.Exceptions;
 using EcsLte.Exceptions;
 
 namespace EcsLte
@@ -160,6 +159,28 @@ namespace EcsLte
             return componentPools;
         }
 
+        internal Dictionary<int, IPrimaryKey> CreatePrimaryKeyes()
+        {
+            var keyes = new Dictionary<int, IPrimaryKey>();
+            var keyType = typeof(PrimaryKey<>);
+            foreach (var index in PrimaryKeyComponentIndexes)
+                keyes.Add(index,
+                    (IPrimaryKey)Activator.CreateInstance(keyType.MakeGenericType(AllComponentTypes[index])));
+
+            return keyes;
+        }
+
+        internal Dictionary<int, ISharedKey> CreateSharedKeyes()
+        {
+            var keyes = new Dictionary<int, ISharedKey>();
+            var keyType = typeof(SharedKey<>);
+            foreach (var index in SharedKeyComponentIndexes)
+                keyes.Add(index,
+                    (ISharedKey)Activator.CreateInstance(keyType.MakeGenericType(AllComponentTypes[index])));
+
+            return keyes;
+        }
+
         private void Initialize()
         {
             var iComponentType = typeof(IComponent);
@@ -195,10 +216,10 @@ namespace EcsLte
                 if (iComponentUniqueType.IsAssignableFrom(type))
                     uniqueComponentIndexes.Add(_componentIndexTypeLookup.Count);
 
-                if (type.IsAssignableFrom(iComponentSharedKeyType))
+                if (iComponentSharedKeyType.IsAssignableFrom(type))
                     sharedKeyComponentIndexes.Add(_componentIndexTypeLookup.Count);
 
-                if (type.IsAssignableFrom(iComponentPrimaryKeyType))
+                if (iComponentPrimaryKeyType.IsAssignableFrom(type))
                     primaryKeyComponentIndexes.Add(_componentIndexTypeLookup.Count);
 
                 _componentIndexTypeLookup.Add(type, _componentIndexTypeLookup.Count);

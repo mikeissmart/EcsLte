@@ -6,476 +6,148 @@ using EcsLte.Utilities;
 
 namespace EcsLte
 {
-    public class EntityManager
+    internal class EntityManager
     {
-        private EntityManagerData _data;
+        private const int _arrayInitSize = 4;
 
-        internal EntityManager(World world)
+        private List<EntityCollection> _entityCollections;
+        private int _arrayCurrentSize;
+        private int _nextId = 1;
+
+        public EntityManager()
         {
-            _data = ObjectCache.Pop<EntityManagerData>();
+            _entityCollections = new List<EntityCollection>();
+            _arrayCurrentSize = _arrayInitSize;
 
-            CurrentWorld = world;
-
-            // Create null entity
-            CreateEntity();
-            _data.Entities.UncachedData[0] = Entity.Null;
-
-            DefaultEntityCommandPlayback = CreateOrGetEntityCommand("Default");
+            ComponentPools = ComponentIndexes.Instance.CreateComponentPools(_arrayInitSize);
+            PrimaryKeyes = ComponentIndexes.Instance.CreatePrimaryKeyes();
+            SharedKeyes = ComponentIndexes.Instance.CreateSharedKeyes();
+            EntityKeyes = new Dictionary<KeyCollection, EntityKey>();
+            EntityCommandQueue = new Dictionary<string, EntityCommandQueue>();
+            ReuseableEntities = new Queue<Entity>();
+            UniqueEntities = new Entity[ComponentIndexes.Instance.Count];
+            FilterComponentIndexes = new List<EntityFilter>[ComponentIndexes.Instance.Count];
+            for (var i = 0; i < FilterComponentIndexes.Length; i++)
+                FilterComponentIndexes[i] = new List<EntityFilter>();
+            Filters = new Dictionary<Filter, EntityFilter>();
+            EntityComponentIndexes = new List<int>[_arrayInitSize];
+            for (var i = 0; i < EntityComponentIndexes.Length; i++)
+                EntityComponentIndexes[i] = new List<int>();
+            ComponentPoolEntityComponentAddedEvents = new EntityComponentChangedHandler[ComponentIndexes.Instance.Count];
+            ComponentPoolEntityComponentReplacedEvents = new EntityComponentReplacedHandler[ComponentIndexes.Instance.Count];
+            ComponentPoolEntityComponentRemovedEvents = new EntityComponentChangedHandler[ComponentIndexes.Instance.Count];
+            EntityWillBeDestroyedEvents = new EntityEventHandler[_arrayInitSize];
+            EntityComponentAddedEvents = new EntityComponentChangedHandler[_arrayInitSize];
+            EntityComponentReplacedEvents = new EntityComponentReplacedHandler[_arrayInitSize];
+            EntityComponentRemovedEvents = new EntityComponentChangedHandler[_arrayInitSize];
         }
 
-        public World CurrentWorld { get; }
-        public EntityCommandPlayback DefaultEntityCommandPlayback { get; }
+        public IComponentPool[] ComponentPools { get; private set; }
+        public Dictionary<int, IPrimaryKey> PrimaryKeyes { get; private set; }
+        public Dictionary<int, ISharedKey> SharedKeyes { get; private set; }
+        public Dictionary<KeyCollection, EntityKey> EntityKeyes { get; private set; }
+        public Dictionary<string, EntityCommandQueue> EntityCommandQueue { get; private set; }
+        public Queue<Entity> ReuseableEntities { get; private set; }
+        public Entity[] UniqueEntities { get; private set; }
+        public List<EntityFilter>[] FilterComponentIndexes { get; private set; }
+        public Dictionary<Filter, EntityFilter> Filters { get; private set; }
+        public EntityEventHandler AnyEntityWillBeDestroyedEvents;
+        public EntityComponentChangedHandler AnyEntityComponentAddedEvents;
+        public EntityComponentReplacedHandler AnyEntityComponentReplacedEvents;
+        public EntityComponentChangedHandler AnyEntityComponentRemovedEvents;
+        public EntityComponentChangedHandler[] ComponentPoolEntityComponentAddedEvents { get; private set; }
+        public EntityComponentReplacedHandler[] ComponentPoolEntityComponentReplacedEvents { get; private set; }
+        public EntityComponentChangedHandler[] ComponentPoolEntityComponentRemovedEvents { get; private set; }
+        public EntityEventHandler[] EntityWillBeDestroyedEvents;
+        public EntityComponentChangedHandler[] EntityComponentAddedEvents;
+        public EntityComponentReplacedHandler[] EntityComponentReplacedEvents;
+        public EntityComponentChangedHandler[] EntityComponentRemovedEvents;
+        public EntityCollection Entities { get; private set; }
+        public List<int>[] EntityComponentIndexes;
 
-        internal int EntityArrayLength { get => _data.Entities.UncachedData.Length; }
-
-        public EntityCommandPlayback CreateOrGetEntityCommand(string name)
+        public bool FilteredAllOf(int[] componentIndexes, Filter filter)
         {
-            if (CurrentWorld.IsDestroyed)
-                throw new WorldIsDestroyedException(CurrentWorld);
-            if (!ParallelRunner.IsMainThread)
-                throw new EntityCommandPlaybackOffThreadException(name);
+            if (filter.AllOfIndexes == null || filter.AllOfIndexes.Length == 0)
+                return true;
 
-            if (_data.EntityCommandPlaybacks.TryGetValue(name, out var entityCommand))
-                return entityCommand;
+            foreach (var index in filter.AllOfIndexes)
+                if (!componentIndexes.Contains(index))
+                    return false;
 
-            entityCommand = new EntityCommandPlayback(CurrentWorld, name);
-            _data.EntityCommandPlaybacks.Add(name, entityCommand);
-
-            return entityCommand;
+            return true;
         }
 
-        public bool EntityIsFiltered(Entity entity, Filter filter)
+        public bool FilteredAnyOf(int[] componentIndexes, Filter filter)
         {
-            if (!HasEntity(entity))
-                return false;
+            if (filter.AnyOfIndexes == null || filter.AnyOfIndexes.Length == 0)
+                return true;
 
-            var componentIndexes = _data.EntityComponentIndexes[entity.Id]
-                .ToArray();
-            return FilteredAllOf(componentIndexes, filter) &&
-                   FilteredAnyOf(componentIndexes, filter) &&
-                   FilteredNoneOf(componentIndexes, filter);
+            foreach (var index in filter.AnyOfIndexes)
+                if (componentIndexes.Contains(index))
+                    return true;
+
+            return false;
         }
 
-        internal void InternalDestroy()
+        public bool FilteredNoneOf(int[] componentIndexes, Filter filter)
         {
-            _data.Reset();
-            ObjectCache.Push(_data);
+            if (filter.NoneOfIndexes == null || filter.NoneOfIndexes.Length == 0)
+                return true;
+
+            foreach (var index in filter.NoneOfIndexes)
+                if (componentIndexes.Contains(index))
+                    return false;
+
+            return true;
         }
 
-        #region UpdateCache
-
-        private Entity[] UpdateEntitiesCache()
+        public Entity PrepCreateEntity()
         {
-            lock (_data.Entities)
-            {
-                return _data.Entities.UncachedData
-                    .Where(x => x != Entity.Null)
-                    .ToArray();
-            }
-        }
-
-        #endregion
-
-        #region EntityLife
-
-        public bool HasEntity(Entity entity)
-        {
-            if (CurrentWorld.IsDestroyed)
-                throw new WorldIsDestroyedException(CurrentWorld);
-            if (entity.Id <= 0 || entity.Id >= _data.Entities.UncachedData.Length)
-                return false;
-
-            return _data.Entities.UncachedData[entity.Id] == entity;
-        }
-
-        public Entity[] GetEntities()
-        {
-            if (CurrentWorld.IsDestroyed)
-                throw new WorldIsDestroyedException(CurrentWorld);
-
-            return _data.Entities.CachedData;
-        }
-
-        public Entity CreateEntity()
-        {
-            var entity = LocalCreateEntity();
-
-            _data.Entities.UncachedData[entity.Id] = entity;
-            _data.Entities.IsDirty = true;
-
-            return entity;
-        }
-
-        public Entity[] CreateEntities(int count)
-        {
-            var entities = LocalCreateEntities(count);
-
-            foreach (var entity in entities) _data.Entities.UncachedData[entity.Id] = entity;
-            _data.Entities.IsDirty = true;
-
-            return entities;
-        }
-
-        public void DestroyEntity(Entity entity)
-        {
-            if (CurrentWorld.IsDestroyed)
-                throw new WorldIsDestroyedException(CurrentWorld);
-            if (!HasEntity(entity))
-                throw new EntityDoesNotExistException(CurrentWorld, entity);
-
-            CurrentWorld.GroupManager.OnEntityWillBeDestroyed(entity);
-            RemoveAllComponents(entity);
-
-            lock (_data.ReuseableEntities)
-            {
-                _data.ReuseableEntities.Enqueue(entity);
-            }
-
-            _data.Entities.UncachedData[entity.Id] = Entity.Null;
-            _data.Entities.IsDirty = true;
-        }
-
-        public void DestroyEntities(ICollection<Entity> entities)
-        {
-            if (CurrentWorld.IsDestroyed)
-                throw new WorldIsDestroyedException(CurrentWorld);
-
-            lock (_data.ReuseableEntities)
-            {
-                foreach (var entity in entities)
-                {
-                    if (!HasEntity(entity))
-                        throw new EntityDoesNotExistException(CurrentWorld, entity);
-
-                    CurrentWorld.GroupManager.OnEntityWillBeDestroyed(entity);
-                    RemoveAllComponents(entity);
-
-                    _data.ReuseableEntities.Enqueue(entity);
-                    _data.Entities.UncachedData[entity.Id] = Entity.Null;
-                }
-            }
-
-            _data.Entities.IsDirty = true;
-        }
-
-        #endregion
-
-        #region UniqueComponent
-
-        public bool HasUniqueComponent<TComponentUnique>()
-            where TComponentUnique : IComponentUnique
-        {
-            if (CurrentWorld.IsDestroyed)
-                throw new WorldIsDestroyedException(CurrentWorld);
-
-            return _data.UniqueEntities[ComponentIndex<TComponentUnique>.Index] != Entity.Null;
-        }
-
-        public TComponentUnique GetUniqueComponent<TComponentUnique>()
-            where TComponentUnique : IComponentUnique
-        {
-            var entity = GetUniqueEntity<TComponentUnique>();
-            return GetComponent<TComponentUnique>(entity);
-        }
-
-        public Entity GetUniqueEntity<TComponentUnique>()
-            where TComponentUnique : IComponentUnique
-        {
-            if (!HasUniqueComponent<TComponentUnique>())
-                throw new EntityNotHaveComponentUniqueException(typeof(TComponentUnique));
-
-            return _data.UniqueEntities[ComponentIndex<TComponentUnique>.Index];
-        }
-
-        public Entity AddUniqueComponent<TComponentUnique>(TComponentUnique componentUnique)
-            where TComponentUnique : IComponentUnique
-        {
-            if (HasUniqueComponent<TComponentUnique>())
-                throw new EntityAlreadyHasComponentUniqueException(typeof(TComponentUnique));
-
-            var entity = CreateEntity();
-            AddComponent(entity, componentUnique);
-
-            return entity;
-        }
-
-        public Entity ReplaceUniqueComponent<TComponentUnique>(TComponentUnique newComponentUnique)
-            where TComponentUnique : IComponentUnique
-        {
-            if (!HasUniqueComponent<TComponentUnique>())
-                return AddUniqueComponent(newComponentUnique);
-
-            var entity = GetUniqueEntity<TComponentUnique>();
-            ReplaceComponent(entity, newComponentUnique);
-
-            return entity;
-        }
-
-        public Entity RemoveUniqueComponent<TComponentUnique>()
-            where TComponentUnique : IComponentUnique
-        {
-            if (!HasUniqueComponent<TComponentUnique>())
-                throw new EntityNotHaveComponentUniqueException(typeof(TComponentUnique));
-
-            var entity = GetUniqueEntity<TComponentUnique>();
-            RemoveComponent<TComponentUnique>(entity);
-            if (GetAllComponents(entity).Length == 0)
-                DestroyEntity(entity);
-
-            return entity;
-        }
-
-        #endregion
-
-        #region ComponentLife
-
-        public void AddAllComponents(Entity entity)
-        {
-            for (var i = 0; i < ComponentIndexes.Instance.Count; i++)
-            {
-                var type = ComponentIndexes.Instance.AllComponentTypes[i];
-                var com = (IComponent)Activator.CreateInstance(type);
-
-                _data.ComponentPools[i].AddComponent(entity.Id, com);
-            }
-        }
-
-        public bool HasComponent<TComponent>(Entity entity)
-            where TComponent : IComponent
-        {
-            if (!HasEntity(entity))
-                throw new EntityDoesNotExistException(CurrentWorld, entity);
-
-            return _data.ComponentPools[ComponentIndex<TComponent>.Index].HasComponent(entity.Id);
-        }
-
-        public TComponent GetComponent<TComponent>(Entity entity)
-            where TComponent : IComponent
-        {
-            if (!HasComponent<TComponent>(entity))
-                throw new EntityNotHaveComponentException(entity, typeof(TComponent));
-
-            return (TComponent)_data.ComponentPools[ComponentIndex<TComponent>.Index].GetComponent(entity.Id);
-        }
-
-        public IComponent[] GetAllComponents(Entity entity)
-        {
-            if (!HasEntity(entity))
-                throw new EntityDoesNotExistException(CurrentWorld, entity);
-
-            var componentIndexes = _data.EntityComponentIndexes[entity.Id].ToArray();
-            var components = new IComponent[componentIndexes.Length];
-            for (var i = 0; i < components.Length; i++)
-            {
-                var index = componentIndexes[i];
-                components[i] = _data.ComponentPools[index].GetComponent(entity.Id);
-            }
-
-            return components;
-        }
-
-        public void AddComponent<TComponent>(Entity entity, TComponent component)
-            where TComponent : IComponent
-        {
-            if (HasComponent<TComponent>(entity))
-                throw new EntityAlreadyHasComponentException(entity, typeof(TComponent));
-
-            var componentPoolIndex = ComponentIndex<TComponent>.Index;
-            if (ComponentIndex<TComponent>.IsUnique)
-            {
-                if (_data.UniqueEntities[componentPoolIndex] != Entity.Null)
-                    throw new EntityAlreadyHasComponentUniqueException(typeof(TComponent));
-                _data.UniqueEntities[componentPoolIndex] = entity;
-            }
-
-            var entityIndexes = _data.EntityComponentIndexes[entity.Id];
-            lock (entityIndexes)
-            {
-                entityIndexes.Add(componentPoolIndex);
-            }
-
-            _data.ComponentPools[componentPoolIndex].AddComponent(entity.Id, component);
-
-            if (ComponentIndex<TComponent>.IsSharedKey || ComponentIndex<TComponent>.IsPrimaryKey)
-                CurrentWorld.KeyManager.OnEntityComponentAdded<TComponent>(entity, component);
-
-            CurrentWorld.GroupManager.OnEntityComponentAddedOrRemoved(entity, componentPoolIndex);
-        }
-
-        public void ReplaceComponent<TComponent>(Entity entity, TComponent newComponent)
-            where TComponent : IComponent
-        {
-            if (!HasComponent<TComponent>(entity))
-            {
-                AddComponent(entity, newComponent);
-            }
-            else
-            {
-                var componentPoolIndex = ComponentIndex<TComponent>.Index;
-                var oldComponent = _data.ComponentPools[componentPoolIndex].GetComponent(entity.Id);
-                _data.ComponentPools[componentPoolIndex].ReplaceComponent(entity.Id, newComponent);
-
-                if (ComponentIndex<TComponent>.IsSharedKey || ComponentIndex<TComponent>.IsPrimaryKey)
-                    CurrentWorld.KeyManager.OnEntityComponentReplaced<TComponent>(entity,
-                        (TComponent)oldComponent, newComponent);
-
-                CurrentWorld.GroupManager.OnEntityComponentReplaced(entity, componentPoolIndex);
-            }
-        }
-
-        public void RemoveComponent<TComponent>(Entity entity) where TComponent : IComponent
-        {
-            if (!HasComponent<TComponent>(entity))
-                throw new EntityNotHaveComponentException(entity, typeof(TComponent));
-
-            var componentPoolIndex = ComponentIndex<TComponent>.Index;
-            if (ComponentIndex<TComponent>.IsUnique && _data.UniqueEntities[componentPoolIndex] == entity)
-                _data.UniqueEntities[componentPoolIndex] = Entity.Null;
-
-            var entityIndexes = _data.EntityComponentIndexes[entity.Id];
-            lock (entityIndexes)
-            {
-                entityIndexes.Remove(componentPoolIndex);
-            }
-
-            var oldComponent = _data.ComponentPools[componentPoolIndex].GetComponent(entity.Id);
-            _data.ComponentPools[componentPoolIndex].RemoveComponent(entity.Id);
-
-            if (ComponentIndex<TComponent>.IsSharedKey || ComponentIndex<TComponent>.IsPrimaryKey)
-                CurrentWorld.KeyManager.OnEntityComponentRemoved<TComponent>(entity, (TComponent)oldComponent);
-
-            CurrentWorld.GroupManager.OnEntityComponentAddedOrRemoved(entity, componentPoolIndex);
-        }
-
-        public void RemoveAllComponents(Entity entity)
-        {
-            if (!HasEntity(entity))
-                throw new EntityDoesNotExistException(CurrentWorld, entity);
-
-            var entityIndexes = _data.EntityComponentIndexes[entity.Id];
-            int[] componentIndexes;
-            lock (entityIndexes)
-            {
-                componentIndexes = entityIndexes.ToArray();
-                entityIndexes.Clear();
-            }
-
-            var components = new IComponent[componentIndexes.Length];
-            for (var i = 0; i < components.Length; i++)
-            {
-                var index = componentIndexes[i];
-
-                if (ComponentIndexes.Instance.UniqueComponentIndexes.Any(x => x == index) &&
-                    _data.UniqueEntities[index] == entity)
-                    _data.UniqueEntities[index] = Entity.Null;
-
-                _data.ComponentPools[index].RemoveComponent(entity.Id);
-                CurrentWorld.GroupManager.OnEntityComponentAddedOrRemoved(entity, index);
-            }
-        }
-
-        internal IComponentPool GetComponentPool(int componentPoolIndex)
-        {
-            return _data.ComponentPools[componentPoolIndex];
-        }
-
-        #endregion
-
-        #region EntityPlaybackLife
-
-        internal Entity EnqueueEntityFromCommand()
-        {
-            return LocalCreateEntity();
-        }
-
-        internal Entity[] EnqueueEntitiesFromCommand(int count)
-        {
-            return LocalCreateEntities(count);
-        }
-
-        internal void DequeueEntityFromCommand(Entity entity)
-        {
-            _data.Entities.UncachedData[entity.Id] = entity;
-            _data.Entities.IsDirty = true;
-        }
-
-        #endregion
-
-        #region LocalEntityLife
-
-        private Entity LocalCreateEntity()
-        {
-            if (CurrentWorld.IsDestroyed)
-                throw new WorldIsDestroyedException(CurrentWorld);
-
             Entity entity;
-            lock (_data.ReuseableEntities)
+            lock (ReuseableEntities)
             {
-                if (_data.ReuseableEntities.Count > 0)
+                if (ReuseableEntities.Count > 0)
                 {
-                    entity = _data.ReuseableEntities.Dequeue();
+                    entity = ReuseableEntities.Dequeue();
                     entity.Version++;
 
                     return entity;
                 }
             }
 
-            lock (_data.Entities)
+            lock (Entities)
             {
                 entity = new Entity
                 {
-                    Id = _data.NextId++,
+                    Id = _nextId++,
                     Version = 1
                 };
-                if (_data.Entities.UncachedData.Length == _data.NextId)
+                if (Entities.Length == _nextId)
                 {
-                    int newSize = _data.Entities.UncachedData.Length * 2;
-                    Array.Resize(ref _data.Entities.UncachedData, newSize);
-
-                    var oldSize = _data.EntityComponentIndexes.Length;
-                    Array.Resize(ref _data.EntityComponentIndexes, newSize);
-                    for (var i = oldSize; i < _data.EntityComponentIndexes.Length; i++)
-                        _data.EntityComponentIndexes[i] = new List<int>();
-
-                    for (var i = 0; i < _data.ComponentPools.Length; i++)
-                        _data.ComponentPools[i].Resize(newSize);
-
-                    CurrentWorld.GroupManager.OnEntityArrayResize(newSize);
+                    ResizeEntityCollections(Entities.Length * 2);
                 }
             }
 
             return entity;
         }
 
-        private Entity[] LocalCreateEntities(int count)
+        public Entity[] PrepCreateEntities(int count)
         {
             if (count < 0)
                 throw new ArgumentOutOfRangeException("Count must be greater than 0");
-            if (CurrentWorld.IsDestroyed)
-                throw new WorldIsDestroyedException(CurrentWorld);
 
             var entities = new Entity[count];
-            lock (_data.ReuseableEntities)
+            lock (ReuseableEntities)
             {
-                lock (_data.Entities)
+                lock (Entities)
                 {
                     int newSize = 0;
-                    var activeEntityCount = _data.Entities.UncachedData.Length - (_data.ReuseableEntities.Count - _data.NextId);
+                    var activeEntityCount = Entities.Length - (ReuseableEntities.Count - _nextId);
                     if (activeEntityCount < count)
                     {
                         newSize = count - activeEntityCount;
-                        newSize = (int)Math.Pow(2, (int)Math.Log(_data.Entities.UncachedData.Length + newSize, 2) + 1);
-                        Array.Resize(ref _data.Entities.UncachedData, newSize);
-
-                        var oldSize = _data.EntityComponentIndexes.Length;
-                        Array.Resize(ref _data.EntityComponentIndexes, newSize);
-                        for (var i = oldSize; i < _data.EntityComponentIndexes.Length; i++)
-                            _data.EntityComponentIndexes[i] = new List<int>();
-
-                        for (var i = 0; i < _data.ComponentPools.Length; i++)
-                            _data.ComponentPools[i].Resize(newSize);
-
-                        CurrentWorld.GroupManager.OnEntityArrayResize(newSize);
+                        newSize = (int)Math.Pow(2, (int)Math.Log(Entities.Length + newSize, 2) + 1);
+                        ResizeEntityCollections(newSize);
                     }
                     else
                     {
@@ -485,16 +157,16 @@ namespace EcsLte
                     for (var i = 0; i < count; i++)
                     {
                         Entity entity;
-                        if (_data.ReuseableEntities.Count > 0)
+                        if (ReuseableEntities.Count > 0)
                         {
-                            entity = _data.ReuseableEntities.Dequeue();
+                            entity = ReuseableEntities.Dequeue();
                             entity.Version++;
                         }
                         else
                         {
                             entity = new Entity
                             {
-                                Id = _data.NextId++,
+                                Id = _nextId++,
                                 Version = 1
                             };
                         }
@@ -507,44 +179,127 @@ namespace EcsLte
             return entities;
         }
 
-        #endregion
-
-        #region FilterEntity
-
-        private bool FilteredAllOf(int[] componentIndexes, Filter filter)
+        public (int[], IComponent[]) SilentRemoveAllComponents(Entity entity)
         {
-            if (filter.AllOfIndexes == null || filter.AllOfIndexes.Length == 0)
-                return true;
+            var entityIndexes = EntityComponentIndexes[entity.Id];
+            int[] componentIndexes;
+            lock (entityIndexes)
+            {
+                componentIndexes = entityIndexes.ToArray();
+                entityIndexes.Clear();
+            }
 
-            foreach (var index in filter.AllOfIndexes)
-                if (!componentIndexes.Contains(index))
-                    return false;
+            var components = new IComponent[componentIndexes.Length];
+            for (var i = 0; i < componentIndexes.Length; i++)
+            {
+                var componentPoolIndex = componentIndexes[i];
 
-            return true;
+                if (ComponentIndexes.Instance.UniqueComponentIndexes.Any(x => x == componentPoolIndex) &&
+                    UniqueEntities[componentPoolIndex] == entity)
+                    UniqueEntities[componentPoolIndex] = Entity.Null;
+
+                components[i] = ComponentPools[componentPoolIndex].GetComponent(entity.Id);
+                ComponentPools[componentPoolIndex].RemoveComponent(entity.Id);
+            }
+
+            return (componentIndexes, components);
         }
 
-        private bool FilteredAnyOf(int[] componentIndexes, Filter filter)
+        public EntityCollection CreateEntityCollection()
         {
-            if (filter.AnyOfIndexes == null || filter.AnyOfIndexes.Length == 0)
-                return true;
+            lock (_entityCollections)
+            {
+                var collection = ObjectCache.Pop<EntityCollection>();
+                collection.Initialize(_arrayCurrentSize);
 
-            foreach (var index in filter.AnyOfIndexes)
-                if (componentIndexes.Contains(index))
-                    return true;
+                _entityCollections.Add(collection);
 
-            return false;
+                return collection;
+            }
         }
 
-        private bool FilteredNoneOf(int[] componentIndexes, Filter filter)
+        public void RemoveEntityCollection(EntityCollection collection)
         {
-            if (filter.NoneOfIndexes == null || filter.NoneOfIndexes.Length == 0)
-                return true;
+            lock (_entityCollections)
+            {
+                collection.Reset();
+                _entityCollections.Remove(collection);
+            }
+        }
 
-            foreach (var index in filter.NoneOfIndexes)
-                if (componentIndexes.Contains(index))
-                    return false;
+        private void ResizeEntityCollections(int newSize)
+        {
+            if (newSize > _arrayCurrentSize)
+            {
+                lock (_entityCollections)
+                {
+                    for (int i = 0; i < _entityCollections.Count; i++)
+                        _entityCollections[i].Resize(newSize);
+                }
+                for (int i = 0; i < ComponentPools.Length; i++)
+                    ComponentPools[i].Resize(newSize);
+                Array.Resize(ref EntityWillBeDestroyedEvents, newSize);
+                Array.Resize(ref EntityComponentAddedEvents, newSize);
+                Array.Resize(ref EntityComponentReplacedEvents, newSize);
+                Array.Resize(ref EntityComponentRemovedEvents, newSize);
+                Array.Resize(ref EntityComponentIndexes, newSize);
+                for (int i = _arrayCurrentSize; i < newSize; i++)
+                    EntityComponentIndexes[i] = new List<int>();
+                _arrayCurrentSize = newSize;
+            }
+        }
 
-            return true;
+        #region ObjectCache
+
+        internal void Initialize(EcsContext context)
+        {
+            Entities = CreateEntityCollection();
+
+            foreach (var key in PrimaryKeyes.Values)
+                key.Initialize(context, this);
+            foreach (var key in SharedKeyes.Values)
+                key.Initialize(context, this);
+        }
+
+        internal void Reset()
+        {
+            for (int i = 0; i < _entityCollections.Count; i++)
+            {
+                var collection = _entityCollections[i];
+                collection.Reset();
+                ObjectCache.Push(collection);
+            }
+            _entityCollections.Clear();
+            _nextId = 1;
+
+            foreach (var key in PrimaryKeyes.Values)
+                key.Clear();
+            foreach (var key in SharedKeyes.Values)
+                key.Clear();
+            EntityKeyes.Clear();
+            for (int i = 0; i < ComponentPools.Length; i++)
+                ComponentPools[i].Clear();
+            foreach (var commandQueue in EntityCommandQueue.Values)
+                commandQueue.InternalDestroy();
+            EntityCommandQueue.Clear();
+            ReuseableEntities.Clear();
+            Array.Clear(UniqueEntities, 0, UniqueEntities.Length);
+            for (var i = 0; i < FilterComponentIndexes.Length; i++)
+                FilterComponentIndexes[i].Clear();
+            Filters.Clear();
+            AnyEntityComponentAddedEvents.Clear();
+            AnyEntityComponentReplacedEvents.Clear();
+            AnyEntityComponentRemovedEvents.Clear();
+            Array.Clear(ComponentPoolEntityComponentAddedEvents, 0, ComponentPoolEntityComponentAddedEvents.Length);
+            Array.Clear(ComponentPoolEntityComponentReplacedEvents, 0, ComponentPoolEntityComponentReplacedEvents.Length);
+            Array.Clear(ComponentPoolEntityComponentRemovedEvents, 0, ComponentPoolEntityComponentRemovedEvents.Length);
+            Array.Clear(EntityWillBeDestroyedEvents, 0, EntityWillBeDestroyedEvents.Length);
+            Array.Clear(EntityComponentAddedEvents, 0, EntityComponentAddedEvents.Length);
+            Array.Clear(EntityComponentReplacedEvents, 0, EntityComponentReplacedEvents.Length);
+            Array.Clear(EntityComponentRemovedEvents, 0, EntityComponentRemovedEvents.Length);
+            // Entities is clear/reset with _entityCollections
+            for (var i = 0; i < EntityComponentIndexes.Length; i++)
+                EntityComponentIndexes[i].Clear();
         }
 
         #endregion

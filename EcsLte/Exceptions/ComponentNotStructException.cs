@@ -1,8 +1,7 @@
 using System;
 using System.Linq;
-using EcsLte.Exceptions;
 
-namespace EcsLte.Component.Exceptions
+namespace EcsLte.Exceptions
 {
     public class ComponentNotStructException : EcsLteException
     {

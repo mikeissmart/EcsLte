@@ -2,14 +2,22 @@ namespace EcsLte.PerformanceTest
 {
     internal abstract class BasePerformanceTest
     {
-        public abstract void PreRun();
+        protected EcsContext _context;
+
+        public virtual void PreRun()
+        {
+            _context = EcsContexts.CreateContext("Test");
+        }
 
         public abstract void Run();
 
-        public abstract bool CanRunParallel();
+        public virtual bool CanRunParallel() => false;
 
-        public abstract void RunParallel();
+        public virtual void RunParallel() { }
 
-        public abstract void PostRun();
+        public virtual void PostRun()
+        {
+            EcsContexts.DestroyContext(_context);
+        }
     }
 }
