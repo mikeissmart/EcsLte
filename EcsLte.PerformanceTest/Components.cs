@@ -40,6 +40,14 @@ public struct TestSharedKeyComponent2 : IComponentSharedKey
     public int Prop { get; set; }
 }
 
+public struct TestSharedKeyComponent3 : IComponentSharedKey { public int Prop { get; set; } }
+public struct TestSharedKeyComponent4 : IComponentSharedKey { public int Prop { get; set; } }
+public struct TestSharedKeyComponent5 : IComponentSharedKey { public int Prop { get; set; } }
+public struct TestSharedKeyComponent6 : IComponentSharedKey { public int Prop { get; set; } }
+public struct TestSharedKeyComponent7 : IComponentSharedKey { public int Prop { get; set; } }
+public struct TestSharedKeyComponent8 : IComponentSharedKey { public int Prop { get; set; } }
+public struct TestSharedKeyComponent9 : IComponentSharedKey { public int Prop { get; set; } }
+////////////////////////////////////////////////////////
 public struct TestPrimaryKeyComponent1 : IComponentPrimaryKey
 {
     public int Prop { get; set; }

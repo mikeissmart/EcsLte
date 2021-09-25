@@ -17,27 +17,13 @@ namespace EcsLte
     internal class PrimaryKey<TComponent> : IPrimaryKey
         where TComponent : IComponentPrimaryKey
     {
-        private class KeyData
-        {
-            public EntityEventHandler EntityAddedEvent { get; set; }
-            public EntityEventHandler EntityRemovedEvent { get; set; }
-            public Entity Entity { get; set; }
-
-            public void Clear()
-            {
-                EntityAddedEvent.Clear();
-                EntityRemovedEvent.Clear();
-                Entity = Entity.Null;
-            }
-        }
-
-        private Dictionary<TComponent, KeyData> _keyes;
+        private Dictionary<TComponent, PrimaryKeyData> _keyes;
         private EcsContext _context;
         private EntityManager _entityManager;
 
         public PrimaryKey()
         {
-            _keyes = new Dictionary<TComponent, KeyData>();
+            _keyes = new Dictionary<TComponent, PrimaryKeyData>();
         }
 
         #region PrimaryKey
@@ -97,14 +83,14 @@ namespace EcsLte
             _entityManager.AnyEntityWillBeDestroyedEvents -= OnEntityWillBeDestroyed;
         }
 
-        private KeyData GetKeyData(IComponentPrimaryKey componentKey)
+        private PrimaryKeyData GetKeyData(IComponentPrimaryKey componentKey)
         {
-            KeyData key = null;
+            PrimaryKeyData key = null;
             lock (_keyes)
             {
                 if (!_keyes.TryGetValue((TComponent)componentKey, out key))
                 {
-                    key = ObjectCache.Pop<KeyData>();
+                    key = ObjectCache.Pop<PrimaryKeyData>();
                     _keyes.Add((TComponent)componentKey, key);
                 }
             }
@@ -112,7 +98,7 @@ namespace EcsLte
             return key;
         }
 
-        private void CheckRemoveKeyData(TComponent componentKey, KeyData keyData)
+        private void CheckRemoveKeyData(TComponent componentKey, PrimaryKeyData keyData)
         {
             if (!keyData.EntityAddedEvent.HasSubscriptions &&
                 !keyData.EntityRemovedEvent.HasSubscriptions &&
@@ -131,7 +117,7 @@ namespace EcsLte
 
         private void OnEntityComponentAdded(Entity entity, int componentPoolIndex, IComponent component)
         {
-            KeyData key = null;
+            PrimaryKeyData key = null;
             lock (_keyes)
             {
                 key = GetKeyData((TComponent)component);
@@ -150,7 +136,7 @@ namespace EcsLte
 
         private void OnEntityComponentRemoved(Entity entity, int componentPoolIndex, IComponent component)
         {
-            KeyData key = null;
+            PrimaryKeyData key = null;
             lock (_keyes)
             {
                 key = GetKeyData((TComponent)component);

@@ -27,6 +27,18 @@ namespace EcsLte
             return _entities.CachedData;
         }
 
+        public void CopyFrom(EntityCollection source)
+        {
+            Array.Copy(source._entities.UncachedData, source._entities.UncachedData, Length);
+            _entities.SetDirty();
+        }
+
+        internal void Resize(int newSize)
+        {
+            if (newSize > _entities.UncachedData.Length)
+                Array.Resize(ref _entities.UncachedData, newSize);
+        }
+
         internal void Initialize(int initialEntitySize)
         {
             if (_entities == null)
@@ -35,12 +47,6 @@ namespace EcsLte
                     UpdateEntitiesCache);
             else
                 Resize(initialEntitySize);
-        }
-
-        internal void Resize(int newSize)
-        {
-            if (newSize > _entities.UncachedData.Length)
-                Array.Resize(ref _entities.UncachedData, newSize);
         }
 
         internal void Reset()

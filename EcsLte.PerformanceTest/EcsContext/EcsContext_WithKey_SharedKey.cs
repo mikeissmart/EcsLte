@@ -1,28 +1,19 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    /*
-    Way to long
     internal class EcsContext_WithKey_SharedKey : BasePerformanceTest
     {
-        private TestSharedKeyComponent1 _component;
-
-        public override void PreRun()
-        {
-            base.PreRun();
-
-            _component = new TestSharedKeyComponent1 { Prop = 1 };
-            var entities = _context.CreateEntities(TestConsts.EntityLoopCount);
-            for (int i = 0; i < entities.Length; i++)
-                _context.AddComponent(entities[i], _component);
-        }
-
         public override void Run()
         {
+            var component = new TestSharedKeyComponent1 { Prop = 1 };
             EntityKey entityKey;
             for (int i = 0; i < TestConsts.EntityLoopCount; i++)
-                entityKey = _context.WithKey(_component);
+                entityKey = _context.WithKey(component);
         }
 
         public override bool CanRunParallel()
@@ -32,9 +23,10 @@ namespace EcsLte.PerformanceTest
 
         public override void RunParallel()
         {
+            var component = new TestSharedKeyComponent1 { Prop = 1 };
             EntityKey entityKey;
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                i => { entityKey = _context.WithKey(_component); });
+                i => { entityKey = _context.WithKey(component); });
         }
-    }*/
+    }
 }

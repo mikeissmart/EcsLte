@@ -7,6 +7,8 @@ namespace EcsLte
 {
     internal interface ISharedKey
     {
+        SharedKeyData this[IComponentSharedKey componentKey] { get; }
+
         bool HasEntity(IComponentSharedKey component, Entity entity);
         Entity[] GetEntities(IComponentSharedKey component);
         void SubscribeToEvents(IComponentSharedKey component, EntityEvent added, EntityEvent removed);
@@ -18,35 +20,21 @@ namespace EcsLte
     internal class SharedKey<TComponent> : ISharedKey
         where TComponent : IComponentSharedKey
     {
-        private class KeyData
-        {
-            public EntityEventHandler EntityAddedEvent { get; set; }
-            public EntityEventHandler EntityRemovedEvent { get; set; }
-            public HashSet<Entity> Entities { get; set; }
-
-            public KeyData()
-            {
-                Entities = new HashSet<Entity>();
-            }
-
-            public void Clear()
-            {
-                EntityAddedEvent.Clear();
-                EntityRemovedEvent.Clear();
-                Entities.Clear();
-            }
-        }
-
-        private Dictionary<TComponent, KeyData> _keyes;
+        private Dictionary<TComponent, SharedKeyData> _keyes;
         private EcsContext _context;
         private EntityManager _entityManager;
 
         public SharedKey()
         {
-            _keyes = new Dictionary<TComponent, KeyData>();
+            _keyes = new Dictionary<TComponent, SharedKeyData>();
         }
 
         #region SharedKey
+
+        public SharedKeyData this[IComponentSharedKey componentKey]
+        {
+            get => GetKeyData(componentKey);
+        }
 
         public bool HasEntity(IComponentSharedKey componentKey, Entity entity)
         {
@@ -71,10 +59,7 @@ namespace EcsLte
 
         public Entity[] GetEntities(TComponent componentKey)
         {
-            lock (_keyes)
-            {
-                return GetKeyData(componentKey).Entities.ToArray();
-            }
+            return GetKeyData(componentKey).Entities.GetEntities();
         }
 
         public void SubscribeToEvents(IComponentSharedKey componentKey, EntityEvent added, EntityEvent removed)
@@ -108,7 +93,7 @@ namespace EcsLte
         {
             foreach (var entities in _keyes.Values)
             {
-                entities.Clear();
+                entities.Reset();
                 ObjectCache.Push(entities);
             }
             _keyes.Clear();
@@ -121,14 +106,15 @@ namespace EcsLte
             _entityManager.AnyEntityWillBeDestroyedEvents -= OnEntityWillBeDestroyed;
         }
 
-        private KeyData GetKeyData(IComponentSharedKey componentKey)
+        private SharedKeyData GetKeyData(IComponentSharedKey componentKey)
         {
-            KeyData key = null;
+            SharedKeyData key = null;
             lock (_keyes)
             {
                 if (!_keyes.TryGetValue((TComponent)componentKey, out key))
                 {
-                    key = ObjectCache.Pop<KeyData>();
+                    key = ObjectCache.Pop<SharedKeyData>();
+                    key.Initialize(_entityManager);
                     _keyes.Add((TComponent)componentKey, key);
                 }
             }
@@ -142,12 +128,16 @@ namespace EcsLte
 
         private void OnEntityComponentAdded(Entity entity, int componentPoolIndex, IComponent component)
         {
-            bool wasAdded;
-            KeyData key = null;
+            bool wasAdded = false;
+            SharedKeyData key = null;
             lock (_keyes)
             {
                 key = GetKeyData((TComponent)component);
-                wasAdded = key.Entities.Add(entity);
+                if (key.Entities[entity.Id] != entity)
+                {
+                    key.Entities[entity.Id] = entity;
+                    wasAdded = true;
+                }
             }
             if (wasAdded)
                 key.EntityAddedEvent.Invoke(entity);
@@ -162,17 +152,25 @@ namespace EcsLte
         private void OnEntityComponentRemoved(Entity entity, int componentPoolIndex, IComponent component)
         {
             bool wasRemoved = false;
-            KeyData key = null;
+            SharedKeyData key = null;
             lock (_keyes)
             {
                 key = GetKeyData((TComponent)component);
                 if (_keyes.TryGetValue((TComponent)component, out key))
                 {
-                    wasRemoved = key.Entities.Remove(entity);
-                    if (key.Entities.Count == 0 &&
-                        !key.EntityAddedEvent.HasSubscriptions &&
-                        !key.EntityRemovedEvent.HasSubscriptions)
-                        _keyes.Remove((TComponent)component);
+                    if (key.Entities[entity.Id] == entity)
+                    {
+                        key.Entities[entity.Id] = Entity.Null;
+                        wasRemoved = true;
+                        if (key.Entities.GetEntities().Length == 0 &&
+                            !key.EntityAddedEvent.HasSubscriptions &&
+                            !key.EntityRemovedEvent.HasSubscriptions)
+                        {
+                            key.Reset();
+                            ObjectCache.Push(key);
+                            _keyes.Remove((TComponent)component);
+                        }
+                    }
                 }
             }
             if (wasRemoved)

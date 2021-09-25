@@ -5,10 +5,11 @@ using EcsLte.Utilities;
 
 namespace EcsLte
 {
-    public class EntityKey : IEcsContext, IGetEntity//, IGetWatcher//, IFilterBy
+    public class EntityKey : IEcsContext, IGetEntity, IGetWatcher
     {
-        private EntityManager _entityManager;
         private EntityKeyData _data;
+        private WatcherTable _watcherTable;
+        private EntityManager _entityManager;
 
         private EntityKey(EcsContext context, EntityManager entityManager)
         {
@@ -41,28 +42,47 @@ namespace EcsLte
             _data._sharedComponents = sharedComponents;
 
             // Initial key
-            sharedKeyes[0].SubscribeToEvents(sharedComponents[0], SharedKeyOnEntityAdded, SharedKeyOnEntityRemoved);
-            var keyEntities = sharedKeyes[0].GetEntities(sharedComponents[0]);
+            var initialEntities = sharedKeyes[0].GetEntities(sharedComponents[0]);
 
-            // Rest of the keyes
-            for (int i = 1; i < sharedKeyes.Length; i++)
+            if (sharedKeyes.Length > 1)
             {
-                sharedKeyes[i].SubscribeToEvents(sharedComponents[i], SharedKeyOnEntityAdded, SharedKeyOnEntityRemoved);
-                var checkKeyEntities = sharedKeyes[i].GetEntities(sharedComponents[i]);
-                if (keyEntities.Length > 0)
-                    keyEntities = sharedKeyes[i].GetEntities(sharedComponents[i])
-                        .Where(x => keyEntities.Any(y => x == y))
-                        .ToArray();
-            }
+                var cachedKeyEntities = new EntityCollection[sharedKeyes.Length - 1];
+                for (int i = 1; i < sharedKeyes.Length; i++)
+                {
+                    var sharedKey = sharedKeyes[i];
+                    sharedKey.SubscribeToEvents(sharedComponents[i], SharedKeyOnEntityAdded, SharedKeyOnEntityRemoved);
+                    cachedKeyEntities[i - 1] = sharedKey[sharedComponents[i]].Entities;
+                }
+                ParallelRunner.RunParallelFor(initialEntities.Length,
+                   entityId =>
+                   {
+                       bool allHave = true;
+                       var entity = initialEntities[entityId];
+                       for (int i = 0; i < cachedKeyEntities.Length; i++)
+                       {
+                           if (cachedKeyEntities[i][entityId] != entity)
+                           {
+                               allHave = false;
+                               break;
+                           }
+                       }
 
-            // All keyes have these entities
-            for (int i = 0; i < keyEntities.Length; i++)
+                       if (allHave)
+                       {
+                           _entityManager.EntityWillBeDestroyedEvents[entityId] += OnEntityWillBeDestroyed;
+                           _data.Entities[entityId] = entity;
+                       }
+                   });
+            }
+            else
             {
-                var entity = keyEntities[i];
-                _data.Entities[entity.Id] = entity;
-                _entityManager.EntityWillBeDestroyedEvents[entity.Id] += OnEntityWillBeDestroyed;
+                for (int i = 0; i < initialEntities.Length; i++)
+                {
+                    var entity = initialEntities[i];
+                    _entityManager.EntityWillBeDestroyedEvents[entity.Id] += OnEntityWillBeDestroyed;
+                    _data.Entities[entity.Id] = entity;
+                }
             }
-
             CurrentContext = context;
         }
 
@@ -124,18 +144,64 @@ namespace EcsLte
 
         #endregion
 
+        #region GetWatcher
+
+        public Watcher Added(Filter filter)
+        {
+            if (CurrentContext.IsDestroyed)
+                throw new EcsContextIsDestroyedException(CurrentContext);
+
+            return _watcherTable.Added(filter);
+        }
+
+        public Watcher Updated(Filter filter)
+        {
+            if (CurrentContext.IsDestroyed)
+                throw new EcsContextIsDestroyedException(CurrentContext);
+
+            return _watcherTable.Updated(filter);
+        }
+
+        public Watcher Removed(Filter filter)
+        {
+            if (CurrentContext.IsDestroyed)
+                throw new EcsContextIsDestroyedException(CurrentContext);
+
+            return _watcherTable.Removed(filter);
+        }
+
+        public Watcher AddedOrUpdated(Filter filter)
+        {
+            if (CurrentContext.IsDestroyed)
+                throw new EcsContextIsDestroyedException(CurrentContext);
+
+            return _watcherTable.AddedOrUpdated(filter);
+        }
+
+        public Watcher AddedOrRemoved(Filter filter)
+        {
+            if (CurrentContext.IsDestroyed)
+                throw new EcsContextIsDestroyedException(CurrentContext);
+
+            return _watcherTable.AddedOrRemoved(filter);
+        }
+
+        #endregion
+
         #region Events
 
         private void PrimaryKeyOnEntityAdded(Entity entity)
         {
             _data.Entities[entity.Id] = entity;
             _entityManager.EntityWillBeDestroyedEvents[entity.Id] += OnEntityWillBeDestroyed;
+            _watcherTable.AddedEntity(entity);
         }
 
         private void PrimaryKeyOnEntityRemoved(Entity entity)
         {
             _data.Entities[entity.Id] = Entity.Null;
             _entityManager.EntityWillBeDestroyedEvents[entity.Id] -= OnEntityWillBeDestroyed;
+            _watcherTable.RemovedEntity(entity);
         }
 
         private void SharedKeyOnEntityAdded(Entity entity)
@@ -154,6 +220,7 @@ namespace EcsLte
             {
                 _data.Entities[entity.Id] = entity;
                 _entityManager.EntityWillBeDestroyedEvents[entity.Id] += OnEntityWillBeDestroyed;
+                _watcherTable.AddedEntity(entity);
             }
         }
 
@@ -161,12 +228,14 @@ namespace EcsLte
         {
             _data.Entities[entity.Id] = Entity.Null;
             _entityManager.EntityWillBeDestroyedEvents[entity.Id] -= OnEntityWillBeDestroyed;
+            _watcherTable.RemovedEntity(entity);
         }
 
         private void OnEntityWillBeDestroyed(Entity entity)
         {
             _data.Entities[entity.Id] = Entity.Null;
             _entityManager.EntityWillBeDestroyedEvents[entity.Id] -= OnEntityWillBeDestroyed;
+            _watcherTable.EntityWillBeDestroyed(entity);
         }
 
         #endregion
