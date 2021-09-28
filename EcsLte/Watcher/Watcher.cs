@@ -27,17 +27,11 @@ namespace EcsLte
         internal Watcher(EcsContext context)
         {
             _data = ObjectCache.Pop<WatcherData>();
-            _data.Initialize(context);
+            _data.Initialize();
 
             CurrentContext = context;
             IsActive = true;
         }
-
-        #region EcsContext
-
-        public EcsContext CurrentContext { get; private set; }
-
-        #endregion
 
         #region Watcher
 
@@ -48,7 +42,7 @@ namespace EcsLte
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);
 
-            _data.Entities.Reset();
+            _data.ClearEntities();
         }
 
         public void Activate()
@@ -64,8 +58,8 @@ namespace EcsLte
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);
 
-            ClearEntities();
             IsActive = false;
+            _data.ClearEntities();
         }
 
         internal void InternalDestroy()
@@ -78,50 +72,50 @@ namespace EcsLte
 
         #endregion
 
+        #region EcsContext
+
+        public EcsContext CurrentContext { get; private set; }
+
+        #endregion
+
         #region GetEntity
 
         public bool HasEntity(Entity entity)
         {
-            if (CurrentContext.IsDestroyed)
-                throw new EcsContextIsDestroyedException(CurrentContext);
-            if (entity.Id <= 0 || entity.Id >= _data.Entities.Length)
+            if (!CurrentContext.HasEntity(entity))
                 return false;
 
-            return _data.Entities[entity.Id] == entity;
+            return _data.HasEntity(entity);
         }
 
         public Entity[] GetEntities()
         {
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);
-            return _data.Entities.GetEntities();
+
+            return _data.GetEntities();
         }
 
         #endregion
 
-        #region InternalCallback
+        #region WatcherCallback
 
         internal void AddedEntity(Entity entity)
         {
             if (IsActive)
-                _data.Entities[entity.Id] = entity;
+                _data.AddEntity(entity);
         }
 
         internal void UpdatedEntity(Entity entity)
         {
             if (IsActive)
-                _data.Entities[entity.Id] = entity;
+                _data.AddEntity(entity);
         }
 
         internal void RemovedEntity(Entity entity)
         {
             if (IsActive)
-                _data.Entities[entity.Id] = entity;
-        }
-
-        internal void EntityWillBeDestroyed(Entity entity)
-        {
-            _data.Entities[entity.Id] = Entity.Null;
+                _data.AddEntity(entity);
         }
 
         #endregion

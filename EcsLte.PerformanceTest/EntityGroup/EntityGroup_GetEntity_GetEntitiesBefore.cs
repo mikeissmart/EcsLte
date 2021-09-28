@@ -1,22 +1,26 @@
+using EcsLte.Utilities;
+
 namespace EcsLte.PerformanceTest
 {
-    internal class EntityFilter_GetEntity_GetEntitiesBefore : BasePerformanceTest
+    internal class EntityGroup_GetEntity_GetEntitiesBefore : BasePerformanceTest
     {
+        private TestSharedKeyComponent1 _component;
+
         public override void PreRun()
         {
             base.PreRun();
 
+            _component = new TestSharedKeyComponent1 { Prop = 1 };
             var entities = _context.CreateEntities(TestConsts.EntityLoopCount);
-            var component = new TestComponent1();
             for (int i = 0; i < TestConsts.EntityLoopCount; i++)
-                _context.AddComponent(entities[i], component);
+                _context.AddComponent(entities[i], _component);
         }
 
         public override void Run()
         {
-            EntityFilter entityFilter;
+            EntityGroup entityGroup;
             for (int i = 0; i < TestConsts.EntityLoopCount; i++)
-                entityFilter = _context.FilterBy(Filter.AllOf<TestComponent1>());
+                entityGroup = _context.GroupWith(_component);
         }
     }
 }

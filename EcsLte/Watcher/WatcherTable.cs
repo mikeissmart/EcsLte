@@ -18,6 +18,8 @@ namespace EcsLte
             _removed = new HashSet<Watcher>();
         }
 
+        #region WatcherTable
+
         internal Watcher Added(Filter filter)
         {
             var watcher = CreateOrGetWatcher(filter);
@@ -96,7 +98,9 @@ namespace EcsLte
             }
         }
 
-        #region InternalCallback
+        #endregion
+
+        #region WatcherCallback
 
         internal void AddedEntity(Entity entity)
         {
@@ -122,15 +126,6 @@ namespace EcsLte
             {
                 foreach (var watcher in _removed)
                     watcher.AddedEntity(entity);
-            }
-        }
-
-        internal void EntityWillBeDestroyed(Entity entity)
-        {
-            lock (_watchers)
-            {
-                foreach (var watcher in _watchers.Values)
-                    watcher.EntityWillBeDestroyed(entity);
             }
         }
 

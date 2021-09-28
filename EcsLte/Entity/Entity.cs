@@ -2,6 +2,8 @@ using System;
 
 namespace EcsLte
 {
+    internal delegate void EntityEvent(Entity entity);
+
     public struct Entity : IEquatable<Entity>, IComparable<Entity>
     {
         public static readonly Entity Null = new Entity();
@@ -35,9 +37,9 @@ namespace EcsLte
             return this == other;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object other)
         {
-            return obj is Entity other && this == other;
+            return other is Entity obj && this == obj;
         }
 
         public override int GetHashCode()

@@ -10,50 +10,50 @@ public struct TestComponent2 : IComponent
     public int Prop { get; set; }
 }
 
-public struct TestRecordableComponent1 : IComponentRecordable
+public struct TestRecordableComponent1 : IRecordableComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestRecordableComponent2 : IComponentRecordable
+public struct TestRecordableComponent2 : IRecordableComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponentUnique1 : IComponentUnique
+public struct TestComponentUnique1 : IUniqueComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponentUnique2 : IComponentUnique
+public struct TestComponentUnique2 : IUniqueComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestSharedKeyComponent1 : IComponentSharedKey
+public struct TestSharedKeyComponent1 : ISharedComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestSharedKeyComponent2 : IComponentSharedKey
+public struct TestSharedKeyComponent2 : ISharedComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestSharedKeyComponent3 : IComponentSharedKey { public int Prop { get; set; } }
-public struct TestSharedKeyComponent4 : IComponentSharedKey { public int Prop { get; set; } }
-public struct TestSharedKeyComponent5 : IComponentSharedKey { public int Prop { get; set; } }
-public struct TestSharedKeyComponent6 : IComponentSharedKey { public int Prop { get; set; } }
-public struct TestSharedKeyComponent7 : IComponentSharedKey { public int Prop { get; set; } }
-public struct TestSharedKeyComponent8 : IComponentSharedKey { public int Prop { get; set; } }
-public struct TestSharedKeyComponent9 : IComponentSharedKey { public int Prop { get; set; } }
+public struct TestSharedKeyComponent3 : ISharedComponent { public int Prop { get; set; } }
+public struct TestSharedKeyComponent4 : ISharedComponent { public int Prop { get; set; } }
+public struct TestSharedKeyComponent5 : ISharedComponent { public int Prop { get; set; } }
+public struct TestSharedKeyComponent6 : ISharedComponent { public int Prop { get; set; } }
+public struct TestSharedKeyComponent7 : ISharedComponent { public int Prop { get; set; } }
+public struct TestSharedKeyComponent8 : ISharedComponent { public int Prop { get; set; } }
+public struct TestSharedKeyComponent9 : ISharedComponent { public int Prop { get; set; } }
 ////////////////////////////////////////////////////////
-public struct TestPrimaryKeyComponent1 : IComponentPrimaryKey
+public struct TestPrimaryKeyComponent1 : IPrimaryComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestPrimaryKeyComponent2 : IComponentPrimaryKey
+public struct TestPrimaryKeyComponent2 : IPrimaryComponent
 {
     public int Prop { get; set; }
 }

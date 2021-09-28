@@ -1,20 +1,24 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class EntityFilter_GetEntity_HasEntity : BasePerformanceTest
+    internal class EntityGroup_GetEntity_HasEntity : BasePerformanceTest
     {
         private Entity[] _entities;
-        private EntityFilter _entityFilter;
+        private EntityGroup _entityGroup;
 
         public override void PreRun()
         {
             base.PreRun();
 
-            var component = new TestComponent1();
-            _entityFilter = _context.FilterBy(Filter.AllOf<TestComponent1>());
+            var component = new TestSharedKeyComponent1 { Prop = 1 };
+            _entityGroup = _context.GroupWith(component);
             _entities = _context.CreateEntities(TestConsts.EntityLoopCount);
-            for (int i = 0; i < _entities.Length; i++)
+            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
                 _context.AddComponent(_entities[i], component);
         }
 
@@ -22,7 +26,7 @@ namespace EcsLte.PerformanceTest
         {
             bool hasEntity;
             for (int i = 0; i < TestConsts.EntityLoopCount; i++)
-                hasEntity = _entityFilter.HasEntity(_entities[i]);
+                hasEntity = _entityGroup.HasEntity(_entities[i]);
         }
 
         public override bool CanRunParallel()
@@ -34,7 +38,7 @@ namespace EcsLte.PerformanceTest
         {
             bool hasEntity;
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                i => { hasEntity = _entityFilter.HasEntity(_entities[i]); });
+                i => { hasEntity = _entityGroup.HasEntity(_entities[i]); });
         }
     }
 }

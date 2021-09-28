@@ -4,19 +4,19 @@ namespace EcsLte
     {
     }
 
-    public interface IComponentRecordable : IComponent
+    public interface IRecordableComponent : IComponent
     {
     }
 
-    public interface IComponentUnique : IComponent
+    public interface IUniqueComponent : IComponent
     {
     }
 
-    public interface IComponentSharedKey : IComponent
+    public interface ISharedComponent : IComponent
     {
     }
 
-    public interface IComponentPrimaryKey : IComponent
+    public interface IPrimaryComponent : IComponent
     {
     }
 }

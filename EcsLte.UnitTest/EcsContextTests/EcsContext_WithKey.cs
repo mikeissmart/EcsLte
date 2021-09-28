@@ -6,68 +6,68 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace EcsLte.UnitTest.EcsContextTests
 {
     [TestClass]
-    public class EcsContext_WithKey : BasePrePostTest, IWithKeyTest
+    public class EcsContext_GroupWith : BasePrePostTest, IGroupWithTest
     {
         [TestMethod]
-        public void WithKey_PrimaryKey()
+        public void GroupWith_PrimaryKey()
         {
             var component = new TestPrimaryKeyComponent1 { Prop = 1 };
-            var entityKey = _context.WithKey(component);
+            var entityKey = _context.GroupWith(component);
 
             // Correct key
             Assert.IsTrue(entityKey != null);
-            Assert.IsTrue(_context.WithKey(component) == entityKey);
+            Assert.IsTrue(_context.GroupWith(component) == entityKey);
             // Different component gets different entity
-            Assert.IsTrue(_context.WithKey(new TestPrimaryKeyComponent1 { Prop = 2 }) != entityKey);
+            Assert.IsTrue(_context.GroupWith(new TestPrimaryKeyComponent1 { Prop = 2 }) != entityKey);
             // Null component
-            IComponentPrimaryKey nullKey = null;
+            IPrimaryComponent nullKey = null;
             Assert.ThrowsException<ArgumentNullException>(() =>
-                _context.WithKey(nullKey));
+                _context.GroupWith(nullKey));
             // EcsContext is destroyed
             EcsContexts.DestroyContext(_context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                _context.WithKey(component));
+                _context.GroupWith(component));
         }
 
         [TestMethod]
-        public void WithKey_SharedKey()
+        public void GroupWith_SharedKey()
         {
             var component = new TestSharedKeyComponent1 { Prop = 1 };
-            var entityKey = _context.WithKey(new TestSharedKeyComponent1 { Prop = 1 });
+            var entityKey = _context.GroupWith(new TestSharedKeyComponent1 { Prop = 1 });
 
             // Correct key
             Assert.IsTrue(entityKey != null);
-            Assert.IsTrue(_context.WithKey(component) == entityKey);
+            Assert.IsTrue(_context.GroupWith(component) == entityKey);
             // Different component gets different entity
-            Assert.IsTrue(_context.WithKey(new TestSharedKeyComponent1 { Prop = 2 }) != entityKey);
+            Assert.IsTrue(_context.GroupWith(new TestSharedKeyComponent1 { Prop = 2 }) != entityKey);
             // Null component
-            IComponentSharedKey nullKey = null;
+            ISharedComponent nullKey = null;
             Assert.ThrowsException<ArgumentNullException>(() =>
-                _context.WithKey(nullKey));
+                _context.GroupWith(nullKey));
             // EcsContext is destroyed
             EcsContexts.DestroyContext(_context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                _context.WithKey(component));
+                _context.GroupWith(component));
         }
 
         [TestMethod]
-        public void WithKey_SharedKeyes()
+        public void GroupWith_SharedKeyes()
         {
             var component1 = new TestSharedKeyComponent1 { Prop = 1 };
             var component2 = new TestSharedKeyComponent2 { Prop = 1 };
-            var entityKey = _context.WithKey(component1, component2);
+            var entityKey = _context.GroupWith(component1, component2);
 
             // Correct key
             Assert.IsTrue(entityKey != null);
-            Assert.IsTrue(_context.WithKey(component1, component2) == entityKey);
+            Assert.IsTrue(_context.GroupWith(component1, component2) == entityKey);
             // Null component
-            IComponentSharedKey nullKey = null;
+            ISharedComponent nullKey = null;
             Assert.ThrowsException<ArgumentNullException>(() =>
-                _context.WithKey(component1, component2, nullKey));
+                _context.GroupWith(component1, component2, nullKey));
             // EcsContext is destroyed
             EcsContexts.DestroyContext(_context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                _context.WithKey(component1, component2));
+                _context.GroupWith(component1, component2));
         }
     }
 }

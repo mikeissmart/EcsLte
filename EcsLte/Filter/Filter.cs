@@ -64,6 +64,49 @@ namespace EcsLte
             return string.Join(", ", Indexes);
         }
 
+        internal bool IsFiltered(ComponentArcheType archeType)
+        {
+            return FilteredAllOf(archeType.ComponentPoolIndexes) &&
+                FilteredAnyOf(archeType.ComponentPoolIndexes) &&
+                FilteredNoneOf(archeType.ComponentPoolIndexes);
+        }
+
+        private bool FilteredAllOf(int[] componentIndexes)
+        {
+            if (AllOfIndexes == null || AllOfIndexes.Length == 0)
+                return true;
+
+            foreach (var index in AllOfIndexes)
+                if (!componentIndexes.Contains(index))
+                    return false;
+
+            return true;
+        }
+
+        private bool FilteredAnyOf(int[] componentIndexes)
+        {
+            if (AnyOfIndexes == null || AnyOfIndexes.Length == 0)
+                return true;
+
+            foreach (var index in AnyOfIndexes)
+                if (componentIndexes.Contains(index))
+                    return true;
+
+            return false;
+        }
+
+        private bool FilteredNoneOf(int[] componentIndexes)
+        {
+            if (NoneOfIndexes == null || NoneOfIndexes.Length == 0)
+                return true;
+
+            foreach (var index in NoneOfIndexes)
+                if (componentIndexes.Contains(index))
+                    return false;
+
+            return true;
+        }
+
         private void CalculateHashCode()
         {
             _hashCode = -1663471673;

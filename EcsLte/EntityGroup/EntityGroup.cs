@@ -6,18 +6,22 @@ using EcsLte.Utilities;
 
 namespace EcsLte
 {
-    public class EntityFilter : IEcsContext, IGetEntity, IGetWatcher
+    public class EntityGroup : IEcsContext, IGetEntity, IGetWatcher
     {
-        private EntityFilterData _data;
+        private EntityGroupData _data;
         private WatcherTable _watcherTable;
         private EcsContextData _ecsContextData;
 
-        internal EntityFilter(EcsContext context, EcsContextData ecsContextData, Filter filter, ComponentArcheTypeData[] archeTypeDatas)
+        internal EntityGroup(EcsContext context, EcsContextData ecsContextData,
+            ComponentArcheTypeData[] archeTypeDatas,
+            IPrimaryComponent primaryComponent,
+            ISharedComponent[] sharedComponents)
         {
-            _data = ObjectCache.Pop<EntityFilterData>();
-            _data.Initialize(ecsContextData, archeTypeDatas);
+            _ecsContextData = ecsContextData;
+            _data = ObjectCache.Pop<EntityGroupData>();
+            _data.Initialize(ecsContextData, archeTypeDatas, primaryComponent, sharedComponents);
 
-            ecsContextData.ArcheTypeDataAdded += OnCompoinentArcheTypeDataAdded;
+            ecsContextData.ArcheTypeDataAdded += OnComponentArcheTypeDataAdded;
             ecsContextData.ArcheTypeDataRemoved += OnCompoinentArcheTypeDataRemoved;
 
             for (int i = 0; i < archeTypeDatas.Length; i++)
@@ -37,7 +41,6 @@ namespace EcsLte
             _ecsContextData = ecsContextData;
 
             CurrentContext = context;
-            Filter = filter;
         }
 
         #region EcsContext
@@ -46,9 +49,20 @@ namespace EcsLte
 
         #endregion
 
-        #region EntityFilter
+        #region EntityKey
 
-        public Filter Filter { get; private set; }
+        internal IPrimaryComponent PrimaryKey { get => _data.PrimaryComponent; }
+        internal ISharedComponent[] SharedKeys { get => _data.SharedComponents; }
+
+        public Entity GetFirstOrDefault()
+        {
+            if (CurrentContext.IsDestroyed)
+                throw new EcsContextIsDestroyedException(CurrentContext);
+
+            return _data.Entities.GetEntities()
+                .Where(x => x != Entity.Null)
+                .FirstOrDefault();
+        }
 
         internal void InternalDestroy()
         {
@@ -144,19 +158,30 @@ namespace EcsLte
             _watcherTable.RemovedEntity(entity);
         }
 
-        private void OnCompoinentArcheTypeDataAdded(ComponentArcheTypeData archeTypeData)
+        private void OnComponentArcheTypeDataAdded(ComponentArcheTypeData archeTypeData)
         {
-            if (Filter.IsFiltered(archeTypeData.ArcheType))
+            if (_data.PrimaryComponent != null && archeTypeData.ArcheType.PrimaryComponent != null &&
+                archeTypeData.ArcheType.PrimaryComponent.Equals(_data.PrimaryComponent))
             {
-                _data.AddComponentArcheTypeData(archeTypeData);
-                archeTypeData.EntityAdded += OnEntityComponentAdded;
-                archeTypeData.EntityRemoved += OnEntityComponentRemoved;
-                archeTypeData.EntityUpdated += OnEntityComponentUpdated;
-
-                // TODO probably dont need this. new archeTypes should be empty
-                if (archeTypeData.GetEntities().Length > 0)
-                    throw new Exception();
+                AddComponentArcheTypeData(archeTypeData);
             }
+            else if (_data.SharedComponents != null && archeTypeData.ArcheType.SharedComponents != null &&
+                archeTypeData.ArcheType.SharedComponents.SequenceEqual(_data.SharedComponents))
+            {
+                AddComponentArcheTypeData(archeTypeData);
+            }
+        }
+
+        private void AddComponentArcheTypeData(ComponentArcheTypeData archeTypeData)
+        {
+            _data.AddComponentArcheTypeData(archeTypeData);
+            archeTypeData.EntityAdded += OnEntityComponentAdded;
+            archeTypeData.EntityRemoved += OnEntityComponentRemoved;
+            archeTypeData.EntityUpdated += OnEntityComponentUpdated;
+
+            // TODO probably dont need this. new archeTypes should be empty
+            if (archeTypeData.GetEntities().Length > 0)
+                throw new Exception();
         }
 
         private void OnCompoinentArcheTypeDataRemoved(ComponentArcheTypeData archeTypeData)

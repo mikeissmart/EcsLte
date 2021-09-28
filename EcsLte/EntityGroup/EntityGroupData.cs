@@ -1,18 +1,18 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using EcsLte.Utilities;
 
 namespace EcsLte
 {
-    internal class EntityFilterData
+    internal class EntityGroupData
     {
         private EcsContextData _ecsContextData;
         private DataCache<List<ComponentArcheTypeData>, ComponentArcheTypeData[]> _archeTypeDatas;
 
         internal EntityCollection Entities { get; private set; }
+        internal IPrimaryComponent PrimaryComponent { get; private set; }
+        internal ISharedComponent[] SharedComponents { get; private set; }
 
-        public EntityFilterData()
+        public EntityGroupData()
         {
             _archeTypeDatas = new DataCache<List<ComponentArcheTypeData>, ComponentArcheTypeData[]>(
                 new List<ComponentArcheTypeData>(),
@@ -54,13 +54,18 @@ namespace EcsLte
 
         #region ObjectCache
 
-        internal void Initialize(EcsContextData ecsContextData, ComponentArcheTypeData[] archeTypeDatas)
+        internal void Initialize(EcsContextData ecsContextData,
+            ComponentArcheTypeData[] archeTypeDatas,
+            IPrimaryComponent primaryComponent,
+            ISharedComponent[] sharedComponents)
         {
             _ecsContextData = ecsContextData;
             _archeTypeDatas.UncachedData.AddRange(archeTypeDatas);
             _archeTypeDatas.SetDirty();
 
             Entities = ecsContextData.CreateEntityCollection();
+            PrimaryComponent = primaryComponent;
+            SharedComponents = sharedComponents;
         }
 
         internal void Reset()
@@ -68,6 +73,9 @@ namespace EcsLte
             _ecsContextData.RemoveEntityCollection(Entities);
             _archeTypeDatas.UncachedData.Clear();
             _archeTypeDatas.SetDirty();
+
+            PrimaryComponent = null;
+            SharedComponents = null;
         }
 
         #endregion

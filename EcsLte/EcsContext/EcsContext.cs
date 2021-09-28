@@ -7,14 +7,14 @@ using EcsLte.Utilities;
 namespace EcsLte
 {
     public partial class EcsContext :
-        IFilterBy, IGetEntity, IEntityLife, IGetComponent, IComponentLife, IWithKey
+        IGetEntity, IEntityLife, IGetComponent, IComponentLife, IFilterBy, IGroupWith
     {
-        private EntityManager _entityManager;
+        private EcsContextData _data;
 
         internal EcsContext(string name)
         {
-            _entityManager = ObjectCache.Pop<EntityManager>();
-            _entityManager.Initialize(this);
+            _data = ObjectCache.Pop<EcsContextData>();
+            _data.Initialize();
 
             DefaultCommand = CommandQueue("Default");
 
@@ -24,122 +24,73 @@ namespace EcsLte
         #region EcsContext
 
         public string Name { get; set; }
-        public bool IsDestroyed { get; set; }
+        public bool IsDestroyed { get; private set; }
         public EntityCommandQueue DefaultCommand { get; set; }
 
-        public Entity AddUniqueComponent<TComponentUnique>(TComponentUnique componentUnique)
-            where TComponentUnique : IComponentUnique
+        public Entity AddUniqueComponent<TUniqueComponent>(TUniqueComponent uniqueComponent)
+            where TUniqueComponent : IUniqueComponent
         {
-            if (HasUniqueComponent<TComponentUnique>())
-                throw new EntityAlreadyHasComponentUniqueException(this, typeof(TComponentUnique));
+            if (HasUniqueComponent<TUniqueComponent>())
+                throw new EntityAlreadyHasUniqueComponentException(this, typeof(TUniqueComponent));
 
             var entity = CreateEntity();
-            AddComponent(entity, componentUnique);
+            AddComponent(entity, uniqueComponent);
 
             return entity;
         }
 
-        public Entity ReplaceUniqueComponent<TComponentUnique>(TComponentUnique newComponentUnique)
-            where TComponentUnique : IComponentUnique
+        public Entity ReplaceUniqueComponent<TUniqueComponent>(TUniqueComponent newUniqueComponent)
+            where TUniqueComponent : IUniqueComponent
         {
-            if (!HasUniqueComponent<TComponentUnique>())
-                return AddUniqueComponent(newComponentUnique);
+            if (!HasUniqueComponent<TUniqueComponent>())
+                return AddUniqueComponent(newUniqueComponent);
 
-            var entity = GetUniqueEntity<TComponentUnique>();
-            ReplaceComponent(entity, newComponentUnique);
+            var entity = GetUniqueEntity<TUniqueComponent>();
+            ReplaceComponent(entity, newUniqueComponent);
 
             return entity;
         }
 
-        public Entity RemoveUniqueComponent<TComponentUnique>()
-            where TComponentUnique : IComponentUnique
+        public Entity RemoveUniqueComponent<TUniqueComponent>()
+            where TUniqueComponent : IUniqueComponent
         {
-            if (!HasUniqueComponent<TComponentUnique>())
-                throw new EntityNotHaveComponentUniqueException(this, typeof(TComponentUnique));
+            if (!HasUniqueComponent<TUniqueComponent>())
+                throw new EntityNotHaveUniqueComponentException(this, typeof(TUniqueComponent));
 
-            var entity = GetUniqueEntity<TComponentUnique>();
-            RemoveComponent<TComponentUnique>(entity);
+            var entity = GetUniqueEntity<TUniqueComponent>();
+            RemoveComponent<TUniqueComponent>(entity);
             if (GetAllComponents(entity).Length == 0)
+            {
                 DestroyEntity(entity);
+                return Entity.Null;
+            }
 
             return entity;
         }
 
         public EntityCommandQueue CommandQueue(string name)
         {
-            if (this.IsDestroyed)
+            if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            if (!_entityManager.EntityCommandQueue.TryGetValue(name, out var commandQueue))
+            lock (_data.EntityCommandQueue)
             {
-                commandQueue = new EntityCommandQueue(this, name);
-                _entityManager.EntityCommandQueue.Add(name, commandQueue);
+                if (!_data.EntityCommandQueue.TryGetValue(name, out var commandQueue))
+                {
+                    commandQueue = new EntityCommandQueue(this, name);
+                    _data.EntityCommandQueue.Add(name, commandQueue);
+                }
+
+                return commandQueue;
             }
-
-            return commandQueue;
-        }
-
-        internal EntityCollection CreateEntityCollection()
-        {
-            return _entityManager.CreateEntityCollection();
-        }
-
-        internal void RemoveEntityCollection(EntityCollection collection)
-        {
-            _entityManager.RemoveEntityCollection(collection);
         }
 
         internal void InternalDestroy()
         {
-            _entityManager.Reset();
-            ObjectCache.Push(_entityManager);
+            _data.Reset();
+            ObjectCache.Push(_data);
 
             IsDestroyed = true;
-        }
-
-        #endregion
-
-        #region FilterEntity
-
-        public EntityFilter FilterBy(Filter filter)
-        {
-            if (IsDestroyed)
-                throw new EcsContextIsDestroyedException(this);
-
-            EntityFilter entityFilter;
-            lock (_entityManager.Filters)
-            {
-                if (!_entityManager.Filters.TryGetValue(filter, out entityFilter))
-                {
-                    var entities = GetEntities()
-                        .AsParallel()
-                        .Where(x => InternalFilteredBy(x, filter))
-                        .ToArray();
-
-                    entityFilter = new EntityFilter(this, _entityManager, filter, entities);
-                    _entityManager.Filters.Add(filter, entityFilter);
-
-                    lock (_entityManager.FilterComponentIndexes)
-                    {
-                        for (int i = 0; i < filter.Indexes.Length; i++)
-                            _entityManager.FilterComponentIndexes[filter.Indexes[i]].Add(entityFilter);
-                    }
-                }
-            }
-
-            return entityFilter;
-        }
-
-        internal bool InternalFilteredBy(Entity entity, Filter filter)
-        {
-            if (!HasEntity(entity))
-                return false;
-
-            var componentIndexes = _entityManager.EntityComponentIndexes[entity.Id]
-                .ToArray();
-            return _entityManager.FilteredAllOf(componentIndexes, filter) &&
-                   _entityManager.FilteredAnyOf(componentIndexes, filter) &&
-                   _entityManager.FilteredNoneOf(componentIndexes, filter);
         }
 
         #endregion
@@ -150,10 +101,10 @@ namespace EcsLte
         {
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
-            if (entity.Id <= 0 || entity.Id >= _entityManager.Entities.Length)
+            if (entity.Id <= 0 || entity.Id >= _data.Entities.Length)
                 return false;
 
-            return _entityManager.Entities[entity.Id] == entity;
+            return _data.Entities[entity.Id] == entity;
         }
 
         public Entity[] GetEntities()
@@ -161,7 +112,7 @@ namespace EcsLte
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            return _entityManager.Entities.GetEntities();
+            return _data.Entities.GetEntities();
         }
 
         #endregion
@@ -173,9 +124,8 @@ namespace EcsLte
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            var entity = _entityManager.PrepCreateEntity();
-
-            _entityManager.Entities[entity.Id] = entity;
+            var entity = _data.PrepCreateEntity();
+            _data.Entities[entity.Id] = entity;
 
             return entity;
         }
@@ -185,12 +135,11 @@ namespace EcsLte
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            var entities = _entityManager.PrepCreateEntities(count);
-
+            var entities = _data.PrepCreateEntities(count);
             for (int i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                _entityManager.Entities[entity.Id] = entity;
+                _data.Entities[entity.Id] = entity;
             }
 
             return entities;
@@ -198,87 +147,69 @@ namespace EcsLte
 
         public void DestroyEntity(Entity entity)
         {
-            if (IsDestroyed)
-                throw new EcsContextIsDestroyedException(this);
-            if (!HasEntity(entity))
-                throw new EntityDoesNotExistException(this, entity);
-
-            _entityManager.AnyEntityWillBeDestroyedEvents.Invoke(entity);
-            _entityManager.EntityWillBeDestroyedEvents[entity.Id].Invoke(entity);
-            _entityManager.SilentRemoveAllComponents(entity);
-
-            lock (_entityManager.ReuseableEntities)
+            RemoveAllComponents(entity);
+            _data.Entities[entity.Id] = Entity.Null;
+            lock (_data.ReuseableEntities)
             {
-                _entityManager.ReuseableEntities.Enqueue(entity);
+                _data.ReuseableEntities.Enqueue(entity);
             }
-
-            _entityManager.Entities[entity.Id] = Entity.Null;
         }
 
         public void DestroyEntities(ICollection<Entity> entities)
         {
-            if (IsDestroyed)
-                throw new EcsContextIsDestroyedException(this);
-
-            lock (_entityManager.ReuseableEntities)
+            lock (_data.ReuseableEntities)
             {
                 foreach (var entity in entities)
                 {
-                    if (!HasEntity(entity))
-                        throw new EntityDoesNotExistException(this, entity);
-
-                    _entityManager.AnyEntityWillBeDestroyedEvents.Invoke(entity);
-                    _entityManager.EntityWillBeDestroyedEvents[entity.Id].Invoke(entity);
-                    _entityManager.SilentRemoveAllComponents(entity);
-
-                    _entityManager.ReuseableEntities.Enqueue(entity);
-                    _entityManager.Entities[entity.Id] = Entity.Null;
+                    RemoveAllComponents(entity);
+                    _data.Entities[entity.Id] = Entity.Null;
+                    _data.ReuseableEntities.Enqueue(entity);
                 }
             }
         }
 
         internal Entity EnqueueEntityFromCommand()
         {
-            return _entityManager.PrepCreateEntity();
+            return _data.PrepCreateEntity();
         }
 
         internal Entity[] EnqueueEntitiesFromCommand(int count)
         {
-            return _entityManager.PrepCreateEntities(count);
+            return _data.PrepCreateEntities(count);
         }
 
         internal void DequeueEntityFromCommand(Entity entity)
         {
-            _entityManager.Entities[entity.Id] = entity;
+            _data.Entities[entity.Id] = entity;
         }
 
         #endregion
 
         #region GetComponent
 
-        public bool HasUniqueComponent<TComponentUnique>()
-            where TComponentUnique : IComponentUnique
+        public bool HasUniqueComponent<TUniqueComponent>()
+            where TUniqueComponent : IUniqueComponent
         {
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            return _entityManager.UniqueEntities[ComponentIndex<TComponentUnique>.Index] != Entity.Null;
+            return _data.UniqueEntities[ComponentPoolIndex<TUniqueComponent>.Index] != Entity.Null;
         }
 
-        public TComponentUnique GetUniqueComponent<TComponentUnique>()
-            where TComponentUnique : IComponentUnique
+        public TUniqueComponent GetUniqueComponent<TUniqueComponent>()
+            where TUniqueComponent : IUniqueComponent
         {
-            var entity = GetUniqueEntity<TComponentUnique>();
-            return GetComponent<TComponentUnique>(entity);
+            var entity = GetUniqueEntity<TUniqueComponent>();
+            return GetComponent<TUniqueComponent>(entity);
         }
 
-        public Entity GetUniqueEntity<TComponentUnique>()
-            where TComponentUnique : IComponentUnique
+        public Entity GetUniqueEntity<TUniqueComponent>()
+            where TUniqueComponent : IUniqueComponent
         {
-            if (!HasUniqueComponent<TComponentUnique>())
-                throw new EntityNotHaveComponentUniqueException(this, typeof(TComponentUnique));
+            if (!HasUniqueComponent<TUniqueComponent>())
+                throw new EntityNotHaveUniqueComponentException(this, typeof(TUniqueComponent));
 
-            return _entityManager.UniqueEntities[ComponentIndex<TComponentUnique>.Index];
+            return _data.UniqueEntities[ComponentPoolIndex<TUniqueComponent>.Index];
         }
 
         public bool HasComponent<TComponent>(Entity entity)
@@ -287,7 +218,7 @@ namespace EcsLte
             if (!HasEntity(entity))
                 throw new EntityDoesNotExistException(this, entity);
 
-            return _entityManager.ComponentPools[ComponentIndex<TComponent>.Index]
+            return _data.ComponentPools[ComponentPoolIndex<TComponent>.Index]
                 .HasComponent(entity.Id);
         }
 
@@ -297,7 +228,7 @@ namespace EcsLte
             if (!HasComponent<TComponent>(entity))
                 throw new EntityNotHaveComponentException(this, entity, typeof(TComponent));
 
-            return (TComponent)_entityManager.ComponentPools[ComponentIndex<TComponent>.Index]
+            return (TComponent)_data.ComponentPools[ComponentPoolIndex<TComponent>.Index]
                 .GetComponent(entity.Id);
         }
 
@@ -306,12 +237,16 @@ namespace EcsLte
             if (!HasEntity(entity))
                 throw new EntityDoesNotExistException(this, entity);
 
-            var componentIndexes = _entityManager.EntityComponentIndexes[entity.Id].ToArray();
+            var archeType = _data.EntityComponentArcheTypes[entity.Id];
+            if (archeType == null)
+                return new IComponent[0];
+
+            var componentIndexes = archeType.ArcheType.ComponentPoolIndexes;
             var components = new IComponent[componentIndexes.Length];
             for (var i = 0; i < components.Length; i++)
             {
                 var index = componentIndexes[i];
-                components[i] = _entityManager.ComponentPools[index]
+                components[i] = _data.ComponentPools[index]
                     .GetComponent(entity.Id);
             }
 
@@ -322,22 +257,22 @@ namespace EcsLte
 
         #region ComponentLife
 
-        public void AddUniqueComponent<TComponentUnique>(Entity entity, TComponentUnique componentUnique)
-            where TComponentUnique : IComponentUnique
+        public void AddUniqueComponent<TUniqueComponent>(Entity entity, TUniqueComponent uniqueComponent)
+            where TUniqueComponent : IUniqueComponent
         {
-            AddComponent(entity, componentUnique);
+            AddComponent(entity, uniqueComponent);
         }
 
-        public void ReplaceUniqueComponent<TComponentUnique>(Entity entity, TComponentUnique newComponentUnique)
-            where TComponentUnique : IComponentUnique
+        public void ReplaceUniqueComponent<TUniqueComponent>(Entity entity, TUniqueComponent newUniqueComponent)
+            where TUniqueComponent : IUniqueComponent
         {
-            ReplaceComponent(entity, newComponentUnique);
+            ReplaceComponent(entity, newUniqueComponent);
         }
 
-        public void RemoveUniqueComponent<TComponentUnique>(Entity entity)
-            where TComponentUnique : IComponentUnique
+        public void RemoveUniqueComponent<TUniqueComponent>(Entity entity)
+            where TUniqueComponent : IUniqueComponent
         {
-            RemoveComponent<TComponentUnique>(entity);
+            RemoveComponent<TUniqueComponent>(entity);
         }
 
         public void AddComponent<TComponent>(Entity entity, TComponent component)
@@ -346,51 +281,82 @@ namespace EcsLte
             if (HasComponent<TComponent>(entity))
                 throw new EntityAlreadyHasComponentException(this, entity, typeof(TComponent));
 
-            var componentPoolIndex = ComponentIndex<TComponent>.Index;
-            if (ComponentIndex<TComponent>.IsUnique)
+            var componentPoolIndex = ComponentPoolIndex<TComponent>.Index;
+            var oldArcheTypeData = _data.EntityComponentArcheTypes[entity.Id];
+            var nextArcheType = oldArcheTypeData != null
+                ? ComponentArcheType.AppendComponentPoolIndex(oldArcheTypeData.ArcheType, componentPoolIndex)
+                : ComponentArcheType.AppendComponentPoolIndex(componentPoolIndex);
+            if (ComponentPoolIndex<TComponent>.IsUnique)
             {
-                if (_entityManager.UniqueEntities[componentPoolIndex] != Entity.Null)
-                    throw new EntityAlreadyHasComponentUniqueException(this, typeof(TComponent));
-                _entityManager.UniqueEntities[componentPoolIndex] = entity;
+                if (_data.UniqueEntities[componentPoolIndex] != Entity.Null)
+                    throw new EntityAlreadyHasUniqueComponentException(this, typeof(TComponent));
+                _data.UniqueEntities[componentPoolIndex] = entity;
             }
-            if (ComponentIndex<TComponent>.IsPrimaryKey)
+            if (ComponentPoolIndex<TComponent>.IsPrimary)
             {
-                if (_entityManager.PrimaryKeyes[componentPoolIndex]
-                    .GetEntity((IComponentPrimaryKey)component) != Entity.Null)
-                    throw new PrimaryKeyAlreadyHasException(this, (IComponentPrimaryKey)component);
+                if (_data.FilterComponentArcheTypeData(null, (IPrimaryComponent)component, null).Length != 0)
+                    throw new PrimaryComponentAlreadyHasException(this, (IPrimaryComponent)component);
+                nextArcheType = ComponentArcheType.SetPrimaryComponent(nextArcheType, (IPrimaryComponent)component);
             }
+            else if (ComponentPoolIndex<TComponent>.IsShared)
+                nextArcheType = ComponentArcheType.AppendSharedComponent(nextArcheType, (ISharedComponent)component);
+            var archeTypeData = _data.CreateOrGetComponentArcheTypeData(nextArcheType);
 
-            var entityIndexes = _entityManager.EntityComponentIndexes[entity.Id];
-            lock (entityIndexes)
+            _data.ComponentPools[componentPoolIndex].AddComponent(entity.Id, component);
+            _data.EntityComponentArcheTypes[entity.Id] = archeTypeData;
+            if (oldArcheTypeData != null)
             {
-                entityIndexes.Add(componentPoolIndex);
+                oldArcheTypeData.RemoveEntity(entity);
+                if (oldArcheTypeData.Count == 0)
+                    _data.RemoveComponentArcheTypeData(oldArcheTypeData);
             }
-
-            _entityManager.ComponentPools[componentPoolIndex].AddComponent(entity.Id, component);
-
-            _entityManager.AnyEntityComponentAddedEvents.Invoke(entity, componentPoolIndex, component);
-            _entityManager.EntityComponentAddedEvents[entity.Id].Invoke(entity, componentPoolIndex, component);
-            _entityManager.ComponentPoolEntityComponentAddedEvents[componentPoolIndex]
-                .Invoke(entity, componentPoolIndex, component);
+            archeTypeData.AddEntity(entity);
         }
 
         public void ReplaceComponent<TComponent>(Entity entity, TComponent newComponent)
             where TComponent : IComponent
         {
             if (!HasComponent<TComponent>(entity))
-            {
                 AddComponent(entity, newComponent);
-            }
             else
             {
-                var componentPoolIndex = ComponentIndex<TComponent>.Index;
-                var oldComponent = _entityManager.ComponentPools[componentPoolIndex].GetComponent(entity.Id);
-                _entityManager.ComponentPools[componentPoolIndex].ReplaceComponent(entity.Id, newComponent);
+                var componentPoolIndex = ComponentPoolIndex<TComponent>.Index;
 
-                _entityManager.AnyEntityComponentReplacedEvents.Invoke(entity, componentPoolIndex, oldComponent, newComponent);
-                _entityManager.EntityComponentReplacedEvents[entity.Id].Invoke(entity, componentPoolIndex, oldComponent, newComponent);
-                _entityManager.ComponentPoolEntityComponentReplacedEvents[componentPoolIndex]
-                    .Invoke(entity, componentPoolIndex, oldComponent, newComponent);
+                var oldComponent = _data.ComponentPools[componentPoolIndex].GetComponent(entity.Id);
+                _data.ComponentPools[componentPoolIndex].ReplaceComponent(entity.Id, newComponent);
+
+                var oldArcheTypeData = _data.EntityComponentArcheTypes[entity.Id];
+                var nextArcheType = oldArcheTypeData.ArcheType;
+                if (ComponentPoolIndex<TComponent>.IsPrimary)
+                {
+                    if (_data.FilterComponentArcheTypeData(null, (IPrimaryComponent)newComponent, null).Length != 0)
+                        throw new PrimaryComponentAlreadyHasException(this, (IPrimaryComponent)newComponent);
+                    nextArcheType = ComponentArcheType.RemovePrimaryComponent(nextArcheType);
+                    nextArcheType = ComponentArcheType.SetPrimaryComponent(nextArcheType, (IPrimaryComponent)newComponent);
+
+                    oldArcheTypeData.RemoveEntity(entity);
+                    if (oldArcheTypeData.Count == 0)
+                        _data.RemoveComponentArcheTypeData(oldArcheTypeData);
+
+                    var newArcheTypeData = _data.CreateOrGetComponentArcheTypeData(nextArcheType);
+                    newArcheTypeData.AddEntity(entity);
+                    _data.EntityComponentArcheTypes[entity.Id] = newArcheTypeData;
+                }
+                else if (ComponentPoolIndex<TComponent>.IsShared)
+                {
+                    nextArcheType = ComponentArcheType.RemoveSharedComponent(nextArcheType, (ISharedComponent)oldComponent);
+                    nextArcheType = ComponentArcheType.AppendSharedComponent(nextArcheType, (ISharedComponent)newComponent);
+
+                    oldArcheTypeData.RemoveEntity(entity);
+                    if (oldArcheTypeData.Count == 0)
+                        _data.RemoveComponentArcheTypeData(oldArcheTypeData);
+
+                    var newArcheTypeData = _data.CreateOrGetComponentArcheTypeData(nextArcheType);
+                    newArcheTypeData.AddEntity(entity);
+                    _data.EntityComponentArcheTypes[entity.Id] = newArcheTypeData;
+                }
+                else
+                    oldArcheTypeData.UpdateEntity(entity);
             }
         }
 
@@ -400,23 +366,28 @@ namespace EcsLte
             if (!HasComponent<TComponent>(entity))
                 throw new EntityNotHaveComponentException(this, entity, typeof(TComponent));
 
-            var componentPoolIndex = ComponentIndex<TComponent>.Index;
-            if (ComponentIndex<TComponent>.IsUnique && _entityManager.UniqueEntities[componentPoolIndex] == entity)
-                _entityManager.UniqueEntities[componentPoolIndex] = Entity.Null;
+            var componentPoolIndex = ComponentPoolIndex<TComponent>.Index;
+            var oldComponent = _data.ComponentPools[componentPoolIndex].GetComponent(entity.Id);
+            var oldArcheTypeData = _data.EntityComponentArcheTypes[entity.Id];
+            var nextArcheType = ComponentArcheType.RemoveComponentPoolIndex(oldArcheTypeData.ArcheType, componentPoolIndex);
+            if (ComponentPoolIndex<TComponent>.IsUnique && _data.UniqueEntities[componentPoolIndex] == entity)
+                _data.UniqueEntities[componentPoolIndex] = Entity.Null;
+            if (ComponentPoolIndex<TComponent>.IsPrimary)
+                nextArcheType = ComponentArcheType.RemovePrimaryComponent(nextArcheType);
+            else if (ComponentPoolIndex<TComponent>.IsShared)
+                nextArcheType = ComponentArcheType
+                    .RemoveSharedComponent(nextArcheType, (ISharedComponent)oldComponent);
+            var archeTypeData = _data.CreateOrGetComponentArcheTypeData(nextArcheType);
 
-            var entityIndexes = _entityManager.EntityComponentIndexes[entity.Id];
-            lock (entityIndexes)
-            {
-                entityIndexes.Remove(componentPoolIndex);
-            }
+            _data.ComponentPools[componentPoolIndex].RemoveComponent(entity.Id);
+            _data.EntityComponentArcheTypes[entity.Id] = archeTypeData;
 
-            var oldComponent = _entityManager.ComponentPools[componentPoolIndex].GetComponent(entity.Id);
-            _entityManager.ComponentPools[componentPoolIndex].RemoveComponent(entity.Id);
+            oldArcheTypeData.RemoveEntity(entity);
+            if (oldArcheTypeData.Count == 0)
+                _data.RemoveComponentArcheTypeData(oldArcheTypeData);
 
-            _entityManager.AnyEntityComponentRemovedEvents.Invoke(entity, componentPoolIndex, oldComponent);
-            _entityManager.EntityComponentRemovedEvents[entity.Id].Invoke(entity, componentPoolIndex, oldComponent);
-            _entityManager.ComponentPoolEntityComponentRemovedEvents[componentPoolIndex]
-                .Invoke(entity, componentPoolIndex, oldComponent);
+            if (archeTypeData != null)
+                archeTypeData.AddEntity(entity);
         }
 
         public void RemoveAllComponents(Entity entity)
@@ -424,20 +395,40 @@ namespace EcsLte
             if (!HasEntity(entity))
                 throw new EntityDoesNotExistException(this, entity);
 
-            var componentIndexes = _entityManager.SilentRemoveAllComponents(entity);
-
-            var anyEvent = _entityManager.AnyEntityComponentRemovedEvents;
-            var entityEvent = _entityManager.EntityComponentRemovedEvents[entity.Id];
-
-            for (int i = 0; i < componentIndexes.Item1.Length; i++)
+            var archeTypeData = _data.EntityComponentArcheTypes[entity.Id];
+            if (archeTypeData != null)
             {
-                var componentPoolIndex = componentIndexes.Item1[i];
-                var oldComponent = componentIndexes.Item2[i];
+                var archeType = archeTypeData.ArcheType;
+                for (int i = 0; i < archeType.ComponentPoolIndexes.Length; i++)
+                    _data.ComponentPools[archeType.ComponentPoolIndexes[i]].RemoveComponent(entity.Id);
 
-                anyEvent.Invoke(entity, componentPoolIndex, oldComponent);
-                entityEvent.Invoke(entity, componentPoolIndex, oldComponent);
-                _entityManager.ComponentPoolEntityComponentRemovedEvents[componentPoolIndex]
-                    .Invoke(entity, componentPoolIndex, oldComponent);
+                _data.EntityComponentArcheTypes[entity.Id] = null;
+                archeTypeData.RemoveEntity(entity);
+
+                if (archeTypeData.Count == 0)
+                    _data.RemoveComponentArcheTypeData(archeTypeData);
+            }
+        }
+
+        #endregion
+
+        #region FilterEntity
+
+        public EntityFilter FilterBy(Filter filter)
+        {
+            if (IsDestroyed)
+                throw new EcsContextIsDestroyedException(this);
+
+            lock (_data.EntityFilters)
+            {
+                if (!_data.EntityFilters.TryGetValue(filter, out var entityFilter))
+                {
+                    var archeTypeDatas = _data.FilterComponentArcheTypeData(filter, null, null);
+                    entityFilter = new EntityFilter(this, _data, filter, archeTypeDatas);
+                    _data.EntityFilters.Add(filter, entityFilter);
+                }
+
+                return entityFilter;
             }
         }
 
@@ -445,70 +436,59 @@ namespace EcsLte
 
         #region  WithKey
 
-        public EntityKey WithKey(IComponentPrimaryKey primaryKey)
+        public EntityGroup GroupWith(IPrimaryComponent primaryComponent)
         {
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
-            if (primaryKey == null)
+            if (primaryComponent == null)
                 throw new ArgumentNullException();
 
-            var keyCollection = new KeyCollection(new[] { primaryKey });
-            lock (_entityManager.EntityKeyes)
+            var keyCollection = new GroupWithCollection(new[] { primaryComponent });
+            lock (_data.EntityGroups)
             {
-                if (!_entityManager.EntityKeyes.TryGetValue(keyCollection, out var entityKey))
+                if (!_data.EntityGroups.TryGetValue(keyCollection, out var entityKey))
                 {
-                    var key = _entityManager.PrimaryKeyes[ComponentIndexes.Instance.GetComponentIndex(primaryKey.GetType())];
-                    entityKey = new EntityKey(this, _entityManager, key, primaryKey);
-                    _entityManager.EntityKeyes.Add(keyCollection, entityKey);
+                    var archeTypeDatas = _data.FilterComponentArcheTypeData(null, primaryComponent, null);
+                    entityKey = new EntityGroup(this, _data,
+                        archeTypeDatas,
+                        primaryComponent,
+                        null);
+                    _data.EntityGroups.Add(keyCollection, entityKey);
                 }
 
                 return entityKey;
             }
         }
 
-        public EntityKey WithKey(IComponentSharedKey sharedKey)
+        public EntityGroup GroupWith(ISharedComponent sharedComponent)
         {
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
-            if (sharedKey == null)
+            if (sharedComponent == null)
                 throw new ArgumentNullException();
 
-            var keyCollection = new KeyCollection(new[] { sharedKey });
-            lock (_entityManager.EntityKeyes)
-            {
-                if (!_entityManager.EntityKeyes.TryGetValue(keyCollection, out var entityKey))
-                {
-                    var key = _entityManager.SharedKeyes[ComponentIndexes.Instance.GetComponentIndex(sharedKey.GetType())];
-                    entityKey = new EntityKey(this, _entityManager, new[] { key }, new[] { sharedKey });
-                    _entityManager.EntityKeyes.Add(keyCollection, entityKey);
-                }
-
-                return entityKey;
-            }
+            return GroupWith(new[] { sharedComponent });
         }
 
-        public EntityKey WithKey(params IComponentSharedKey[] sharedKeys)
+        public EntityGroup GroupWith(params ISharedComponent[] sharedComponents)
         {
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
-            foreach (var sharedKey in sharedKeys)
-                if (sharedKey == null)
+            foreach (var sharedComponent in sharedComponents)
+                if (sharedComponent == null)
                     throw new ArgumentNullException();
 
-            sharedKeys = sharedKeys.OrderBy(x => x.GetHashCode()).ToArray();
-            var keyCollection = new KeyCollection(sharedKeys);
-            lock (_entityManager.EntityKeyes)
+            var keyCollection = new GroupWithCollection(sharedComponents);
+            lock (_data.EntityGroups)
             {
-                if (!_entityManager.EntityKeyes.TryGetValue(keyCollection, out var entityKey))
+                if (!_data.EntityGroups.TryGetValue(keyCollection, out var entityKey))
                 {
-                    var keyes = new ISharedKey[sharedKeys.Length];
-                    for (int i = 0; i < sharedKeys.Length; i++)
-                    {
-                        keyes[i] = _entityManager.SharedKeyes[ComponentIndexes.Instance.GetComponentIndex(sharedKeys[i]
-                            .GetType())];
-                    }
-                    entityKey = new EntityKey(this, _entityManager, keyes, sharedKeys);
-                    _entityManager.EntityKeyes.Add(keyCollection, entityKey);
+                    var archeTypeDatas = _data.FilterComponentArcheTypeData(null, null, sharedComponents);
+                    entityKey = new EntityGroup(this, _data,
+                        archeTypeDatas.ToArray(),
+                        null,
+                        sharedComponents);
+                    _data.EntityGroups.Add(keyCollection, entityKey);
                 }
 
                 return entityKey;

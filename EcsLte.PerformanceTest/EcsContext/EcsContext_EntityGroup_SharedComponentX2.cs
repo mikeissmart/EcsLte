@@ -6,15 +6,15 @@ using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class EcsContext_WithKey_SharedKeyesX2 : BasePerformanceTest
+    internal class EcsContext_EntityGroup_SharedComponentX2 : BasePerformanceTest
     {
         public override void Run()
         {
             var component1 = new TestSharedKeyComponent1 { Prop = 1 };
             var component2 = new TestSharedKeyComponent2 { Prop = 2 };
-            EntityKey entityKey;
+            EntityGroup entityGroup;
             for (int i = 0; i < TestConsts.EntityLoopCount; i++)
-                entityKey = _context.WithKey(component1, component2);
+                entityGroup = _context.GroupWith(component1, component2);
         }
 
         public override bool CanRunParallel()
@@ -26,9 +26,9 @@ namespace EcsLte.PerformanceTest
         {
             var component1 = new TestSharedKeyComponent1 { Prop = 1 };
             var component2 = new TestSharedKeyComponent2 { Prop = 2 };
-            EntityKey entityKey;
+            EntityGroup entityGroup;
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                i => { entityKey = _context.WithKey(component1, component2); });
+                i => { entityGroup = _context.GroupWith(component1, component2); });
         }
     }
 }

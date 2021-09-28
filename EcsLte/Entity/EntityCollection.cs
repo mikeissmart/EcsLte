@@ -27,7 +27,7 @@ namespace EcsLte
             return _entities.CachedData;
         }
 
-        public void CopyFrom(EntityCollection source)
+        internal void CopyFrom(EntityCollection source)
         {
             Array.Copy(source._entities.UncachedData, source._entities.UncachedData, Length);
             _entities.SetDirty();

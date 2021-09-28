@@ -3,10 +3,10 @@ using EcsLte.Exceptions;
 using EcsLte.UnitTest.InterfaceTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace EcsLte.UnitTest.EntityKeyTests
+namespace EcsLte.UnitTest.EntityGroupTests
 {
     [TestClass]
-    public class EntityKey_PrimaryKey_GetEntity : BasePrePostTest, IGetEntityTest
+    public class EntityGroup_PrimaryComponent_GetEntity : BasePrePostTest, IGetEntityTest
     {
         [TestMethod]
         public void HasEntity()
@@ -15,21 +15,21 @@ namespace EcsLte.UnitTest.EntityKeyTests
             var entity = _context.CreateEntity();
             _context.AddComponent(entity, component);
 
-            var entityKey = _context.WithKey(component);
+            var entityGroup = _context.GroupWith(component);
 
             // Correct entity
-            Assert.IsTrue(entityKey.HasEntity(entity));
+            Assert.IsTrue(entityGroup.HasEntity(entity));
             // Removed from withKey
             _context.RemoveComponent<TestPrimaryKeyComponent1>(entity);
-            Assert.IsFalse(entityKey.HasEntity(entity));
+            Assert.IsFalse(entityGroup.HasEntity(entity));
             // Replaced from withKey
             var component2 = new TestPrimaryKeyComponent1 { Prop = 2 };
             _context.ReplaceComponent(entity, component2);
-            Assert.IsFalse(entityKey.HasEntity(entity));
+            Assert.IsFalse(entityGroup.HasEntity(entity));
             // EcsContext is destroyed
             EcsContexts.DestroyContext(_context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                entityKey.HasEntity(entity));
+                entityGroup.HasEntity(entity));
         }
 
         [TestMethod]
@@ -39,22 +39,22 @@ namespace EcsLte.UnitTest.EntityKeyTests
             var entity = _context.CreateEntity();
             _context.AddComponent(entity, component);
 
-            var entityKey = _context.WithKey(component);
+            var entityGroup = _context.GroupWith(component);
 
             // Correct entity
-            Assert.IsTrue(entityKey.GetEntities().Length == 1);
-            Assert.IsTrue(entityKey.GetEntities()[0] == entity);
+            Assert.IsTrue(entityGroup.GetEntities().Length == 1);
+            Assert.IsTrue(entityGroup.GetEntities()[0] == entity);
             // Removed from withKey
             _context.RemoveComponent<TestPrimaryKeyComponent1>(entity);
-            Assert.IsTrue(entityKey.GetEntities().Length == 0);
+            Assert.IsTrue(entityGroup.GetEntities().Length == 0);
             // Replaced from withKey
-            var component2 = new TestSharedKeyComponent1 { Prop = 2 };
+            var component2 = new TestPrimaryKeyComponent1 { Prop = 2 };
             _context.ReplaceComponent(entity, component2);
-            Assert.IsTrue(entityKey.GetEntities().Length == 0);
+            Assert.IsTrue(entityGroup.GetEntities().Length == 0);
             // EcsContext is destroyed
             EcsContexts.DestroyContext(_context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                entityKey.GetEntities());
+                entityGroup.GetEntities());
         }
     }
 }

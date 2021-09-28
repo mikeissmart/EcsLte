@@ -27,10 +27,10 @@ namespace EcsLte.UnitTest.EcsContextTests
             Assert.IsTrue(
                 _context.GetUniqueComponent<TestComponentUnique1>().Prop == component.Prop);
             // Already has component
-            Assert.ThrowsException<EntityAlreadyHasComponentUniqueException>(() =>
+            Assert.ThrowsException<EntityAlreadyHasUniqueComponentException>(() =>
                 _context.AddUniqueComponent(component));
             // Unable to add same unique component to another entity
-            Assert.ThrowsException<EntityAlreadyHasComponentUniqueException>(() =>
+            Assert.ThrowsException<EntityAlreadyHasUniqueComponentException>(() =>
                 _context.AddUniqueComponent(component));
             // Can add to another entity once exisitng unique component is removed
             _context.RemoveUniqueComponent<TestComponentUnique1>();
@@ -74,7 +74,7 @@ namespace EcsLte.UnitTest.EcsContextTests
             // Correctly removes component
             Assert.IsFalse(_context.HasUniqueComponent<TestComponentUnique1>());
             // Cannot remove component entiy doesnt have
-            Assert.ThrowsException<EntityNotHaveComponentUniqueException>(() =>
+            Assert.ThrowsException<EntityNotHaveUniqueComponentException>(() =>
                 _context.RemoveUniqueComponent<TestComponentUnique1>());
             // EcsContext is destroyed
             EcsContexts.DestroyContext(_context);

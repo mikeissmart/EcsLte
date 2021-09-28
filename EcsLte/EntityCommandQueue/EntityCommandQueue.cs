@@ -17,12 +17,6 @@ namespace EcsLte
             Name = name;
         }
 
-        #region EscContext
-
-        public EcsContext CurrentContext { get; private set; }
-
-        #endregion
-
         #region EntityCommandQueue
 
         public string Name { get; private set; }
@@ -64,6 +58,12 @@ namespace EcsLte
             _data.Reset();
             ObjectCache.Push(_data);
         }
+
+        #endregion
+
+        #region EscContext
+
+        public EcsContext CurrentContext { get; private set; }
 
         #endregion
 
@@ -126,7 +126,7 @@ namespace EcsLte
         #region ComponentLife
 
         public void AddUniqueComponent<TComponentUnique>(Entity entity, TComponentUnique componentUnique)
-            where TComponentUnique : IComponentUnique
+            where TComponentUnique : IUniqueComponent
         {
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);
@@ -135,7 +135,7 @@ namespace EcsLte
         }
 
         public void ReplaceUniqueComponent<TComponentUnique>(Entity entity, TComponentUnique newComponentUnique)
-            where TComponentUnique : IComponentUnique
+            where TComponentUnique : IUniqueComponent
         {
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);
@@ -144,7 +144,7 @@ namespace EcsLte
         }
 
         public void RemoveUniqueComponent<TComponentUnique>(Entity entity)
-            where TComponentUnique : IComponentUnique
+            where TComponentUnique : IUniqueComponent
         {
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);

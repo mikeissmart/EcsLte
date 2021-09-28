@@ -4,12 +4,20 @@ namespace EcsLte.PerformanceTest
 {
     internal class EcsContext_FilterByOne : BasePerformanceTest
     {
+        private Filter _filter;
+
+        public override void PreRun()
+        {
+            base.PreRun();
+
+            _filter = Filter.AllOf<TestComponent1>();
+        }
+
         public override void Run()
         {
-            var filter = Filter.AllOf<TestComponent1>();
             EntityFilter entityFilter;
             for (int i = 0; i < TestConsts.EntityLoopCount; i++)
-                entityFilter = _context.FilterBy(filter);
+                entityFilter = _context.FilterBy(_filter);
         }
 
         public override bool CanRunParallel()
@@ -19,10 +27,9 @@ namespace EcsLte.PerformanceTest
 
         public override void RunParallel()
         {
-            var filter = Filter.AllOf<TestComponent1>();
             EntityFilter entityFilter;
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                i => { entityFilter = _context.FilterBy(filter); });
+                i => { entityFilter = _context.FilterBy(_filter); });
         }
     }
 }

@@ -100,8 +100,11 @@ namespace EcsLte.UnitTest.EcsContextTests
 
             var components = _context.GetAllComponents(entity);
 
+            var str = "";
+            foreach (var comp in components)
+                str += $", {comp.GetType().Name}";
             // Correct component count
-            Assert.IsTrue(components.Length == 2);
+            Assert.IsTrue(components.Length == 2, $"Wrong count expected 2 got {str}");
             // Correct components
             Assert.IsTrue(components[0] is TestComponent1);
             Assert.IsTrue(components[1] is TestComponent2);

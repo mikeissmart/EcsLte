@@ -23,7 +23,7 @@ namespace EcsLte.UnitTest.EcsContextTests
                 _context.AddUniqueComponent(entity, component));
             // Unable to add same unique component to another entity
             var entity2 = _context.CreateEntity();
-            Assert.ThrowsException<EntityAlreadyHasComponentUniqueException>(() =>
+            Assert.ThrowsException<EntityAlreadyHasUniqueComponentException>(() =>
                 _context.AddUniqueComponent(entity2, component));
             // Can add to another entity once exisitng unique component is removed
             _context.RemoveUniqueComponent<TestComponentUnique1>(entity);
