@@ -11,14 +11,14 @@ namespace EcsLte.PerformanceTest
         {
             base.PreRun();
 
-            _filter = Filter.AllOf<TestSharedKeyComponent1>();
-            _entityGroup = _context.GroupWith(new TestSharedKeyComponent1 { Prop = 1 });
+            _filter = Filter.AllOf<TestSharedComponent1>();
+            _entityGroup = _context.GroupWith(new TestSharedComponent1 { Prop = 1 });
         }
 
         public override void Run()
         {
             Watcher watcher;
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 watcher = _entityGroup.Removed(_filter);
         }
 

@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
@@ -10,9 +6,9 @@ namespace EcsLte.PerformanceTest
     {
         public override void Run()
         {
-            var component = new TestSharedKeyComponent1 { Prop = 1 };
+            var component = new TestSharedComponent1 { Prop = 1 };
             EntityGroup entityGroup;
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 entityGroup = _context.GroupWith(component);
         }
 
@@ -23,7 +19,7 @@ namespace EcsLte.PerformanceTest
 
         public override void RunParallel()
         {
-            var component = new TestSharedKeyComponent1 { Prop = 1 };
+            var component = new TestSharedComponent1 { Prop = 1 };
             EntityGroup entityGroup;
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
                 i => { entityGroup = _context.GroupWith(component); });

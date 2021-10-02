@@ -8,14 +8,14 @@ namespace EcsLte.PerformanceTest
         {
             base.PreRun();
 
-            _context.AddUniqueComponent(new TestComponentUnique1());
+            _context.AddUniqueComponent(new TestUniqueComponent1());
         }
 
         public override void Run()
         {
             Entity entity;
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
-                entity = _context.GetUniqueEntity<TestComponentUnique1>();
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
+                entity = _context.GetUniqueEntity<TestUniqueComponent1>();
         }
 
         public override bool CanRunParallel()
@@ -27,7 +27,7 @@ namespace EcsLte.PerformanceTest
         {
             Entity entity;
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                i => { entity = _context.GetUniqueEntity<TestComponentUnique1>(); });
+                i => { entity = _context.GetUniqueEntity<TestUniqueComponent1>(); });
         }
     }
 }

@@ -4,21 +4,21 @@ namespace EcsLte.PerformanceTest
 {
     internal class EntityGroup_GetEntity_GetEntitiesAfter : BasePerformanceTest
     {
+        private TestSharedComponent1 _component;
         private Entity[] _entities;
-        private TestSharedKeyComponent1 _component;
 
         public override void PreRun()
         {
             base.PreRun();
 
-            _component = new TestSharedKeyComponent1 { Prop = 1 };
+            _component = new TestSharedComponent1 { Prop = 1 };
             _entities = _context.CreateEntities(TestConsts.EntityLoopCount);
             _context.GroupWith(_component);
         }
 
         public override void Run()
         {
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 _context.AddComponent(_entities[i], _component);
         }
 

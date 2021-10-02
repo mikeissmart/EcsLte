@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
@@ -10,17 +6,17 @@ namespace EcsLte.PerformanceTest
     {
         public override void Run()
         {
-            var component1 = new TestSharedKeyComponent1 { Prop = 1 };
-            var component2 = new TestSharedKeyComponent2 { Prop = 2 };
-            var component3 = new TestSharedKeyComponent3 { Prop = 3 };
-            var component4 = new TestSharedKeyComponent4 { Prop = 4 };
-            var component5 = new TestSharedKeyComponent5 { Prop = 5 };
-            var component6 = new TestSharedKeyComponent6 { Prop = 6 };
-            var component7 = new TestSharedKeyComponent7 { Prop = 7 };
-            var component8 = new TestSharedKeyComponent8 { Prop = 8 };
-            var component9 = new TestSharedKeyComponent9 { Prop = 9 };
+            var component1 = new TestSharedComponent1 { Prop = 1 };
+            var component2 = new TestSharedComponent2 { Prop = 2 };
+            var component3 = new TestSharedComponent3 { Prop = 3 };
+            var component4 = new TestSharedComponent4 { Prop = 4 };
+            var component5 = new TestSharedComponent5 { Prop = 5 };
+            var component6 = new TestSharedComponent6 { Prop = 6 };
+            var component7 = new TestSharedComponent7 { Prop = 7 };
+            var component8 = new TestSharedComponent8 { Prop = 8 };
+            var component9 = new TestSharedComponent9 { Prop = 9 };
             EntityGroup entityGroup;
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 entityGroup = _context.GroupWith(
                     component1,
                     component2,
@@ -40,15 +36,15 @@ namespace EcsLte.PerformanceTest
 
         public override void RunParallel()
         {
-            var component1 = new TestSharedKeyComponent1 { Prop = 1 };
-            var component2 = new TestSharedKeyComponent2 { Prop = 2 };
-            var component3 = new TestSharedKeyComponent3 { Prop = 3 };
-            var component4 = new TestSharedKeyComponent4 { Prop = 4 };
-            var component5 = new TestSharedKeyComponent5 { Prop = 5 };
-            var component6 = new TestSharedKeyComponent6 { Prop = 6 };
-            var component7 = new TestSharedKeyComponent7 { Prop = 7 };
-            var component8 = new TestSharedKeyComponent8 { Prop = 8 };
-            var component9 = new TestSharedKeyComponent9 { Prop = 9 };
+            var component1 = new TestSharedComponent1 { Prop = 1 };
+            var component2 = new TestSharedComponent2 { Prop = 2 };
+            var component3 = new TestSharedComponent3 { Prop = 3 };
+            var component4 = new TestSharedComponent4 { Prop = 4 };
+            var component5 = new TestSharedComponent5 { Prop = 5 };
+            var component6 = new TestSharedComponent6 { Prop = 6 };
+            var component7 = new TestSharedComponent7 { Prop = 7 };
+            var component8 = new TestSharedComponent8 { Prop = 8 };
+            var component9 = new TestSharedComponent9 { Prop = 9 };
             EntityGroup entityGroup;
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
                 i =>

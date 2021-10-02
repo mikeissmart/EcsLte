@@ -7,8 +7,8 @@ namespace EcsLte.PerformanceTest
         public override void Run()
         {
             bool hasComponent;
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
-                hasComponent = _context.HasUniqueComponent<TestComponentUnique1>();
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
+                hasComponent = _context.HasUniqueComponent<TestUniqueComponent1>();
         }
 
         public override bool CanRunParallel()
@@ -20,7 +20,7 @@ namespace EcsLte.PerformanceTest
         {
             bool hasComponent;
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                i => { hasComponent = _context.HasUniqueComponent<TestComponentUnique1>(); });
+                i => { hasComponent = _context.HasUniqueComponent<TestUniqueComponent1>(); });
         }
     }
 }
