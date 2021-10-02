@@ -1,4 +1,3 @@
-using System;
 using EcsLte.Exceptions;
 using EcsLte.Utilities;
 
@@ -22,7 +21,7 @@ namespace EcsLte
 
     public class Watcher : IEcsContext, IGetEntity
     {
-        private WatcherData _data;
+        private readonly WatcherData _data;
 
         internal Watcher(EcsContext context)
         {
@@ -32,6 +31,12 @@ namespace EcsLte
             CurrentContext = context;
             IsActive = true;
         }
+
+        #region EcsContext
+
+        public EcsContext CurrentContext { get; }
+
+        #endregion
 
         #region Watcher
 
@@ -69,12 +74,6 @@ namespace EcsLte
 
             IsActive = false;
         }
-
-        #endregion
-
-        #region EcsContext
-
-        public EcsContext CurrentContext { get; private set; }
 
         #endregion
 
@@ -119,6 +118,5 @@ namespace EcsLte
         }
 
         #endregion
-
     }
 }

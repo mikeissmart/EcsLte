@@ -8,14 +8,14 @@ namespace EcsLte.PerformanceTest
         {
             base.PreRun();
 
-            Entity[] entities = _context.CreateEntities(TestConsts.EntityLoopCount);
+            var entities = _context.CreateEntities(TestConsts.EntityLoopCount);
             _context.DestroyEntities(entities);
         }
 
         public override void Run()
         {
             Entity entity;
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 entity = _context.CreateEntity();
         }
 

@@ -18,7 +18,7 @@ namespace EcsLte.PerformanceTest
         public override void Run()
         {
             Watcher watcher;
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 watcher = _entityFilter.Added(_filter);
         }
 

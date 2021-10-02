@@ -1,5 +1,4 @@
 using EcsLte.Exceptions;
-using EcsLte.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace EcsLte.UnitTest.EcsContextsTests

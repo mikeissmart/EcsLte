@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
@@ -20,7 +16,7 @@ namespace EcsLte.PerformanceTest
 
         public override void Run()
         {
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 _context.CreateEntity(_blueprint);
         }
 

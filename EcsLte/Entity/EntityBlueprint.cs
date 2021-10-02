@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using EcsLte.Exceptions;
@@ -7,14 +6,14 @@ namespace EcsLte
 {
     internal class BlueprintComponent
     {
-        internal ComponentPoolConfig Config { get; set; }
-        internal IComponent Component { get; set; }
-
         internal BlueprintComponent(ComponentPoolConfig config, IComponent component)
         {
             Config = config;
             Component = component;
         }
+
+        internal ComponentPoolConfig Config { get; set; }
+        internal IComponent Component { get; set; }
 
         internal BlueprintComponent Clone()
         {
@@ -24,8 +23,8 @@ namespace EcsLte
 
     public class EntityBlueprint
     {
-        private Dictionary<int, BlueprintComponent> _components;
-        private ComponentArcheType _archeType;
+        private readonly ComponentArcheType _archeType;
+        private readonly Dictionary<int, BlueprintComponent> _components;
         private bool _createArcheType;
 
         public EntityBlueprint()
@@ -41,7 +40,6 @@ namespace EcsLte
             {
                 var _archeType = new ComponentArcheType();
                 foreach (var bpComponent in _components.Values)
-                {
                     if (bpComponent.Config.IsShared)
                         _archeType = ComponentArcheType.AppendSharedComponent(
                             _archeType,
@@ -50,7 +48,6 @@ namespace EcsLte
                     else
                         _archeType = ComponentArcheType.AppendComponentPoolIndex(
                             _archeType, bpComponent.Config.Index);
-                }
                 _createArcheType = false;
             }
 
@@ -110,7 +107,9 @@ namespace EcsLte
                 _createArcheType = true;
             }
             else
+            {
                 AddComponent(newComponent);
+            }
 
             return this;
         }

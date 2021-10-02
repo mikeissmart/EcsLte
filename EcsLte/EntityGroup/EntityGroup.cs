@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using EcsLte.Exceptions;
 using EcsLte.Utilities;
@@ -8,9 +7,9 @@ namespace EcsLte
 {
     public class EntityGroup : IEcsContext, IGetEntity, IGetWatcher
     {
-        private EntityGroupData _data;
-        private WatcherTable _watcherTable;
+        private readonly EntityGroupData _data;
         private EcsContextData _ecsContextData;
+        private readonly WatcherTable _watcherTable;
 
         internal EntityGroup(EcsContext context, EcsContextData ecsContextData,
             ComponentArcheTypeData[] archeTypeDatas,
@@ -23,7 +22,7 @@ namespace EcsLte
             ecsContextData.ArcheTypeDataAdded += OnComponentArcheTypeDataAdded;
             ecsContextData.ArcheTypeDataRemoved += OnCompoinentArcheTypeDataRemoved;
 
-            for (int i = 0; i < archeTypeDatas.Length; i++)
+            for (var i = 0; i < archeTypeDatas.Length; i++)
             {
                 var archData = archeTypeDatas[i];
                 archData.EntityAdded += OnEntityComponentAdded;
@@ -44,13 +43,13 @@ namespace EcsLte
 
         #region EcsContext
 
-        public EcsContext CurrentContext { get; private set; }
+        public EcsContext CurrentContext { get; }
 
         #endregion
 
         #region EntityKey
 
-        internal ISharedComponent[] SharedKeys { get => _data.SharedComponents; }
+        internal ISharedComponent[] SharedKeys => _data.SharedComponents;
 
         public Entity GetFirstOrDefault()
         {
@@ -160,9 +159,7 @@ namespace EcsLte
         {
             if (_data.SharedComponents != null && archeTypeData.ArcheType.SharedComponents != null &&
                 archeTypeData.ArcheType.SharedComponents.SequenceEqual(_data.SharedComponents))
-            {
                 AddComponentArcheTypeData(archeTypeData);
-            }
         }
 
         private void AddComponentArcheTypeData(ComponentArcheTypeData archeTypeData)

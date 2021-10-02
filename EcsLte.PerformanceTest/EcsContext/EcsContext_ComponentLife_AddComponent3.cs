@@ -13,7 +13,7 @@ namespace EcsLte.PerformanceTest
             _entities = _context.CreateEntities(TestConsts.EntityLoopCount);
             var component1 = new TestComponent1();
             var component2 = new TestComponent2();
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
             {
                 _context.AddComponent(_entities[i], component1);
                 _context.AddComponent(_entities[i], component2);
@@ -23,7 +23,7 @@ namespace EcsLte.PerformanceTest
         public override void Run()
         {
             var component = new TestComponent3();
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 _context.AddComponent(_entities[i], component);
         }
 

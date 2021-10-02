@@ -8,14 +8,14 @@ namespace EcsLte.PerformanceTest
 
             var entities = _context.CreateEntities(TestConsts.EntityLoopCount);
             var component = new TestComponent1();
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 _context.AddComponent(entities[i], component);
         }
 
         public override void Run()
         {
             EntityFilter entityFilter;
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 entityFilter = _context.FilterBy(Filter.AllOf<TestComponent1>());
         }
     }

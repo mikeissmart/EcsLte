@@ -29,8 +29,10 @@ namespace EcsLte
 
     public interface IComponentLife
     {
-        void AddUniqueComponent<TComponentUnique>(Entity entity, TComponentUnique componentUnique) where TComponentUnique : IUniqueComponent;
-        void ReplaceUniqueComponent<TComponentUnique>(Entity entity, TComponentUnique newComponentUnique) where TComponentUnique : IUniqueComponent;
+        void AddUniqueComponent<TComponentUnique>(Entity entity, TComponentUnique componentUnique)
+            where TComponentUnique : IUniqueComponent;
+        void ReplaceUniqueComponent<TComponentUnique>(Entity entity, TComponentUnique newComponentUnique)
+            where TComponentUnique : IUniqueComponent;
         void RemoveUniqueComponent<TComponentUnique>(Entity entity) where TComponentUnique : IUniqueComponent;
         void AddComponent<TComponent>(Entity entity, TComponent component) where TComponent : IComponent;
         void ReplaceComponent<TComponent>(Entity entity, TComponent newComponent) where TComponent : IComponent;

@@ -12,14 +12,14 @@ namespace EcsLte.PerformanceTest.EntityCommandQueue
 
             _entities = _context.CreateEntities(TestConsts.EntityLoopCount);
             var component = new TestComponent1();
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 _context.AddComponent(_entities[i], component);
         }
 
         public override void Run()
         {
             var component = new TestComponent1();
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 _context.DefaultCommand.ReplaceComponent(_entities[i], component);
             _context.DefaultCommand.RunCommands();
         }

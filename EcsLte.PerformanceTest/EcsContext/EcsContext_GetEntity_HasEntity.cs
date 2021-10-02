@@ -16,7 +16,7 @@ namespace EcsLte.PerformanceTest
         public override void Run()
         {
             bool hasEntity;
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 hasEntity = _context.HasEntity(_entities[i]);
         }
 

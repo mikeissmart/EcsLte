@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using EcsLte.Exceptions;
 using EcsLte.Utilities;
 
 namespace EcsLte
@@ -9,11 +8,13 @@ namespace EcsLte
     internal class EcsContextData
     {
         private const int _arrayInitSize = 4;
-
-        private Dictionary<int, ComponentArcheTypeData> _componentArcheTypes;
-        private List<EntityCollection> _entityCollections;
         private int _arrayCurrentSize;
+
+        private readonly Dictionary<int, ComponentArcheTypeData> _componentArcheTypes;
+        private readonly List<EntityCollection> _entityCollections;
         private int _nextId = 1;
+
+        public ComponentArcheTypeData[] EntityComponentArcheTypes;
 
         public EcsContextData()
         {
@@ -30,13 +31,12 @@ namespace EcsLte
             EntityComponentArcheTypes = new ComponentArcheTypeData[_arrayInitSize];
         }
 
-        public IComponentPool[] ComponentPools { get; private set; }
-        public Dictionary<GroupWithCollection, EntityGroup> EntityGroups { get; private set; }
-        public Dictionary<string, EntityCommandQueue> EntityCommandQueue { get; private set; }
-        public Queue<Entity> ReuseableEntities { get; private set; }
-        public Entity[] UniqueEntities { get; private set; }
-        public Dictionary<Filter, EntityFilter> EntityFilters { get; private set; }
-        public ComponentArcheTypeData[] EntityComponentArcheTypes;
+        public IComponentPool[] ComponentPools { get; }
+        public Dictionary<GroupWithCollection, EntityGroup> EntityGroups { get; }
+        public Dictionary<string, EntityCommandQueue> EntityCommandQueue { get; }
+        public Queue<Entity> ReuseableEntities { get; }
+        public Entity[] UniqueEntities { get; }
+        public Dictionary<Filter, EntityFilter> EntityFilters { get; }
         public EntityCollection Entities { get; private set; }
 
         public event ComponentArcheTypeDataEvent ArcheTypeDataAdded;
@@ -64,9 +64,7 @@ namespace EcsLte
                     Version = 1
                 };
                 if (Entities.Length == _nextId)
-                {
                     ResizeEntityCollections(Entities.Length * 2);
-                }
             }
 
             return entity;
@@ -82,7 +80,7 @@ namespace EcsLte
             {
                 lock (Entities)
                 {
-                    int newSize = 0;
+                    var newSize = 0;
                     var activeEntityCount = Entities.Length - (_nextId - ReuseableEntities.Count);
                     if (activeEntityCount < count)
                     {
@@ -126,7 +124,7 @@ namespace EcsLte
             lock (_componentArcheTypes)
             {
                 var query = _componentArcheTypes
-                   .AsParallel();
+                    .AsParallel();
 
                 if (filter != null)
                     query = query.Where(x => filter.Value.IsFiltered(x.Value.ArcheType));
@@ -199,22 +197,24 @@ namespace EcsLte
             if (lhs.SharedComponents.Length != sharedComponents.Length)
                 return false;
 
-            for (int i = 0; i < lhs.SharedComponents.Length; i++)
+            for (var i = 0; i < lhs.SharedComponents.Length; i++)
                 if (!lhs.SharedComponents[i].Equals(sharedComponents[i]))
                     return false;
 
             return true;
         }
+
         private void ResizeEntityCollections(int newSize)
         {
             if (newSize > _arrayCurrentSize)
             {
                 lock (_entityCollections)
                 {
-                    for (int i = 0; i < _entityCollections.Count; i++)
+                    for (var i = 0; i < _entityCollections.Count; i++)
                         _entityCollections[i].Resize(newSize);
                 }
-                for (int i = 0; i < ComponentPools.Length; i++)
+
+                for (var i = 0; i < ComponentPools.Length; i++)
                     ComponentPools[i].Resize(newSize);
                 Array.Resize(ref EntityComponentArcheTypes, newSize);
                 _arrayCurrentSize = newSize;
@@ -235,17 +235,19 @@ namespace EcsLte
                 archeTypeData.Reset();
                 ObjectCache.Push(archeTypeData);
             }
+
             _componentArcheTypes.Clear();
-            for (int i = 0; i < _entityCollections.Count; i++)
+            for (var i = 0; i < _entityCollections.Count; i++)
             {
                 var collection = _entityCollections[i];
                 collection.Reset();
                 ObjectCache.Push(collection);
             }
+
             _entityCollections.Clear();
             _nextId = 1;
 
-            for (int i = 0; i < ComponentPools.Length; i++)
+            for (var i = 0; i < ComponentPools.Length; i++)
                 ComponentPools[i].Clear();
             foreach (var entityKey in EntityGroups.Values)
                 entityKey.InternalDestroy();

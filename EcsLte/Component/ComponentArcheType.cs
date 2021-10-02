@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using EcsLte.Utilities;
@@ -10,7 +9,7 @@ namespace EcsLte
         public static bool IsEmpty(ComponentArcheType archeType)
         {
             return archeType.ComponentPoolIndexes?.Length == 0 &&
-                archeType.SharedComponents?.Length == 0;
+                   archeType.SharedComponents?.Length == 0;
         }
 
         public static int CalculateHashCode(ComponentArcheType archeType)
@@ -22,6 +21,7 @@ namespace EcsLte
                 foreach (var index in archeType.ComponentPoolIndexes)
                     hashCode = hashCode * -1521134295 + index.GetHashCode();
             }
+
             if (archeType.SharedComponents != null)
             {
                 hashCode = hashCode * -1521134295 + archeType.SharedComponents.Length;
@@ -36,19 +36,20 @@ namespace EcsLte
         {
             var result = new ComponentArcheType
             {
-                ComponentPoolIndexes = new int[] { componentPoolIndex },
+                ComponentPoolIndexes = new[] { componentPoolIndex },
                 SharedComponents = new ISharedComponent[0]
             };
 
             return result;
         }
 
-        internal static ComponentArcheType AppendComponentPoolIndex(ComponentArcheType archeType, int componentPoolIndex)
+        internal static ComponentArcheType AppendComponentPoolIndex(ComponentArcheType archeType,
+            int componentPoolIndex)
         {
             var result = new ComponentArcheType();
             result.ComponentPoolIndexes =
                 archeType.ComponentPoolIndexes == null || archeType.ComponentPoolIndexes.Length == 0
-                    ? new int[] { componentPoolIndex }
+                    ? new[] { componentPoolIndex }
                     : IndexHelpers
                         .MergeDistinctIndex(archeType.ComponentPoolIndexes, componentPoolIndex);
             result.SharedComponents = archeType.SharedComponents;
@@ -56,7 +57,8 @@ namespace EcsLte
             return result;
         }
 
-        internal static ComponentArcheType RemoveComponentPoolIndex(ComponentArcheType archeType, int componentPoolIndex)
+        internal static ComponentArcheType RemoveComponentPoolIndex(ComponentArcheType archeType,
+            int componentPoolIndex)
         {
             var result = new ComponentArcheType();
             result.ComponentPoolIndexes = archeType.ComponentPoolIndexes == null
@@ -69,11 +71,12 @@ namespace EcsLte
             return result;
         }
 
-        internal static ComponentArcheType AppendSharedComponent(ISharedComponent sharedComponent, int componentPoolIndex)
+        internal static ComponentArcheType AppendSharedComponent(ISharedComponent sharedComponent,
+            int componentPoolIndex)
         {
             var result = new ComponentArcheType
             {
-                ComponentPoolIndexes = new int[] { componentPoolIndex },
+                ComponentPoolIndexes = new[] { componentPoolIndex },
                 SharedComponents = new[] { sharedComponent }
             };
 

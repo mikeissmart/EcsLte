@@ -17,7 +17,7 @@ namespace EcsLte.PerformanceTest
         public override void Run()
         {
             TestComponent1 component;
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 component = _context.GetComponent<TestComponent1>(_entity);
         }
 

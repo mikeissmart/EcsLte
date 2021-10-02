@@ -22,8 +22,9 @@ namespace EcsLte.Utilities
                 }
 
                 if (cacheables.TryDequeue(out var result))
-                    return (T)result;
+                    return (T) result;
             }
+
             return new T();
         }
 
@@ -37,6 +38,7 @@ namespace EcsLte.Utilities
                     cacheables = new ConcurrentQueue<object>();
                     _objectPools.TryAdd(type, cacheables);
                 }
+
                 cacheables.Enqueue(obj);
             }
         }

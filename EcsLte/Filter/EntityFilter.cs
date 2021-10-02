@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using EcsLte.Exceptions;
 using EcsLte.Utilities;
 
@@ -8,11 +6,12 @@ namespace EcsLte
 {
     public class EntityFilter : IEcsContext, IGetEntity, IGetWatcher
     {
-        private EntityFilterData _data;
-        private WatcherTable _watcherTable;
+        private readonly EntityFilterData _data;
         private EcsContextData _ecsContextData;
+        private readonly WatcherTable _watcherTable;
 
-        internal EntityFilter(EcsContext context, EcsContextData ecsContextData, Filter filter, ComponentArcheTypeData[] archeTypeDatas)
+        internal EntityFilter(EcsContext context, EcsContextData ecsContextData, Filter filter,
+            ComponentArcheTypeData[] archeTypeDatas)
         {
             _data = ObjectCache.Pop<EntityFilterData>();
             _data.Initialize(ecsContextData, archeTypeDatas);
@@ -20,7 +19,7 @@ namespace EcsLte
             ecsContextData.ArcheTypeDataAdded += OnCompoinentArcheTypeDataAdded;
             ecsContextData.ArcheTypeDataRemoved += OnCompoinentArcheTypeDataRemoved;
 
-            for (int i = 0; i < archeTypeDatas.Length; i++)
+            for (var i = 0; i < archeTypeDatas.Length; i++)
             {
                 var archData = archeTypeDatas[i];
                 archData.EntityAdded += OnEntityComponentAdded;
@@ -42,13 +41,13 @@ namespace EcsLte
 
         #region EcsContext
 
-        public EcsContext CurrentContext { get; private set; }
+        public EcsContext CurrentContext { get; }
 
         #endregion
 
         #region EntityFilter
 
-        public Filter Filter { get; private set; }
+        public Filter Filter { get; }
 
         internal void InternalDestroy()
         {

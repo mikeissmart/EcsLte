@@ -6,7 +6,7 @@ namespace EcsLte
 {
     internal class WatcherData
     {
-        private DataCache<Dictionary<int, Entity>, Entity[]> _entities;
+        private readonly DataCache<Dictionary<int, Entity>, Entity[]> _entities;
 
         public WatcherData()
         {

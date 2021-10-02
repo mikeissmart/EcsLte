@@ -5,11 +5,8 @@ namespace EcsLte
 {
     internal class EntityGroupData
     {
+        private readonly DataCache<List<ComponentArcheTypeData>, ComponentArcheTypeData[]> _archeTypeDatas;
         private EcsContextData _ecsContextData;
-        private DataCache<List<ComponentArcheTypeData>, ComponentArcheTypeData[]> _archeTypeDatas;
-
-        internal EntityCollection Entities { get; private set; }
-        internal ISharedComponent[] SharedComponents { get; private set; }
 
         public EntityGroupData()
         {
@@ -17,6 +14,9 @@ namespace EcsLte
                 new List<ComponentArcheTypeData>(),
                 UpdateCachedData);
         }
+
+        internal EntityCollection Entities { get; private set; }
+        internal ISharedComponent[] SharedComponents { get; private set; }
 
         internal ComponentArcheTypeData[] GetComponentArcheTypeDatas()
         {

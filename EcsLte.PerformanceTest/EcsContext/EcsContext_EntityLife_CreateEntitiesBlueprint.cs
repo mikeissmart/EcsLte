@@ -1,15 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using EcsLte.Utilities;
-
 namespace EcsLte.PerformanceTest
 {
     internal class EcsContext_EntityLife_CreateEntitiesBlueprint : BasePerformanceTest
     {
-        private Entity[] _entities;
         private EntityBlueprint _blueprint;
+        private Entity[] _entities;
 
         public override void PreRun()
         {

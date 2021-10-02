@@ -1,4 +1,3 @@
-using EcsLte.Exceptions;
 using EcsLte.UnitTest.InterfaceTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using EcsLte.Exceptions;
 using EcsLte.Utilities;
@@ -18,9 +17,15 @@ namespace EcsLte
             Name = name;
         }
 
+        #region EscContext
+
+        public EcsContext CurrentContext { get; }
+
+        #endregion
+
         #region EntityCommandQueue
 
-        public string Name { get; private set; }
+        public string Name { get; }
 
         public void RunCommands()
         {
@@ -29,7 +34,7 @@ namespace EcsLte
 
             lock (_data.Commands)
             {
-                for (int i = 0; i < _data.Commands.Count; i++)
+                for (var i = 0; i < _data.Commands.Count; i++)
                     _data.Commands[i].ExecuteCommand(CurrentContext);
                 _data.Commands.Clear();
             }
@@ -59,12 +64,6 @@ namespace EcsLte
             _data.Reset();
             ObjectCache.Push(_data);
         }
-
-        #endregion
-
-        #region EscContext
-
-        public EcsContext CurrentContext { get; private set; }
 
         #endregion
 
@@ -105,7 +104,7 @@ namespace EcsLte
                 throw new EcsContextIsDestroyedException(CurrentContext);
 
             var entities = CurrentContext.EnqueueEntitiesFromCommand(count);
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
                 AppendCommand(entity, new CreateEntityCommand
@@ -123,7 +122,7 @@ namespace EcsLte
                 throw new EcsContextIsDestroyedException(CurrentContext);
 
             var entities = CurrentContext.EnqueueEntitiesFromCommand(count);
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
                 AppendCommand(entity, new CreateEntityCommand

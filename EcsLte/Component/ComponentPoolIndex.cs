@@ -19,6 +19,7 @@ namespace EcsLte
                     _config = ComponentPoolIndexes.Instance.GetConfig(typeof(TComponent));
                     _gotConfig = true;
                 }
+
                 return _config;
             }
         }
@@ -27,9 +28,8 @@ namespace EcsLte
     internal class ComponentPoolIndexes
     {
         private static ComponentPoolIndexes _instance;
-
-        private Dictionary<Type, ComponentPoolConfig> _componentPoolConfigTypes;
         private Dictionary<int, ComponentPoolConfig> _componentPoolConfigIndexes;
+        private Dictionary<Type, ComponentPoolConfig> _componentPoolConfigTypes;
 
         private ComponentPoolIndexes()
         {
@@ -68,8 +68,9 @@ namespace EcsLte
             var componentPools = new IComponentPool[Count];
             var poolType = typeof(ComponentPool<>);
             var args = new object[] { initialSize };
-            for (int i = 0; i < Count; i++)
-                componentPools[i] = (IComponentPool)Activator.CreateInstance(poolType.MakeGenericType(AllComponentTypes[i]), args);
+            for (var i = 0; i < Count; i++)
+                componentPools[i] =
+                    (IComponentPool)Activator.CreateInstance(poolType.MakeGenericType(AllComponentTypes[i]), args);
 
             return componentPools;
         }

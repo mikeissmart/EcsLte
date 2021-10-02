@@ -6,10 +6,10 @@ using EcsLte.Utilities;
 
 namespace EcsLte
 {
-    public partial class EcsContext :
+    public class EcsContext :
         IGetEntity, IEntityLife, IGetComponent, IComponentLife, IFilterBy, IGroupWith
     {
-        private EcsContextData _data;
+        private readonly EcsContextData _data;
 
         internal EcsContext(string name)
         {
@@ -20,6 +20,28 @@ namespace EcsLte
 
             Name = name;
         }
+
+        #region FilterEntity
+
+        public EntityFilter FilterBy(Filter filter)
+        {
+            if (IsDestroyed)
+                throw new EcsContextIsDestroyedException(this);
+
+            lock (_data.EntityFilters)
+            {
+                if (!_data.EntityFilters.TryGetValue(filter, out var entityFilter))
+                {
+                    var archeTypeDatas = _data.FilterComponentArcheTypeData(filter, null);
+                    entityFilter = new EntityFilter(this, _data, filter, archeTypeDatas);
+                    _data.EntityFilters.Add(filter, entityFilter);
+                }
+
+                return entityFilter;
+            }
+        }
+
+        #endregion
 
         #region EcsContext
 
@@ -140,7 +162,7 @@ namespace EcsLte
             var isChanged = false;
             var nextArcheType = new ComponentArcheType();
             var bpComponents = blueprint.GetBlueprintComponents();
-            for (int i = 0; i < bpComponents.Length; i++)
+            for (var i = 0; i < bpComponents.Length; i++)
             {
                 var bpComponent = bpComponents[i];
                 if (!_data.ComponentPools[bpComponent.Config.Index].HasComponent(entity.Id))
@@ -166,7 +188,7 @@ namespace EcsLte
                 throw new EcsContextIsDestroyedException(this);
 
             var entities = _data.PrepCreateEntities(count);
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
                 _data.Entities[entity.Id] = entity;
@@ -186,14 +208,14 @@ namespace EcsLte
 
             var archeTypeData = _data.CreateOrGetComponentArcheTypeData(blueprint.CreateArcheType());
             var bpComponents = blueprint.GetBlueprintComponents();
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
                 _data.Entities[entity.Id] = entity;
                 _data.EntityComponentArcheTypes[entity.Id] = archeTypeData;
                 archeTypeData.AddEntity(entity);
 
-                for (int j = 0; j < bpComponents.Length; j++)
+                for (var j = 0; j < bpComponents.Length; j++)
                 {
                     var bpComponent = bpComponents[j];
                     var config = bpComponent.Config;
@@ -250,7 +272,7 @@ namespace EcsLte
                 _data.EntityComponentArcheTypes[entity.Id] = archeTypeData;
 
                 var bpComponents = blueprint.GetBlueprintComponents();
-                for (int i = 0; i < bpComponents.Length; i++)
+                for (var i = 0; i < bpComponents.Length; i++)
                 {
                     var bpComponent = bpComponents[i];
                     var config = bpComponent.Config;
@@ -261,6 +283,7 @@ namespace EcsLte
                                 bpComponent.Component.GetType());
                         _data.UniqueEntities[config.Index] = entity;
                     }
+
                     _data.ComponentPools[config.Index].AddComponent(entity.Id, bpComponent.Component);
                 }
             }
@@ -383,7 +406,9 @@ namespace EcsLte
             where TComponent : IComponent
         {
             if (!HasComponent<TComponent>(entity))
+            {
                 AddComponent(entity, newComponent);
+            }
             else
             {
                 var oldArcheTypeData = _data.EntityComponentArcheTypes[entity.Id];
@@ -400,7 +425,9 @@ namespace EcsLte
                         AddEntityToArcheType(entity, nextArcheType);
                     }
                     else
+                    {
                         oldArcheTypeData.UpdateEntity(entity);
+                    }
                 }
             }
         }
@@ -431,7 +458,7 @@ namespace EcsLte
             if (archeTypeData != null)
             {
                 var archeType = archeTypeData.ArcheType;
-                for (int i = 0; i < archeType.ComponentPoolIndexes.Length; i++)
+                for (var i = 0; i < archeType.ComponentPoolIndexes.Length; i++)
                     _data.ComponentPools[archeType.ComponentPoolIndexes[i]].RemoveComponent(entity.Id);
 
                 _data.EntityComponentArcheTypes[entity.Id] = null;
@@ -452,6 +479,7 @@ namespace EcsLte
                     throw new EntityAlreadyHasUniqueComponentException(this, component.GetType());
                 _data.UniqueEntities[config.Index] = entity;
             }
+
             _data.ComponentPools[config.Index].AddComponent(entity.Id, component);
 
             if (config.IsShared)
@@ -485,7 +513,9 @@ namespace EcsLte
                     nextArcheType, (ISharedComponent)component, config.Index);
             }
             else
+            {
                 nextArcheType = oldArcheType;
+            }
 
             return true;
         }
@@ -520,6 +550,7 @@ namespace EcsLte
                     throw new EntityAlreadyHasUniqueComponentException(this, bpComponent.Component.GetType());
                 _data.UniqueEntities[bpComponent.Config.Index] = entity;
             }
+
             _data.ComponentPools[bpComponent.Config.Index].AddComponent(entity.Id, bpComponent.Component);
 
             return true;
@@ -543,29 +574,7 @@ namespace EcsLte
 
         #endregion
 
-        #region FilterEntity
-
-        public EntityFilter FilterBy(Filter filter)
-        {
-            if (IsDestroyed)
-                throw new EcsContextIsDestroyedException(this);
-
-            lock (_data.EntityFilters)
-            {
-                if (!_data.EntityFilters.TryGetValue(filter, out var entityFilter))
-                {
-                    var archeTypeDatas = _data.FilterComponentArcheTypeData(filter, null);
-                    entityFilter = new EntityFilter(this, _data, filter, archeTypeDatas);
-                    _data.EntityFilters.Add(filter, entityFilter);
-                }
-
-                return entityFilter;
-            }
-        }
-
-        #endregion
-
-        #region  WithKey
+        #region WithKey
 
         public EntityGroup GroupWith(ISharedComponent sharedComponent)
         {

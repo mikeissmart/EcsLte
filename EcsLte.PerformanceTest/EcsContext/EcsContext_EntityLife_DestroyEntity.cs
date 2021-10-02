@@ -15,7 +15,7 @@ namespace EcsLte.PerformanceTest
 
         public override void Run()
         {
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 _context.DestroyEntity(_entities[i]);
         }
 

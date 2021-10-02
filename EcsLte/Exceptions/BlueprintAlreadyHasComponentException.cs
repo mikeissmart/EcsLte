@@ -1,4 +1,5 @@
 using System;
+
 namespace EcsLte.Exceptions
 {
     public class BlueprintAlreadyHasComponentException : EcsLteException

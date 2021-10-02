@@ -7,7 +7,7 @@ namespace EcsLte.PerformanceTest
         public override void Run()
         {
             Entity entity;
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 entity = _context.CreateEntity();
         }
 

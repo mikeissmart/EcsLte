@@ -20,13 +20,15 @@ namespace EcsLte.Utilities
             UncachedData = initializeUncache;
         }
 
-        public DataCache(bool initializeDirty, TUncached initializeUncache, Func<TUncached, TCached> recacheFunc) : this(
+        public DataCache(bool initializeDirty, TUncached initializeUncache,
+            Func<TUncached, TCached> recacheFunc) : this(
             initializeUncache, recacheFunc)
         {
             _isDirty = initializeDirty;
         }
 
-        public DataCache(TCached initializeCache, TUncached initializeUncache, Func<TUncached, TCached> recacheFunc) : this(false,
+        public DataCache(TCached initializeCache, TUncached initializeUncache,
+            Func<TUncached, TCached> recacheFunc) : this(false,
             initializeUncache, recacheFunc)
         {
             _cachedData = initializeCache;
@@ -51,6 +53,7 @@ namespace EcsLte.Utilities
                         {
                             _cachedData = _recacheFunc(UncachedData);
                         }
+
                         _isDirty = false;
                     }
                 }

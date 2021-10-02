@@ -1,16 +1,12 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using EcsLte.Utilities;
 
 namespace EcsLte
 {
     internal class EntityFilterData
     {
+        private readonly DataCache<List<ComponentArcheTypeData>, ComponentArcheTypeData[]> _archeTypeDatas;
         private EcsContextData _ecsContextData;
-        private DataCache<List<ComponentArcheTypeData>, ComponentArcheTypeData[]> _archeTypeDatas;
-
-        internal EntityCollection Entities { get; private set; }
 
         public EntityFilterData()
         {
@@ -18,6 +14,8 @@ namespace EcsLte
                 new List<ComponentArcheTypeData>(),
                 UpdateCachedData);
         }
+
+        internal EntityCollection Entities { get; private set; }
 
         internal ComponentArcheTypeData[] GetComponentArcheTypeDatas()
         {

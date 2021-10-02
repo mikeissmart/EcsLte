@@ -16,7 +16,7 @@ namespace EcsLte.PerformanceTest
         public override void Run()
         {
             EntityFilter entityFilter;
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 entityFilter = _context.FilterBy(_filter);
         }
 

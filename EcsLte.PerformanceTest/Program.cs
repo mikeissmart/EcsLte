@@ -188,16 +188,14 @@ namespace EcsLte.PerformanceTest
             int i;
             double dblSByte = bytes;
             for (i = 0; i < Suffix.Length && bytes >= 1024; i++, bytes /= 1024)
-            {
                 dblSByte = bytes / 1024.0;
-            }
 
-            return String.Format("{0:0.##} {1}", dblSByte, Suffix[i]);
+            return string.Format("{0:0.##} {1}", dblSByte, Suffix[i]);
         }
 
         private static long GetMemoryUsage()
         {
-            var process = System.Diagnostics.Process.GetCurrentProcess();
+            var process = Process.GetCurrentProcess();
             return process.WorkingSet64;
         }
     }

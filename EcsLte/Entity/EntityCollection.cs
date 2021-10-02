@@ -10,17 +10,15 @@ namespace EcsLte
 
         internal Entity this[int index]
         {
-            get
-            {
-                return _entities.UncachedData[index];
-            }
+            get => _entities.UncachedData[index];
             set
             {
                 _entities.UncachedData[index] = value;
                 _entities.SetDirty();
             }
         }
-        internal int Length { get => _entities.UncachedData.Length; }
+
+        internal int Length => _entities.UncachedData.Length;
 
         internal Entity[] GetEntities()
         {
@@ -42,7 +40,7 @@ namespace EcsLte
         internal void Initialize(int initialEntitySize)
         {
             if (_entities == null)
-                _entities = new DataCache<EcsLte.Entity[], EcsLte.Entity[]>(
+                _entities = new DataCache<Entity[], Entity[]>(
                     new Entity[initialEntitySize],
                     UpdateEntitiesCache);
             else

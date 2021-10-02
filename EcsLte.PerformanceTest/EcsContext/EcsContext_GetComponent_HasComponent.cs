@@ -17,7 +17,7 @@ namespace EcsLte.PerformanceTest
         public override void Run()
         {
             bool hasComponent;
-            for (int i = 0; i < TestConsts.EntityLoopCount; i++)
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 hasComponent = _context.HasComponent<TestComponent1>(_entity);
         }
 

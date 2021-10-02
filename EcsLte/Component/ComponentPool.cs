@@ -21,13 +21,13 @@ namespace EcsLte
         private TComponent[] _components;
         private bool[] _hasComponents;
 
-        public int Length { get => _components.Length; }
-
         public ComponentPool(int initialSize)
         {
             _components = new TComponent[initialSize];
             _hasComponents = new bool[initialSize];
         }
+
+        public int Length => _components.Length;
 
         public bool HasComponent(int entityId)
         {

@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using EcsLte.Utilities;
 
 namespace EcsLte
@@ -10,19 +8,19 @@ namespace EcsLte
 
     internal class ComponentArcheTypeData : IGetEntity
     {
-        private DataCache<Dictionary<int, Entity>, Entity[]> _entities;
-
-        internal ComponentArcheType ArcheType { get; private set; }
-        internal int Count { get => _entities.UncachedData.Count; }
-        internal event EntityEvent EntityAdded;
-        internal event EntityEvent EntityRemoved;
-        internal event EntityEvent EntityUpdated;
+        private readonly DataCache<Dictionary<int, Entity>, Entity[]> _entities;
 
         public ComponentArcheTypeData()
         {
             _entities = new DataCache<Dictionary<int, Entity>, Entity[]>(
                 new Dictionary<int, Entity>(), UpdateCachedData);
         }
+
+        internal ComponentArcheType ArcheType { get; private set; }
+        internal int Count => _entities.UncachedData.Count;
+        internal event EntityEvent EntityAdded;
+        internal event EntityEvent EntityRemoved;
+        internal event EntityEvent EntityUpdated;
 
         #region ComponentArcheTypeData
 

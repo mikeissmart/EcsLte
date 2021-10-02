@@ -65,8 +65,8 @@ namespace EcsLte
         internal bool IsFiltered(ComponentArcheType archeType)
         {
             return FilteredAllOf(archeType.ComponentPoolIndexes) &&
-                FilteredAnyOf(archeType.ComponentPoolIndexes) &&
-                FilteredNoneOf(archeType.ComponentPoolIndexes);
+                   FilteredAnyOf(archeType.ComponentPoolIndexes) &&
+                   FilteredNoneOf(archeType.ComponentPoolIndexes);
         }
 
         private bool FilteredAllOf(int[] componentIndexes)

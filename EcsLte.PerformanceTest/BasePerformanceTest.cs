@@ -11,9 +11,14 @@ namespace EcsLte.PerformanceTest
 
         public abstract void Run();
 
-        public virtual bool CanRunParallel() => false;
+        public virtual bool CanRunParallel()
+        {
+            return false;
+        }
 
-        public virtual void RunParallel() { }
+        public virtual void RunParallel()
+        {
+        }
 
         public virtual void PostRun()
         {

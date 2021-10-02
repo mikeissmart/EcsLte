@@ -4,11 +4,11 @@ namespace EcsLte
 {
     internal class WatcherTable
     {
+        private readonly HashSet<Watcher> _added;
         private EcsContext _context;
-        private Dictionary<Filter, Watcher> _watchers;
-        private HashSet<Watcher> _added;
-        private HashSet<Watcher> _updated;
-        private HashSet<Watcher> _removed;
+        private readonly HashSet<Watcher> _removed;
+        private readonly HashSet<Watcher> _updated;
+        private readonly Dictionary<Filter, Watcher> _watchers;
 
         public WatcherTable()
         {
@@ -60,6 +60,7 @@ namespace EcsLte
             {
                 _added.Add(watcher);
             }
+
             lock (_updated)
             {
                 _updated.Add(watcher);
@@ -75,6 +76,7 @@ namespace EcsLte
             {
                 _added.Add(watcher);
             }
+
             lock (_removed)
             {
                 _removed.Add(watcher);
@@ -92,6 +94,7 @@ namespace EcsLte
                     watcher = new Watcher(_context);
                     _watchers.Add(filter, watcher);
                 }
+
                 watcher.Activate();
 
                 return watcher;
