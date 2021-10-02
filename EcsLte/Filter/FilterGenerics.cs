@@ -21,7 +21,7 @@ namespace EcsLte
             where TComponent : IComponent
         {
             var filter = AllOfNoHashCode(
-                ComponentPoolIndex<TComponent>.Index
+                ComponentPoolIndex<TComponent>.Config.Index
             );
             filter.CalculateHashCode();
 
@@ -33,8 +33,8 @@ namespace EcsLte
             where TComponent2 : IComponent
         {
             var filter = AllOfNoHashCode(
-                ComponentPoolIndex<TComponent1>.Index,
-                ComponentPoolIndex<TComponent2>.Index
+                ComponentPoolIndex<TComponent1>.Config.Index,
+                ComponentPoolIndex<TComponent2>.Config.Index
             );
             filter.CalculateHashCode();
 
@@ -47,9 +47,9 @@ namespace EcsLte
             where TComponent3 : IComponent
         {
             var filter = AllOfNoHashCode(
-                ComponentPoolIndex<TComponent1>.Index,
-                ComponentPoolIndex<TComponent2>.Index,
-                ComponentPoolIndex<TComponent3>.Index
+                ComponentPoolIndex<TComponent1>.Config.Index,
+                ComponentPoolIndex<TComponent2>.Config.Index,
+                ComponentPoolIndex<TComponent3>.Config.Index
             );
             filter.CalculateHashCode();
 
@@ -63,10 +63,10 @@ namespace EcsLte
             where TComponent4 : IComponent
         {
             var filter = AllOfNoHashCode(
-                ComponentPoolIndex<TComponent1>.Index,
-                ComponentPoolIndex<TComponent2>.Index,
-                ComponentPoolIndex<TComponent3>.Index,
-                ComponentPoolIndex<TComponent4>.Index
+                ComponentPoolIndex<TComponent1>.Config.Index,
+                ComponentPoolIndex<TComponent2>.Config.Index,
+                ComponentPoolIndex<TComponent3>.Config.Index,
+                ComponentPoolIndex<TComponent4>.Config.Index
             );
             filter.CalculateHashCode();
 
@@ -77,7 +77,7 @@ namespace EcsLte
             where TComponent : IComponent
         {
             var filter = AnyOfNoHashCode(
-                ComponentPoolIndex<TComponent>.Index
+                ComponentPoolIndex<TComponent>.Config.Index
             );
             filter.CalculateHashCode();
 
@@ -89,8 +89,8 @@ namespace EcsLte
             where TComponent2 : IComponent
         {
             var filter = AnyOfNoHashCode(
-                ComponentPoolIndex<TComponent1>.Index,
-                ComponentPoolIndex<TComponent2>.Index
+                ComponentPoolIndex<TComponent1>.Config.Index,
+                ComponentPoolIndex<TComponent2>.Config.Index
             );
             filter.CalculateHashCode();
 
@@ -103,9 +103,9 @@ namespace EcsLte
             where TComponent3 : IComponent
         {
             var filter = AnyOfNoHashCode(
-                ComponentPoolIndex<TComponent1>.Index,
-                ComponentPoolIndex<TComponent2>.Index,
-                ComponentPoolIndex<TComponent3>.Index
+                ComponentPoolIndex<TComponent1>.Config.Index,
+                ComponentPoolIndex<TComponent2>.Config.Index,
+                ComponentPoolIndex<TComponent3>.Config.Index
             );
             filter.CalculateHashCode();
 
@@ -119,10 +119,10 @@ namespace EcsLte
             where TComponent4 : IComponent
         {
             var filter = AnyOfNoHashCode(
-                ComponentPoolIndex<TComponent1>.Index,
-                ComponentPoolIndex<TComponent2>.Index,
-                ComponentPoolIndex<TComponent3>.Index,
-                ComponentPoolIndex<TComponent4>.Index
+                ComponentPoolIndex<TComponent1>.Config.Index,
+                ComponentPoolIndex<TComponent2>.Config.Index,
+                ComponentPoolIndex<TComponent3>.Config.Index,
+                ComponentPoolIndex<TComponent4>.Config.Index
             );
             filter.CalculateHashCode();
 
@@ -133,7 +133,7 @@ namespace EcsLte
             where TComponent : IComponent
         {
             var filter = NoneOfNoHashCode(
-                ComponentPoolIndex<TComponent>.Index
+                ComponentPoolIndex<TComponent>.Config.Index
             );
             filter.CalculateHashCode();
 
@@ -145,8 +145,8 @@ namespace EcsLte
             where TComponent2 : IComponent
         {
             var filter = NoneOfNoHashCode(
-                ComponentPoolIndex<TComponent1>.Index,
-                ComponentPoolIndex<TComponent2>.Index
+                ComponentPoolIndex<TComponent1>.Config.Index,
+                ComponentPoolIndex<TComponent2>.Config.Index
             );
             filter.CalculateHashCode();
 
@@ -159,9 +159,9 @@ namespace EcsLte
             where TComponent3 : IComponent
         {
             var filter = NoneOfNoHashCode(
-                ComponentPoolIndex<TComponent1>.Index,
-                ComponentPoolIndex<TComponent2>.Index,
-                ComponentPoolIndex<TComponent3>.Index
+                ComponentPoolIndex<TComponent1>.Config.Index,
+                ComponentPoolIndex<TComponent2>.Config.Index,
+                ComponentPoolIndex<TComponent3>.Config.Index
             );
             filter.CalculateHashCode();
 
@@ -175,10 +175,10 @@ namespace EcsLte
             where TComponent4 : IComponent
         {
             var filter = NoneOfNoHashCode(
-                ComponentPoolIndex<TComponent1>.Index,
-                ComponentPoolIndex<TComponent2>.Index,
-                ComponentPoolIndex<TComponent3>.Index,
-                ComponentPoolIndex<TComponent4>.Index
+                ComponentPoolIndex<TComponent1>.Config.Index,
+                ComponentPoolIndex<TComponent2>.Config.Index,
+                ComponentPoolIndex<TComponent3>.Config.Index,
+                ComponentPoolIndex<TComponent4>.Config.Index
             );
             filter.CalculateHashCode();
 

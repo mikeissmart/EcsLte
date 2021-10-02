@@ -6,14 +6,22 @@ using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class EcsContext_EntityGroup_PrimaryComponent : BasePerformanceTest
+    internal class EcsContext_EntityLife_CreateEntityBlueprint : BasePerformanceTest
     {
+        private EntityBlueprint _blueprint;
+
+        public override void PreRun()
+        {
+            base.PreRun();
+
+            _blueprint = new EntityBlueprint()
+                .AddComponent(new TestComponent1());
+        }
+
         public override void Run()
         {
-            var component = new TestPrimaryKeyComponent1 { Prop = 1 };
-            EntityGroup entityGroup;
             for (int i = 0; i < TestConsts.EntityLoopCount; i++)
-                entityGroup = _context.GroupWith(component);
+                _context.CreateEntity(_blueprint);
         }
 
         public override bool CanRunParallel()
@@ -23,10 +31,8 @@ namespace EcsLte.PerformanceTest
 
         public override void RunParallel()
         {
-            var component = new TestPrimaryKeyComponent1 { Prop = 1 };
-            EntityGroup entityGroup;
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                i => { entityGroup = _context.GroupWith(component); });
+                i => { _context.CreateEntity(_blueprint); });
         }
     }
 }

@@ -11,6 +11,7 @@ namespace EcsLte
     public interface IEntityLife
     {
         Entity CreateEntity();
+        Entity CreateEntity(EntityBlueprint blueprint);
         Entity[] CreateEntities(int count);
         void DestroyEntity(Entity entity);
         void DestroyEntities(ICollection<Entity> entities);

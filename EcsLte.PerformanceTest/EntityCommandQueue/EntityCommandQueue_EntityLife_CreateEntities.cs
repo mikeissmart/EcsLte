@@ -2,7 +2,7 @@ namespace EcsLte.PerformanceTest.EntityCommandQueue
 {
     internal class EntityCommandQueue_EntityLife_CreateEntities : BasePerformanceTest
     {
-        Entity[] _entities;
+        private Entity[] _entities;
 
         public override void Run()
         {

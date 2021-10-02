@@ -11,7 +11,7 @@ namespace EcsLte.UnitTest.EntityGroupTests
         [TestMethod]
         public void GetFirstOrDefault()
         {
-            var component1 = new TestPrimaryKeyComponent1 { Prop = 1 };
+            var component1 = new TestSharedKeyComponent1 { Prop = 1 };
             var entity = _context.CreateEntity();
             _context.AddComponent(entity, component1);
             var entityGroup = _context.GroupWith(component1);
@@ -19,10 +19,10 @@ namespace EcsLte.UnitTest.EntityGroupTests
             // Correct Entity
             Assert.IsTrue(entityGroup.GetFirstOrDefault() == entity);
             // Removed from withKey
-            _context.RemoveComponent<TestPrimaryKeyComponent1>(entity);
+            _context.RemoveComponent<TestSharedKeyComponent1>(entity);
             Assert.IsTrue(entityGroup.GetFirstOrDefault() == Entity.Null);
             // Replaced from withKey
-            var component2 = new TestPrimaryKeyComponent1 { Prop = 2 };
+            var component2 = new TestSharedKeyComponent1 { Prop = 2 };
             _context.ReplaceComponent(entity, component2);
             Assert.IsTrue(entityGroup.GetFirstOrDefault() == Entity.Null);
             // EcsContext is destroyed

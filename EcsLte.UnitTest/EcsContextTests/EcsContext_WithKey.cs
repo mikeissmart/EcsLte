@@ -9,27 +9,6 @@ namespace EcsLte.UnitTest.EcsContextTests
     public class EcsContext_GroupWith : BasePrePostTest, IGroupWithTest
     {
         [TestMethod]
-        public void GroupWith_PrimaryKey()
-        {
-            var component = new TestPrimaryKeyComponent1 { Prop = 1 };
-            var entityKey = _context.GroupWith(component);
-
-            // Correct key
-            Assert.IsTrue(entityKey != null);
-            Assert.IsTrue(_context.GroupWith(component) == entityKey);
-            // Different component gets different entity
-            Assert.IsTrue(_context.GroupWith(new TestPrimaryKeyComponent1 { Prop = 2 }) != entityKey);
-            // Null component
-            IPrimaryComponent nullKey = null;
-            Assert.ThrowsException<ArgumentNullException>(() =>
-                _context.GroupWith(nullKey));
-            // EcsContext is destroyed
-            EcsContexts.DestroyContext(_context);
-            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                _context.GroupWith(component));
-        }
-
-        [TestMethod]
         public void GroupWith_SharedKey()
         {
             var component = new TestSharedKeyComponent1 { Prop = 1 };

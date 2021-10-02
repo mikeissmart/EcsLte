@@ -10,14 +10,14 @@ namespace EcsLte
     {
         private const int _arrayInitSize = 4;
 
-        private Dictionary<ComponentArcheType, ComponentArcheTypeData> _componentArcheTypes;
+        private Dictionary<int, ComponentArcheTypeData> _componentArcheTypes;
         private List<EntityCollection> _entityCollections;
         private int _arrayCurrentSize;
         private int _nextId = 1;
 
         public EcsContextData()
         {
-            _componentArcheTypes = new Dictionary<ComponentArcheType, ComponentArcheTypeData>();
+            _componentArcheTypes = new Dictionary<int, ComponentArcheTypeData>();
             _entityCollections = new List<EntityCollection>();
             _arrayCurrentSize = _arrayInitSize;
 
@@ -83,7 +83,7 @@ namespace EcsLte
                 lock (Entities)
                 {
                     int newSize = 0;
-                    var activeEntityCount = Entities.Length - (ReuseableEntities.Count - _nextId);
+                    var activeEntityCount = Entities.Length - (_nextId - ReuseableEntities.Count);
                     if (activeEntityCount < count)
                     {
                         newSize = count - activeEntityCount;
@@ -121,38 +121,38 @@ namespace EcsLte
         }
 
         public ComponentArcheTypeData[] FilterComponentArcheTypeData(Filter? filter,
-            IPrimaryComponent primaryKey,
             ISharedComponent[] sharedKeys)
         {
-            var query = _componentArcheTypes
-                .AsParallel()
-                .Where(x => filter == null || filter.Value.IsFiltered(x.Value.ArcheType));
+            lock (_componentArcheTypes)
+            {
+                var query = _componentArcheTypes
+                   .AsParallel();
 
-            if (primaryKey != null)
-                query = query.Where(x => x.Value.ArcheType.PrimaryComponent.Equals(primaryKey));
-            if (sharedKeys != null)
-                query = query.Where(x =>
-                    x.Value.ArcheType.SharedComponents != null &&
-                    sharedKeys.Where(y =>
-                        x.Value.ArcheType.SharedComponents
-                            .Any(z => z.Equals(y)))
-                            .Count() == sharedKeys.Length);
+                if (filter != null)
+                    query = query.Where(x => filter.Value.IsFiltered(x.Value.ArcheType));
 
-            return query.Select(x => x.Value).ToArray();
+                if (sharedKeys != null)
+                    query = query.Where(x =>
+                        x.Value.ArcheType.SharedComponents != null &&
+                        HasSameSharedComponents(x.Value.ArcheType, sharedKeys));
+
+                return query.Select(x => x.Value).ToArray();
+            }
         }
 
         public ComponentArcheTypeData CreateOrGetComponentArcheTypeData(ComponentArcheType archeType)
         {
-            if (archeType == ComponentArcheType.Null)
+            if (ComponentArcheType.IsEmpty(archeType))
                 return null;
 
+            var archeTypeHashCode = ComponentArcheType.CalculateHashCode(archeType);
             lock (_componentArcheTypes)
             {
-                if (!_componentArcheTypes.TryGetValue(archeType, out var archeTypeData))
+                if (!_componentArcheTypes.TryGetValue(archeTypeHashCode, out var archeTypeData))
                 {
                     archeTypeData = ObjectCache.Pop<ComponentArcheTypeData>();
                     archeTypeData.Initialize(archeType);
-                    _componentArcheTypes.Add(archeType, archeTypeData);
+                    _componentArcheTypes.Add(archeTypeHashCode, archeTypeData);
 
                     if (ArcheTypeDataAdded != null)
                         ArcheTypeDataAdded.Invoke(archeTypeData);
@@ -164,9 +164,10 @@ namespace EcsLte
 
         public void RemoveComponentArcheTypeData(ComponentArcheTypeData archeTypeData)
         {
+            var archeTypeHashCode = ComponentArcheType.CalculateHashCode(archeTypeData.ArcheType);
             lock (_componentArcheTypes)
             {
-                if (_componentArcheTypes.Remove(archeTypeData.ArcheType) && ArcheTypeDataRemoved != null)
+                if (_componentArcheTypes.Remove(archeTypeHashCode) && ArcheTypeDataRemoved != null)
                     ArcheTypeDataRemoved.Invoke(archeTypeData);
             }
         }
@@ -193,6 +194,17 @@ namespace EcsLte
             }
         }
 
+        private static bool HasSameSharedComponents(ComponentArcheType lhs, ISharedComponent[] sharedComponents)
+        {
+            if (lhs.SharedComponents.Length != sharedComponents.Length)
+                return false;
+
+            for (int i = 0; i < lhs.SharedComponents.Length; i++)
+                if (!lhs.SharedComponents[i].Equals(sharedComponents[i]))
+                    return false;
+
+            return true;
+        }
         private void ResizeEntityCollections(int newSize)
         {
             if (newSize > _arrayCurrentSize)

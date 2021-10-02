@@ -48,15 +48,6 @@ public struct TestSharedKeyComponent7 : ISharedComponent { public int Prop { get
 public struct TestSharedKeyComponent8 : ISharedComponent { public int Prop { get; set; } }
 public struct TestSharedKeyComponent9 : ISharedComponent { public int Prop { get; set; } }
 ////////////////////////////////////////////////////////
-public struct TestPrimaryKeyComponent1 : IPrimaryComponent
-{
-    public int Prop { get; set; }
-}
-
-public struct TestPrimaryKeyComponent2 : IPrimaryComponent
-{
-    public int Prop { get; set; }
-}
 
 //
 public struct TestComponent3 : IComponent

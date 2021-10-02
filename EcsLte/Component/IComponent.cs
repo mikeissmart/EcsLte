@@ -15,8 +15,4 @@ namespace EcsLte
     public interface ISharedComponent : IComponent
     {
     }
-
-    public interface IPrimaryComponent : IComponent
-    {
-    }
 }

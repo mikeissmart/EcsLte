@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using EcsLte.Exceptions;
 using EcsLte.Utilities;
@@ -83,17 +84,54 @@ namespace EcsLte
             return entity;
         }
 
+        public Entity CreateEntity(EntityBlueprint blueprint)
+        {
+            if (CurrentContext.IsDestroyed)
+                throw new EcsContextIsDestroyedException(CurrentContext);
+
+            var entity = CurrentContext.EnqueueEntityFromCommand();
+            AppendCommand(entity, new CreateEntityCommand
+            {
+                QueuedEntity = entity,
+                Blueprint = blueprint
+            });
+
+            return entity;
+        }
+
         public Entity[] CreateEntities(int count)
         {
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);
 
             var entities = CurrentContext.EnqueueEntitiesFromCommand(count);
-            foreach (var entity in entities)
+            for (int i = 0; i < entities.Length; i++)
+            {
+                var entity = entities[i];
                 AppendCommand(entity, new CreateEntityCommand
                 {
                     QueuedEntity = entity
                 });
+            }
+
+            return entities;
+        }
+
+        public Entity[] CreateEntities(int count, EntityBlueprint blueprint)
+        {
+            if (CurrentContext.IsDestroyed)
+                throw new EcsContextIsDestroyedException(CurrentContext);
+
+            var entities = CurrentContext.EnqueueEntitiesFromCommand(count);
+            for (int i = 0; i < entities.Length; i++)
+            {
+                var entity = entities[i];
+                AppendCommand(entity, new CreateEntityCommand
+                {
+                    QueuedEntity = entity,
+                    Blueprint = blueprint
+                });
+            }
 
             return entities;
         }

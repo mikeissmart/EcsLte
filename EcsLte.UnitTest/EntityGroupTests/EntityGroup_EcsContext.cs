@@ -11,7 +11,7 @@ namespace EcsLte.UnitTest.EntityGroupTests
         [TestMethod]
         public void CurrentContext()
         {
-            Assert.IsTrue(_context.GroupWith(new TestPrimaryKeyComponent1()).CurrentContext == _context);
+            Assert.IsTrue(_context.GroupWith(new TestSharedKeyComponent1()).CurrentContext == _context);
         }
     }
 }

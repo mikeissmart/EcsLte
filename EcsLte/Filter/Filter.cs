@@ -39,9 +39,7 @@ namespace EcsLte
 
         public static bool operator ==(Filter lhs, Filter rhs)
         {
-            return lhs.AllOfIndexes.SequenceEqual(rhs.AllOfIndexes) &&
-                   lhs.AnyOfIndexes.SequenceEqual(rhs.AnyOfIndexes) &&
-                   lhs.NoneOfIndexes.SequenceEqual(rhs.NoneOfIndexes);
+            return lhs._hashCode == rhs._hashCode;
         }
 
         public bool Equals(Filter other)

@@ -130,6 +130,36 @@ namespace EcsLte
             return entity;
         }
 
+        public Entity CreateEntity(EntityBlueprint blueprint)
+        {
+            if (blueprint == null)
+                throw new ArgumentNullException();
+
+            var entity = CreateEntity();
+
+            var isChanged = false;
+            var nextArcheType = new ComponentArcheType();
+            var bpComponents = blueprint.GetBlueprintComponents();
+            for (int i = 0; i < bpComponents.Length; i++)
+            {
+                var bpComponent = bpComponents[i];
+                if (!_data.ComponentPools[bpComponent.Config.Index].HasComponent(entity.Id))
+                {
+                    PrepAddComponent(entity,
+                        bpComponent.Component,
+                        bpComponent.Config,
+                        nextArcheType,
+                        out nextArcheType);
+                    isChanged = true;
+                }
+            }
+
+            if (isChanged)
+                AddEntityToArcheType(entity, nextArcheType);
+
+            return entity;
+        }
+
         public Entity[] CreateEntities(int count)
         {
             if (IsDestroyed)
@@ -140,6 +170,38 @@ namespace EcsLte
             {
                 var entity = entities[i];
                 _data.Entities[entity.Id] = entity;
+            }
+
+            return entities;
+        }
+
+        public Entity[] CreateEntities(int count, EntityBlueprint blueprint)
+        {
+            if (IsDestroyed)
+                throw new EcsContextIsDestroyedException(this);
+            if (blueprint == null)
+                throw new ArgumentNullException();
+
+            var entities = _data.PrepCreateEntities(count);
+
+            var archeTypeData = _data.CreateOrGetComponentArcheTypeData(blueprint.CreateArcheType());
+            var bpComponents = blueprint.GetBlueprintComponents();
+            for (int i = 0; i < entities.Length; i++)
+            {
+                var entity = entities[i];
+                _data.Entities[entity.Id] = entity;
+                _data.EntityComponentArcheTypes[entity.Id] = archeTypeData;
+                archeTypeData.AddEntity(entity);
+
+                for (int j = 0; j < bpComponents.Length; j++)
+                {
+                    var bpComponent = bpComponents[j];
+                    var config = bpComponent.Config;
+                    if (config.IsUnique)
+                        throw new EntityAlreadyHasUniqueComponentException(this,
+                            bpComponent.Component.GetType());
+                    _data.ComponentPools[config.Index].AddComponent(entity.Id, bpComponent.Component);
+                }
             }
 
             return entities;
@@ -178,9 +240,30 @@ namespace EcsLte
             return _data.PrepCreateEntities(count);
         }
 
-        internal void DequeueEntityFromCommand(Entity entity)
+        internal void DequeueEntityFromCommand(Entity entity, EntityBlueprint blueprint)
         {
             _data.Entities[entity.Id] = entity;
+            if (blueprint != null)
+            {
+                var archeTypeData = _data.CreateOrGetComponentArcheTypeData(blueprint.CreateArcheType());
+                archeTypeData.AddEntity(entity);
+                _data.EntityComponentArcheTypes[entity.Id] = archeTypeData;
+
+                var bpComponents = blueprint.GetBlueprintComponents();
+                for (int i = 0; i < bpComponents.Length; i++)
+                {
+                    var bpComponent = bpComponents[i];
+                    var config = bpComponent.Config;
+                    if (config.IsUnique)
+                    {
+                        if (_data.UniqueEntities[config.Index] != Entity.Null)
+                            throw new EntityAlreadyHasUniqueComponentException(this,
+                                bpComponent.Component.GetType());
+                        _data.UniqueEntities[config.Index] = entity;
+                    }
+                    _data.ComponentPools[config.Index].AddComponent(entity.Id, bpComponent.Component);
+                }
+            }
         }
 
         #endregion
@@ -193,7 +276,7 @@ namespace EcsLte
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            return _data.UniqueEntities[ComponentPoolIndex<TUniqueComponent>.Index] != Entity.Null;
+            return _data.UniqueEntities[ComponentPoolIndex<TUniqueComponent>.Config.Index] != Entity.Null;
         }
 
         public TUniqueComponent GetUniqueComponent<TUniqueComponent>()
@@ -209,7 +292,7 @@ namespace EcsLte
             if (!HasUniqueComponent<TUniqueComponent>())
                 throw new EntityNotHaveUniqueComponentException(this, typeof(TUniqueComponent));
 
-            return _data.UniqueEntities[ComponentPoolIndex<TUniqueComponent>.Index];
+            return _data.UniqueEntities[ComponentPoolIndex<TUniqueComponent>.Config.Index];
         }
 
         public bool HasComponent<TComponent>(Entity entity)
@@ -218,7 +301,7 @@ namespace EcsLte
             if (!HasEntity(entity))
                 throw new EntityDoesNotExistException(this, entity);
 
-            return _data.ComponentPools[ComponentPoolIndex<TComponent>.Index]
+            return _data.ComponentPools[ComponentPoolIndex<TComponent>.Config.Index]
                 .HasComponent(entity.Id);
         }
 
@@ -228,7 +311,7 @@ namespace EcsLte
             if (!HasComponent<TComponent>(entity))
                 throw new EntityNotHaveComponentException(this, entity, typeof(TComponent));
 
-            return (TComponent)_data.ComponentPools[ComponentPoolIndex<TComponent>.Index]
+            return (TComponent)_data.ComponentPools[ComponentPoolIndex<TComponent>.Config.Index]
                 .GetComponent(entity.Id);
         }
 
@@ -281,36 +364,19 @@ namespace EcsLte
             if (HasComponent<TComponent>(entity))
                 throw new EntityAlreadyHasComponentException(this, entity, typeof(TComponent));
 
-            var componentPoolIndex = ComponentPoolIndex<TComponent>.Index;
             var oldArcheTypeData = _data.EntityComponentArcheTypes[entity.Id];
-            var nextArcheType = oldArcheTypeData != null
-                ? ComponentArcheType.AppendComponentPoolIndex(oldArcheTypeData.ArcheType, componentPoolIndex)
-                : ComponentArcheType.AppendComponentPoolIndex(componentPoolIndex);
-            if (ComponentPoolIndex<TComponent>.IsUnique)
-            {
-                if (_data.UniqueEntities[componentPoolIndex] != Entity.Null)
-                    throw new EntityAlreadyHasUniqueComponentException(this, typeof(TComponent));
-                _data.UniqueEntities[componentPoolIndex] = entity;
-            }
-            if (ComponentPoolIndex<TComponent>.IsPrimary)
-            {
-                if (_data.FilterComponentArcheTypeData(null, (IPrimaryComponent)component, null).Length != 0)
-                    throw new PrimaryComponentAlreadyHasException(this, (IPrimaryComponent)component);
-                nextArcheType = ComponentArcheType.SetPrimaryComponent(nextArcheType, (IPrimaryComponent)component);
-            }
-            else if (ComponentPoolIndex<TComponent>.IsShared)
-                nextArcheType = ComponentArcheType.AppendSharedComponent(nextArcheType, (ISharedComponent)component);
-            var archeTypeData = _data.CreateOrGetComponentArcheTypeData(nextArcheType);
+            var config = ComponentPoolIndex<TComponent>.Config;
+            PrepAddComponent(entity,
+                component,
+                config,
+                oldArcheTypeData != null
+                    ? oldArcheTypeData.ArcheType
+                    : new ComponentArcheType(),
+                out var nextArcheType);
 
-            _data.ComponentPools[componentPoolIndex].AddComponent(entity.Id, component);
-            _data.EntityComponentArcheTypes[entity.Id] = archeTypeData;
             if (oldArcheTypeData != null)
-            {
-                oldArcheTypeData.RemoveEntity(entity);
-                if (oldArcheTypeData.Count == 0)
-                    _data.RemoveComponentArcheTypeData(oldArcheTypeData);
-            }
-            archeTypeData.AddEntity(entity);
+                RemoveEntityFromArcheType(entity, oldArcheTypeData);
+            AddEntityToArcheType(entity, nextArcheType);
         }
 
         public void ReplaceComponent<TComponent>(Entity entity, TComponent newComponent)
@@ -320,43 +386,22 @@ namespace EcsLte
                 AddComponent(entity, newComponent);
             else
             {
-                var componentPoolIndex = ComponentPoolIndex<TComponent>.Index;
-
-                var oldComponent = _data.ComponentPools[componentPoolIndex].GetComponent(entity.Id);
-                _data.ComponentPools[componentPoolIndex].ReplaceComponent(entity.Id, newComponent);
-
                 var oldArcheTypeData = _data.EntityComponentArcheTypes[entity.Id];
-                var nextArcheType = oldArcheTypeData.ArcheType;
-                if (ComponentPoolIndex<TComponent>.IsPrimary)
+                var config = ComponentPoolIndex<TComponent>.Config;
+                if (PrepReplaceComponent(entity,
+                    newComponent,
+                    config,
+                    oldArcheTypeData.ArcheType,
+                    out var nextArcheType))
                 {
-                    if (_data.FilterComponentArcheTypeData(null, (IPrimaryComponent)newComponent, null).Length != 0)
-                        throw new PrimaryComponentAlreadyHasException(this, (IPrimaryComponent)newComponent);
-                    nextArcheType = ComponentArcheType.RemovePrimaryComponent(nextArcheType);
-                    nextArcheType = ComponentArcheType.SetPrimaryComponent(nextArcheType, (IPrimaryComponent)newComponent);
-
-                    oldArcheTypeData.RemoveEntity(entity);
-                    if (oldArcheTypeData.Count == 0)
-                        _data.RemoveComponentArcheTypeData(oldArcheTypeData);
-
-                    var newArcheTypeData = _data.CreateOrGetComponentArcheTypeData(nextArcheType);
-                    newArcheTypeData.AddEntity(entity);
-                    _data.EntityComponentArcheTypes[entity.Id] = newArcheTypeData;
+                    if (config.IsShared)
+                    {
+                        RemoveEntityFromArcheType(entity, oldArcheTypeData);
+                        AddEntityToArcheType(entity, nextArcheType);
+                    }
+                    else
+                        oldArcheTypeData.UpdateEntity(entity);
                 }
-                else if (ComponentPoolIndex<TComponent>.IsShared)
-                {
-                    nextArcheType = ComponentArcheType.RemoveSharedComponent(nextArcheType, (ISharedComponent)oldComponent);
-                    nextArcheType = ComponentArcheType.AppendSharedComponent(nextArcheType, (ISharedComponent)newComponent);
-
-                    oldArcheTypeData.RemoveEntity(entity);
-                    if (oldArcheTypeData.Count == 0)
-                        _data.RemoveComponentArcheTypeData(oldArcheTypeData);
-
-                    var newArcheTypeData = _data.CreateOrGetComponentArcheTypeData(nextArcheType);
-                    newArcheTypeData.AddEntity(entity);
-                    _data.EntityComponentArcheTypes[entity.Id] = newArcheTypeData;
-                }
-                else
-                    oldArcheTypeData.UpdateEntity(entity);
             }
         }
 
@@ -366,28 +411,15 @@ namespace EcsLte
             if (!HasComponent<TComponent>(entity))
                 throw new EntityNotHaveComponentException(this, entity, typeof(TComponent));
 
-            var componentPoolIndex = ComponentPoolIndex<TComponent>.Index;
-            var oldComponent = _data.ComponentPools[componentPoolIndex].GetComponent(entity.Id);
             var oldArcheTypeData = _data.EntityComponentArcheTypes[entity.Id];
-            var nextArcheType = ComponentArcheType.RemoveComponentPoolIndex(oldArcheTypeData.ArcheType, componentPoolIndex);
-            if (ComponentPoolIndex<TComponent>.IsUnique && _data.UniqueEntities[componentPoolIndex] == entity)
-                _data.UniqueEntities[componentPoolIndex] = Entity.Null;
-            if (ComponentPoolIndex<TComponent>.IsPrimary)
-                nextArcheType = ComponentArcheType.RemovePrimaryComponent(nextArcheType);
-            else if (ComponentPoolIndex<TComponent>.IsShared)
-                nextArcheType = ComponentArcheType
-                    .RemoveSharedComponent(nextArcheType, (ISharedComponent)oldComponent);
-            var archeTypeData = _data.CreateOrGetComponentArcheTypeData(nextArcheType);
+            var config = ComponentPoolIndex<TComponent>.Config;
+            PrepRemovComponent(entity,
+                config,
+                oldArcheTypeData.ArcheType,
+                out var nextArcheType);
 
-            _data.ComponentPools[componentPoolIndex].RemoveComponent(entity.Id);
-            _data.EntityComponentArcheTypes[entity.Id] = archeTypeData;
-
-            oldArcheTypeData.RemoveEntity(entity);
-            if (oldArcheTypeData.Count == 0)
-                _data.RemoveComponentArcheTypeData(oldArcheTypeData);
-
-            if (archeTypeData != null)
-                archeTypeData.AddEntity(entity);
+            RemoveEntityFromArcheType(entity, oldArcheTypeData);
+            AddEntityToArcheType(entity, nextArcheType);
         }
 
         public void RemoveAllComponents(Entity entity)
@@ -410,6 +442,105 @@ namespace EcsLte
             }
         }
 
+        private void PrepAddComponent(Entity entity, IComponent component,
+            ComponentPoolConfig config, ComponentArcheType oldArcheType,
+            out ComponentArcheType nextArcheType)
+        {
+            if (config.IsUnique)
+            {
+                if (_data.UniqueEntities[config.Index] != Entity.Null)
+                    throw new EntityAlreadyHasUniqueComponentException(this, component.GetType());
+                _data.UniqueEntities[config.Index] = entity;
+            }
+            _data.ComponentPools[config.Index].AddComponent(entity.Id, component);
+
+            if (config.IsShared)
+                nextArcheType = ComponentArcheType.AppendSharedComponent(
+                    oldArcheType, (ISharedComponent)component, config.Index);
+            else
+                nextArcheType = ComponentArcheType.AppendComponentPoolIndex(
+                    oldArcheType, config.Index);
+        }
+
+        private bool PrepReplaceComponent(Entity entity, IComponent component,
+            ComponentPoolConfig config, ComponentArcheType oldArcheType,
+            out ComponentArcheType nextArcheType)
+        {
+            var componentPool = _data.ComponentPools[config.Index];
+            var oldComponent = componentPool.GetComponent(entity.Id);
+            if (oldComponent.Equals(component))
+            {
+                // Didnt update
+                nextArcheType = oldArcheType;
+                return false;
+            }
+
+            componentPool.ReplaceComponent(entity.Id, component);
+
+            if (config.IsShared)
+            {
+                nextArcheType = ComponentArcheType.RemoveSharedComponent(
+                    oldArcheType, (ISharedComponent)oldComponent, config.Index);
+                nextArcheType = ComponentArcheType.AppendSharedComponent(
+                    nextArcheType, (ISharedComponent)component, config.Index);
+            }
+            else
+                nextArcheType = oldArcheType;
+
+            return true;
+        }
+
+        private void PrepRemovComponent(Entity entity,
+            ComponentPoolConfig config, ComponentArcheType oldArcheType,
+            out ComponentArcheType nextArcheType)
+        {
+            if (config.IsUnique && _data.UniqueEntities[config.Index] == entity)
+                _data.UniqueEntities[config.Index] = Entity.Null;
+
+            var componentPool = _data.ComponentPools[config.Index];
+            var oldComponent = componentPool.GetComponent(entity.Id);
+            componentPool.RemoveComponent(entity.Id);
+
+            if (config.IsShared)
+                nextArcheType = ComponentArcheType.RemoveSharedComponent(
+                    oldArcheType, (ISharedComponent)oldComponent, config.Index);
+            else
+                nextArcheType = ComponentArcheType.RemoveComponentPoolIndex(
+                    oldArcheType, config.Index);
+        }
+
+        private bool PrepBlueprintAddComponent(Entity entity, BlueprintComponent bpComponent)
+        {
+            if (_data.ComponentPools[bpComponent.Config.Index].HasComponent(entity.Id))
+                return false;
+
+            if (bpComponent.Config.IsUnique)
+            {
+                if (_data.UniqueEntities[bpComponent.Config.Index] != Entity.Null)
+                    throw new EntityAlreadyHasUniqueComponentException(this, bpComponent.Component.GetType());
+                _data.UniqueEntities[bpComponent.Config.Index] = entity;
+            }
+            _data.ComponentPools[bpComponent.Config.Index].AddComponent(entity.Id, bpComponent.Component);
+
+            return true;
+        }
+
+        private void RemoveEntityFromArcheType(Entity entity, ComponentArcheTypeData archeTypeData)
+        {
+            archeTypeData.RemoveEntity(entity);
+            _data.EntityComponentArcheTypes[entity.Id] = null;
+            if (archeTypeData.Count == 0)
+                _data.RemoveComponentArcheTypeData(archeTypeData);
+        }
+
+        private void AddEntityToArcheType(Entity entity, ComponentArcheType archeType)
+        {
+            var archeTypeData = _data.CreateOrGetComponentArcheTypeData(archeType);
+            if (archeTypeData != null)
+                archeTypeData.AddEntity(entity);
+            _data.EntityComponentArcheTypes[entity.Id] = archeTypeData;
+        }
+
         #endregion
 
         #region FilterEntity
@@ -423,7 +554,7 @@ namespace EcsLte
             {
                 if (!_data.EntityFilters.TryGetValue(filter, out var entityFilter))
                 {
-                    var archeTypeDatas = _data.FilterComponentArcheTypeData(filter, null, null);
+                    var archeTypeDatas = _data.FilterComponentArcheTypeData(filter, null);
                     entityFilter = new EntityFilter(this, _data, filter, archeTypeDatas);
                     _data.EntityFilters.Add(filter, entityFilter);
                 }
@@ -435,30 +566,6 @@ namespace EcsLte
         #endregion
 
         #region  WithKey
-
-        public EntityGroup GroupWith(IPrimaryComponent primaryComponent)
-        {
-            if (IsDestroyed)
-                throw new EcsContextIsDestroyedException(this);
-            if (primaryComponent == null)
-                throw new ArgumentNullException();
-
-            var keyCollection = new GroupWithCollection(new[] { primaryComponent });
-            lock (_data.EntityGroups)
-            {
-                if (!_data.EntityGroups.TryGetValue(keyCollection, out var entityKey))
-                {
-                    var archeTypeDatas = _data.FilterComponentArcheTypeData(null, primaryComponent, null);
-                    entityKey = new EntityGroup(this, _data,
-                        archeTypeDatas,
-                        primaryComponent,
-                        null);
-                    _data.EntityGroups.Add(keyCollection, entityKey);
-                }
-
-                return entityKey;
-            }
-        }
 
         public EntityGroup GroupWith(ISharedComponent sharedComponent)
         {
@@ -483,10 +590,9 @@ namespace EcsLte
             {
                 if (!_data.EntityGroups.TryGetValue(keyCollection, out var entityKey))
                 {
-                    var archeTypeDatas = _data.FilterComponentArcheTypeData(null, null, sharedComponents);
+                    var archeTypeDatas = _data.FilterComponentArcheTypeData(null, sharedComponents);
                     entityKey = new EntityGroup(this, _data,
                         archeTypeDatas.ToArray(),
-                        null,
                         sharedComponents);
                     _data.EntityGroups.Add(keyCollection, entityKey);
                 }

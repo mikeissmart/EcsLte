@@ -11,7 +11,7 @@ namespace EcsLte.UnitTest.EntityGroupTests
         [TestMethod]
         public void HasEntity()
         {
-            var component = new TestPrimaryKeyComponent1 { Prop = 1 };
+            var component = new TestSharedKeyComponent1 { Prop = 1 };
             var entity = _context.CreateEntity();
             _context.AddComponent(entity, component);
 
@@ -20,10 +20,10 @@ namespace EcsLte.UnitTest.EntityGroupTests
             // Correct entity
             Assert.IsTrue(entityGroup.HasEntity(entity));
             // Removed from withKey
-            _context.RemoveComponent<TestPrimaryKeyComponent1>(entity);
+            _context.RemoveComponent<TestSharedKeyComponent1>(entity);
             Assert.IsFalse(entityGroup.HasEntity(entity));
             // Replaced from withKey
-            var component2 = new TestPrimaryKeyComponent1 { Prop = 2 };
+            var component2 = new TestSharedKeyComponent1 { Prop = 2 };
             _context.ReplaceComponent(entity, component2);
             Assert.IsFalse(entityGroup.HasEntity(entity));
             // EcsContext is destroyed
@@ -35,7 +35,7 @@ namespace EcsLte.UnitTest.EntityGroupTests
         [TestMethod]
         public void GetEntities()
         {
-            var component = new TestPrimaryKeyComponent1 { Prop = 1 };
+            var component = new TestSharedKeyComponent1 { Prop = 1 };
             var entity = _context.CreateEntity();
             _context.AddComponent(entity, component);
 
@@ -45,10 +45,10 @@ namespace EcsLte.UnitTest.EntityGroupTests
             Assert.IsTrue(entityGroup.GetEntities().Length == 1);
             Assert.IsTrue(entityGroup.GetEntities()[0] == entity);
             // Removed from withKey
-            _context.RemoveComponent<TestPrimaryKeyComponent1>(entity);
+            _context.RemoveComponent<TestSharedKeyComponent1>(entity);
             Assert.IsTrue(entityGroup.GetEntities().Length == 0);
             // Replaced from withKey
-            var component2 = new TestPrimaryKeyComponent1 { Prop = 2 };
+            var component2 = new TestSharedKeyComponent1 { Prop = 2 };
             _context.ReplaceComponent(entity, component2);
             Assert.IsTrue(entityGroup.GetEntities().Length == 0);
             // EcsContext is destroyed

@@ -14,12 +14,11 @@ namespace EcsLte
 
         internal EntityGroup(EcsContext context, EcsContextData ecsContextData,
             ComponentArcheTypeData[] archeTypeDatas,
-            IPrimaryComponent primaryComponent,
             ISharedComponent[] sharedComponents)
         {
             _ecsContextData = ecsContextData;
             _data = ObjectCache.Pop<EntityGroupData>();
-            _data.Initialize(ecsContextData, archeTypeDatas, primaryComponent, sharedComponents);
+            _data.Initialize(ecsContextData, archeTypeDatas, sharedComponents);
 
             ecsContextData.ArcheTypeDataAdded += OnComponentArcheTypeDataAdded;
             ecsContextData.ArcheTypeDataRemoved += OnCompoinentArcheTypeDataRemoved;
@@ -51,7 +50,6 @@ namespace EcsLte
 
         #region EntityKey
 
-        internal IPrimaryComponent PrimaryKey { get => _data.PrimaryComponent; }
         internal ISharedComponent[] SharedKeys { get => _data.SharedComponents; }
 
         public Entity GetFirstOrDefault()
@@ -160,12 +158,7 @@ namespace EcsLte
 
         private void OnComponentArcheTypeDataAdded(ComponentArcheTypeData archeTypeData)
         {
-            if (_data.PrimaryComponent != null && archeTypeData.ArcheType.PrimaryComponent != null &&
-                archeTypeData.ArcheType.PrimaryComponent.Equals(_data.PrimaryComponent))
-            {
-                AddComponentArcheTypeData(archeTypeData);
-            }
-            else if (_data.SharedComponents != null && archeTypeData.ArcheType.SharedComponents != null &&
+            if (_data.SharedComponents != null && archeTypeData.ArcheType.SharedComponents != null &&
                 archeTypeData.ArcheType.SharedComponents.SequenceEqual(_data.SharedComponents))
             {
                 AddComponentArcheTypeData(archeTypeData);

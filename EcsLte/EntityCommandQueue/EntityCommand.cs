@@ -8,10 +8,11 @@ namespace EcsLte
     internal struct CreateEntityCommand : EntityCommand
     {
         public Entity QueuedEntity { get; set; }
+        public EntityBlueprint Blueprint { get; set; }
 
         public void ExecuteCommand(EcsContext context)
         {
-            context.DequeueEntityFromCommand(QueuedEntity);
+            context.DequeueEntityFromCommand(QueuedEntity, Blueprint);
         }
     }
 

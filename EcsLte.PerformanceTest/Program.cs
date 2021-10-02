@@ -31,77 +31,82 @@ namespace EcsLte.PerformanceTest
                         : x.Name)
                 .ToList();
 
-            ObjectCache.IsCacheEnabled = true;
+            ObjectCache.IsCacheEnabled = false;
 
             foreach (var testGrouping in tests)
-                if (testGrouping.Key != "Misc")
+                if (!testGrouping.Key.Contains("Misc"))
                 {
                     foreach (var test in testGrouping)
                         Run(test);
                     Console.WriteLine("");
                 }
 
-            //Run(typeof(EcsContext_ComponentLife_AddComponent));
+            //Run(typeof(EcsContext_EntityLife_CreateEntitiesBlueprint));
 
             //Name                                                      Time      ParallelTime
-            //EcsContext_ComponentLife_AddComponent                     333 ms    492 ms         1.07 GB
-            //EcsContext_ComponentLife_RemoveAllComponents              124 ms    341 ms         1.81 GB
-            //EcsContext_ComponentLife_RemoveComponent                  406 ms    449 ms         2.34 GB
-            //EcsContext_ComponentLife_ReplaceComponent                 152 ms    15 ms          2.5 GB
+            //EcsContext_ComponentLife_AddComponent                     331 ms    419 ms         1.07 GB
+            //EcsContext_ComponentLife_AddComponent2                    559 ms    513 ms         1.66 GB
+            //EcsContext_ComponentLife_AddComponent3                    519 ms    512 ms         1.55 GB
+            //EcsContext_ComponentLife_RemoveAllComponents              121 ms    337 ms         1.41 GB
+            //EcsContext_ComponentLife_RemoveComponent                  499 ms    499 ms         2.16 GB
+            //EcsContext_ComponentLife_ReplaceComponent                 158 ms    15 ms          2.14 GB
 
-            //EcsContext_EntityGroup_PrimaryComponent                   343 ms    333 ms         1.26 GB
-            //EcsContext_EntityGroup_SharedComponent                    342 ms    418 ms         1.26 GB
-            //EcsContext_EntityGroup_SharedComponentX10                 1001 ms   486 ms         1.26 GB
-            //EcsContext_EntityGroup_SharedComponentX2                  423 ms    382 ms         1.04 GB
+            //EcsContext_EntityGroup_SharedComponent                    359 ms    318 ms         3.1 GB
+            //EcsContext_EntityGroup_SharedComponentX10                 1039 ms   389 ms         3.1 GB
+            //EcsContext_EntityGroup_SharedComponentX2                  412 ms    335 ms         3.1 GB
 
-            //EcsContext_EntityLife_CreateEntities                      48 ms     -1 ms          517.12 MB
-            //EcsContext_EntityLife_CreateEntity                        412 ms    714 ms         1.51 GB
-            //EcsContext_EntityLife_CreateEntityReuse                   57 ms     393 ms         1.35 GB
-            //EcsContext_EntityLife_DestroyEntities                     81 ms     -1 ms          489.64 MB
-            //EcsContext_EntityLife_DestroyEntity                       85 ms     378 ms         2.26 GB
+            //EcsContext_EntityLife_CreateEntities                      120 ms    -1 ms          912.74 MB
+            //EcsContext_EntityLife_CreateEntitiesBlueprint             207 ms    -1 ms          475.29 MB
+            //EcsContext_EntityLife_CreateEntity                        341 ms    821 ms         2.46 GB
+            //EcsContext_EntityLife_CreateEntityBlueprint               692 ms    859 ms         2.13 GB
+            //EcsContext_EntityLife_CreateEntityReuse                   55 ms     332 ms         1.58 GB
+            //EcsContext_EntityLife_DestroyEntities                     78 ms     -1 ms          357.54 MB
+            //EcsContext_EntityLife_DestroyEntity                       98 ms     298 ms         1.27 GB
 
-            //EcsContext_FilterByAll                                    932 ms    1132 ms        1.33 GB
-            //EcsContext_FilterByOne                                    198 ms    331 ms         1.32 GB
+            //EcsContext_FilterByAll                                    893 ms    1039 ms        1.8 GB
+            //EcsContext_FilterByOne                                    193 ms    371 ms         1.8 GB
 
-            //EcsContext_GetComponent_GetAllComponents                  94 ms     39 ms          1.32 GB
-            //EcsContext_GetComponent_GetComponent                      100 ms    36 ms          1.32 GB
-            //EcsContext_GetComponent_GetUniqueComponent                148 ms    36 ms          1.32 GB
-            //EcsContext_GetComponent_GetUniqueEntity                   41 ms     27 ms          1.32 GB
-            //EcsContext_GetComponent_HasComponent                      61 ms     37 ms          1.32 GB
-            //EcsContext_GetComponent_HasUniqueComponent                37 ms     29 ms          1.32 GB
+            //EcsContext_GetComponent_GetAllComponents                  105 ms    39 ms          1.79 GB
+            //EcsContext_GetComponent_GetComponent                      104 ms    36 ms          1.79 GB
+            //EcsContext_GetComponent_GetUniqueComponent                162 ms    36 ms          1.79 GB
+            //EcsContext_GetComponent_GetUniqueEntity                   47 ms     26 ms          1.79 GB
+            //EcsContext_GetComponent_HasComponent                      67 ms     36 ms          1.79 GB
+            //EcsContext_GetComponent_HasUniqueComponent                38 ms     27 ms          1.79 GB
 
-            //EcsContext_GetEntity_GetEntities                          48 ms     -1 ms          359.79 MB
-            //EcsContext_GetEntity_HasEntity                            37 ms     29 ms          1.35 GB
+            //EcsContext_GetEntity_GetEntities                          46 ms     -1 ms          663.76 MB
+            //EcsContext_GetEntity_HasEntity                            37 ms     28 ms          1.2 GB
 
-            //EntityCommandQueue_ComponentLife_AddComponent             592 ms    756 ms         1 GB
-            //EntityCommandQueue_ComponentLife_RemoveAllComponents      244 ms    524 ms         1.51 GB
-            //EntityCommandQueue_ComponentLife_RemoveComponent          588 ms    829 ms         1.55 GB
-            //EntityCommandQueue_ComponentLife_ReplaceComponent         324 ms    546 ms         1.38 GB
+            //EntityCommandQueue_ComponentLife_AddComponent             539 ms    813 ms         962.57 MB
+            //EntityCommandQueue_ComponentLife_RemoveAllComponents      229 ms    528 ms         1.51 GB
+            //EntityCommandQueue_ComponentLife_RemoveComponent          676 ms    973 ms         1.42 GB
+            //EntityCommandQueue_ComponentLife_ReplaceComponent         315 ms    619 ms         1.42 GB
 
-            //EntityCommandQueue_EntityLife_CreateEntities              176 ms    -1 ms          1.36 GB
-            //EntityCommandQueue_EntityLife_CreateEntity                509 ms    669 ms         1.13 GB
-            //EntityCommandQueue_EntityLife_DestroyEntities             228 ms    -1 ms          450.91 MB
-            //EntityCommandQueue_EntityLife_DestroyEntity               232 ms    453 ms         1.21 GB
+            //EntityCommandQueue_EntityLife_CreateEntities              232 ms    -1 ms          833.98 MB
+            //EntityCommandQueue_EntityLife_CreateEntitiesBlueprint     454 ms    -1 ms          504.85 MB
+            //EntityCommandQueue_EntityLife_CreateEntity                451 ms    768 ms         1.63 GB
+            //EntityCommandQueue_EntityLife_CreateEntityBlueprint       765 ms    1047 ms        1.31 GB
+            //EntityCommandQueue_EntityLife_DestroyEntities             229 ms    -1 ms          1019.48 MB
+            //EntityCommandQueue_EntityLife_DestroyEntity               224 ms    500 ms         1.18 GB
 
-            //EntityFilter_GetEntity_GetEntitiesAfter                   422 ms    682 ms         1.58 GB
-            //EntityFilter_GetEntity_GetEntitiesBefore                  678 ms    -1 ms          2.6 GB
-            //EntityFilter_GetEntity_HasEntity                          62 ms     37 ms          1.38 GB
+            //EntityFilter_GetEntity_GetEntitiesAfter                   394 ms    692 ms         2.15 GB
+            //EntityFilter_GetEntity_GetEntitiesBefore                  683 ms    -1 ms          778.05 MB
+            //EntityFilter_GetEntity_HasEntity                          62 ms     36 ms          1.59 GB
 
-            //EntityFilter_GetWatcher_Added                             275 ms    348 ms         2.57 GB
-            //EntityFilter_GetWatcher_AddedOrRemoved                    290 ms    374 ms         2.57 GB
-            //EntityFilter_GetWatcher_AddedOrUpdated                    295 ms    370 ms         2.57 GB
-            //EntityFilter_GetWatcher_Removed                           267 ms    350 ms         2.57 GB
-            //EntityFilter_GetWatcher_Updated                           265 ms    404 ms         2.57 GB
+            //EntityFilter_GetWatcher_Added                             265 ms    351 ms         4.41 GB
+            //EntityFilter_GetWatcher_AddedOrRemoved                    285 ms    361 ms         4.41 GB
+            //EntityFilter_GetWatcher_AddedOrUpdated                    290 ms    378 ms         4.41 GB
+            //EntityFilter_GetWatcher_Removed                           255 ms    343 ms         4.41 GB
+            //EntityFilter_GetWatcher_Updated                           251 ms    347 ms         4.41 GB
 
-            //EntityGroup_GetEntity_GetEntitiesAfter                    1445 ms   813 ms         1.16 GB
-            //EntityGroup_GetEntity_GetEntitiesBefore                   344 ms    -1 ms          1020.4 MB
-            //EntityGroup_GetEntity_HasEntity                           63 ms     37 ms          1.45 GB
+            //EntityGroup_GetEntity_GetEntitiesAfter                    848 ms    734 ms         2.17 GB
+            //EntityGroup_GetEntity_GetEntitiesBefore                   363 ms    -1 ms          519.23 MB
+            //EntityGroup_GetEntity_HasEntity                           62 ms     36 ms          2.04 GB
 
-            //EntityGroup_GetWatcher_Added                              265 ms    369 ms         1.93 GB
-            //EntityGroup_GetWatcher_AddedOrRemoved                     299 ms    359 ms         1.93 GB
-            //EntityGroup_GetWatcher_AddedOrUpdated                     297 ms    372 ms         1.93 GB
-            //EntityGroup_GetWatcher_Removed                            266 ms    364 ms         1.93 GB
-            //EntityGroup_GetWatcher_Updated                            277 ms    389 ms         1.93 GB
+            //EntityGroup_GetWatcher_Added                              251 ms    344 ms         1.89 GB
+            //EntityGroup_GetWatcher_AddedOrRemoved                     284 ms    380 ms         1.89 GB
+            //EntityGroup_GetWatcher_AddedOrUpdated                     288 ms    373 ms         1.89 GB
+            //EntityGroup_GetWatcher_Removed                            264 ms    354 ms         1.89 GB
+            //EntityGroup_GetWatcher_Updated                            264 ms    351 ms         1.89 GB
 
             Console.WriteLine("");
             Console.WriteLine("ToCsv");

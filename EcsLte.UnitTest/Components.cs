@@ -30,16 +30,6 @@ public struct TestComponentUnique2 : IUniqueComponent
     public int Prop { get; set; }
 }
 
-public struct TestPrimaryKeyComponent1 : IPrimaryComponent
-{
-    public int Prop { get; set; }
-}
-
-public struct TestPrimaryKeyComponent2 : IPrimaryComponent
-{
-    public int Prop { get; set; }
-}
-
 public struct TestSharedKeyComponent1 : ISharedComponent
 {
     public int Prop { get; set; }

@@ -19,7 +19,7 @@ namespace EcsLte.Utilities
             return temp;
         }
 
-        /*public static int[] MergeDistinctIndex(int[] indexes, int index)
+        public static int[] MergeDistinctIndex(int[] indexes, int index)
         {
             if (indexes == null)
             {
@@ -33,15 +33,16 @@ namespace EcsLte.Utilities
             }
 
             return indexes;
-        }*/
+        }
 
         public static int[] MergeDistinctIndexes(params int[][] allIndexes)
         {
             var hash = ObjectCache.Pop<HashSet<int>>();
             foreach (var indices in allIndexes)
                 if (indices != null)
-                    foreach (var index in indices)
-                        hash.Add(index);
+                    hash.UnionWith(indices);
+            /*foreach (var index in indices)
+                hash.Add(index);*/
 
             var temp = hash.OrderBy(x => x).ToArray();
             hash.Clear();

@@ -9,7 +9,6 @@ namespace EcsLte
         private DataCache<List<ComponentArcheTypeData>, ComponentArcheTypeData[]> _archeTypeDatas;
 
         internal EntityCollection Entities { get; private set; }
-        internal IPrimaryComponent PrimaryComponent { get; private set; }
         internal ISharedComponent[] SharedComponents { get; private set; }
 
         public EntityGroupData()
@@ -56,7 +55,6 @@ namespace EcsLte
 
         internal void Initialize(EcsContextData ecsContextData,
             ComponentArcheTypeData[] archeTypeDatas,
-            IPrimaryComponent primaryComponent,
             ISharedComponent[] sharedComponents)
         {
             _ecsContextData = ecsContextData;
@@ -64,7 +62,6 @@ namespace EcsLte
             _archeTypeDatas.SetDirty();
 
             Entities = ecsContextData.CreateEntityCollection();
-            PrimaryComponent = primaryComponent;
             SharedComponents = sharedComponents;
         }
 
@@ -74,7 +71,6 @@ namespace EcsLte
             _archeTypeDatas.UncachedData.Clear();
             _archeTypeDatas.SetDirty();
 
-            PrimaryComponent = null;
             SharedComponents = null;
         }
 
