@@ -2,10 +2,10 @@ namespace EcsLte.UnitTest.InterfaceTests
 {
     public interface IGetWatcherTest
     {
-        void Added();
-        void Updated();
-        void Removed();
-        void AddedOrUpdated();
-        void AddedOrRemoved();
+        void WatchAdded();
+        void WatchUpdated();
+        void WatchRemoved();
+        void WatchAddedOrUpdated();
+        void WatchAddedOrRemoved();
     }
 }

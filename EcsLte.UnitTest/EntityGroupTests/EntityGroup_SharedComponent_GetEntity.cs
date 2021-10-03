@@ -10,7 +10,7 @@ namespace EcsLte.UnitTest.EntityGroupTests
         [TestMethod]
         public void HasEntity()
         {
-            var component1 = new TestSharedKeyComponent1 { Prop = 1 };
+            var component1 = new TestSharedComponent1 { Prop = 1 };
             var entity1 = _context.CreateEntity();
             var entity2 = _context.CreateEntity();
             _context.AddComponent(entity1, component1);
@@ -22,12 +22,12 @@ namespace EcsLte.UnitTest.EntityGroupTests
             Assert.IsTrue(entityGroup.HasEntity(entity1));
             Assert.IsTrue(entityGroup.HasEntity(entity2));
             // Removed from withKey
-            _context.RemoveComponent<TestSharedKeyComponent1>(entity1);
-            _context.RemoveComponent<TestSharedKeyComponent1>(entity2);
+            _context.RemoveComponent<TestSharedComponent1>(entity1);
+            _context.RemoveComponent<TestSharedComponent1>(entity2);
             Assert.IsFalse(entityGroup.HasEntity(entity1));
             Assert.IsFalse(entityGroup.HasEntity(entity2));
             // Replaced from withKey
-            var component2 = new TestSharedKeyComponent1 { Prop = 2 };
+            var component2 = new TestSharedComponent1 { Prop = 2 };
             _context.ReplaceComponent(entity1, component2);
             _context.ReplaceComponent(entity2, component2);
             Assert.IsFalse(entityGroup.HasEntity(entity1));
@@ -41,7 +41,7 @@ namespace EcsLte.UnitTest.EntityGroupTests
         [TestMethod]
         public void GetEntities()
         {
-            var component = new TestSharedKeyComponent1 { Prop = 1 };
+            var component = new TestSharedComponent1 { Prop = 1 };
             var entity1 = _context.CreateEntity();
             var entity2 = _context.CreateEntity();
             _context.AddComponent(entity1, component);
@@ -54,11 +54,11 @@ namespace EcsLte.UnitTest.EntityGroupTests
             Assert.IsTrue(entityGroup.GetEntities()[0] == entity1);
             Assert.IsTrue(entityGroup.GetEntities()[1] == entity2);
             // Removed from withKey
-            _context.RemoveComponent<TestSharedKeyComponent1>(entity1);
-            _context.RemoveComponent<TestSharedKeyComponent1>(entity2);
+            _context.RemoveComponent<TestSharedComponent1>(entity1);
+            _context.RemoveComponent<TestSharedComponent1>(entity2);
             Assert.IsTrue(entityGroup.GetEntities().Length == 0);
             // Replaced from withKey
-            var component2 = new TestSharedKeyComponent1 { Prop = 2 };
+            var component2 = new TestSharedComponent1 { Prop = 2 };
             _context.ReplaceComponent(entity1, component2);
             _context.ReplaceComponent(entity2, component2);
             Assert.IsTrue(entityGroup.GetEntities().Length == 0);

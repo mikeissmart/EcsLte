@@ -12,33 +12,34 @@ namespace EcsLte
         private readonly WatcherTable _watcherTable;
 
         internal EntityGroup(EcsContext context, EcsContextData ecsContextData,
+            Filter? filter,
             ComponentArcheTypeData[] archeTypeDatas,
             ISharedComponent[] sharedComponents)
         {
-            _ecsContextData = ecsContextData;
             _data = ObjectCache.Pop<EntityGroupData>();
             _data.Initialize(ecsContextData, archeTypeDatas, sharedComponents);
 
-            ecsContextData.ArcheTypeDataAdded += OnComponentArcheTypeDataAdded;
-            ecsContextData.ArcheTypeDataRemoved += OnCompoinentArcheTypeDataRemoved;
+            ecsContextData.AnyArcheTypeDataAdded += OnAnyComponentArcheTypeDataAdded;
 
             for (var i = 0; i < archeTypeDatas.Length; i++)
             {
-                var archData = archeTypeDatas[i];
-                archData.EntityAdded += OnEntityComponentAdded;
-                archData.EntityRemoved += OnEntityComponentRemoved;
-                archData.EntityUpdated += OnEntityComponentUpdated;
+                var archeData = archeTypeDatas[i];
+                archeData.EntityAdded += OnEntityComponentAdded;
+                archeData.EntityRemoved += OnEntityComponentRemoved;
+                archeData.EntityUpdated += OnEntityComponentUpdated;
+                archeData.ArcheTypeDataRemoved += OnComponentArcheTypeDataRemoved;
 
-                ParallelRunner.RunParallelForEach(archData.GetEntities(),
+                ParallelRunner.RunParallelForEach(archeData.GetEntities(),
                     entity => _data.Entities[entity.Id] = entity);
             }
 
             _watcherTable = ObjectCache.Pop<WatcherTable>();
-            _watcherTable.Initialize(context);
+            _watcherTable.Initialize(context, ecsContextData);
 
             _ecsContextData = ecsContextData;
 
             CurrentContext = context;
+            Filter = filter;
         }
 
         #region EcsContext
@@ -49,7 +50,8 @@ namespace EcsLte
 
         #region EntityKey
 
-        internal ISharedComponent[] SharedKeys => _data.SharedComponents;
+        public ISharedComponent[] SharedKeys => _data.SharedComponents;
+        public Filter? Filter { get; private set; }
 
         public Entity GetFirstOrDefault()
         {
@@ -93,7 +95,7 @@ namespace EcsLte
 
         #region GetWatcher
 
-        public Watcher Added(Filter filter)
+        public Watcher WatchAdded(Filter filter)
         {
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);
@@ -101,7 +103,7 @@ namespace EcsLte
             return _watcherTable.Added(filter);
         }
 
-        public Watcher Updated(Filter filter)
+        public Watcher WatchUpdated(Filter filter)
         {
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);
@@ -109,7 +111,7 @@ namespace EcsLte
             return _watcherTable.Updated(filter);
         }
 
-        public Watcher Removed(Filter filter)
+        public Watcher WatchRemoved(Filter filter)
         {
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);
@@ -117,7 +119,7 @@ namespace EcsLte
             return _watcherTable.Removed(filter);
         }
 
-        public Watcher AddedOrUpdated(Filter filter)
+        public Watcher WatchAddedOrUpdated(Filter filter)
         {
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);
@@ -125,7 +127,7 @@ namespace EcsLte
             return _watcherTable.AddedOrUpdated(filter);
         }
 
-        public Watcher AddedOrRemoved(Filter filter)
+        public Watcher WatchAddedOrRemoved(Filter filter)
         {
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);
@@ -155,36 +157,28 @@ namespace EcsLte
             _watcherTable.RemovedEntity(entity);
         }
 
-        private void OnComponentArcheTypeDataAdded(ComponentArcheTypeData archeTypeData)
+        private void OnAnyComponentArcheTypeDataAdded(ComponentArcheTypeData archeTypeData)
         {
             if (_data.SharedComponents != null && archeTypeData.ArcheType.SharedComponents != null &&
-                archeTypeData.ArcheType.SharedComponents.SequenceEqual(_data.SharedComponents))
-                AddComponentArcheTypeData(archeTypeData);
+                archeTypeData.ArcheType.SharedComponents.SequenceEqual(_data.SharedComponents) &&
+                (Filter == null || Filter.Value.IsFiltered(archeTypeData.ArcheType)))
+            {
+                _data.AddComponentArcheTypeData(archeTypeData);
+                archeTypeData.EntityAdded += OnEntityComponentAdded;
+                archeTypeData.EntityRemoved += OnEntityComponentRemoved;
+                archeTypeData.EntityUpdated += OnEntityComponentUpdated;
+                archeTypeData.ArcheTypeDataRemoved += OnComponentArcheTypeDataRemoved;
+            }
         }
 
-        private void AddComponentArcheTypeData(ComponentArcheTypeData archeTypeData)
-        {
-            _data.AddComponentArcheTypeData(archeTypeData);
-            archeTypeData.EntityAdded += OnEntityComponentAdded;
-            archeTypeData.EntityRemoved += OnEntityComponentRemoved;
-            archeTypeData.EntityUpdated += OnEntityComponentUpdated;
-
-            // TODO probably dont need this. new archeTypes should be empty
-            if (archeTypeData.GetEntities().Length > 0)
-                throw new Exception();
-        }
-
-        private void OnCompoinentArcheTypeDataRemoved(ComponentArcheTypeData archeTypeData)
+        private void OnComponentArcheTypeDataRemoved(ComponentArcheTypeData archeTypeData)
         {
             if (_data.RemoveComponentArcheTypeData(archeTypeData))
             {
                 archeTypeData.EntityAdded -= OnEntityComponentAdded;
                 archeTypeData.EntityRemoved -= OnEntityComponentRemoved;
                 archeTypeData.EntityUpdated -= OnEntityComponentUpdated;
-
-                // TODO probably dont need this. removed archeTypes should be empty
-                if (archeTypeData.GetEntities().Length > 0)
-                    throw new Exception();
+                archeTypeData.ArcheTypeDataRemoved -= OnComponentArcheTypeDataRemoved;
             }
         }
 

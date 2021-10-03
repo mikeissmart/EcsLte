@@ -29,6 +29,7 @@ namespace EcsLte
             UniqueEntities = new Entity[ComponentPoolIndexes.Instance.Count];
             EntityFilters = new Dictionary<Filter, EntityFilter>();
             EntityComponentArcheTypes = new ComponentArcheTypeData[_arrayInitSize];
+            AllWatchers = new List<Watcher>();
         }
 
         public IComponentPool[] ComponentPools { get; }
@@ -38,9 +39,9 @@ namespace EcsLte
         public Entity[] UniqueEntities { get; }
         public Dictionary<Filter, EntityFilter> EntityFilters { get; }
         public EntityCollection Entities { get; private set; }
+        public List<Watcher> AllWatchers { get; private set; }
 
-        public event ComponentArcheTypeDataEvent ArcheTypeDataAdded;
-        public event ComponentArcheTypeDataEvent ArcheTypeDataRemoved;
+        public event ComponentArcheTypeDataEvent AnyArcheTypeDataAdded;
 
         public Entity PrepCreateEntity()
         {
@@ -152,8 +153,8 @@ namespace EcsLte
                     archeTypeData.Initialize(archeType);
                     _componentArcheTypes.Add(archeTypeHashCode, archeTypeData);
 
-                    if (ArcheTypeDataAdded != null)
-                        ArcheTypeDataAdded.Invoke(archeTypeData);
+                    if (AnyArcheTypeDataAdded != null)
+                        AnyArcheTypeDataAdded.Invoke(archeTypeData);
                 }
 
                 return archeTypeData;
@@ -165,8 +166,11 @@ namespace EcsLte
             var archeTypeHashCode = ComponentArcheType.CalculateHashCode(archeTypeData.ArcheType);
             lock (_componentArcheTypes)
             {
-                if (_componentArcheTypes.Remove(archeTypeHashCode) && ArcheTypeDataRemoved != null)
-                    ArcheTypeDataRemoved.Invoke(archeTypeData);
+                if (_componentArcheTypes.Remove(archeTypeHashCode))
+                {
+                    archeTypeData.Reset();
+                    ObjectCache.Push(archeTypeData);
+                }
             }
         }
 
@@ -262,9 +266,9 @@ namespace EcsLte
             EntityFilters.Clear();
             Array.Clear(EntityComponentArcheTypes, 0, EntityComponentArcheTypes.Length);
             // Entities is clear/reset with _entityCollections
+            AllWatchers.Clear();
 
-            ArcheTypeDataAdded = null;
-            ArcheTypeDataRemoved = null;
+            AnyArcheTypeDataAdded = null;
         }
 
         #endregion

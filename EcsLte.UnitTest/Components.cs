@@ -20,22 +20,22 @@ public struct TestRecordableComponent2 : IRecordableComponent
     public int Prop { get; set; }
 }
 
-public struct TestComponentUnique1 : IUniqueComponent
+public struct TestUniqueComponent1 : IUniqueComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponentUnique2 : IUniqueComponent
+public struct TestUniqueComponent2 : IUniqueComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestSharedKeyComponent1 : ISharedComponent
+public struct TestSharedComponent1 : ISharedComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestSharedKeyComponent2 : ISharedComponent
+public struct TestSharedComponent2 : ISharedComponent
 {
     public int Prop { get; set; }
 }

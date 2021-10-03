@@ -7,14 +7,18 @@ using EcsLte.Utilities;
 namespace EcsLte
 {
     public class EcsContext :
-        IGetEntity, IEntityLife, IGetComponent, IComponentLife, IFilterBy, IGroupWith
+        IFilterBy, IGetEntity, IGetWatcher, IEntityLife, IGetComponent, IComponentLife, IGroupWith
     {
         private readonly EcsContextData _data;
+        private readonly WatcherTable _watcherTable;
 
         internal EcsContext(string name)
         {
             _data = ObjectCache.Pop<EcsContextData>();
             _data.Initialize();
+
+            _watcherTable = ObjectCache.Pop<WatcherTable>();
+            _watcherTable.Initialize(this, _data);
 
             DefaultCommand = CommandQueue("Default");
 
@@ -99,7 +103,7 @@ namespace EcsLte
             {
                 if (!_data.EntityCommandQueue.TryGetValue(name, out var commandQueue))
                 {
-                    commandQueue = new EntityCommandQueue(this, name);
+                    commandQueue = new EntityCommandQueue(this, _data, name);
                     _data.EntityCommandQueue.Add(name, commandQueue);
                 }
 
@@ -111,6 +115,9 @@ namespace EcsLte
         {
             _data.Reset();
             ObjectCache.Push(_data);
+
+            _watcherTable.Reset();
+            ObjectCache.Push(_watcherTable);
 
             IsDestroyed = true;
         }
@@ -135,6 +142,50 @@ namespace EcsLte
                 throw new EcsContextIsDestroyedException(this);
 
             return _data.Entities.GetEntities();
+        }
+
+        #endregion
+
+        #region GetWatcher
+
+        public Watcher WatchAdded(Filter filter)
+        {
+            if (IsDestroyed)
+                throw new EcsContextIsDestroyedException(this);
+
+            return _watcherTable.Added(filter);
+        }
+
+        public Watcher WatchUpdated(Filter filter)
+        {
+            if (IsDestroyed)
+                throw new EcsContextIsDestroyedException(this);
+
+            return _watcherTable.Updated(filter);
+        }
+
+        public Watcher WatchRemoved(Filter filter)
+        {
+            if (IsDestroyed)
+                throw new EcsContextIsDestroyedException(this);
+
+            return _watcherTable.Removed(filter);
+        }
+
+        public Watcher WatchAddedOrUpdated(Filter filter)
+        {
+            if (IsDestroyed)
+                throw new EcsContextIsDestroyedException(this);
+
+            return _watcherTable.AddedOrUpdated(filter);
+        }
+
+        public Watcher WatchAddedOrRemoved(Filter filter)
+        {
+            if (IsDestroyed)
+                throw new EcsContextIsDestroyedException(this);
+
+            return _watcherTable.AddedOrRemoved(filter);
         }
 
         #endregion
@@ -574,7 +625,7 @@ namespace EcsLte
 
         #endregion
 
-        #region WithKey
+        #region GroupWith
 
         public EntityGroup GroupWith(ISharedComponent sharedComponent)
         {
@@ -601,7 +652,8 @@ namespace EcsLte
                 {
                     var archeTypeDatas = _data.FilterComponentArcheTypeData(null, sharedComponents);
                     entityKey = new EntityGroup(this, _data,
-                        archeTypeDatas.ToArray(),
+                        null,
+                        archeTypeDatas,
                         sharedComponents);
                     _data.EntityGroups.Add(keyCollection, entityKey);
                 }

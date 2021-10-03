@@ -11,13 +11,13 @@ namespace EcsLte.UnitTest.EcsContextTests
         public void AddUniqueComponent()
         {
             var entity = _context.CreateEntity();
-            var component = new TestComponentUnique1 { Prop = 1 };
+            var component = new TestUniqueComponent1 { Prop = 1 };
 
             _context.AddUniqueComponent(entity, component);
 
             // Correct component
             Assert.IsTrue(
-                _context.GetComponent<TestComponentUnique1>(entity).Prop == component.Prop);
+                _context.GetComponent<TestUniqueComponent1>(entity).Prop == component.Prop);
             // Already has component
             Assert.ThrowsException<EntityAlreadyHasComponentException>(() =>
                 _context.AddUniqueComponent(entity, component));
@@ -26,64 +26,64 @@ namespace EcsLte.UnitTest.EcsContextTests
             Assert.ThrowsException<EntityAlreadyHasUniqueComponentException>(() =>
                 _context.AddUniqueComponent(entity2, component));
             // Can add to another entity once exisitng unique component is removed
-            _context.RemoveUniqueComponent<TestComponentUnique1>(entity);
+            _context.RemoveUniqueComponent<TestUniqueComponent1>(entity);
             _context.AddUniqueComponent(entity2, component);
-            Assert.IsTrue(_context.HasComponent<TestComponentUnique1>(entity2));
+            Assert.IsTrue(_context.HasComponent<TestUniqueComponent1>(entity2));
             // Entity does not exist
             Assert.ThrowsException<EntityDoesNotExistException>(() =>
-                _context.AddUniqueComponent(Entity.Null, new TestComponentUnique1()));
+                _context.AddUniqueComponent(Entity.Null, new TestUniqueComponent1()));
             // EcsContext is destroyed
             EcsContexts.DestroyContext(_context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                _context.AddUniqueComponent(entity, new TestComponentUnique1()));
+                _context.AddUniqueComponent(entity, new TestUniqueComponent1()));
         }
 
         [TestMethod]
         public void ReplaceUniqueComponent()
         {
             var entity = _context.CreateEntity();
-            var component1 = new TestComponentUnique1 { Prop = 1 };
-            _context.AddUniqueComponent(entity, new TestComponentUnique1());
+            var component1 = new TestUniqueComponent1 { Prop = 1 };
+            _context.AddUniqueComponent(entity, new TestUniqueComponent1());
 
             _context.ReplaceUniqueComponent(entity, component1);
 
             // Correct component
             Assert.IsTrue(
-                _context.GetComponent<TestComponentUnique1>(entity).Prop == component1.Prop);
+                _context.GetComponent<TestUniqueComponent1>(entity).Prop == component1.Prop);
             // Also adds component
-            var component2 = new TestComponentUnique2 { Prop = 2 };
+            var component2 = new TestUniqueComponent2 { Prop = 2 };
             _context.ReplaceUniqueComponent(entity, component2);
             Assert.IsTrue(
-                _context.GetComponent<TestComponentUnique2>(entity).Prop == component2.Prop);
+                _context.GetComponent<TestUniqueComponent2>(entity).Prop == component2.Prop);
             // Entity does not exist
             Assert.ThrowsException<EntityDoesNotExistException>(() =>
-                _context.ReplaceUniqueComponent(Entity.Null, new TestComponentUnique1()));
+                _context.ReplaceUniqueComponent(Entity.Null, new TestUniqueComponent1()));
             // EcsContext is destroyed
             EcsContexts.DestroyContext(_context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                _context.ReplaceUniqueComponent(entity, new TestComponentUnique1()));
+                _context.ReplaceUniqueComponent(entity, new TestUniqueComponent1()));
         }
 
         [TestMethod]
         public void RemoveUniqueComponent()
         {
             var entity = _context.CreateEntity();
-            _context.AddUniqueComponent(entity, new TestComponentUnique1());
+            _context.AddUniqueComponent(entity, new TestUniqueComponent1());
 
-            _context.RemoveUniqueComponent<TestComponentUnique1>(entity);
+            _context.RemoveUniqueComponent<TestUniqueComponent1>(entity);
 
             // Correctly removes component
-            Assert.IsFalse(_context.HasComponent<TestComponentUnique1>(entity));
+            Assert.IsFalse(_context.HasComponent<TestUniqueComponent1>(entity));
             // Cannot remove component entiy doesnt have
             Assert.ThrowsException<EntityNotHaveComponentException>(() =>
-                _context.RemoveComponent<TestComponentUnique1>(entity));
+                _context.RemoveComponent<TestUniqueComponent1>(entity));
             // Entity does not exist
             Assert.ThrowsException<EntityDoesNotExistException>(() =>
-                _context.RemoveComponent<TestComponentUnique1>(Entity.Null));
+                _context.RemoveComponent<TestUniqueComponent1>(Entity.Null));
             // EcsContext is destroyed
             EcsContexts.DestroyContext(_context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                _context.RemoveComponent<TestComponentUnique1>(entity));
+                _context.RemoveComponent<TestUniqueComponent1>(entity));
         }
 
         [TestMethod]

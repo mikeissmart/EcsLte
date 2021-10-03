@@ -2,24 +2,24 @@ using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class EntityGroup_GetWatcher_Updated : BasePerformanceTest
+    internal class EntityFilter_GetWatcher_WatchUpdated : BasePerformanceTest
     {
-        private EntityGroup _entityGroup;
+        private EntityFilter _entityFilter;
         private Filter _filter;
 
         public override void PreRun()
         {
             base.PreRun();
 
-            _filter = Filter.AllOf<TestSharedComponent1>();
-            _entityGroup = _context.GroupWith(new TestSharedComponent1 { Prop = 1 });
+            _filter = Filter.AllOf<TestComponent1>();
+            _entityFilter = _context.FilterBy(_filter);
         }
 
         public override void Run()
         {
             Watcher watcher;
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                watcher = _entityGroup.Updated(_filter);
+                watcher = _entityFilter.WatchUpdated(_filter);
         }
 
         public override bool CanRunParallel()
@@ -31,7 +31,7 @@ namespace EcsLte.PerformanceTest
         {
             Watcher watcher;
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                i => { watcher = _entityGroup.Updated(_filter); });
+                i => { watcher = _entityFilter.WatchUpdated(_filter); });
         }
     }
 }

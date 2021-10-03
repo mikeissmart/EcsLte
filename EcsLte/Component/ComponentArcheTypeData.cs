@@ -21,6 +21,7 @@ namespace EcsLte
         internal event EntityEvent EntityAdded;
         internal event EntityEvent EntityRemoved;
         internal event EntityEvent EntityUpdated;
+        internal event ComponentArcheTypeDataEvent ArcheTypeDataRemoved;
 
         #region ComponentArcheTypeData
 
@@ -84,11 +85,15 @@ namespace EcsLte
 
         internal void Reset()
         {
+            if (ArcheTypeDataRemoved != null)
+                ArcheTypeDataRemoved.Invoke(this);
+
             _entities.UncachedData.Clear();
             _entities.SetDirty();
             EntityAdded = null;
             EntityRemoved = null;
             EntityUpdated = null;
+            ArcheTypeDataRemoved = null;
         }
 
         #endregion

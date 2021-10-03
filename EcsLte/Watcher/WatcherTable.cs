@@ -6,6 +6,7 @@ namespace EcsLte
     {
         private readonly HashSet<Watcher> _added;
         private EcsContext _context;
+        private EcsContextData _ecsContextData;
         private readonly HashSet<Watcher> _removed;
         private readonly HashSet<Watcher> _updated;
         private readonly Dictionary<Filter, Watcher> _watchers;
@@ -92,6 +93,10 @@ namespace EcsLte
                 if (!_watchers.TryGetValue(filter, out var watcher))
                 {
                     watcher = new Watcher(_context);
+                    lock (_ecsContextData.AllWatchers)
+                    {
+                        _ecsContextData.AllWatchers.Add(watcher);
+                    }
                     _watchers.Add(filter, watcher);
                 }
 
@@ -136,9 +141,10 @@ namespace EcsLte
 
         #region ObjectCache
 
-        internal void Initialize(EcsContext context)
+        internal void Initialize(EcsContext context, EcsContextData ecsContextData)
         {
             _context = context;
+            _ecsContextData = ecsContextData;
         }
 
         internal void Reset()

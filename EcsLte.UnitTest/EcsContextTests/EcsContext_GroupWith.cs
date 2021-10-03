@@ -9,16 +9,16 @@ namespace EcsLte.UnitTest.EcsContextTests
     public class EcsContext_GroupWith : BasePrePostTest, IGroupWithTest
     {
         [TestMethod]
-        public void GroupWith_SharedKey()
+        public void GroupWith_SharedComponent()
         {
-            var component = new TestSharedKeyComponent1 {Prop = 1};
-            var entityKey = _context.GroupWith(new TestSharedKeyComponent1 {Prop = 1});
+            var component = new TestSharedComponent1 { Prop = 1 };
+            var group = _context.GroupWith(new TestSharedComponent1 { Prop = 1 });
 
-            // Correct key
-            Assert.IsTrue(entityKey != null);
-            Assert.IsTrue(_context.GroupWith(component) == entityKey);
+            // Correct group
+            Assert.IsTrue(group != null);
+            Assert.IsTrue(_context.GroupWith(component) == group);
             // Different component gets different entity
-            Assert.IsTrue(_context.GroupWith(new TestSharedKeyComponent1 {Prop = 2}) != entityKey);
+            Assert.IsTrue(_context.GroupWith(new TestSharedComponent1 { Prop = 2 }) != group);
             // Null component
             ISharedComponent nullKey = null;
             Assert.ThrowsException<ArgumentNullException>(() =>
@@ -30,19 +30,19 @@ namespace EcsLte.UnitTest.EcsContextTests
         }
 
         [TestMethod]
-        public void GroupWith_SharedKeyes()
+        public void GroupWith_SharedComponents()
         {
-            var component1 = new TestSharedKeyComponent1 {Prop = 1};
-            var component2 = new TestSharedKeyComponent2 {Prop = 1};
-            var entityKey = _context.GroupWith(component1, component2);
+            var component1 = new TestSharedComponent1 { Prop = 1 };
+            var component2 = new TestSharedComponent2 { Prop = 1 };
+            var group = _context.GroupWith(component1, component2);
 
-            // Correct key
-            Assert.IsTrue(entityKey != null);
-            Assert.IsTrue(_context.GroupWith(component1, component2) == entityKey);
+            // Correct group
+            Assert.IsTrue(group != null);
+            Assert.IsTrue(_context.GroupWith(component1, component2) == group);
             // Null component
-            ISharedComponent nullKey = null;
+            ISharedComponent nullComponent = null;
             Assert.ThrowsException<ArgumentNullException>(() =>
-                _context.GroupWith(component1, component2, nullKey));
+                _context.GroupWith(component1, component2, nullComponent));
             // EcsContext is destroyed
             EcsContexts.DestroyContext(_context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>

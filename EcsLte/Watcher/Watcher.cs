@@ -5,11 +5,11 @@ namespace EcsLte
 {
     public interface IGetWatcher
     {
-        Watcher Added(Filter filter);
-        Watcher Removed(Filter filter);
-        Watcher Updated(Filter filter);
-        Watcher AddedOrRemoved(Filter filter);
-        Watcher AddedOrUpdated(Filter filter);
+        Watcher WatchAdded(Filter filter);
+        Watcher WatchRemoved(Filter filter);
+        Watcher WatchUpdated(Filter filter);
+        Watcher WatchAddedOrRemoved(Filter filter);
+        Watcher WatchAddedOrUpdated(Filter filter);
     }
 
     public enum WatchTriggerEvent

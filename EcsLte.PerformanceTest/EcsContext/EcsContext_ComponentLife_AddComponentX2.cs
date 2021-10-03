@@ -2,7 +2,7 @@ using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class EcsContext_ComponentLife_AddComponent3 : BasePerformanceTest
+    internal class EcsContext_ComponentLife_AddComponentX2 : BasePerformanceTest
     {
         private Entity[] _entities;
 
@@ -11,18 +11,14 @@ namespace EcsLte.PerformanceTest
             base.PreRun();
 
             _entities = _context.CreateEntities(TestConsts.EntityLoopCount);
-            var component1 = new TestComponent1();
-            var component2 = new TestComponent2();
+            var component = new TestComponent1();
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-            {
-                _context.AddComponent(_entities[i], component1);
-                _context.AddComponent(_entities[i], component2);
-            }
+                _context.AddComponent(_entities[i], component);
         }
 
         public override void Run()
         {
-            var component = new TestComponent3();
+            var component = new TestComponent2();
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 _context.AddComponent(_entities[i], component);
         }
@@ -34,7 +30,7 @@ namespace EcsLte.PerformanceTest
 
         public override void RunParallel()
         {
-            var component = new TestComponent3();
+            var component = new TestComponent2();
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
                 i => { _context.AddComponent(_entities[i], component); });
         }

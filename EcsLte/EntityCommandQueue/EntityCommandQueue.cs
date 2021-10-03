@@ -7,11 +7,14 @@ namespace EcsLte
     public class EntityCommandQueue : IEcsContext, IEntityLife, IComponentLife
     {
         private readonly EntityCommandQueueData _data;
+        private EcsContextData _ecsContextData;
 
-        public EntityCommandQueue(EcsContext context, string name)
+        internal EntityCommandQueue(EcsContext context, EcsContextData ecsContextData, string name)
         {
             _data = ObjectCache.Pop<EntityCommandQueueData>();
             _data.Initialize();
+
+            _ecsContextData = ecsContextData;
 
             CurrentContext = context;
             Name = name;
@@ -31,6 +34,12 @@ namespace EcsLte
         {
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);
+
+            lock (_ecsContextData.AllWatchers)
+            {
+                for (int i = 0; i < _ecsContextData.AllWatchers.Count; i++)
+                    _ecsContextData.AllWatchers[i].ClearEntities();
+            }
 
             lock (_data.Commands)
             {
