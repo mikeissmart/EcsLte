@@ -2,24 +2,34 @@ using EcsLte.Exceptions;
 
 namespace EcsLte
 {
-    public class EntityGroup : IEcsContext, IGetEntity, IGetWatcher
+    public class EntityFilterGroup : IEcsContext, IGetEntity, IGetWatcher
     {
-        private readonly EntityGroupData _data;
+        private readonly EntityFilterGroupData _data;
 
-        internal EntityGroup(EcsContext context, EntityGroupData data)
+        internal EntityFilterGroup(EcsContext context, EntityFilterGroupData data)
         {
             _data = data;
 
             CurrentContext = context;
         }
 
-        ~EntityGroup()
+        ~EntityFilterGroup()
         {
             _data.DecRefCount();
         }
 
         #region EntityGroup
 
+        public Filter Filter
+        {
+            get
+            {
+                if (CurrentContext.IsDestroyed)
+                    throw new EcsContextIsDestroyedException(CurrentContext);
+
+                return _data.Filter;
+            }
+        }
         public ISharedComponent[] SharedKeys
         {
             get
@@ -31,26 +41,26 @@ namespace EcsLte
             }
         }
 
-        public static bool operator !=(EntityGroup lhs, EntityGroup rhs)
+        public static bool operator !=(EntityFilterGroup lhs, EntityFilterGroup rhs)
         {
             return !(lhs == rhs);
         }
 
-        public static bool operator ==(EntityGroup lhs, EntityGroup rhs)
+        public static bool operator ==(EntityFilterGroup lhs, EntityFilterGroup rhs)
         {
             if (lhs is null || rhs is null)
                 return false;
             return lhs._data.HashCode == rhs._data.HashCode;
         }
 
-        public bool Equals(EntityGroup other)
+        public bool Equals(EntityFilterGroup other)
         {
             return this == other;
         }
 
         public override bool Equals(object obj)
         {
-            return obj is EntityGroup other && this == other;
+            return obj is EntityFilterGroup other && this == other;
         }
 
         public override int GetHashCode()
@@ -129,5 +139,6 @@ namespace EcsLte
         }
 
         #endregion
+
     }
 }

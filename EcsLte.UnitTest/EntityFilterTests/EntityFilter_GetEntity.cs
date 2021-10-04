@@ -5,10 +5,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace EcsLte.UnitTest.EntityFilterTests
 {
     [TestClass]
-    public class EntityFilter_GetEntity : BasePrePostTest, IGetEntityTest
+    public class EntityFilter_GetEntity : BasePrePostTest
     {
         [TestMethod]
-        public void HasEntity()
+        public void HasEntityasdf()
         {
             var filter = _context.FilterBy(Filter.AllOf<TestComponent1>());
             var entity = _context.CreateEntity();
@@ -20,7 +20,7 @@ namespace EcsLte.UnitTest.EntityFilterTests
             _context.RemoveComponent<TestComponent1>(entity);
             Assert.IsFalse(filter.HasEntity(entity));
             // Destroy entity removes from filter
-            _context.AddComponent(entity, new TestComponent1());
+            _context.AddComponent(entity, new TestSharedComponent1());
             _context.DestroyEntity(entity);
             Assert.IsFalse(filter.HasEntity(entity));
             // EcsContext is destroyed
@@ -30,7 +30,7 @@ namespace EcsLte.UnitTest.EntityFilterTests
         }
 
         [TestMethod]
-        public void GetEntities()
+        public void GetEntitiesasdf()
         {
             var filter = _context.FilterBy(Filter.AllOf<TestComponent1>());
             var entity1 = _context.CreateEntity();

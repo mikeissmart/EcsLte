@@ -10,8 +10,7 @@ namespace EcsLte.PerformanceTest
             base.PreRun();
 
             _blueprint = new EntityBlueprint()
-                .AddComponent(new TestComponent1())
-                .AddComponent(new TestComponent2());
+                .AddComponent(new TestComponent1());
         }
 
         public override void Run()

@@ -2,7 +2,7 @@ using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class EcsContext_EntityGroup_SharedComponent : BasePerformanceTest
+    internal class EcsContext_GroupWith : BasePerformanceTest
     {
         public override void Run()
         {

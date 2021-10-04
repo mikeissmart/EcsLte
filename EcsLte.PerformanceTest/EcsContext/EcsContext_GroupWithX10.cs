@@ -2,17 +2,8 @@ using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class EntityFilter_EntityGroup_SharedComponentX10 : BasePerformanceTest
+    internal class EcsContext_GroupWithX10 : BasePerformanceTest
     {
-        private EntityFilter _filter;
-
-        public override void PreRun()
-        {
-            base.PreRun();
-
-            _filter = _context.FilterBy(Filter.AllOf<TestComponent1>());
-        }
-
         public override void Run()
         {
             var component1 = new TestSharedComponent1 { Prop = 1 };
@@ -26,7 +17,7 @@ namespace EcsLte.PerformanceTest
             var component9 = new TestSharedComponent9 { Prop = 9 };
             EntityGroup entityGroup;
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                entityGroup = _filter.GroupWith(
+                entityGroup = _context.GroupWith(
                     component1,
                     component2,
                     component3,
@@ -58,7 +49,7 @@ namespace EcsLte.PerformanceTest
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
                 i =>
                 {
-                    entityGroup = _filter.GroupWith(
+                    entityGroup = _context.GroupWith(
                         component1,
                         component2,
                         component3,

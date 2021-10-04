@@ -7,39 +7,38 @@ namespace EcsLte
     public class EntityCommandQueue : IEcsContext, IEntityLife, IComponentLife
     {
         private readonly EntityCommandQueueData _data;
-        private EcsContextData _ecsContextData;
 
-        internal EntityCommandQueue(EcsContext context, EcsContextData ecsContextData, string name)
+        internal EntityCommandQueue(EcsContext context, EntityCommandQueueData data)
         {
-            _data = ObjectCache.Pop<EntityCommandQueueData>();
-            _data.Initialize();
-
-            _ecsContextData = ecsContextData;
+            _data = data;
 
             CurrentContext = context;
-            Name = name;
         }
-
-        #region EscContext
-
-        public EcsContext CurrentContext { get; }
-
-        #endregion
 
         #region EntityCommandQueue
 
-        public string Name { get; }
+        public string Name
+        {
+            get
+            {
+                if (CurrentContext.IsDestroyed)
+                    throw new EcsContextIsDestroyedException(CurrentContext);
+
+                return _data.Name;
+            }
+        }
 
         public void RunCommands()
         {
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);
 
-            lock (_ecsContextData.AllWatchers)
-            {
-                for (int i = 0; i < _ecsContextData.AllWatchers.Count; i++)
-                    _ecsContextData.AllWatchers[i].ClearEntities();
-            }
+            // TODO
+            // lock (_data.ContextData.AllWatchers)
+            // {
+            //     for (int i = 0; i < _data.ContextData.AllWatchers.Count; i++)
+            //         _data.ContextData.AllWatchers[i].ClearEntities();
+            // }
 
             lock (_data.Commands)
             {
@@ -68,11 +67,38 @@ namespace EcsLte
             }
         }
 
-        internal void InternalDestroy()
+        public static bool operator !=(EntityCommandQueue lhs, EntityCommandQueue rhs)
         {
-            _data.Reset();
-            ObjectCache.Push(_data);
+            return !(lhs == rhs);
         }
+
+        public static bool operator ==(EntityCommandQueue lhs, EntityCommandQueue rhs)
+        {
+            if (lhs is null || rhs is null)
+                return false;
+            return lhs._data.Equals(rhs._data);
+        }
+
+        public bool Equals(EntityCommandQueue other)
+        {
+            return this == other;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is EntityCommandQueue other && _data.Equals(other._data);
+        }
+
+        public override int GetHashCode()
+        {
+            return _data.GetHashCode();
+        }
+
+        #endregion
+
+        #region EscContext
+
+        public EcsContext CurrentContext { get; }
 
         #endregion
 
@@ -83,10 +109,11 @@ namespace EcsLte
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);
 
-            var entity = CurrentContext.EnqueueEntityFromCommand();
+            var entity = _data.ContextData.CreateEntityPrep();
             AppendCommand(entity, new CreateEntityCommand
             {
-                QueuedEntity = entity
+                QueuedEntity = entity,
+                ContextData = _data.ContextData
             });
 
             return entity;
@@ -97,11 +124,12 @@ namespace EcsLte
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);
 
-            var entity = CurrentContext.EnqueueEntityFromCommand();
+            var entity = _data.ContextData.CreateEntityPrep();
             AppendCommand(entity, new CreateEntityCommand
             {
                 QueuedEntity = entity,
-                Blueprint = blueprint
+                Blueprint = blueprint,
+                ContextData = _data.ContextData
             });
 
             return entity;
@@ -112,13 +140,14 @@ namespace EcsLte
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);
 
-            var entities = CurrentContext.EnqueueEntitiesFromCommand(count);
+            var entities = _data.ContextData.CreateEntitiesPrep(count);
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
                 AppendCommand(entity, new CreateEntityCommand
                 {
-                    QueuedEntity = entity
+                    QueuedEntity = entity,
+                    ContextData = _data.ContextData
                 });
             }
 
@@ -130,14 +159,15 @@ namespace EcsLte
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);
 
-            var entities = CurrentContext.EnqueueEntitiesFromCommand(count);
+            var entities = _data.ContextData.CreateEntitiesPrep(count);
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
                 AppendCommand(entity, new CreateEntityCommand
                 {
                     QueuedEntity = entity,
-                    Blueprint = blueprint
+                    Blueprint = blueprint,
+                    ContextData = _data.ContextData
                 });
             }
 
@@ -155,7 +185,7 @@ namespace EcsLte
             });
         }
 
-        public void DestroyEntities(ICollection<Entity> entities)
+        public void DestroyEntities(IEnumerable<Entity> entities)
         {
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);

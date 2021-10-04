@@ -3,24 +3,36 @@ using EcsLte.Utilities;
 
 namespace EcsLte
 {
-    internal class EntityFilterData
+    internal class ComponentArcheTypeDataCollection
     {
-        private readonly DataCache<List<ComponentArcheTypeData>, ComponentArcheTypeData[]> _archeTypeDatas;
-        private EcsContextData _ecsContextData;
+        internal static ComponentArcheTypeDataCollection Initialize(ComponentArcheTypeData[] initialArcheTypeDatas)
+        {
+            var data = ObjectCache<ComponentArcheTypeDataCollection>.Pop();
 
-        public EntityFilterData()
+            data._archeTypeDatas.UncachedData.AddRange(initialArcheTypeDatas);
+            data._archeTypeDatas.SetDirty();
+
+            return data;
+        }
+
+        internal static void Uninitialize(ComponentArcheTypeDataCollection data)
+        {
+            data._archeTypeDatas.UncachedData.Clear();
+            data._archeTypeDatas.SetDirty();
+
+            ObjectCache<ComponentArcheTypeDataCollection>.Push(data);
+        }
+
+        private readonly DataCache<List<ComponentArcheTypeData>, ComponentArcheTypeData[]> _archeTypeDatas;
+
+        public ComponentArcheTypeDataCollection()
         {
             _archeTypeDatas = new DataCache<List<ComponentArcheTypeData>, ComponentArcheTypeData[]>(
                 new List<ComponentArcheTypeData>(),
                 UpdateCachedData);
         }
 
-        internal EntityCollection Entities { get; private set; }
-
-        internal ComponentArcheTypeData[] GetComponentArcheTypeDatas()
-        {
-            return _archeTypeDatas.CachedData;
-        }
+        internal ComponentArcheTypeData[] ArcheTypeDatas { get => _archeTypeDatas.CachedData; }
 
         internal void AddComponentArcheTypeData(ComponentArcheTypeData archeTypeData)
         {
@@ -49,25 +61,5 @@ namespace EcsLte
         {
             return uncachedData.ToArray();
         }
-
-        #region ObjectCache
-
-        internal void Initialize(EcsContextData ecsContextData, ComponentArcheTypeData[] archeTypeDatas)
-        {
-            _ecsContextData = ecsContextData;
-            _archeTypeDatas.UncachedData.AddRange(archeTypeDatas);
-            _archeTypeDatas.SetDirty();
-
-            Entities = ecsContextData.CreateEntityCollection();
-        }
-
-        internal void Reset()
-        {
-            _ecsContextData.RemoveEntityCollection(Entities);
-            _archeTypeDatas.UncachedData.Clear();
-            _archeTypeDatas.SetDirty();
-        }
-
-        #endregion
     }
 }

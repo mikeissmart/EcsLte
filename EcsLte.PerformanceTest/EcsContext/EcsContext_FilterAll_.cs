@@ -2,7 +2,7 @@ using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class EcsContext_FilterByAll : BasePerformanceTest
+    internal class EcsContext_FilterAll_ : BasePerformanceTest
     {
         private Filter _filter;
 

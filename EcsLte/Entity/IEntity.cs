@@ -14,7 +14,7 @@ namespace EcsLte
         Entity CreateEntity(EntityBlueprint blueprint);
         Entity[] CreateEntities(int count);
         void DestroyEntity(Entity entity);
-        void DestroyEntities(ICollection<Entity> entities);
+        void DestroyEntities(IEnumerable<Entity> entities);
     }
 
     public interface IGetComponent

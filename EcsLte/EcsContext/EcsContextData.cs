@@ -1,49 +1,267 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using EcsLte.Exceptions;
 using EcsLte.Utilities;
 
 namespace EcsLte
 {
+    internal interface IEntityCollection
+    {
+        Entity this[int index] { get; set; }
+        int Length { get; }
+
+        bool HasEntity(Entity entity);
+        Entity[] GetEntities();
+    }
+
     internal class EcsContextData
     {
-        private const int _arrayInitSize = 4;
-        private int _arrayCurrentSize;
+        private const int _entitiesInitSize = 4;
 
-        private readonly Dictionary<int, ComponentArcheTypeData> _componentArcheTypes;
+        internal static EcsContextData Initialize(EcsContext context)
+        {
+            var data = ObjectCache<EcsContextData>.Pop();
+
+            // data._entityCollections;
+            // data._entityFilters;
+            // data._entityGroups;
+            // data._entityFilterGroups;
+            // data._componentArcheDataTypes;
+            // data._entityComponentArcheTypes;
+            // data._entitiesCurrentSize;
+            // data._nextId;            
+
+            data.CurrentContext = context;
+            // data.ReuseableEntities;
+            // data.ComponentPools;
+            // data.UniqueComponentEntities;
+            // data.EntityComponentArcheTypes
+            // data.EntityCommandQueue;
+            // data.EntityFilters;
+            data.Entities = data.CreateEntityCollection();
+            data.Watchers = WatcherTable.Initialize();
+
+            return data;
+        }
+
+        internal static void Uninitialize(EcsContextData data)
+        {
+            /*for (int i = 0; i < data._entityCollections.Count; i++)
+            {
+                var collection = data._entityCollections[i];
+                Array.Clear(collection.Entities.UncachedData, 0, data._entitiesCurrentSize);
+                collection.Entities.SetDirty();
+
+                ObjectCache.Push(collection);
+            }*/
+            data._entityCollections.Clear();
+            foreach (var filterData in data._entityFilters.Values)
+                EntityFilterData.Uninitialize(filterData);
+            data._entityFilters.Clear();
+            foreach (var entityGroup in data._entityGroups.Values)
+                EntityGroupData.Uninitialize(entityGroup);
+            data._entityGroups.Clear();
+            foreach (var entityFilterGroup in data._entityFilterGroups.Values)
+                EntityFilterGroupData.Uninitialize(entityFilterGroup);
+            data._entityFilterGroups.Clear();
+            foreach (var archeTypeData in data._componentArcheDataTypes.Values)
+                ComponentArcheTypeData.Uninitialize(archeTypeData);
+            data._componentArcheDataTypes.Clear();
+            Array.Clear(data._entityComponentArcheTypes, 0, data._entitiesCurrentSize);
+            // data._entitiesCurrentSize keep
+            data._nextId = 1;
+
+            data.CurrentContext = null;
+            data.ReuseableEntities.Clear();
+            for (int i = 0; i < data.ComponentPools.Length; i++)
+                data.ComponentPools[i].Clear();
+            // data.ComponentPools dont clear
+            Array.Clear(data.UniqueComponentEntities, 0, ComponentPoolIndexes.Instance.Count);
+            // data.EntityComponentArcheTypes already cleared
+            foreach (var commandQueueData in data.EntityCommandQueue.Values)
+                EntityCommandQueueData.Uninitialize(commandQueueData);
+            data.EntityCommandQueue.Clear();
+            data.Entities = null;
+            WatcherTable.Uninitialize(data.Watchers);
+
+            data.AnyArcheTypeDataAdded = null;
+
+            ObjectCache<EcsContextData>.Push(data);
+        }
+
         private readonly List<EntityCollection> _entityCollections;
-        private int _nextId = 1;
-
-        public ComponentArcheTypeData[] EntityComponentArcheTypes;
+        private readonly Dictionary<Filter, EntityFilterData> _entityFilters;
+        private readonly Dictionary<int, EntityGroupData> _entityGroups;
+        private readonly Dictionary<int, EntityFilterGroupData> _entityFilterGroups;
+        private readonly Dictionary<int, ComponentArcheTypeData> _componentArcheDataTypes;
+        private ComponentArcheTypeData[] _entityComponentArcheTypes;
+        private int _entitiesCurrentSize;
+        private int _nextId;
 
         public EcsContextData()
         {
-            _componentArcheTypes = new Dictionary<int, ComponentArcheTypeData>();
             _entityCollections = new List<EntityCollection>();
-            _arrayCurrentSize = _arrayInitSize;
+            _entityFilters = new Dictionary<Filter, EntityFilterData>();
+            _entityGroups = new Dictionary<int, EntityGroupData>();
+            _entityFilterGroups = new Dictionary<int, EntityFilterGroupData>();
+            _componentArcheDataTypes = new Dictionary<int, ComponentArcheTypeData>();
+            _entityComponentArcheTypes = new ComponentArcheTypeData[_entitiesInitSize];
+            _entitiesCurrentSize = _entitiesInitSize;
+            _nextId = 1;
 
-            ComponentPools = ComponentPoolIndexes.Instance.CreateComponentPools(_arrayInitSize);
-            EntityGroups = new Dictionary<GroupWithCollection, EntityGroup>();
-            EntityCommandQueue = new Dictionary<string, EntityCommandQueue>();
+            // CurrentContext will be initialized later
             ReuseableEntities = new Queue<Entity>();
-            UniqueEntities = new Entity[ComponentPoolIndexes.Instance.Count];
-            EntityFilters = new Dictionary<Filter, EntityFilter>();
-            EntityComponentArcheTypes = new ComponentArcheTypeData[_arrayInitSize];
-            AllWatchers = new List<Watcher>();
+            ComponentPools = ComponentPoolIndexes.Instance.CreateComponentPools(_entitiesInitSize);
+            UniqueComponentEntities = new Entity[ComponentPoolIndexes.Instance.Count];
+            // EntityComponentArcheTypes already initialized
+            EntityCommandQueue = new Dictionary<string, EntityCommandQueueData>();
+            // Entities will be initialized later
+            // Watchers will be initialized later
         }
 
-        public IComponentPool[] ComponentPools { get; }
-        public Dictionary<GroupWithCollection, EntityGroup> EntityGroups { get; }
-        public Dictionary<string, EntityCommandQueue> EntityCommandQueue { get; }
-        public Queue<Entity> ReuseableEntities { get; }
-        public Entity[] UniqueEntities { get; }
-        public Dictionary<Filter, EntityFilter> EntityFilters { get; }
-        public EntityCollection Entities { get; private set; }
-        public List<Watcher> AllWatchers { get; private set; }
+        internal EcsContext CurrentContext { get; private set; }
+        internal Queue<Entity> ReuseableEntities { get; private set; }
+        internal IComponentPool[] ComponentPools { get; private set; }
+        internal Entity[] UniqueComponentEntities { get; private set; }
+        internal ComponentArcheTypeData[] EntityComponentArcheTypes { get => _entityComponentArcheTypes; }
+        internal Dictionary<string, EntityCommandQueueData> EntityCommandQueue { get; }
+        internal IEntityCollection Entities { get; private set; }
+        internal WatcherTable Watchers { get; private set; }
 
-        public event ComponentArcheTypeDataEvent AnyArcheTypeDataAdded;
+        internal event ComponentArcheTypeDataEvent AnyArcheTypeDataAdded;
 
-        public Entity PrepCreateEntity()
+        internal EntityFilterData CreateOrGetEntityFilterData(Filter filter)
+        {
+            lock (_entityFilters)
+            {
+                if (!_entityFilters.TryGetValue(filter, out var data))
+                {
+                    var archeTypeDatas = FilterComponentArcheTypeData(filter, null);
+                    data = EntityFilterData.Initialize(this, filter, archeTypeDatas);
+                    data.NoRef += RemoveEntityFilterData;
+
+                    _entityFilters.Add(filter, data);
+                }
+
+                return data;
+            }
+        }
+
+        internal EntityGroupData CreateOrGetEntityGroupData(params ISharedComponent[] sharedComponents)
+        {
+            var hashCode = EntityGroupData.CalculateSharedComponentHashCode(sharedComponents);
+            lock (_entityGroups)
+            {
+                if (!_entityGroups.TryGetValue(hashCode, out var data))
+                {
+                    var archeTypeDatas = FilterComponentArcheTypeData(null, sharedComponents);
+                    data = EntityGroupData.Initialize(this, hashCode,
+                        sharedComponents,
+                        archeTypeDatas);
+                    data.NoRef += RemoveEntityGroupData;
+
+                    _entityGroups.Add(hashCode, data);
+                }
+
+                return data;
+            }
+        }
+
+        internal EntityFilterGroupData CreateOrGetEntityFilterGroupData(Filter filter,
+            params ISharedComponent[] sharedComponents)
+        {
+            var hashCode = EntityFilterGroupData.CalculateFilterSharedComponentHashCode(filter,
+                sharedComponents);
+            lock (_entityFilterGroups)
+            {
+                if (!_entityFilterGroups.TryGetValue(hashCode, out var data))
+                {
+                    var archeTypeDatas = FilterComponentArcheTypeData(null, sharedComponents);
+                    data = EntityFilterGroupData.Initialize(this, hashCode,
+                        filter,
+                        sharedComponents,
+                        archeTypeDatas);
+                    data.NoRef += RemoveEntityFilterGroupData;
+
+                    _entityFilterGroups.Add(hashCode, data);
+                }
+
+                return data;
+            }
+        }
+
+        internal void PrepAddComponent(Entity entity, IComponent component,
+            ComponentPoolConfig config, ComponentArcheType oldArcheType,
+            out ComponentArcheType nextArcheType)
+        {
+            if (config.IsUnique)
+            {
+                if (UniqueComponentEntities[config.Index] != Entity.Null)
+                    throw new EntityAlreadyHasUniqueComponentException(CurrentContext, component.GetType());
+                UniqueComponentEntities[config.Index] = entity;
+            }
+
+            ComponentPools[config.Index].AddComponent(entity.Id, component);
+
+            if (config.IsShared)
+                nextArcheType = ComponentArcheType.AppendSharedComponent(
+                    oldArcheType, (ISharedComponent)component, config.Index);
+            else
+                nextArcheType = ComponentArcheType.AppendComponentPoolIndex(
+                    oldArcheType, config.Index);
+        }
+
+        internal bool PrepReplaceComponent(Entity entity, IComponent component,
+            ComponentPoolConfig config, ComponentArcheType oldArcheType,
+            out ComponentArcheType nextArcheType)
+        {
+            var componentPool = ComponentPools[config.Index];
+            var oldComponent = componentPool.GetComponent(entity.Id);
+            if (oldComponent.Equals(component))
+            {
+                // Didnt update
+                nextArcheType = oldArcheType;
+                return false;
+            }
+
+            componentPool.ReplaceComponent(entity.Id, component);
+
+            if (config.IsShared)
+            {
+                nextArcheType = ComponentArcheType.RemoveSharedComponent(
+                    oldArcheType, (ISharedComponent)oldComponent, config.Index);
+                nextArcheType = ComponentArcheType.AppendSharedComponent(
+                    nextArcheType, (ISharedComponent)component, config.Index);
+            }
+            else
+            {
+                nextArcheType = oldArcheType;
+            }
+
+            return true;
+        }
+
+        internal void PrepRemovComponent(Entity entity,
+            ComponentPoolConfig config, ComponentArcheType oldArcheType,
+            out ComponentArcheType nextArcheType)
+        {
+            if (config.IsUnique && UniqueComponentEntities[config.Index] == entity)
+                UniqueComponentEntities[config.Index] = Entity.Null;
+
+            var componentPool = ComponentPools[config.Index];
+            var oldComponent = componentPool.GetComponent(entity.Id);
+            componentPool.RemoveComponent(entity.Id);
+
+            if (config.IsShared)
+                nextArcheType = ComponentArcheType.RemoveSharedComponent(
+                    oldArcheType, (ISharedComponent)oldComponent, config.Index);
+            else
+                nextArcheType = ComponentArcheType.RemoveComponentPoolIndex(
+                    oldArcheType, config.Index);
+        }
+
+        internal Entity CreateEntityPrep()
         {
             Entity entity;
             lock (ReuseableEntities)
@@ -71,7 +289,7 @@ namespace EcsLte
             return entity;
         }
 
-        public Entity[] PrepCreateEntities(int count)
+        internal Entity[] CreateEntitiesPrep(int count)
         {
             if (count < 0)
                 throw new ArgumentOutOfRangeException("Count must be greater than 0");
@@ -90,9 +308,7 @@ namespace EcsLte
                         ResizeEntityCollections(newSize);
                     }
                     else
-                    {
                         newSize = count;
-                    }
 
                     for (var i = 0; i < count; i++)
                     {
@@ -103,13 +319,11 @@ namespace EcsLte
                             entity.Version++;
                         }
                         else
-                        {
                             entity = new Entity
                             {
                                 Id = _nextId++,
                                 Version = 1
                             };
-                        }
 
                         entities[i] = entity;
                     }
@@ -119,67 +333,108 @@ namespace EcsLte
             return entities;
         }
 
-        public ComponentArcheTypeData[] FilterComponentArcheTypeData(Filter? filter,
-            ISharedComponent[] sharedKeys)
+        internal void DequeueEntityFromCommand(Entity entity, EntityBlueprint blueprint)
         {
-            lock (_componentArcheTypes)
+            Entities[entity.Id] = entity;
+            if (blueprint != null)
             {
-                var query = _componentArcheTypes
+                var archeTypeData = CreateOrGetComponentArcheTypeData(blueprint.CreateArcheType());
+                archeTypeData.AddEntity(entity);
+                EntityComponentArcheTypes[entity.Id] = archeTypeData;
+
+                var bpComponents = blueprint.GetBlueprintComponents();
+                for (var i = 0; i < bpComponents.Length; i++)
+                {
+                    var bpComponent = bpComponents[i];
+                    var config = bpComponent.Config;
+                    if (config.IsUnique)
+                    {
+                        if (UniqueComponentEntities[config.Index] != Entity.Null)
+                            throw new EntityAlreadyHasUniqueComponentException(CurrentContext,
+                                bpComponent.Component.GetType());
+                        UniqueComponentEntities[config.Index] = entity;
+                    }
+
+                    ComponentPools[config.Index].AddComponent(entity.Id, bpComponent.Component);
+                }
+            }
+        }
+
+        internal void AddEntityToArcheType(Entity entity, ComponentArcheType archeType)
+        {
+            var archeTypeData = CreateOrGetComponentArcheTypeData(archeType);
+            if (archeTypeData != null)
+                archeTypeData.AddEntity(entity);
+            EntityComponentArcheTypes[entity.Id] = archeTypeData;
+        }
+
+        internal void RemoveEntityFromArcheType(Entity entity, ComponentArcheTypeData archeTypeData)
+        {
+            archeTypeData.RemoveEntity(entity);
+            EntityComponentArcheTypes[entity.Id] = null;
+            if (archeTypeData.Count == 0)
+                RemoveComponentArcheTypeData(archeTypeData);
+        }
+
+        internal ComponentArcheTypeData[] FilterComponentArcheTypeData(Filter? filter,
+            ISharedComponent[] sharedComponents)
+        {
+            lock (_componentArcheDataTypes)
+            {
+                var query = _componentArcheDataTypes
                     .AsParallel();
 
                 if (filter != null)
                     query = query.Where(x => filter.Value.IsFiltered(x.Value.ArcheType));
 
-                if (sharedKeys != null)
+                if (sharedComponents != null)
                     query = query.Where(x =>
                         x.Value.ArcheType.SharedComponents != null &&
-                        HasSameSharedComponents(x.Value.ArcheType, sharedKeys));
+                        x.Value.ArcheType.SharedComponents.SequenceEqual(sharedComponents));
 
                 return query.Select(x => x.Value).ToArray();
             }
         }
 
-        public ComponentArcheTypeData CreateOrGetComponentArcheTypeData(ComponentArcheType archeType)
+        internal ComponentArcheTypeData CreateOrGetComponentArcheTypeData(ComponentArcheType archeType)
         {
             if (ComponentArcheType.IsEmpty(archeType))
                 return null;
 
             var archeTypeHashCode = ComponentArcheType.CalculateHashCode(archeType);
-            lock (_componentArcheTypes)
+            lock (_componentArcheDataTypes)
             {
-                if (!_componentArcheTypes.TryGetValue(archeTypeHashCode, out var archeTypeData))
+                if (!_componentArcheDataTypes.TryGetValue(archeTypeHashCode, out var data))
                 {
-                    archeTypeData = ObjectCache.Pop<ComponentArcheTypeData>();
-                    archeTypeData.Initialize(archeType);
-                    _componentArcheTypes.Add(archeTypeHashCode, archeTypeData);
+                    data = ComponentArcheTypeData.Initialize(archeType);
+                    _componentArcheDataTypes.Add(archeTypeHashCode, data);
 
                     if (AnyArcheTypeDataAdded != null)
-                        AnyArcheTypeDataAdded.Invoke(archeTypeData);
+                        AnyArcheTypeDataAdded.Invoke(data);
                 }
 
-                return archeTypeData;
+                return data;
             }
         }
 
-        public void RemoveComponentArcheTypeData(ComponentArcheTypeData archeTypeData)
+        internal void RemoveComponentArcheTypeData(ComponentArcheTypeData archeTypeData)
         {
             var archeTypeHashCode = ComponentArcheType.CalculateHashCode(archeTypeData.ArcheType);
-            lock (_componentArcheTypes)
+            lock (_componentArcheDataTypes)
             {
-                if (_componentArcheTypes.Remove(archeTypeHashCode))
-                {
-                    archeTypeData.Reset();
-                    ObjectCache.Push(archeTypeData);
-                }
+                if (_componentArcheDataTypes.Remove(archeTypeHashCode))
+                    ComponentArcheTypeData.Uninitialize(archeTypeData);
             }
         }
 
-        public EntityCollection CreateEntityCollection()
+        internal IEntityCollection CreateEntityCollection()
         {
             lock (_entityCollections)
             {
-                var collection = ObjectCache.Pop<EntityCollection>();
-                collection.Initialize(_arrayCurrentSize);
+                var collection = ObjectCache<EntityCollection>.Pop();
+
+                if (collection.Entities.UncachedData.Length < _entitiesCurrentSize)
+                    Array.Resize(ref collection.Entities.UncachedData, _entitiesCurrentSize);
 
                 _entityCollections.Add(collection);
 
@@ -187,90 +442,111 @@ namespace EcsLte
             }
         }
 
-        public void RemoveEntityCollection(EntityCollection collection)
+        internal void RemoveEntityCollection(IEntityCollection collection)
         {
+            var entityCollection = (EntityCollection)collection;
             lock (_entityCollections)
             {
-                collection.Reset();
-                _entityCollections.Remove(collection);
+                _entityCollections.Remove(entityCollection);
+
+                Array.Clear(entityCollection.Entities.UncachedData, 0, _entitiesCurrentSize);
+                entityCollection.Entities.SetDirty();
+
+                ObjectCache<EntityCollection>.Push(entityCollection);
             }
         }
 
-        private static bool HasSameSharedComponents(ComponentArcheType lhs, ISharedComponent[] sharedComponents)
+        internal void ResizeEntityCollections(int newSize)
         {
-            if (lhs.SharedComponents.Length != sharedComponents.Length)
-                return false;
-
-            for (var i = 0; i < lhs.SharedComponents.Length; i++)
-                if (!lhs.SharedComponents[i].Equals(sharedComponents[i]))
-                    return false;
-
-            return true;
-        }
-
-        private void ResizeEntityCollections(int newSize)
-        {
-            if (newSize > _arrayCurrentSize)
+            if (newSize > _entitiesCurrentSize)
             {
                 lock (_entityCollections)
                 {
+                    _entitiesCurrentSize = newSize;
                     for (var i = 0; i < _entityCollections.Count; i++)
-                        _entityCollections[i].Resize(newSize);
+                        Array.Resize(ref _entityCollections[i].Entities.UncachedData, _entitiesCurrentSize);
+                    for (var i = 0; i < ComponentPools.Length; i++)
+                        ComponentPools[i].Resize(_entitiesCurrentSize);
+                    Array.Resize(ref _entityComponentArcheTypes, _entitiesCurrentSize);
                 }
-
-                for (var i = 0; i < ComponentPools.Length; i++)
-                    ComponentPools[i].Resize(newSize);
-                Array.Resize(ref EntityComponentArcheTypes, newSize);
-                _arrayCurrentSize = newSize;
             }
         }
 
-        #region ObjectCache
-
-        internal void Initialize()
+        private void RemoveEntityFilterData(EntityFilterData data)
         {
-            Entities = CreateEntityCollection();
+            lock (_entityFilters)
+            {
+                _entityFilters.Remove(data.Filter);
+                EntityFilterData.Uninitialize(data);
+            }
         }
 
-        internal void Reset()
+        private void RemoveEntityGroupData(EntityGroupData data)
         {
-            foreach (var archeTypeData in _componentArcheTypes.Values)
+            lock (_entityGroups)
             {
-                archeTypeData.Reset();
-                ObjectCache.Push(archeTypeData);
+                _entityGroups.Remove(data.HashCode);
+                EntityGroupData.Uninitialize(data);
             }
-
-            _componentArcheTypes.Clear();
-            for (var i = 0; i < _entityCollections.Count; i++)
-            {
-                var collection = _entityCollections[i];
-                collection.Reset();
-                ObjectCache.Push(collection);
-            }
-
-            _entityCollections.Clear();
-            _nextId = 1;
-
-            for (var i = 0; i < ComponentPools.Length; i++)
-                ComponentPools[i].Clear();
-            foreach (var entityKey in EntityGroups.Values)
-                entityKey.InternalDestroy();
-            EntityGroups.Clear();
-            foreach (var commandQueue in EntityCommandQueue.Values)
-                commandQueue.InternalDestroy();
-            EntityCommandQueue.Clear();
-            ReuseableEntities.Clear();
-            Array.Clear(UniqueEntities, 0, UniqueEntities.Length);
-            foreach (var entityFilter in EntityFilters.Values)
-                entityFilter.InternalDestroy();
-            EntityFilters.Clear();
-            Array.Clear(EntityComponentArcheTypes, 0, EntityComponentArcheTypes.Length);
-            // Entities is clear/reset with _entityCollections
-            AllWatchers.Clear();
-
-            AnyArcheTypeDataAdded = null;
         }
 
-        #endregion
+        private void RemoveEntityFilterGroupData(EntityFilterGroupData data)
+        {
+            lock (_entityFilters)
+            {
+                _entityFilterGroups.Remove(data.HashCode);
+                EntityFilterGroupData.Uninitialize(data);
+            }
+        }
+
+        private class EntityCollection : IEntityCollection
+        {
+            internal DataCache<Entity[], Entity[]> Entities;
+
+            public EntityCollection()
+            {
+                Entities = new DataCache<Entity[], Entity[]>(
+                    new Entity[0],
+                    UpdateEntitiesCache);
+            }
+
+            public Entity this[int index]
+            {
+                get => Entities.UncachedData[index];
+                set
+                {
+                    Entities.UncachedData[index] = value;
+                    Entities.SetDirty();
+                }
+            }
+
+            public int Length => Entities.UncachedData.Length;
+
+            public bool HasEntity(Entity entity)
+            {
+                if (entity.Id <= 0 || entity.Id >= Entities.UncachedData.Length)
+                    return false;
+
+                return Entities.UncachedData[entity.Id] == entity;
+            }
+
+            public Entity[] GetEntities()
+            {
+                return Entities.CachedData;
+            }
+
+            internal void Resize(int newSize)
+            {
+                if (newSize > Entities.UncachedData.Length)
+                    Array.Resize(ref Entities.UncachedData, newSize);
+            }
+
+            private static Entity[] UpdateEntitiesCache(Entity[] uncachedData)
+            {
+                return uncachedData
+                    .Where(x => x != Entity.Null)
+                    .ToArray();
+            }
+        }
     }
 }

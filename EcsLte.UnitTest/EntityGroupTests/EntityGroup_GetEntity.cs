@@ -5,10 +5,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace EcsLte.UnitTest.EntityGroupTests
 {
     [TestClass]
-    public class EntityGroup_SharedComponent_GetEntity : BasePrePostTest, IGetEntityTest
+    public class EntityGroup_GetEntity : BasePrePostTest
     {
         [TestMethod]
-        public void HasEntity()
+        public void HasEntityqwer()
         {
             var component1 = new TestSharedComponent1 { Prop = 1 };
             var entity1 = _context.CreateEntity();
@@ -39,7 +39,7 @@ namespace EcsLte.UnitTest.EntityGroupTests
         }
 
         [TestMethod]
-        public void GetEntities()
+        public void GetEntitiesqwer()
         {
             var component = new TestSharedComponent1 { Prop = 1 };
             var entity1 = _context.CreateEntity();

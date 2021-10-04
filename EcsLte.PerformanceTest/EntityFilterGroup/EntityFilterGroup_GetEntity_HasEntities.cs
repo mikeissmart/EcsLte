@@ -1,32 +1,28 @@
-using System;
-using System.Diagnostics;
 using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class EcsContext_ComponentLife_AddComponentX3 : BasePerformanceTest
+    internal class EntityFilterGroup_GetEntity_HasEntities : BasePerformanceTest
     {
         private Entity[] _entities;
+        private EntityFilterGroup _entityFilterGroup;
 
         public override void PreRun()
         {
             base.PreRun();
 
+            var component = new TestSharedComponent1 { Prop = 1 };
+            _entityFilterGroup = _context.FilterByGroupWith(Filter.AllOf<TestSharedComponent1>(), component);
             _entities = _context.CreateEntities(TestConsts.EntityLoopCount);
-            var component1 = new TestComponent1();
-            var component2 = new TestComponent2();
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-            {
-                _context.AddComponent(_entities[i], component1);
-                _context.AddComponent(_entities[i], component2);
-            }
+                _context.AddComponent(_entities[i], component);
         }
 
         public override void Run()
         {
-            var component = new TestComponent3();
+            bool hasEntity;
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                _context.AddComponent(_entities[i], component);
+                hasEntity = _entityFilterGroup.HasEntity(_entities[i]);
         }
 
         public override bool CanRunParallel()
@@ -36,9 +32,9 @@ namespace EcsLte.PerformanceTest
 
         public override void RunParallel()
         {
-            var component = new TestComponent3();
+            bool hasEntity;
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                i => { _context.AddComponent(_entities[i], component); });
+                i => { hasEntity = _entityFilterGroup.HasEntity(_entities[i]); });
         }
     }
 }

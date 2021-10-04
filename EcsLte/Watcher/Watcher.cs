@@ -1,5 +1,4 @@
 using EcsLte.Exceptions;
-using EcsLte.Utilities;
 
 namespace EcsLte
 {
@@ -21,26 +20,32 @@ namespace EcsLte
 
     public class Watcher : IEcsContext, IGetEntity
     {
-        private readonly WatcherData _data;
+        private readonly IWatcherData _data;
 
-        internal Watcher(EcsContext context)
+        internal Watcher(EcsContext context, IWatcherData data)
         {
-            _data = ObjectCache.Pop<WatcherData>();
-            _data.Initialize();
+            _data = data;
+            _data.IncRefCount();
 
             CurrentContext = context;
-            IsActive = true;
         }
 
-        #region EcsContext
-
-        public EcsContext CurrentContext { get; }
-
-        #endregion
+        ~Watcher()
+        {
+            _data.DecRefCount();
+        }
 
         #region Watcher
 
-        public bool IsActive { get; set; }
+        public bool IsActive
+        {
+            get
+            {
+                if (CurrentContext.IsDestroyed)
+                    throw new EcsContextIsDestroyedException(CurrentContext);
+                return _data.IsActive;
+            }
+        }
 
         public void ClearEntities()
         {
@@ -50,30 +55,46 @@ namespace EcsLte
             _data.ClearEntities();
         }
 
-        public void Activate()
+        public void SetActive(bool active)
         {
             if (CurrentContext.IsDestroyed)
                 throw new EcsContextIsDestroyedException(CurrentContext);
 
-            IsActive = true;
+            _data.SetActive(active);
         }
 
-        public void Deactivate()
+        public static bool operator !=(Watcher lhs, Watcher rhs)
         {
-            if (CurrentContext.IsDestroyed)
-                throw new EcsContextIsDestroyedException(CurrentContext);
-
-            IsActive = false;
-            _data.ClearEntities();
+            return !(lhs == rhs);
         }
 
-        internal void InternalDestroy()
+        public static bool operator ==(Watcher lhs, Watcher rhs)
         {
-            _data.Reset();
-            ObjectCache.Push(_data);
-
-            IsActive = false;
+            if (lhs is null || rhs is null)
+                return false;
+            return lhs._data.Equals(rhs._data);
         }
+
+        public bool Equals(Watcher other)
+        {
+            return this == other;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Watcher other && _data.Equals(other._data);
+        }
+
+        public override int GetHashCode()
+        {
+            return _data.GetHashCode();
+        }
+
+        #endregion
+
+        #region EcsContext
+
+        public EcsContext CurrentContext { get; }
 
         #endregion
 
@@ -93,28 +114,6 @@ namespace EcsLte
                 throw new EcsContextIsDestroyedException(CurrentContext);
 
             return _data.GetEntities();
-        }
-
-        #endregion
-
-        #region WatcherCallback
-
-        internal void AddedEntity(Entity entity)
-        {
-            if (IsActive)
-                _data.AddEntity(entity);
-        }
-
-        internal void UpdatedEntity(Entity entity)
-        {
-            if (IsActive)
-                _data.AddEntity(entity);
-        }
-
-        internal void RemovedEntity(Entity entity)
-        {
-            if (IsActive)
-                _data.AddEntity(entity);
         }
 
         #endregion

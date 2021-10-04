@@ -9,10 +9,11 @@ namespace EcsLte
     {
         public Entity QueuedEntity { get; set; }
         public EntityBlueprint Blueprint { get; set; }
+        public EcsContextData ContextData { get; set; }
 
         public void ExecuteCommand(EcsContext context)
         {
-            context.DequeueEntityFromCommand(QueuedEntity, Blueprint);
+            ContextData.DequeueEntityFromCommand(QueuedEntity, Blueprint);
         }
     }
 

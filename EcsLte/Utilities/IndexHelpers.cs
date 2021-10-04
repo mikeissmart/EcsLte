@@ -8,13 +8,13 @@ namespace EcsLte.Utilities
     {
         public static int[] HashIndexes(int[] indexes)
         {
-            var hash = ObjectCache.Pop<HashSet<int>>();
+            var hash = ObjectCache<HashSet<int>>.Pop();
             foreach (var i in indexes)
                 hash.Add(i);
 
             var temp = hash.OrderBy(x => x).ToArray();
             hash.Clear();
-            ObjectCache.Push(hash);
+            ObjectCache<HashSet<int>>.Push(hash);
 
             return temp;
         }
@@ -37,7 +37,7 @@ namespace EcsLte.Utilities
 
         public static int[] MergeDistinctIndexes(params int[][] allIndexes)
         {
-            var hash = ObjectCache.Pop<HashSet<int>>();
+            var hash = ObjectCache<HashSet<int>>.Pop();
             foreach (var indices in allIndexes)
                 if (indices != null)
                     hash.UnionWith(indices);
@@ -46,7 +46,7 @@ namespace EcsLte.Utilities
 
             var temp = hash.OrderBy(x => x).ToArray();
             hash.Clear();
-            ObjectCache.Push(hash);
+            ObjectCache<HashSet<int>>.Push(hash);
 
             return temp;
         }

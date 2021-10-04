@@ -8,7 +8,33 @@ namespace EcsLte
 
     internal class ComponentArcheTypeData : IGetEntity
     {
-        private readonly DataCache<Dictionary<int, Entity>, Entity[]> _entities;
+        internal static ComponentArcheTypeData Initialize(ComponentArcheType archeType)
+        {
+            var data = ObjectCache<ComponentArcheTypeData>.Pop();
+
+            data.ArcheType = archeType;
+            data._entities = new DataCache<Dictionary<int, Entity>, Entity[]>(
+                new Dictionary<int, Entity>(), UpdateCachedData);
+
+            return data;
+        }
+
+        internal static void Uninitialize(ComponentArcheTypeData data)
+        {
+            if (data.ArcheTypeDataRemoved != null)
+                data.ArcheTypeDataRemoved.Invoke(data);
+
+            data._entities.UncachedData.Clear();
+            data._entities.SetDirty();
+            data.EntityAdded = null;
+            data.EntityRemoved = null;
+            data.EntityUpdated = null;
+            data.ArcheTypeDataRemoved = null;
+
+            ObjectCache<ComponentArcheTypeData>.Push(data);
+        }
+
+        private DataCache<Dictionary<int, Entity>, Entity[]> _entities;
 
         public ComponentArcheTypeData()
         {
@@ -72,28 +98,6 @@ namespace EcsLte
         public Entity[] GetEntities()
         {
             return _entities.CachedData;
-        }
-
-        #endregion
-
-        #region ObjectCache
-
-        internal void Initialize(ComponentArcheType archeType)
-        {
-            ArcheType = archeType;
-        }
-
-        internal void Reset()
-        {
-            if (ArcheTypeDataRemoved != null)
-                ArcheTypeDataRemoved.Invoke(this);
-
-            _entities.UncachedData.Clear();
-            _entities.SetDirty();
-            EntityAdded = null;
-            EntityRemoved = null;
-            EntityUpdated = null;
-            ArcheTypeDataRemoved = null;
         }
 
         #endregion

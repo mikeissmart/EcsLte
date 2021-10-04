@@ -1,56 +1,57 @@
+using System;
 using EcsLte.Exceptions;
 
 namespace EcsLte
 {
-    public class EntityGroup : IEcsContext, IGetEntity, IGetWatcher
+    public class EntityFilter : IEcsContext, IGetEntity, IGetWatcher
     {
-        private readonly EntityGroupData _data;
+        private readonly EntityFilterData _data;
 
-        internal EntityGroup(EcsContext context, EntityGroupData data)
+        internal EntityFilter(EcsContext context, EntityFilterData data)
         {
             _data = data;
 
             CurrentContext = context;
         }
 
-        ~EntityGroup()
+        ~EntityFilter()
         {
             _data.DecRefCount();
         }
 
-        #region EntityGroup
+        #region EntityFilter
 
-        public ISharedComponent[] SharedKeys
+        public Filter Filter
         {
             get
             {
                 if (CurrentContext.IsDestroyed)
                     throw new EcsContextIsDestroyedException(CurrentContext);
 
-                return _data.SharedComponents;
+                return _data.Filter;
             }
         }
 
-        public static bool operator !=(EntityGroup lhs, EntityGroup rhs)
+        public static bool operator !=(EntityFilter lhs, EntityFilter rhs)
         {
             return !(lhs == rhs);
         }
 
-        public static bool operator ==(EntityGroup lhs, EntityGroup rhs)
+        public static bool operator ==(EntityFilter lhs, EntityFilter rhs)
         {
             if (lhs is null || rhs is null)
                 return false;
-            return lhs._data.HashCode == rhs._data.HashCode;
+            return lhs._data.Equals(rhs._data);
         }
 
-        public bool Equals(EntityGroup other)
+        public bool Equals(EntityFilter other)
         {
             return this == other;
         }
 
         public override bool Equals(object obj)
         {
-            return obj is EntityGroup other && this == other;
+            return obj is EntityFilter other && _data.Equals(other._data);
         }
 
         public override int GetHashCode()

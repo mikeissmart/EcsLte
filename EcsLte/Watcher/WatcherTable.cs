@@ -1,108 +1,166 @@
 using System.Collections.Generic;
+using System.Linq;
+using EcsLte.Utilities;
 
 namespace EcsLte
 {
+    internal delegate void WatcherDataEvent(Entity entity);
+
+    internal interface IWatcherData
+    {
+        bool IsActive { get; }
+        Filter Filter { get; }
+
+        void IncRefCount();
+        void DecRefCount();
+
+        void SetActive(bool active);
+        bool HasEntity(Entity entity);
+        Entity[] GetEntities();
+        void ClearEntities();
+    }
+
     internal class WatcherTable
     {
-        private readonly HashSet<Watcher> _added;
-        private EcsContext _context;
-        private EcsContextData _ecsContextData;
-        private readonly HashSet<Watcher> _removed;
-        private readonly HashSet<Watcher> _updated;
-        private readonly Dictionary<Filter, Watcher> _watchers;
+        internal static WatcherTable Initialize()
+        {
+            var data = ObjectCache<WatcherTable>.Pop();
+
+            // data._watchers;
+            // data._addedWatchers;
+            // data._updatedWatchers;
+            // data._removedWatchers;
+
+            return data;
+        }
+
+        internal static void Uninitialize(WatcherTable data)
+        {
+            foreach (var watcher in data._watchers.Values)
+            {
+                WatcherData.Uninitialize(watcher);
+            }
+            data._watchers.Clear();
+            data._addedWatchers.Clear();
+            data._updatedWatchers.Clear();
+            data._removedWatchers.Clear();
+
+            ObjectCache<WatcherTable>.Push(data);
+        }
+
+        private readonly Dictionary<Filter, WatcherData> _watchers;
+        private readonly HashSet<WatcherData> _addedWatchers;
+        private readonly HashSet<WatcherData> _updatedWatchers;
+        private readonly HashSet<WatcherData> _removedWatchers;
 
         public WatcherTable()
         {
-            _watchers = new Dictionary<Filter, Watcher>();
-            _added = new HashSet<Watcher>();
-            _updated = new HashSet<Watcher>();
-            _removed = new HashSet<Watcher>();
+            _watchers = new Dictionary<Filter, WatcherData>();
+            _addedWatchers = new HashSet<WatcherData>();
+            _updatedWatchers = new HashSet<WatcherData>();
+            _removedWatchers = new HashSet<WatcherData>();
         }
 
         #region WatcherTable
 
-        internal Watcher Added(Filter filter)
+        internal Watcher Added(EcsContext context, Filter filter)
         {
-            var watcher = CreateOrGetWatcher(filter);
-            lock (_added)
+            var data = CreateOrGetWatcher(filter);
+
+            lock (_addedWatchers)
             {
-                _added.Add(watcher);
+                _addedWatchers.Add(data);
             }
 
-            return watcher;
+            return new Watcher(context, data);
         }
 
-        internal Watcher Updated(Filter filter)
+        internal Watcher Updated(EcsContext context, Filter filter)
         {
-            var watcher = CreateOrGetWatcher(filter);
-            lock (_updated)
+            var data = CreateOrGetWatcher(filter);
+
+            lock (_updatedWatchers)
             {
-                _updated.Add(watcher);
+                _updatedWatchers.Add(data);
             }
 
-            return watcher;
+            return new Watcher(context, data);
         }
 
-        internal Watcher Removed(Filter filter)
+        internal Watcher Removed(EcsContext context, Filter filter)
         {
-            var watcher = CreateOrGetWatcher(filter);
-            lock (_removed)
+            var data = CreateOrGetWatcher(filter);
+
+            lock (_removedWatchers)
             {
-                _removed.Add(watcher);
+                _removedWatchers.Add(data);
             }
 
-            return watcher;
+            return new Watcher(context, data);
         }
 
-        internal Watcher AddedOrUpdated(Filter filter)
+        internal Watcher AddedOrUpdated(EcsContext context, Filter filter)
         {
-            var watcher = CreateOrGetWatcher(filter);
-            lock (_added)
+            var data = CreateOrGetWatcher(filter);
+
+            lock (_addedWatchers)
             {
-                _added.Add(watcher);
+                _addedWatchers.Add(data);
             }
 
-            lock (_updated)
+            lock (_updatedWatchers)
             {
-                _updated.Add(watcher);
+                _updatedWatchers.Add(data);
             }
 
-            return watcher;
+            return new Watcher(context, data);
         }
 
-        internal Watcher AddedOrRemoved(Filter filter)
+        internal Watcher AddedOrRemoved(EcsContext context, Filter filter)
         {
-            var watcher = CreateOrGetWatcher(filter);
-            lock (_added)
+            var data = CreateOrGetWatcher(filter);
+
+            lock (_addedWatchers)
             {
-                _added.Add(watcher);
+                _addedWatchers.Add(data);
             }
 
-            lock (_removed)
+            lock (_removedWatchers)
             {
-                _removed.Add(watcher);
+                _removedWatchers.Add(data);
             }
 
-            return watcher;
+            return new Watcher(context, data);
         }
 
-        private Watcher CreateOrGetWatcher(Filter filter)
+        private WatcherData CreateOrGetWatcher(Filter filter)
         {
             lock (_watchers)
             {
-                if (!_watchers.TryGetValue(filter, out var watcher))
+                if (!_watchers.TryGetValue(filter, out var data))
                 {
-                    watcher = new Watcher(_context);
-                    lock (_ecsContextData.AllWatchers)
-                    {
-                        _ecsContextData.AllWatchers.Add(watcher);
-                    }
-                    _watchers.Add(filter, watcher);
+                    data = WatcherData.Initialize(filter);
+                    data.NoRef += RemoveWatcherData;
+                    // TODO
+                    // lock (_ecsContextData.AllWatchers)
+                    // {
+                    //     _ecsContextData.AllWatchers.Add(watcher);
+                    // }
+                    _watchers.Add(filter, data);
                 }
 
-                watcher.Activate();
+                data.SetActive(true);
 
-                return watcher;
+                return data;
+            }
+        }
+
+        private void RemoveWatcherData(WatcherData data)
+        {
+            lock (_watchers)
+            {
+                _watchers.Remove(data.Filter);
+                WatcherData.Uninitialize(data);
             }
         }
 
@@ -112,51 +170,131 @@ namespace EcsLte
 
         internal void AddedEntity(Entity entity)
         {
-            lock (_added)
+            lock (_addedWatchers)
             {
-                foreach (var watcher in _added)
-                    watcher.AddedEntity(entity);
+                foreach (var watcher in _addedWatchers)
+                    watcher.AddEntity(entity);
             }
         }
 
         internal void UpdatedEntity(Entity entity)
         {
-            lock (_updated)
+            lock (_updatedWatchers)
             {
-                foreach (var watcher in _updated)
-                    watcher.AddedEntity(entity);
+                foreach (var watcher in _updatedWatchers)
+                    watcher.AddEntity(entity);
             }
         }
 
         internal void RemovedEntity(Entity entity)
         {
-            lock (_removed)
+            lock (_removedWatchers)
             {
-                foreach (var watcher in _removed)
-                    watcher.AddedEntity(entity);
+                foreach (var watcher in _removedWatchers)
+                    watcher.AddEntity(entity);
             }
         }
 
         #endregion
 
-        #region ObjectCache
-
-        internal void Initialize(EcsContext context, EcsContextData ecsContextData)
+        private class WatcherData : IWatcherData
         {
-            _context = context;
-            _ecsContextData = ecsContextData;
-        }
+            internal static WatcherData Initialize(Filter filter)
+            {
+                var data = ObjectCache<WatcherData>.Pop();
+                // data._entities
+                // data._refCount
 
-        internal void Reset()
-        {
-            foreach (var watcher in _watchers.Values)
-                watcher.InternalDestroy();
-            _watchers.Clear();
-            _added.Clear();
-            _updated.Clear();
-            _removed.Clear();
-        }
+                data.Filter = filter;
 
-        #endregion
+                return data;
+            }
+
+            internal static void Uninitialize(WatcherData data)
+            {
+                data._entities.UncachedData.Clear();
+                data._entities.SetDirty();
+                data._refCount = 0;
+
+                data.NoRef = null;
+
+                ObjectCache<WatcherData>.Push(data);
+            }
+
+            private readonly DataCache<Dictionary<int, Entity>, Entity[]> _entities;
+            private int _refCount;
+
+            public WatcherData()
+            {
+                _entities = new DataCache<Dictionary<int, Entity>, Entity[]>(
+                    new Dictionary<int, Entity>(), UpdateCachedData);
+            }
+
+            public bool IsActive { get; private set; }
+            public Filter Filter { get; private set; }
+
+            internal event RefCountZeroEvent<WatcherData> NoRef;
+
+            public void IncRefCount()
+            {
+                _refCount++;
+            }
+
+            public void DecRefCount()
+            {
+                _refCount--;
+                if (_refCount == 0 && NoRef != null)
+                    NoRef.Invoke(this);
+            }
+
+            public void SetActive(bool active)
+            {
+                if (IsActive != active)
+                {
+                    IsActive = active;
+                    if (!active)
+                        ClearEntities();
+                }
+            }
+
+            public bool HasEntity(Entity entity)
+            {
+                return _entities.UncachedData.ContainsKey(entity.Id);
+            }
+
+            public Entity[] GetEntities()
+            {
+                return _entities.CachedData;
+            }
+
+            public void ClearEntities()
+            {
+                lock (_entities)
+                {
+                    _entities.UncachedData.Clear();
+                    _entities.SetDirty();
+                }
+            }
+
+            internal void AddEntity(Entity entity)
+            {
+                if (IsActive)
+                {
+                    lock (_entities)
+                    {
+                        if (!_entities.UncachedData.ContainsKey(entity.Id))
+                        {
+                            _entities.UncachedData.Add(entity.Id, entity);
+                            _entities.SetDirty();
+                        }
+                    }
+                }
+            }
+
+            private static Entity[] UpdateCachedData(Dictionary<int, Entity> unchacedData)
+            {
+                return unchacedData.Values.ToArray();
+            }
+        }
     }
 }

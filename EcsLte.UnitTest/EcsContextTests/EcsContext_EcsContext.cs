@@ -1,3 +1,4 @@
+using System;
 using EcsLte.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -96,6 +97,107 @@ namespace EcsLte.UnitTest.EcsContextTests
             EcsContexts.DestroyContext(_context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 _context.CommandQueue("Test1"));
+        }
+
+        [TestMethod]
+        public void FilterBy()
+        {
+            var filter1 = _context.FilterBy(Filter.AllOf<TestComponent1>());
+
+            // Created group
+            Assert.IsTrue(filter1 != null);
+            // Get same group
+            var filter2 = _context.FilterBy(Filter.AllOf<TestComponent1>());
+            Assert.IsTrue(filter1 == filter2);
+            // EcsContext is destroyed
+            EcsContexts.DestroyContext(_context);
+            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
+                _context.FilterBy(Filter.AllOf<TestComponent1>()));
+        }
+
+        [TestMethod]
+        public void GroupWith_SharedComponent()
+        {
+            var component = new TestSharedComponent1 { Prop = 1 };
+            var group = _context.GroupWith(new TestSharedComponent1 { Prop = 1 });
+
+            // Correct group
+            Assert.IsTrue(group != null);
+            Assert.IsTrue(_context.GroupWith(component) == group);
+            // Different component gets different entity
+            Assert.IsTrue(_context.GroupWith(new TestSharedComponent1 { Prop = 2 }) != group);
+            // Null component
+            ISharedComponent nullKey = null;
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _context.GroupWith(nullKey));
+            // EcsContext is destroyed
+            EcsContexts.DestroyContext(_context);
+            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
+                _context.GroupWith(component));
+        }
+
+        [TestMethod]
+        public void GroupWith_SharedComponents()
+        {
+            var component1 = new TestSharedComponent1 { Prop = 1 };
+            var component2 = new TestSharedComponent2 { Prop = 1 };
+            var group = _context.GroupWith(component1, component2);
+
+            // Correct group
+            Assert.IsTrue(group != null);
+            Assert.IsTrue(_context.GroupWith(component1, component2) == group);
+            // Null component
+            ISharedComponent nullComponent = null;
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _context.GroupWith(component1, component2, nullComponent));
+            // EcsContext is destroyed
+            EcsContexts.DestroyContext(_context);
+            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
+                _context.GroupWith(component1, component2));
+        }
+
+        [TestMethod]
+        public void FilterByGroupWith_SharedComponent()
+        {
+            var component = new TestSharedComponent1 { Prop = 1 };
+            var filter = Filter.AllOf<TestSharedComponent1>();
+            var filterGroup = _context.FilterByGroupWith(filter, component);
+
+            // Correct filterGroup
+            Assert.IsTrue(filterGroup != null);
+            Assert.IsTrue(_context.FilterByGroupWith(filter, component) == filterGroup);
+            // Different component gets different entity
+            Assert.IsTrue(_context
+                .FilterByGroupWith(filter, new TestSharedComponent1 { Prop = 2 }) != filterGroup);
+            // Null component
+            ISharedComponent nullComponent = null;
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _context.FilterByGroupWith(filter, nullComponent));
+            // EcsContext is destroyed
+            EcsContexts.DestroyContext(_context);
+            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
+                _context.FilterByGroupWith(filter, component));
+        }
+
+        [TestMethod]
+        public void FilterByGroupWith_SharedComponents()
+        {
+            var component1 = new TestSharedComponent1 { Prop = 1 };
+            var component2 = new TestSharedComponent2 { Prop = 1 };
+            var filter = Filter.AllOf<TestSharedComponent1>();
+            var filterGroup = _context.FilterByGroupWith(filter, component1, component2);
+
+            // Correct filterGroup
+            Assert.IsTrue(filterGroup != null);
+            Assert.IsTrue(_context.FilterByGroupWith(filter, component1, component2) == filterGroup);
+            // Null component
+            ISharedComponent nullComponent = null;
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _context.FilterByGroupWith(filter, component1, component2, nullComponent));
+            // EcsContext is destroyed
+            EcsContexts.DestroyContext(_context);
+            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
+                _context.FilterByGroupWith(filter, component1, component2));
         }
     }
 }

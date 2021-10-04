@@ -1,6 +1,8 @@
+using EcsLte.Utilities;
+
 namespace EcsLte.PerformanceTest
 {
-    internal class EntityFilter_GetEntity_GetEntitiesBefore : BasePerformanceTest
+    internal class EcsContext_FilterOne_ : BasePerformanceTest
     {
         private Filter _filter;
 
@@ -9,10 +11,6 @@ namespace EcsLte.PerformanceTest
             base.PreRun();
 
             _filter = Filter.AllOf<TestComponent1>();
-            var entities = _context.CreateEntities(TestConsts.EntityLoopCount);
-            var component = new TestComponent1();
-            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                _context.AddComponent(entities[i], component);
         }
 
         public override void Run()
@@ -20,6 +18,18 @@ namespace EcsLte.PerformanceTest
             EntityFilter entityFilter;
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
                 entityFilter = _context.FilterBy(_filter);
+        }
+
+        public override bool CanRunParallel()
+        {
+            return true;
+        }
+
+        public override void RunParallel()
+        {
+            EntityFilter entityFilter;
+            ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
+                i => { entityFilter = _context.FilterBy(_filter); });
         }
     }
 }

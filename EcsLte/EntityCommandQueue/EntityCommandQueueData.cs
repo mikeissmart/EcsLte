@@ -1,23 +1,36 @@
 using System.Collections.Generic;
+using EcsLte.Utilities;
 
 namespace EcsLte
 {
     internal class EntityCommandQueueData
     {
+        internal static EntityCommandQueueData Initialize(EcsContextData contextData, string name)
+        {
+            var data = ObjectCache<EntityCommandQueueData>.Pop();
+
+            data.ContextData = contextData;
+            data.Name = name;
+
+            return data;
+        }
+
+        internal static void Uninitialize(EntityCommandQueueData data)
+        {
+            data.Commands.Clear();
+            // data.ContextData;
+            // data.Name;
+
+            ObjectCache<EntityCommandQueueData>.Push(data);
+        }
+
         public EntityCommandQueueData()
         {
             Commands = new List<EntityCommand>();
         }
 
-        public List<EntityCommand> Commands { get; }
-
-        internal void Initialize()
-        {
-        }
-
-        internal void Reset()
-        {
-            Commands.Clear();
-        }
+        internal List<EntityCommand> Commands { get; private set; }
+        internal EcsContextData ContextData { get; private set; }
+        internal string Name { get; private set; }
     }
 }
