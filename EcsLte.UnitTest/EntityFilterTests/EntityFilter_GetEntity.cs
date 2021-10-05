@@ -8,7 +8,7 @@ namespace EcsLte.UnitTest.EntityFilterTests
     public class EntityFilter_GetEntity : BasePrePostTest
     {
         [TestMethod]
-        public void HasEntityasdf()
+        public void HasEntity()
         {
             var filter = _context.FilterBy(Filter.AllOf<TestComponent1>());
             var entity = _context.CreateEntity();
@@ -30,7 +30,7 @@ namespace EcsLte.UnitTest.EntityFilterTests
         }
 
         [TestMethod]
-        public void GetEntitiesasdf()
+        public void GetEntities()
         {
             var filter = _context.FilterBy(Filter.AllOf<TestComponent1>());
             var entity1 = _context.CreateEntity();

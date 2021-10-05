@@ -47,14 +47,8 @@ namespace EcsLte
 
         internal static void Uninitialize(EcsContextData data)
         {
-            /*for (int i = 0; i < data._entityCollections.Count; i++)
-            {
-                var collection = data._entityCollections[i];
-                Array.Clear(collection.Entities.UncachedData, 0, data._entitiesCurrentSize);
-                collection.Entities.SetDirty();
-
-                ObjectCache.Push(collection);
-            }*/
+            // Dont clear entityCollections here.
+            // They will be cleared later in code.
             data._entityCollections.Clear();
             foreach (var filterData in data._entityFilters.Values)
                 EntityFilterData.Uninitialize(filterData);
@@ -82,8 +76,10 @@ namespace EcsLte
             foreach (var commandQueueData in data.EntityCommandQueue.Values)
                 EntityCommandQueueData.Uninitialize(commandQueueData);
             data.EntityCommandQueue.Clear();
+            data.RemoveEntityCollection(data.Entities);
             data.Entities = null;
             WatcherTable.Uninitialize(data.Watchers);
+            // data.EntitiesCurrentSize keep
 
             data.AnyArcheTypeDataAdded = null;
 
@@ -191,76 +187,6 @@ namespace EcsLte
             }
         }
 
-        internal void PrepAddComponent(Entity entity, IComponent component,
-            ComponentPoolConfig config, ComponentArcheType oldArcheType,
-            out ComponentArcheType nextArcheType)
-        {
-            if (config.IsUnique)
-            {
-                if (UniqueComponentEntities[config.Index] != Entity.Null)
-                    throw new EntityAlreadyHasUniqueComponentException(CurrentContext, component.GetType());
-                UniqueComponentEntities[config.Index] = entity;
-            }
-
-            ComponentPools[config.Index].AddComponent(entity.Id, component);
-
-            if (config.IsShared)
-                nextArcheType = ComponentArcheType.AppendSharedComponent(
-                    oldArcheType, (ISharedComponent)component, config.Index);
-            else
-                nextArcheType = ComponentArcheType.AppendComponentPoolIndex(
-                    oldArcheType, config.Index);
-        }
-
-        internal bool PrepReplaceComponent(Entity entity, IComponent component,
-            ComponentPoolConfig config, ComponentArcheType oldArcheType,
-            out ComponentArcheType nextArcheType)
-        {
-            var componentPool = ComponentPools[config.Index];
-            var oldComponent = componentPool.GetComponent(entity.Id);
-            if (oldComponent.Equals(component))
-            {
-                // Didnt update
-                nextArcheType = oldArcheType;
-                return false;
-            }
-
-            componentPool.ReplaceComponent(entity.Id, component);
-
-            if (config.IsShared)
-            {
-                nextArcheType = ComponentArcheType.RemoveSharedComponent(
-                    oldArcheType, (ISharedComponent)oldComponent, config.Index);
-                nextArcheType = ComponentArcheType.AppendSharedComponent(
-                    nextArcheType, (ISharedComponent)component, config.Index);
-            }
-            else
-            {
-                nextArcheType = oldArcheType;
-            }
-
-            return true;
-        }
-
-        internal void PrepRemovComponent(Entity entity,
-            ComponentPoolConfig config, ComponentArcheType oldArcheType,
-            out ComponentArcheType nextArcheType)
-        {
-            if (config.IsUnique && UniqueComponentEntities[config.Index] == entity)
-                UniqueComponentEntities[config.Index] = Entity.Null;
-
-            var componentPool = ComponentPools[config.Index];
-            var oldComponent = componentPool.GetComponent(entity.Id);
-            componentPool.RemoveComponent(entity.Id);
-
-            if (config.IsShared)
-                nextArcheType = ComponentArcheType.RemoveSharedComponent(
-                    oldArcheType, (ISharedComponent)oldComponent, config.Index);
-            else
-                nextArcheType = ComponentArcheType.RemoveComponentPoolIndex(
-                    oldArcheType, config.Index);
-        }
-
         internal Entity CreateEntityPrep()
         {
             Entity entity;
@@ -360,6 +286,35 @@ namespace EcsLte
             }
         }
 
+        internal IEntityCollection CreateEntityCollection()
+        {
+            lock (_entityCollections)
+            {
+                var collection = ObjectCache<EntityCollection>.Pop();
+
+                if (collection.Entities.UncachedData.Length < _entitiesCurrentSize)
+                    Array.Resize(ref collection.Entities.UncachedData, _entitiesCurrentSize);
+
+                _entityCollections.Add(collection);
+
+                return collection;
+            }
+        }
+
+        internal void RemoveEntityCollection(IEntityCollection collection)
+        {
+            var entityCollection = (EntityCollection)collection;
+            lock (_entityCollections)
+            {
+                _entityCollections.Remove(entityCollection);
+
+                Array.Clear(entityCollection.Entities.UncachedData, 0, _entitiesCurrentSize);
+                entityCollection.Entities.SetDirty();
+
+                ObjectCache<EntityCollection>.Push(entityCollection);
+            }
+        }
+
         internal void AddEntityToArcheType(Entity entity, ComponentArcheType archeType)
         {
             var archeTypeData = CreateOrGetComponentArcheTypeData(archeType);
@@ -398,6 +353,8 @@ namespace EcsLte
 
         internal ComponentArcheTypeData CreateOrGetComponentArcheTypeData(ComponentArcheType archeType)
         {
+            if (archeType.ComponentPoolIndexes == null)
+                throw new ArgumentNullException();
             if (ComponentArcheType.IsEmpty(archeType))
                 return null;
 
@@ -424,35 +381,6 @@ namespace EcsLte
             {
                 if (_componentArcheDataTypes.Remove(archeTypeHashCode))
                     ComponentArcheTypeData.Uninitialize(archeTypeData);
-            }
-        }
-
-        internal IEntityCollection CreateEntityCollection()
-        {
-            lock (_entityCollections)
-            {
-                var collection = ObjectCache<EntityCollection>.Pop();
-
-                if (collection.Entities.UncachedData.Length < _entitiesCurrentSize)
-                    Array.Resize(ref collection.Entities.UncachedData, _entitiesCurrentSize);
-
-                _entityCollections.Add(collection);
-
-                return collection;
-            }
-        }
-
-        internal void RemoveEntityCollection(IEntityCollection collection)
-        {
-            var entityCollection = (EntityCollection)collection;
-            lock (_entityCollections)
-            {
-                _entityCollections.Remove(entityCollection);
-
-                Array.Clear(entityCollection.Entities.UncachedData, 0, _entitiesCurrentSize);
-                entityCollection.Entities.SetDirty();
-
-                ObjectCache<EntityCollection>.Push(entityCollection);
             }
         }
 

@@ -2,24 +2,23 @@ using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class EntityGroup_Create_BeforeEntities : BasePerformanceTest
+    internal class EntityFilter_Create_BeforeEntities : BasePerformanceTest
     {
-        private TestSharedComponent1 _component;
         private Entity[] _entities;
 
         public override void PreRun()
         {
             base.PreRun();
 
-            _component = new TestSharedComponent1 { Prop = 1 };
             _entities = _context.CreateEntities(TestConsts.EntityLoopCount);
-            _context.GroupWith(_component);
+            _context.FilterBy(Filter.AllOf<TestComponent1>());
         }
 
         public override void Run()
         {
+            var component = new TestComponent1();
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                _context.AddComponent(_entities[i], _component);
+                _context.AddComponent(_entities[i], component);
         }
 
         public override bool CanRunParallel()
@@ -29,8 +28,9 @@ namespace EcsLte.PerformanceTest
 
         public override void RunParallel()
         {
+            var component = new TestComponent1();
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                i => { _context.AddComponent(_entities[i], _component); });
+                i => { _context.AddComponent(_entities[i], component); });
         }
     }
 }

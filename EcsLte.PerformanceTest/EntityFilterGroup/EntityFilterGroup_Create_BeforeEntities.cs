@@ -2,7 +2,7 @@ using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class EntityFilterGroup_GetEntity_GetEntitiesAfter : BasePerformanceTest
+    internal class EntityFilterGroup_Create_BeforeEntities : BasePerformanceTest
     {
         private TestSharedComponent1 _component;
         private Entity[] _entities;

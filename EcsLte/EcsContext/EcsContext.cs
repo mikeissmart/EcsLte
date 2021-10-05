@@ -214,28 +214,28 @@ namespace EcsLte
         {
             if (blueprint == null)
                 throw new ArgumentNullException();
+            if (blueprint.GetBlueprintComponents().Length == 0)
+                throw new ArgumentNullException();
+
 
             var entity = CreateEntity();
 
-            var isChanged = false;
-            var nextArcheType = new ComponentArcheType();
             var bpComponents = blueprint.GetBlueprintComponents();
             for (var i = 0; i < bpComponents.Length; i++)
             {
                 var bpComponent = bpComponents[i];
-                if (!_data.ComponentPools[bpComponent.Config.Index].HasComponent(entity.Id))
+                var config = bpComponent.Config;
+                if (config.IsUnique)
                 {
-                    _data.PrepAddComponent(entity,
-                        bpComponent.Component,
-                        bpComponent.Config,
-                        nextArcheType,
-                        out nextArcheType);
-                    isChanged = true;
+                    if (_data.UniqueComponentEntities[config.Index] != Entity.Null)
+                        throw new EntityAlreadyHasUniqueComponentException(this, bpComponent.Component.GetType());
+                    _data.UniqueComponentEntities[config.Index] = entity;
                 }
+                _data.ComponentPools[config.Index].AddComponent(entity.Id, bpComponent.Component);
             }
-
-            if (isChanged)
-                _data.AddEntityToArcheType(entity, nextArcheType);
+            var archeTypeData = _data.CreateOrGetComponentArcheTypeData(blueprint.CreateArcheType());
+            _data.EntityComponentArcheTypes[entity.Id] = archeTypeData;
+            archeTypeData.AddEntity(entity);
 
             return entity;
         }
@@ -260,6 +260,8 @@ namespace EcsLte
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
             if (blueprint == null)
+                throw new ArgumentNullException();
+            if (blueprint.GetBlueprintComponents().Length == 0)
                 throw new ArgumentNullException();
 
             var entities = _data.CreateEntitiesPrep(count);
@@ -410,13 +412,34 @@ namespace EcsLte
 
             var oldArcheTypeData = _data.EntityComponentArcheTypes[entity.Id];
             var config = ComponentPoolIndex<TComponent>.Config;
-            _data.PrepAddComponent(entity,
-                component,
-                config,
-                oldArcheTypeData != null
-                    ? oldArcheTypeData.ArcheType
-                    : new ComponentArcheType(),
-                out var nextArcheType);
+
+            if (config.IsUnique)
+            {
+                if (_data.UniqueComponentEntities[config.Index] != Entity.Null)
+                    throw new EntityAlreadyHasUniqueComponentException(this, component.GetType());
+                _data.UniqueComponentEntities[config.Index] = entity;
+            }
+
+            _data.ComponentPools[config.Index].AddComponent(entity.Id, component);
+
+            ComponentArcheType nextArcheType;
+            if (config.IsShared)
+            {
+                if (oldArcheTypeData != null)
+                    nextArcheType = ComponentArcheType.AppendSharedComponent(
+                        oldArcheTypeData.ArcheType, (ISharedComponent)component, config.Index);
+                else
+                    nextArcheType = ComponentArcheType.AppendSharedComponent(
+                        (ISharedComponent)component, config.Index);
+            }
+            else
+            {
+                if (oldArcheTypeData != null)
+                    nextArcheType = ComponentArcheType.AppendComponentPoolIndex(
+                        oldArcheTypeData.ArcheType, config.Index);
+                else
+                    nextArcheType = ComponentArcheType.AppendComponentPoolIndex(config.Index);
+            }
 
             if (oldArcheTypeData != null)
                 _data.RemoveEntityFromArcheType(entity, oldArcheTypeData);
@@ -434,22 +457,25 @@ namespace EcsLte
             {
                 var oldArcheTypeData = _data.EntityComponentArcheTypes[entity.Id];
                 var config = ComponentPoolIndex<TComponent>.Config;
-                if (_data.PrepReplaceComponent(entity,
-                    newComponent,
-                    config,
-                    oldArcheTypeData.ArcheType,
-                    out var nextArcheType))
+                var componentPool = _data.ComponentPools[config.Index];
+                var oldComponent = componentPool.GetComponent(entity.Id);
+                if (oldComponent.Equals(newComponent))
+                    // Didnt update
+                    return;
+
+                componentPool.ReplaceComponent(entity.Id, newComponent);
+                if (config.IsShared)
                 {
-                    if (config.IsShared)
-                    {
-                        _data.RemoveEntityFromArcheType(entity, oldArcheTypeData);
-                        _data.AddEntityToArcheType(entity, nextArcheType);
-                    }
-                    else
-                    {
-                        oldArcheTypeData.UpdateEntity(entity);
-                    }
+                    var nextArcheType = ComponentArcheType.RemoveSharedComponent(
+                        oldArcheTypeData.ArcheType, (ISharedComponent)oldComponent, config.Index);
+                    nextArcheType = ComponentArcheType.AppendSharedComponent(
+                        nextArcheType, (ISharedComponent)newComponent, config.Index);
+
+                    _data.RemoveEntityFromArcheType(entity, oldArcheTypeData);
+                    _data.AddEntityToArcheType(entity, nextArcheType);
                 }
+                else
+                    oldArcheTypeData.UpdateEntity(entity);
             }
         }
 
@@ -461,10 +487,17 @@ namespace EcsLte
 
             var oldArcheTypeData = _data.EntityComponentArcheTypes[entity.Id];
             var config = ComponentPoolIndex<TComponent>.Config;
-            _data.PrepRemovComponent(entity,
-                config,
-                oldArcheTypeData.ArcheType,
-                out var nextArcheType);
+            var componentPool = _data.ComponentPools[config.Index];
+            var oldComponent = componentPool.GetComponent(entity.Id);
+
+            componentPool.RemoveComponent(entity.Id);
+            ComponentArcheType nextArcheType;
+            if (config.IsShared)
+                nextArcheType = ComponentArcheType.RemoveSharedComponent(
+                    oldArcheTypeData.ArcheType, (ISharedComponent)oldComponent, config.Index);
+            else
+                nextArcheType = ComponentArcheType.RemoveComponentPoolIndex(
+                    oldArcheTypeData.ArcheType, config.Index);
 
             _data.RemoveEntityFromArcheType(entity, oldArcheTypeData);
             _data.AddEntityToArcheType(entity, nextArcheType);
@@ -480,36 +513,17 @@ namespace EcsLte
             {
                 var archeType = archeTypeData.ArcheType;
                 for (var i = 0; i < archeType.ComponentPoolIndexes.Length; i++)
+                {
+                    var componentPoolIndex = archeType.ComponentPoolIndexes[i];
+                    if (ComponentPoolIndexes.Instance.GetConfig(componentPoolIndex).IsShared &&
+                        _data.UniqueComponentEntities[entity.Id] == entity)
+                        _data.UniqueComponentEntities[entity.Id] = Entity.Null;
+
                     _data.ComponentPools[archeType.ComponentPoolIndexes[i]].RemoveComponent(entity.Id);
-
-                _data.EntityComponentArcheTypes[entity.Id] = null;
-                archeTypeData.RemoveEntity(entity);
-
-                if (archeTypeData.Count == 0)
-                    _data.RemoveComponentArcheTypeData(archeTypeData);
+                }
+                _data.RemoveEntityFromArcheType(entity, archeTypeData);
             }
         }
-
-        /*private bool PrepBlueprintAddComponent(Entity entity, BlueprintComponent bpComponent)
-        {
-            if (_data.ComponentPools[bpComponent.Config.Index].HasComponent(entity.Id))
-                return false;
-
-            if (bpComponent.Config.IsUnique)
-            {
-                if (_data.UniqueEntities[bpComponent.Config.Index] != Entity.Null)
-                    throw new EntityAlreadyHasUniqueComponentException(this, bpComponent.Component.GetType());
-                _data.UniqueEntities[bpComponent.Config.Index] = entity;
-            }
-
-            _data.ComponentPools[bpComponent.Config.Index].AddComponent(entity.Id, bpComponent.Component);
-
-            return true;
-        }*/
-
-        #endregion
-
-        #region GroupWith
 
         #endregion
     }

@@ -29,7 +29,7 @@ namespace EcsLte
                 archeTypeData.ArcheTypeDataRemoved += data.OnComponentArcheTypeDataRemoved;
 
                 archeTypeData.GetEntities()
-                    .ForEachParallel(x => data.Entities[x.Id] = x);
+                    .RunForEachParallel(x => data.Entities[x.Id] = x);
             }
 
             return data;
@@ -50,12 +50,6 @@ namespace EcsLte
             ComponentArcheTypeDataCollection.Uninitialize(data.ArcheTypeCollection);
             data.ContextData.RemoveEntityCollection(data.Entities);
             WatcherTable.Uninitialize(data.Watchers);
-
-            data.ArcheTypeCollection = null;
-            data.ContextData = null;
-            data.Entities = null;
-            //data.Filter = null;
-            data.Watchers = null;
 
             data.NoRef = null;
 

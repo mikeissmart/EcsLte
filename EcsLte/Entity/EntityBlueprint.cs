@@ -23,8 +23,8 @@ namespace EcsLte
 
     public class EntityBlueprint
     {
-        private readonly ComponentArcheType _archeType;
         private readonly Dictionary<int, BlueprintComponent> _components;
+        private ComponentArcheType _archeType;
         private bool _createArcheType;
 
         public EntityBlueprint()
@@ -38,7 +38,7 @@ namespace EcsLte
         {
             if (_createArcheType)
             {
-                var _archeType = new ComponentArcheType();
+                _archeType = new ComponentArcheType();
                 foreach (var bpComponent in _components.Values)
                     if (bpComponent.Config.IsShared)
                         _archeType = ComponentArcheType.AppendSharedComponent(

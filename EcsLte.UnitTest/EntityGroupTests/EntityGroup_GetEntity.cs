@@ -8,7 +8,7 @@ namespace EcsLte.UnitTest.EntityGroupTests
     public class EntityGroup_GetEntity : BasePrePostTest
     {
         [TestMethod]
-        public void HasEntityqwer()
+        public void HasEntity()
         {
             var component1 = new TestSharedComponent1 { Prop = 1 };
             var entity1 = _context.CreateEntity();
@@ -39,7 +39,7 @@ namespace EcsLte.UnitTest.EntityGroupTests
         }
 
         [TestMethod]
-        public void GetEntitiesqwer()
+        public void GetEntities()
         {
             var component = new TestSharedComponent1 { Prop = 1 };
             var entity1 = _context.CreateEntity();

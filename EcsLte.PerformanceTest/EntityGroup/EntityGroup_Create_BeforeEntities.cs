@@ -1,6 +1,6 @@
 namespace EcsLte.PerformanceTest
 {
-    internal class EntityGroup_GetEntity_GetEntitiesBefore : BasePerformanceTest
+    internal class EntityGroup_Create_AfterEntities : BasePerformanceTest
     {
         private TestSharedComponent1 _component;
 

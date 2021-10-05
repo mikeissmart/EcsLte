@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using EcsLte.Utilities;
@@ -37,7 +38,7 @@ namespace EcsLte
             var result = new ComponentArcheType
             {
                 ComponentPoolIndexes = new[] { componentPoolIndex },
-                SharedComponents = new ISharedComponent[0]
+                SharedComponents = null
             };
 
             return result;
@@ -89,13 +90,15 @@ namespace EcsLte
             var result = new ComponentArcheType();
             result.ComponentPoolIndexes = IndexHelpers
                 .MergeDistinctIndex(archeType.ComponentPoolIndexes, componentPoolIndex);
-            HashSet<ISharedComponent> hashShared;
-            if (archeType.SharedComponents == null)
-                hashShared = new HashSet<ISharedComponent>();
+            if (archeType.SharedComponents != null)
+            {
+                result.SharedComponents = archeType.SharedComponents
+                    .Union(new[] { sharedComponent })
+                    .OrderBy(x => x.GetHashCode())
+                    .ToArray();
+            }
             else
-                hashShared = new HashSet<ISharedComponent>(archeType.SharedComponents);
-            hashShared.Add(sharedComponent);
-            result.SharedComponents = hashShared.OrderBy(x => x.GetHashCode()).ToArray();
+                result.SharedComponents = new[] { sharedComponent };
 
             return result;
         }
@@ -107,9 +110,10 @@ namespace EcsLte
             result.ComponentPoolIndexes = archeType.ComponentPoolIndexes
                 .Where(x => x != componentPoolIndex)
                 .ToArray();
-            result.SharedComponents = archeType.SharedComponents
-                .Where(x => !x.Equals(sharedComponent))
-                .ToArray();
+            if (archeType.SharedComponents.Count() > 1)
+                result.SharedComponents = archeType.SharedComponents
+                    .Where(x => !x.Equals(sharedComponent))
+                    .ToArray();
 
             return result;
         }

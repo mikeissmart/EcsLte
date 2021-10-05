@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using EcsLte.Utilities;
 
@@ -45,7 +44,7 @@ namespace EcsLte
                 archeTypeData.ArcheTypeDataRemoved += data.OnComponentArcheTypeDataRemoved;
 
                 archeTypeData.GetEntities()
-                    .ForEachParallel(x => data.Entities[x.Id] = x);
+                    .RunForEachParallel(x => data.Entities[x.Id] = x);
             }
 
             return data;
@@ -66,12 +65,6 @@ namespace EcsLte
             ComponentArcheTypeDataCollection.Uninitialize(data.ArcheTypeCollection);
             data.ContextData.RemoveEntityCollection(data.Entities);
             WatcherTable.Uninitialize(data.Watchers);
-
-            data.ArcheTypeCollection = null;
-            data.ContextData = null;
-            data.Entities = null;
-            data.SharedComponents = null;
-            data.Watchers = null;
             data.HashCode = 0;
 
             data.NoRef = null;

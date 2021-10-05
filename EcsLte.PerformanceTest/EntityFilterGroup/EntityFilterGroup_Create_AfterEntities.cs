@@ -1,6 +1,6 @@
 namespace EcsLte.PerformanceTest
 {
-    internal class EntityFilterGroup_GetEntity_GetEntitiesBefore : BasePerformanceTest
+    internal class EntityFilterGroup_Create_AfterEntities : BasePerformanceTest
     {
         private TestSharedComponent1 _component;
         private Filter _filter;
