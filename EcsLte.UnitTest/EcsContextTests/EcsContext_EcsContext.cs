@@ -127,9 +127,9 @@ namespace EcsLte.UnitTest.EcsContextTests
             // Different component gets different entity
             Assert.IsTrue(_context.GroupWith(new TestSharedComponent1 { Prop = 2 }) != group);
             // Null component
-            ISharedComponent nullKey = null;
+            ISharedComponent nullComponent = null;
             Assert.ThrowsException<ArgumentNullException>(() =>
-                _context.GroupWith(nullKey));
+                _context.GroupWith(nullComponent));
             // EcsContext is destroyed
             EcsContexts.DestroyContext(_context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>

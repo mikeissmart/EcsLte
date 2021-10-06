@@ -5,6 +5,17 @@ namespace EcsLte
 {
     internal class ComponentArcheTypeDataCollection
     {
+        private readonly DataCache<List<ComponentArcheTypeData>, ComponentArcheTypeData[]> _archeTypeDatas;
+
+        public ComponentArcheTypeDataCollection()
+        {
+            _archeTypeDatas = new DataCache<List<ComponentArcheTypeData>, ComponentArcheTypeData[]>(
+                new List<ComponentArcheTypeData>(),
+                UpdateCachedData);
+        }
+
+        internal ComponentArcheTypeData[] ArcheTypeDatas => _archeTypeDatas.CachedData;
+
         internal static ComponentArcheTypeDataCollection Initialize(ComponentArcheTypeData[] initialArcheTypeDatas)
         {
             var data = ObjectCache<ComponentArcheTypeDataCollection>.Pop();
@@ -22,17 +33,6 @@ namespace EcsLte
 
             ObjectCache<ComponentArcheTypeDataCollection>.Push(data);
         }
-
-        private readonly DataCache<List<ComponentArcheTypeData>, ComponentArcheTypeData[]> _archeTypeDatas;
-
-        public ComponentArcheTypeDataCollection()
-        {
-            _archeTypeDatas = new DataCache<List<ComponentArcheTypeData>, ComponentArcheTypeData[]>(
-                new List<ComponentArcheTypeData>(),
-                UpdateCachedData);
-        }
-
-        internal ComponentArcheTypeData[] ArcheTypeDatas { get => _archeTypeDatas.CachedData; }
 
         internal void AddComponentArcheTypeData(ComponentArcheTypeData archeTypeData)
         {

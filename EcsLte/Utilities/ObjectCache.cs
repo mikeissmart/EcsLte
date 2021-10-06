@@ -8,18 +8,16 @@ namespace EcsLte.Utilities
 
     public static class ObjectCache<T> where T : new()
     {
-        private static Queue<T> _pool = new Queue<T>();
+        private static readonly Queue<T> _pool = new Queue<T>();
 
         public static T Pop()
         {
             if (ObjectCache.IsCacheEnabled)
-            {
                 lock (_pool)
                 {
                     if (_pool.Count > 0)
-                        return (T)_pool.Dequeue();
+                        return _pool.Dequeue();
                 }
-            }
 
             return new T();
         }
@@ -27,12 +25,10 @@ namespace EcsLte.Utilities
         public static void Push(T obj)
         {
             if (ObjectCache.IsCacheEnabled)
-            {
                 lock (_pool)
                 {
                     _pool.Enqueue(obj);
                 }
-            }
         }
     }
 

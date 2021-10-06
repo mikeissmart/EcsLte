@@ -30,6 +30,12 @@ namespace EcsLte
             CurrentContext = context;
         }
 
+        #region EcsContext
+
+        public EcsContext CurrentContext { get; }
+
+        #endregion
+
         ~Watcher()
         {
             _data.DecRefCount();
@@ -89,12 +95,6 @@ namespace EcsLte
         {
             return _data.GetHashCode();
         }
-
-        #endregion
-
-        #region EcsContext
-
-        public EcsContext CurrentContext { get; }
 
         #endregion
 

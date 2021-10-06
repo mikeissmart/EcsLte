@@ -32,7 +32,7 @@ namespace EcsLte.UnitTest.EntityBluprintTests
         [TestMethod]
         public void GetComponent()
         {
-            var component = new TestComponent1 { Prop = 1 };
+            var component = new TestComponent1 {Prop = 1};
             var blueprint = new EntityBlueprint()
                 .AddComponent(component);
 
@@ -43,7 +43,7 @@ namespace EcsLte.UnitTest.EntityBluprintTests
         [TestMethod]
         public void AddComponent()
         {
-            var component = new TestComponent1 { Prop = 1 };
+            var component = new TestComponent1 {Prop = 1};
 
             var blueprint = new EntityBlueprint()
                 .AddComponent(component);
@@ -58,7 +58,7 @@ namespace EcsLte.UnitTest.EntityBluprintTests
         [TestMethod]
         public void ReplaceComponent()
         {
-            var component = new TestComponent1 { Prop = 1 };
+            var component = new TestComponent1 {Prop = 1};
             var blueprint = new EntityBlueprint()
                 .AddComponent(new TestComponent1());
 
@@ -67,7 +67,7 @@ namespace EcsLte.UnitTest.EntityBluprintTests
             // Correct component
             Assert.IsTrue(blueprint.GetComponent<TestComponent1>().Prop == component.Prop);
             // Replace also adds component
-            var component2 = new TestComponent1 { Prop = 2 };
+            var component2 = new TestComponent1 {Prop = 2};
             blueprint.ReplaceComponent(component2);
             Assert.IsTrue(blueprint.GetComponent<TestComponent1>().Prop == component2.Prop);
         }
@@ -75,7 +75,7 @@ namespace EcsLte.UnitTest.EntityBluprintTests
         [TestMethod]
         public void RemoveAllComponents()
         {
-            var component = new TestComponent1 { Prop = 1 };
+            var component = new TestComponent1 {Prop = 1};
             var blueprint = new EntityBlueprint()
                 .AddComponent(new TestComponent1());
 
@@ -88,7 +88,7 @@ namespace EcsLte.UnitTest.EntityBluprintTests
         [TestMethod]
         public void RemoveComponent()
         {
-            var component = new TestComponent1 { Prop = 1 };
+            var component = new TestComponent1 {Prop = 1};
             var blueprint = new EntityBlueprint()
                 .AddComponent(component);
 

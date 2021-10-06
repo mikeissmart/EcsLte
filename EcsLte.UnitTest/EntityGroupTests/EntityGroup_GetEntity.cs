@@ -1,5 +1,4 @@
 using EcsLte.Exceptions;
-using EcsLte.UnitTest.InterfaceTests;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace EcsLte.UnitTest.EntityGroupTests
@@ -21,12 +20,12 @@ namespace EcsLte.UnitTest.EntityGroupTests
             // Correct entity
             Assert.IsTrue(entityGroup.HasEntity(entity1));
             Assert.IsTrue(entityGroup.HasEntity(entity2));
-            // Removed from withKey
+            // Removed from withComponent
             _context.RemoveComponent<TestSharedComponent1>(entity1);
             _context.RemoveComponent<TestSharedComponent1>(entity2);
             Assert.IsFalse(entityGroup.HasEntity(entity1));
             Assert.IsFalse(entityGroup.HasEntity(entity2));
-            // Replaced from withKey
+            // Replaced from
             var component2 = new TestSharedComponent1 { Prop = 2 };
             _context.ReplaceComponent(entity1, component2);
             _context.ReplaceComponent(entity2, component2);
@@ -53,11 +52,11 @@ namespace EcsLte.UnitTest.EntityGroupTests
             Assert.IsTrue(entityGroup.GetEntities().Length == 2);
             Assert.IsTrue(entityGroup.GetEntities()[0] == entity1);
             Assert.IsTrue(entityGroup.GetEntities()[1] == entity2);
-            // Removed from withKey
+            // Removed from
             _context.RemoveComponent<TestSharedComponent1>(entity1);
             _context.RemoveComponent<TestSharedComponent1>(entity2);
             Assert.IsTrue(entityGroup.GetEntities().Length == 0);
-            // Replaced from withKey
+            // Replaced from
             var component2 = new TestSharedComponent1 { Prop = 2 };
             _context.ReplaceComponent(entity1, component2);
             _context.ReplaceComponent(entity2, component2);

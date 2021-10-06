@@ -1,4 +1,3 @@
-using System;
 using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
@@ -14,9 +13,7 @@ namespace EcsLte.PerformanceTest
             _entities = _context.CreateEntities(TestConsts.EntityLoopCount);
             var component = new TestComponent1();
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-            {
                 _context.AddComponent(_entities[i], component);
-            }
         }
 
         public override void Run()

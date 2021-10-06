@@ -1,10 +1,17 @@
-using System.Collections.Generic;
 using EcsLte.Utilities;
 
 namespace EcsLte
 {
     internal class EntityFilterData
     {
+        private int _refCount;
+
+        internal ComponentArcheTypeDataCollection ArcheTypeCollection { get; private set; }
+        internal EcsContextData ContextData { get; private set; }
+        internal IEntityCollection Entities { get; private set; }
+        internal Filter Filter { get; private set; }
+        internal WatcherTable Watchers { get; private set; }
+
         internal static EntityFilterData Initialize(EcsContextData contextData, Filter filter,
             ComponentArcheTypeData[] initialArcheTypeDatas)
         {
@@ -47,6 +54,7 @@ namespace EcsLte
                 archeTypeData.EntityUpdated -= data.OnEntityComponentUpdated;
                 archeTypeData.ArcheTypeDataRemoved -= data.OnComponentArcheTypeDataRemoved;
             }
+
             ComponentArcheTypeDataCollection.Uninitialize(data.ArcheTypeCollection);
             data.ContextData.RemoveEntityCollection(data.Entities);
             WatcherTable.Uninitialize(data.Watchers);
@@ -55,14 +63,6 @@ namespace EcsLte
 
             ObjectCache<EntityFilterData>.Push(data);
         }
-
-        private int _refCount;
-
-        internal ComponentArcheTypeDataCollection ArcheTypeCollection { get; private set; }
-        internal EcsContextData ContextData { get; private set; }
-        internal IEntityCollection Entities { get; private set; }
-        internal Filter Filter { get; private set; }
-        internal WatcherTable Watchers { get; private set; }
 
         internal event RefCountZeroEvent<EntityFilterData> NoRef;
 

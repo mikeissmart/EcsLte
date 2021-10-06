@@ -46,8 +46,14 @@ namespace EcsLte.PerformanceTest
             //EcsContext_ComponentLife_AddComponentX2                   525 ms    500 ms         1.54 GB
             //EcsContext_ComponentLife_AddComponentX3                   537 ms    562 ms         1.01 GB
             //EcsContext_ComponentLife_AddSharedComponent               383 ms    428 ms         1.1 GB
+
             //EcsContext_ComponentLife_AddSharedComponentX2             1134 ms   596 ms         1.43 GB
             //EcsContext_ComponentLife_AddSharedComponentX3             1302 ms   652 ms         1.33 GB
+            //----------
+            //EcsContext_ComponentLife_AddSharedComponentX2             731 ms    577 ms         1.31 GB
+            //EcsContext_ComponentLife_AddSharedComponentX3             865 ms    551 ms         1.55 GB
+
+
             //EcsContext_ComponentLife_RemoveAllComponents              147 ms    335 ms         1.15 GB
             //EcsContext_ComponentLife_RemoveComponent                  499 ms    558 ms         1.36 GB
             //EcsContext_ComponentLife_ReplaceComponent                 131 ms    14 ms          1.58 GB
@@ -62,7 +68,8 @@ namespace EcsLte.PerformanceTest
 
             //EcsContext_FilterAll_                                     179 ms    294 ms         526.78 MB
             //EcsContext_FilterAll_GroupWith                            669 ms    1135 ms        179.84 MB
-            //EcsContext_FilterAll_GroupWithX10                         1231 ms   1771 ms        179.7 MB
+
+            //EcsContext_FilterAll_GroupWithX10                         932 ms    1771 ms        179.7 MB
             //EcsContext_FilterAll_GroupWithX2                          686 ms    1161 ms        179.68 MB
 
             //EcsContext_FilterOne_                                     167 ms    295 ms         194.02 MB
@@ -154,7 +161,7 @@ namespace EcsLte.PerformanceTest
             long avgParallelTime = 0;
             for (var i = 0; i < loops; i++)
             {
-                var test = (BasePerformanceTest)Activator.CreateInstance(testType);
+                var test = (BasePerformanceTest) Activator.CreateInstance(testType);
                 test.PreRun();
                 _stopwatch.Reset();
                 _stopwatch.Start();
@@ -170,7 +177,7 @@ namespace EcsLte.PerformanceTest
                 avgTime += _stopwatch.ElapsedMilliseconds;
                 avgMemory += memories[i];
 
-                test = (BasePerformanceTest)Activator.CreateInstance(testType);
+                test = (BasePerformanceTest) Activator.CreateInstance(testType);
                 var parallelCount = test.CanRunParallel();
                 if (test.CanRunParallel())
                 {
@@ -211,7 +218,7 @@ namespace EcsLte.PerformanceTest
 
         private static string GetMemoryUsageReadable(long bytes)
         {
-            string[] Suffix = { "B", "KB", "MB", "GB", "TB" };
+            string[] Suffix = {"B", "KB", "MB", "GB", "TB"};
             int i;
             double dblSByte = bytes;
             for (i = 0; i < Suffix.Length && bytes >= 1024; i++, bytes /= 1024)

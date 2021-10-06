@@ -5,15 +5,24 @@ namespace EcsLte
 {
     internal class EntityGroupData
     {
+        private int _refCount;
+
+        internal ComponentArcheTypeDataCollection ArcheTypeCollection { get; private set; }
+        internal EcsContextData ContextData { get; private set; }
+        internal IEntityCollection Entities { get; private set; }
+        internal ISharedComponent[] SharedComponents { get; private set; }
+        internal WatcherTable Watchers { get; private set; }
+        internal int HashCode { get; private set; }
+
         internal static int CalculateSharedComponentHashCode(ISharedComponent[] components)
         {
             var componentHashes = components
                 .Select(x => x.GetHashCode())
                 .OrderBy(x => x);
             var hashCode = -1663471673;
-            hashCode = hashCode * -1521134295 + componentHashes.Count();
-            foreach (var key in componentHashes)
-                hashCode = hashCode * -1521134295 + key.GetHashCode();
+            hashCode = hashCode * -1521134295 + components.Length;
+            foreach (var hash in componentHashes)
+                hashCode = hashCode * -1521134295 + hash.GetHashCode();
 
             return hashCode;
         }
@@ -62,6 +71,7 @@ namespace EcsLte
                 archeTypeData.EntityUpdated -= data.OnEntityComponentUpdated;
                 archeTypeData.ArcheTypeDataRemoved -= data.OnComponentArcheTypeDataRemoved;
             }
+
             ComponentArcheTypeDataCollection.Uninitialize(data.ArcheTypeCollection);
             data.ContextData.RemoveEntityCollection(data.Entities);
             WatcherTable.Uninitialize(data.Watchers);
@@ -71,15 +81,6 @@ namespace EcsLte
 
             ObjectCache<EntityGroupData>.Push(data);
         }
-
-        private int _refCount;
-
-        internal ComponentArcheTypeDataCollection ArcheTypeCollection { get; private set; }
-        internal EcsContextData ContextData { get; private set; }
-        internal IEntityCollection Entities { get; private set; }
-        internal ISharedComponent[] SharedComponents { get; private set; }
-        internal WatcherTable Watchers { get; private set; }
-        internal int HashCode { get; private set; }
 
         internal event RefCountZeroEvent<EntityGroupData> NoRef;
 

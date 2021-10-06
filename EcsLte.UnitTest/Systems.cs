@@ -1,5 +1,3 @@
-
-
 /*public class SystemTest : SystemBase
 {
     public bool CostructorCalled { get; set; }
@@ -81,3 +79,4 @@ public class TestSortLoopSystem2 : SystemTest
 { }
 
 #endregion*/
+

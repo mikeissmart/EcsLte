@@ -5,6 +5,16 @@ namespace EcsLte
 {
     public class EntityFilterGroupData
     {
+        private int _refCount;
+
+        internal ComponentArcheTypeDataCollection ArcheTypeCollection { get; private set; }
+        internal EcsContextData ContextData { get; private set; }
+        internal IEntityCollection Entities { get; private set; }
+        internal ISharedComponent[] SharedComponents { get; private set; }
+        internal Filter Filter { get; private set; }
+        internal WatcherTable Watchers { get; private set; }
+        internal int HashCode { get; private set; }
+
         internal static int CalculateFilterSharedComponentHashCode(Filter filter, ISharedComponent[] components)
         {
             var componentHashes = components
@@ -12,14 +22,15 @@ namespace EcsLte
                 .OrderBy(x => x);
             var hashCode = -1663471673;
             hashCode = hashCode * -1521134295 + filter.GetHashCode();
-            hashCode = hashCode * -1521134295 + componentHashes.Count();
-            foreach (var component in componentHashes)
-                hashCode = hashCode * -1521134295 + component.GetHashCode();
+            hashCode = hashCode * -1521134295 + components.Length;
+            foreach (var hash in componentHashes)
+                hashCode = hashCode * -1521134295 + hash;
 
             return hashCode;
         }
 
-        internal static EntityFilterGroupData Initialize(EcsContextData contextData, int hashCode,
+        internal static EntityFilterGroupData Initialize(EcsContextData contextData,
+            int hashCode,
             Filter filter,
             ISharedComponent[] sharedComponents,
             ComponentArcheTypeData[] initialArcheTypeDatas)
@@ -65,6 +76,7 @@ namespace EcsLte
                 archeTypeData.EntityUpdated -= data.OnEntityComponentUpdated;
                 archeTypeData.ArcheTypeDataRemoved -= data.OnComponentArcheTypeDataRemoved;
             }
+
             ComponentArcheTypeDataCollection.Uninitialize(data.ArcheTypeCollection);
             data.ContextData.RemoveEntityCollection(data.Entities);
             WatcherTable.Uninitialize(data.Watchers);
@@ -74,16 +86,6 @@ namespace EcsLte
 
             ObjectCache<EntityFilterGroupData>.Push(data);
         }
-
-        private int _refCount;
-
-        internal ComponentArcheTypeDataCollection ArcheTypeCollection { get; private set; }
-        internal EcsContextData ContextData { get; private set; }
-        internal IEntityCollection Entities { get; private set; }
-        internal ISharedComponent[] SharedComponents { get; private set; }
-        internal Filter Filter { get; private set; }
-        internal WatcherTable Watchers { get; private set; }
-        internal int HashCode { get; private set; }
 
         internal event RefCountZeroEvent<EntityFilterGroupData> NoRef;
 
@@ -122,8 +124,8 @@ namespace EcsLte
         private void OnAnyComponentArcheTypeDataAdded(ComponentArcheTypeData archeTypeData)
         {
             if (SharedComponents != null && archeTypeData.ArcheType.SharedComponents != null &&
-                archeTypeData.ArcheType.SharedComponents.SequenceEqual(SharedComponents) &&
-                Filter.IsFiltered(archeTypeData.ArcheType))
+                Filter.IsFiltered(archeTypeData.ArcheType) &&
+                archeTypeData.ArcheType.SharedComponents.SequenceEqual(SharedComponents))
             {
                 ArcheTypeCollection.AddComponentArcheTypeData(archeTypeData);
                 archeTypeData.EntityAdded += OnEntityComponentAdded;

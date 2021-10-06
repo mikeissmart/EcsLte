@@ -13,6 +13,12 @@ namespace EcsLte
             CurrentContext = context;
         }
 
+        #region EcsContext
+
+        public EcsContext CurrentContext { get; }
+
+        #endregion
+
         ~EntityGroup()
         {
             _data.DecRefCount();
@@ -20,7 +26,7 @@ namespace EcsLte
 
         #region EntityGroup
 
-        public ISharedComponent[] SharedKeys
+        public ISharedComponent[] SharedComponents
         {
             get
             {
@@ -57,12 +63,6 @@ namespace EcsLte
         {
             return _data.GetHashCode();
         }
-
-        #endregion
-
-        #region EcsContext
-
-        public EcsContext CurrentContext { get; }
 
         #endregion
 

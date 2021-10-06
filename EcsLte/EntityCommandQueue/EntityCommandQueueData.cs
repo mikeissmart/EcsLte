@@ -5,6 +5,15 @@ namespace EcsLte
 {
     internal class EntityCommandQueueData
     {
+        public EntityCommandQueueData()
+        {
+            Commands = new List<EntityCommand>();
+        }
+
+        internal List<EntityCommand> Commands { get; }
+        internal EcsContextData ContextData { get; private set; }
+        internal string Name { get; private set; }
+
         internal static EntityCommandQueueData Initialize(EcsContextData contextData, string name)
         {
             var data = ObjectCache<EntityCommandQueueData>.Pop();
@@ -23,14 +32,5 @@ namespace EcsLte
 
             ObjectCache<EntityCommandQueueData>.Push(data);
         }
-
-        public EntityCommandQueueData()
-        {
-            Commands = new List<EntityCommand>();
-        }
-
-        internal List<EntityCommand> Commands { get; private set; }
-        internal EcsContextData ContextData { get; private set; }
-        internal string Name { get; private set; }
     }
 }

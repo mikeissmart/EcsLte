@@ -1,4 +1,3 @@
-using System;
 using EcsLte.Exceptions;
 
 namespace EcsLte
@@ -13,6 +12,12 @@ namespace EcsLte
 
             CurrentContext = context;
         }
+
+        #region EcsContext
+
+        public EcsContext CurrentContext { get; }
+
+        #endregion
 
         ~EntityFilter()
         {
@@ -58,12 +63,6 @@ namespace EcsLte
         {
             return _data.GetHashCode();
         }
-
-        #endregion
-
-        #region EcsContext
-
-        public EcsContext CurrentContext { get; }
 
         #endregion
 

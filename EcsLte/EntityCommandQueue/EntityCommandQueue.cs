@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using EcsLte.Exceptions;
-using EcsLte.Utilities;
 
 namespace EcsLte
 {
@@ -14,6 +13,12 @@ namespace EcsLte
 
             CurrentContext = context;
         }
+
+        #region EscContext
+
+        public EcsContext CurrentContext { get; }
+
+        #endregion
 
         #region EntityCommandQueue
 
@@ -93,12 +98,6 @@ namespace EcsLte
         {
             return _data.GetHashCode();
         }
-
-        #endregion
-
-        #region EscContext
-
-        public EcsContext CurrentContext { get; }
 
         #endregion
 

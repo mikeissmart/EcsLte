@@ -47,11 +47,18 @@ namespace EcsLte
         }
 
         internal Type[] AllComponentTypes { get; private set; }
-        internal int[] AllComponentPoolIndexes { get; private set; }
-        internal int[] RecordableComponentPoolIndexes { get; private set; }
-        internal int[] UniqueComponentPoolIndexes { get; private set; }
-        internal int[] SharedComponentPoolIndexes { get; private set; }
-        internal int Count => _componentPoolConfigIndexes.Count;
+        internal Type[] AllRecordableTypes { get; private set; }
+        internal Type[] AllUniqueTypes { get; private set; }
+        internal Type[] AllSharedTypes { get; private set; }
+
+        internal int[] AllRecordableIndexes { get; private set; }
+        internal int[] AllUniqueIndexes { get; private set; }
+        internal int[] AllSharedIndexes { get; private set; }
+
+        internal int AllComponentCount { get; private set; }
+        internal int RecordableComponentCount { get; private set; }
+        internal int UniqueComponentCount { get; private set; }
+        internal int SharedComponentCount { get; private set; }
 
         internal ComponentPoolConfig GetConfig(Type componentType)
         {
@@ -65,10 +72,10 @@ namespace EcsLte
 
         internal IComponentPool[] CreateComponentPools(int initialSize)
         {
-            var componentPools = new IComponentPool[Count];
+            var componentPools = new IComponentPool[AllComponentCount];
             var poolType = typeof(ComponentPool<>);
             var args = new object[] { initialSize };
-            for (var i = 0; i < Count; i++)
+            for (var i = 0; i < AllComponentCount; i++)
                 componentPools[i] =
                     (IComponentPool)Activator.CreateInstance(poolType.MakeGenericType(AllComponentTypes[i]), args);
 
@@ -97,47 +104,60 @@ namespace EcsLte
 
             _componentPoolConfigTypes = new Dictionary<Type, ComponentPoolConfig>();
             _componentPoolConfigIndexes = new Dictionary<int, ComponentPoolConfig>();
-            var recordableComponentPoolIndexes = new List<int>();
-            var uniqueComponentPoolIndexes = new List<int>();
-            var sharedComponentPoolIndexes = new List<int>();
-            var index = 0;
+            var recordableTypeIndexes = new Dictionary<int, Type>();
+            var uniqueTypeIndexes = new Dictionary<int, Type>();
+            var sharedTypeIndexes = new Dictionary<int, Type>();
+            var recordableIndex = 0;
+            var uniqueIndex = 0;
+            var sharedIndex = 0;
             foreach (var type in componentTypes.OrderBy(x => x.FullName.ToString()))
             {
+                var poolIndex = _componentPoolConfigIndexes.Count;
                 var config = new ComponentPoolConfig
                 {
-                    Index = index
+                    PoolIndex = poolIndex
                 };
                 if (iRecordableComponentType.IsAssignableFrom(type))
                 {
-                    recordableComponentPoolIndexes.Add(index);
+                    recordableTypeIndexes.Add(poolIndex, type);
+                    config.RecordableIndex = recordableIndex++;
                     config.IsRecordable = true;
                 }
 
                 if (iUniqueComponentType.IsAssignableFrom(type))
                 {
-                    uniqueComponentPoolIndexes.Add(index);
+                    uniqueTypeIndexes.Add(poolIndex, type);
+                    config.UniqueIndex = uniqueIndex++;
                     config.IsUnique = true;
                 }
 
                 if (iSharedComponentType.IsAssignableFrom(type))
                 {
-                    sharedComponentPoolIndexes.Add(index);
+                    sharedTypeIndexes.Add(poolIndex, type);
+                    config.SharedIndex = sharedIndex++;
                     config.IsShared = true;
                 }
 
                 _componentPoolConfigTypes.Add(type, config);
-                _componentPoolConfigIndexes.Add(index, config);
-                index++;
+                _componentPoolConfigIndexes.Add(poolIndex, config);
             }
 
-            if (index == 0)
+            if (_componentPoolConfigTypes.Count == 0)
                 throw new ComponentNoneException();
 
             AllComponentTypes = _componentPoolConfigTypes.Keys.ToArray();
-            AllComponentPoolIndexes = _componentPoolConfigIndexes.Keys.ToArray();
-            RecordableComponentPoolIndexes = recordableComponentPoolIndexes.ToArray();
-            UniqueComponentPoolIndexes = uniqueComponentPoolIndexes.ToArray();
-            SharedComponentPoolIndexes = sharedComponentPoolIndexes.ToArray();
+            AllRecordableTypes = recordableTypeIndexes.Values.ToArray();
+            AllUniqueTypes = uniqueTypeIndexes.Values.ToArray();
+            AllSharedTypes = sharedTypeIndexes.Values.ToArray();
+
+            AllRecordableIndexes = recordableTypeIndexes.Keys.ToArray();
+            AllUniqueIndexes = uniqueTypeIndexes.Keys.ToArray();
+            AllSharedIndexes = sharedTypeIndexes.Keys.ToArray();
+
+            AllComponentCount = _componentPoolConfigTypes.Count;
+            RecordableComponentCount = recordableTypeIndexes.Count;
+            UniqueComponentCount = uniqueTypeIndexes.Count;
+            SharedComponentCount = sharedTypeIndexes.Count;
         }
     }
 }

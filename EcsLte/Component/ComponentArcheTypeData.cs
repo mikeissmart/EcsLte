@@ -8,6 +8,17 @@ namespace EcsLte
 
     internal class ComponentArcheTypeData : IGetEntity
     {
+        private DataCache<Dictionary<int, Entity>, Entity[]> _entities;
+
+        public ComponentArcheTypeData()
+        {
+            _entities = new DataCache<Dictionary<int, Entity>, Entity[]>(
+                new Dictionary<int, Entity>(), UpdateCachedData);
+        }
+
+        internal ComponentArcheType ArcheType { get; private set; }
+        internal int Count => _entities.UncachedData.Count;
+
         internal static ComponentArcheTypeData Initialize(ComponentArcheType archeType)
         {
             var data = ObjectCache<ComponentArcheTypeData>.Pop();
@@ -34,16 +45,6 @@ namespace EcsLte
             ObjectCache<ComponentArcheTypeData>.Push(data);
         }
 
-        private DataCache<Dictionary<int, Entity>, Entity[]> _entities;
-
-        public ComponentArcheTypeData()
-        {
-            _entities = new DataCache<Dictionary<int, Entity>, Entity[]>(
-                new Dictionary<int, Entity>(), UpdateCachedData);
-        }
-
-        internal ComponentArcheType ArcheType { get; private set; }
-        internal int Count => _entities.UncachedData.Count;
         internal event EntityEvent EntityAdded;
         internal event EntityEvent EntityRemoved;
         internal event EntityEvent EntityUpdated;

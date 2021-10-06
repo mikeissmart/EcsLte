@@ -41,8 +41,6 @@ namespace EcsLte.Utilities
             foreach (var indices in allIndexes)
                 if (indices != null)
                     hash.UnionWith(indices);
-            /*foreach (var index in indices)
-                hash.Add(index);*/
 
             var temp = hash.OrderBy(x => x).ToArray();
             hash.Clear();

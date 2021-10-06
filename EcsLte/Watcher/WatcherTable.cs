@@ -22,6 +22,20 @@ namespace EcsLte
 
     internal class WatcherTable
     {
+        private readonly HashSet<WatcherData> _addedWatchers;
+        private readonly HashSet<WatcherData> _removedWatchers;
+        private readonly HashSet<WatcherData> _updatedWatchers;
+
+        private readonly Dictionary<Filter, WatcherData> _watchers;
+
+        public WatcherTable()
+        {
+            _watchers = new Dictionary<Filter, WatcherData>();
+            _addedWatchers = new HashSet<WatcherData>();
+            _updatedWatchers = new HashSet<WatcherData>();
+            _removedWatchers = new HashSet<WatcherData>();
+        }
+
         internal static WatcherTable Initialize()
         {
             var data = ObjectCache<WatcherTable>.Pop();
@@ -36,10 +50,7 @@ namespace EcsLte
 
         internal static void Uninitialize(WatcherTable data)
         {
-            foreach (var watcher in data._watchers.Values)
-            {
-                WatcherData.Uninitialize(watcher);
-            }
+            foreach (var watcher in data._watchers.Values) WatcherData.Uninitialize(watcher);
             data._watchers.Clear();
             data._addedWatchers.Clear();
             data._updatedWatchers.Clear();
@@ -48,17 +59,102 @@ namespace EcsLte
             ObjectCache<WatcherTable>.Push(data);
         }
 
-        private readonly Dictionary<Filter, WatcherData> _watchers;
-        private readonly HashSet<WatcherData> _addedWatchers;
-        private readonly HashSet<WatcherData> _updatedWatchers;
-        private readonly HashSet<WatcherData> _removedWatchers;
-
-        public WatcherTable()
+        private class WatcherData : IWatcherData
         {
-            _watchers = new Dictionary<Filter, WatcherData>();
-            _addedWatchers = new HashSet<WatcherData>();
-            _updatedWatchers = new HashSet<WatcherData>();
-            _removedWatchers = new HashSet<WatcherData>();
+            private readonly DataCache<Dictionary<int, Entity>, Entity[]> _entities;
+            private int _refCount;
+
+            public WatcherData()
+            {
+                _entities = new DataCache<Dictionary<int, Entity>, Entity[]>(
+                    new Dictionary<int, Entity>(), UpdateCachedData);
+            }
+
+            public bool IsActive { get; private set; }
+            public Filter Filter { get; private set; }
+
+            public void IncRefCount()
+            {
+                _refCount++;
+            }
+
+            public void DecRefCount()
+            {
+                _refCount--;
+                if (_refCount == 0 && NoRef != null)
+                    NoRef.Invoke(this);
+            }
+
+            public void SetActive(bool active)
+            {
+                if (IsActive != active)
+                {
+                    IsActive = active;
+                    if (!active)
+                        ClearEntities();
+                }
+            }
+
+            public bool HasEntity(Entity entity)
+            {
+                return _entities.UncachedData.ContainsKey(entity.Id);
+            }
+
+            public Entity[] GetEntities()
+            {
+                return _entities.CachedData;
+            }
+
+            public void ClearEntities()
+            {
+                lock (_entities)
+                {
+                    _entities.UncachedData.Clear();
+                    _entities.SetDirty();
+                }
+            }
+
+            internal static WatcherData Initialize(Filter filter)
+            {
+                var data = ObjectCache<WatcherData>.Pop();
+                // data._entities
+                // data._refCount
+
+                data.Filter = filter;
+
+                return data;
+            }
+
+            internal static void Uninitialize(WatcherData data)
+            {
+                data._entities.UncachedData.Clear();
+                data._entities.SetDirty();
+                data._refCount = 0;
+
+                data.NoRef = null;
+
+                ObjectCache<WatcherData>.Push(data);
+            }
+
+            internal event RefCountZeroEvent<WatcherData> NoRef;
+
+            internal void AddEntity(Entity entity)
+            {
+                if (IsActive)
+                    lock (_entities)
+                    {
+                        if (!_entities.UncachedData.ContainsKey(entity.Id))
+                        {
+                            _entities.UncachedData.Add(entity.Id, entity);
+                            _entities.SetDirty();
+                        }
+                    }
+            }
+
+            private static Entity[] UpdateCachedData(Dictionary<int, Entity> unchacedData)
+            {
+                return unchacedData.Values.ToArray();
+            }
         }
 
         #region WatcherTable
@@ -196,105 +292,5 @@ namespace EcsLte
         }
 
         #endregion
-
-        private class WatcherData : IWatcherData
-        {
-            internal static WatcherData Initialize(Filter filter)
-            {
-                var data = ObjectCache<WatcherData>.Pop();
-                // data._entities
-                // data._refCount
-
-                data.Filter = filter;
-
-                return data;
-            }
-
-            internal static void Uninitialize(WatcherData data)
-            {
-                data._entities.UncachedData.Clear();
-                data._entities.SetDirty();
-                data._refCount = 0;
-
-                data.NoRef = null;
-
-                ObjectCache<WatcherData>.Push(data);
-            }
-
-            private readonly DataCache<Dictionary<int, Entity>, Entity[]> _entities;
-            private int _refCount;
-
-            public WatcherData()
-            {
-                _entities = new DataCache<Dictionary<int, Entity>, Entity[]>(
-                    new Dictionary<int, Entity>(), UpdateCachedData);
-            }
-
-            public bool IsActive { get; private set; }
-            public Filter Filter { get; private set; }
-
-            internal event RefCountZeroEvent<WatcherData> NoRef;
-
-            public void IncRefCount()
-            {
-                _refCount++;
-            }
-
-            public void DecRefCount()
-            {
-                _refCount--;
-                if (_refCount == 0 && NoRef != null)
-                    NoRef.Invoke(this);
-            }
-
-            public void SetActive(bool active)
-            {
-                if (IsActive != active)
-                {
-                    IsActive = active;
-                    if (!active)
-                        ClearEntities();
-                }
-            }
-
-            public bool HasEntity(Entity entity)
-            {
-                return _entities.UncachedData.ContainsKey(entity.Id);
-            }
-
-            public Entity[] GetEntities()
-            {
-                return _entities.CachedData;
-            }
-
-            public void ClearEntities()
-            {
-                lock (_entities)
-                {
-                    _entities.UncachedData.Clear();
-                    _entities.SetDirty();
-                }
-            }
-
-            internal void AddEntity(Entity entity)
-            {
-                if (IsActive)
-                {
-                    lock (_entities)
-                    {
-                        if (!_entities.UncachedData.ContainsKey(entity.Id))
-                        {
-                            _entities.UncachedData.Add(entity.Id, entity);
-                            _entities.SetDirty();
-                        }
-                    }
-                }
-            }
-
-            private static Entity[] UpdateCachedData(Dictionary<int, Entity> unchacedData)
-            {
-                return unchacedData.Values.ToArray();
-            }
-        }
     }
 }

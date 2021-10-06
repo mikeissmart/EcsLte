@@ -13,6 +13,12 @@ namespace EcsLte
             CurrentContext = context;
         }
 
+        #region EcsContext
+
+        public EcsContext CurrentContext { get; }
+
+        #endregion
+
         ~EntityFilterGroup()
         {
             _data.DecRefCount();
@@ -30,7 +36,8 @@ namespace EcsLte
                 return _data.Filter;
             }
         }
-        public ISharedComponent[] SharedKeys
+
+        public ISharedComponent[] SharedComponents
         {
             get
             {
@@ -65,14 +72,8 @@ namespace EcsLte
 
         public override int GetHashCode()
         {
-            return _data.GetHashCode();
+            return _data.HashCode;
         }
-
-        #endregion
-
-        #region EcsContext
-
-        public EcsContext CurrentContext { get; }
 
         #endregion
 
@@ -139,6 +140,5 @@ namespace EcsLte
         }
 
         #endregion
-
     }
 }

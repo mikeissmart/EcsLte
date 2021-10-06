@@ -18,6 +18,45 @@ namespace EcsLte
     internal class EcsContextData
     {
         private const int _entitiesInitSize = 4;
+        private readonly Dictionary<int, ComponentArcheTypeData> _componentArcheDataTypes;
+
+        private readonly List<EntityCollection> _entityCollections;
+        private readonly Dictionary<int, EntityFilterGroupData> _entityFilterGroups;
+        private readonly Dictionary<Filter, EntityFilterData> _entityFilters;
+        private readonly Dictionary<int, EntityGroupData> _entityGroups;
+        private int _entitiesCurrentSize;
+        private ComponentArcheTypeData[] _entityComponentArcheTypes;
+        private int _nextId;
+
+        public EcsContextData()
+        {
+            _entityCollections = new List<EntityCollection>();
+            _entityFilters = new Dictionary<Filter, EntityFilterData>();
+            _entityGroups = new Dictionary<int, EntityGroupData>();
+            _entityFilterGroups = new Dictionary<int, EntityFilterGroupData>();
+            _componentArcheDataTypes = new Dictionary<int, ComponentArcheTypeData>();
+            _entityComponentArcheTypes = new ComponentArcheTypeData[_entitiesInitSize];
+            _entitiesCurrentSize = _entitiesInitSize;
+            _nextId = 1;
+
+            // CurrentContext will be initialized later
+            ReuseableEntities = new Queue<Entity>();
+            ComponentPools = ComponentPoolIndexes.Instance.CreateComponentPools(_entitiesInitSize);
+            UniqueComponentEntities = new Entity[ComponentPoolIndexes.Instance.AllComponentCount];
+            // EntityComponentArcheTypes already initialized
+            EntityCommandQueue = new Dictionary<string, EntityCommandQueueData>();
+            // Entities will be initialized later
+            // Watchers will be initialized later
+        }
+
+        internal EcsContext CurrentContext { get; private set; }
+        internal Queue<Entity> ReuseableEntities { get; }
+        internal IComponentPool[] ComponentPools { get; }
+        internal Entity[] UniqueComponentEntities { get; }
+        internal ComponentArcheTypeData[] EntityComponentArcheTypes => _entityComponentArcheTypes;
+        internal Dictionary<string, EntityCommandQueueData> EntityCommandQueue { get; }
+        internal IEntityCollection Entities { get; private set; }
+        internal WatcherTable Watchers { get; private set; }
 
         internal static EcsContextData Initialize(EcsContext context)
         {
@@ -68,10 +107,10 @@ namespace EcsLte
 
             data.CurrentContext = null;
             data.ReuseableEntities.Clear();
-            for (int i = 0; i < data.ComponentPools.Length; i++)
+            for (var i = 0; i < data.ComponentPools.Length; i++)
                 data.ComponentPools[i].Clear();
             // data.ComponentPools dont clear
-            Array.Clear(data.UniqueComponentEntities, 0, ComponentPoolIndexes.Instance.Count);
+            Array.Clear(data.UniqueComponentEntities, 0, ComponentPoolIndexes.Instance.AllComponentCount);
             // data.EntityComponentArcheTypes already cleared
             foreach (var commandQueueData in data.EntityCommandQueue.Values)
                 EntityCommandQueueData.Uninitialize(commandQueueData);
@@ -85,45 +124,6 @@ namespace EcsLte
 
             ObjectCache<EcsContextData>.Push(data);
         }
-
-        private readonly List<EntityCollection> _entityCollections;
-        private readonly Dictionary<Filter, EntityFilterData> _entityFilters;
-        private readonly Dictionary<int, EntityGroupData> _entityGroups;
-        private readonly Dictionary<int, EntityFilterGroupData> _entityFilterGroups;
-        private readonly Dictionary<int, ComponentArcheTypeData> _componentArcheDataTypes;
-        private ComponentArcheTypeData[] _entityComponentArcheTypes;
-        private int _entitiesCurrentSize;
-        private int _nextId;
-
-        public EcsContextData()
-        {
-            _entityCollections = new List<EntityCollection>();
-            _entityFilters = new Dictionary<Filter, EntityFilterData>();
-            _entityGroups = new Dictionary<int, EntityGroupData>();
-            _entityFilterGroups = new Dictionary<int, EntityFilterGroupData>();
-            _componentArcheDataTypes = new Dictionary<int, ComponentArcheTypeData>();
-            _entityComponentArcheTypes = new ComponentArcheTypeData[_entitiesInitSize];
-            _entitiesCurrentSize = _entitiesInitSize;
-            _nextId = 1;
-
-            // CurrentContext will be initialized later
-            ReuseableEntities = new Queue<Entity>();
-            ComponentPools = ComponentPoolIndexes.Instance.CreateComponentPools(_entitiesInitSize);
-            UniqueComponentEntities = new Entity[ComponentPoolIndexes.Instance.Count];
-            // EntityComponentArcheTypes already initialized
-            EntityCommandQueue = new Dictionary<string, EntityCommandQueueData>();
-            // Entities will be initialized later
-            // Watchers will be initialized later
-        }
-
-        internal EcsContext CurrentContext { get; private set; }
-        internal Queue<Entity> ReuseableEntities { get; private set; }
-        internal IComponentPool[] ComponentPools { get; private set; }
-        internal Entity[] UniqueComponentEntities { get; private set; }
-        internal ComponentArcheTypeData[] EntityComponentArcheTypes { get => _entityComponentArcheTypes; }
-        internal Dictionary<string, EntityCommandQueueData> EntityCommandQueue { get; }
-        internal IEntityCollection Entities { get; private set; }
-        internal WatcherTable Watchers { get; private set; }
 
         internal event ComponentArcheTypeDataEvent AnyArcheTypeDataAdded;
 
@@ -174,7 +174,8 @@ namespace EcsLte
                 if (!_entityFilterGroups.TryGetValue(hashCode, out var data))
                 {
                     var archeTypeDatas = FilterComponentArcheTypeData(null, sharedComponents);
-                    data = EntityFilterGroupData.Initialize(this, hashCode,
+                    data = EntityFilterGroupData.Initialize(this,
+                        hashCode,
                         filter,
                         sharedComponents,
                         archeTypeDatas);
@@ -234,7 +235,9 @@ namespace EcsLte
                         ResizeEntityCollections(newSize);
                     }
                     else
+                    {
                         newSize = count;
+                    }
 
                     for (var i = 0; i < count; i++)
                     {
@@ -245,11 +248,13 @@ namespace EcsLte
                             entity.Version++;
                         }
                         else
+                        {
                             entity = new Entity
                             {
                                 Id = _nextId++,
                                 Version = 1
                             };
+                        }
 
                         entities[i] = entity;
                     }
@@ -275,13 +280,13 @@ namespace EcsLte
                     var config = bpComponent.Config;
                     if (config.IsUnique)
                     {
-                        if (UniqueComponentEntities[config.Index] != Entity.Null)
+                        if (UniqueComponentEntities[config.PoolIndex] != Entity.Null)
                             throw new EntityAlreadyHasUniqueComponentException(CurrentContext,
                                 bpComponent.Component.GetType());
-                        UniqueComponentEntities[config.Index] = entity;
+                        UniqueComponentEntities[config.PoolIndex] = entity;
                     }
 
-                    ComponentPools[config.Index].AddComponent(entity.Id, bpComponent.Component);
+                    ComponentPools[config.PoolIndex].AddComponent(entity.Id, bpComponent.Component);
                 }
             }
         }
@@ -353,7 +358,7 @@ namespace EcsLte
 
         internal ComponentArcheTypeData CreateOrGetComponentArcheTypeData(ComponentArcheType archeType)
         {
-            if (archeType.ComponentPoolIndexes == null)
+            if (archeType.PoolIndexes == null)
                 throw new ArgumentNullException();
             if (ComponentArcheType.IsEmpty(archeType))
                 return null;
@@ -387,7 +392,6 @@ namespace EcsLte
         internal void ResizeEntityCollections(int newSize)
         {
             if (newSize > _entitiesCurrentSize)
-            {
                 lock (_entityCollections)
                 {
                     _entitiesCurrentSize = newSize;
@@ -397,7 +401,6 @@ namespace EcsLte
                         ComponentPools[i].Resize(_entitiesCurrentSize);
                     Array.Resize(ref _entityComponentArcheTypes, _entitiesCurrentSize);
                 }
-            }
         }
 
         private void RemoveEntityFilterData(EntityFilterData data)
@@ -429,7 +432,7 @@ namespace EcsLte
 
         private class EntityCollection : IEntityCollection
         {
-            internal DataCache<Entity[], Entity[]> Entities;
+            internal readonly DataCache<Entity[], Entity[]> Entities;
 
             public EntityCollection()
             {

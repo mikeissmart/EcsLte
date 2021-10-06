@@ -40,14 +40,9 @@ namespace EcsLte
             {
                 _archeType = new ComponentArcheType();
                 foreach (var bpComponent in _components.Values)
-                    if (bpComponent.Config.IsShared)
-                        _archeType = ComponentArcheType.AppendSharedComponent(
-                            _archeType,
-                            (ISharedComponent)bpComponent.Component,
-                            bpComponent.Config.Index);
-                    else
-                        _archeType = ComponentArcheType.AppendComponentPoolIndex(
-                            _archeType, bpComponent.Config.Index);
+                    _archeType = ComponentArcheType.AppendComponent(
+                        _archeType, bpComponent.Component,
+                        bpComponent.Config);
                 _createArcheType = false;
             }
 
@@ -75,7 +70,7 @@ namespace EcsLte
 
         public bool HasComponent<TComponent>() where TComponent : IComponent
         {
-            return _components.ContainsKey(ComponentPoolIndex<TComponent>.Config.Index);
+            return _components.ContainsKey(ComponentPoolIndex<TComponent>.Config.PoolIndex);
         }
 
         public TComponent GetComponent<TComponent>() where TComponent : IComponent
@@ -83,7 +78,7 @@ namespace EcsLte
             if (!HasComponent<TComponent>())
                 throw new BlueprintNotHaveComponentException(typeof(TComponent));
 
-            return (TComponent)_components[ComponentPoolIndex<TComponent>.Config.Index].Component;
+            return (TComponent)_components[ComponentPoolIndex<TComponent>.Config.PoolIndex].Component;
         }
 
         public EntityBlueprint AddComponent<TComponent>(TComponent component) where TComponent : IComponent
@@ -92,7 +87,7 @@ namespace EcsLte
                 throw new BlueprintAlreadyHasComponentException(typeof(TComponent));
 
             var config = ComponentPoolIndex<TComponent>.Config;
-            _components.Add(config.Index,
+            _components.Add(config.PoolIndex,
                 new BlueprintComponent(config, component));
             _createArcheType = true;
 
@@ -103,7 +98,7 @@ namespace EcsLte
         {
             if (HasComponent<TComponent>())
             {
-                _components[ComponentPoolIndex<TComponent>.Config.Index].Component = newComponent;
+                _components[ComponentPoolIndex<TComponent>.Config.PoolIndex].Component = newComponent;
                 _createArcheType = true;
             }
             else
@@ -127,7 +122,7 @@ namespace EcsLte
             if (!HasComponent<TComponent>())
                 throw new BlueprintNotHaveComponentException(typeof(TComponent));
 
-            _components.Remove(ComponentPoolIndex<TComponent>.Config.Index);
+            _components.Remove(ComponentPoolIndex<TComponent>.Config.PoolIndex);
             _createArcheType = true;
 
             return this;

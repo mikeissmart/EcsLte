@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using EcsLte.Utilities;
 
@@ -9,116 +8,91 @@ namespace EcsLte
     {
         public static bool IsEmpty(ComponentArcheType archeType)
         {
-            return archeType.ComponentPoolIndexes?.Length == 0 &&
-                   archeType.SharedComponents?.Length == 0;
+            return archeType.PoolIndexes.Length == 0;
         }
 
         public static int CalculateHashCode(ComponentArcheType archeType)
         {
             var hashCode = -1663471673;
-            if (archeType.ComponentPoolIndexes != null)
+            if (archeType.PoolIndexes != null)
             {
-                hashCode = hashCode * -1521134295 + archeType.ComponentPoolIndexes.Length;
-                foreach (var index in archeType.ComponentPoolIndexes)
+                hashCode = hashCode * -1521134295 + archeType.PoolIndexes.Length;
+                foreach (var index in archeType.PoolIndexes)
                     hashCode = hashCode * -1521134295 + index.GetHashCode();
             }
 
             if (archeType.SharedComponents != null)
             {
                 hashCode = hashCode * -1521134295 + archeType.SharedComponents.Length;
-                foreach (var key in archeType.SharedComponents)
-                    hashCode = hashCode * -1521134295 + key.GetHashCode();
+                foreach (var component in archeType.SharedComponents)
+                    hashCode = hashCode * -1521134295 + component.GetHashCode();
             }
 
             return hashCode;
         }
 
-        internal static ComponentArcheType AppendComponentPoolIndex(int componentPoolIndex)
+        internal static ComponentArcheType AppendComponent(IComponent component, ComponentPoolConfig config)
         {
-            var result = new ComponentArcheType
+            return new ComponentArcheType
             {
-                ComponentPoolIndexes = new[] { componentPoolIndex },
-                SharedComponents = null
+                PoolIndexes = new[] { config.PoolIndex },
+                SharedComponents = config.IsShared
+                    ? new[] { (ISharedComponent)component }
+                    : null
             };
-
-            return result;
         }
 
-        internal static ComponentArcheType AppendComponentPoolIndex(ComponentArcheType archeType,
-            int componentPoolIndex)
+        internal static ComponentArcheType AppendComponent(ComponentArcheType archeType, IComponent component,
+            ComponentPoolConfig config)
         {
-            var result = new ComponentArcheType();
-            result.ComponentPoolIndexes =
-                archeType.ComponentPoolIndexes == null || archeType.ComponentPoolIndexes.Length == 0
-                    ? new[] { componentPoolIndex }
-                    : IndexHelpers
-                        .MergeDistinctIndex(archeType.ComponentPoolIndexes, componentPoolIndex);
-            result.SharedComponents = archeType.SharedComponents;
+            if (archeType.PoolIndexes == null)
+                return AppendComponent(component, config);
 
-            return result;
-        }
-
-        internal static ComponentArcheType RemoveComponentPoolIndex(ComponentArcheType archeType,
-            int componentPoolIndex)
-        {
-            var result = new ComponentArcheType();
-            result.ComponentPoolIndexes = archeType.ComponentPoolIndexes == null
-                ? new int[0]
-                : archeType.ComponentPoolIndexes
-                    .Where(x => x != componentPoolIndex)
-                    .ToArray();
-            result.SharedComponents = archeType.SharedComponents;
-
-            return result;
-        }
-
-        internal static ComponentArcheType AppendSharedComponent(ISharedComponent sharedComponent,
-            int componentPoolIndex)
-        {
-            var result = new ComponentArcheType
+            return new ComponentArcheType
             {
-                ComponentPoolIndexes = new[] { componentPoolIndex },
-                SharedComponents = new[] { sharedComponent }
+                PoolIndexes = IndexHelpers.MergeDistinctIndex(archeType.PoolIndexes, config.PoolIndex),
+                SharedComponents = config.IsShared
+                    ? MergeDistinctSharedComponents(archeType.SharedComponents, (ISharedComponent)component)
+                    : null
             };
-
-            return result;
         }
 
-        internal static ComponentArcheType AppendSharedComponent(
-            ComponentArcheType archeType, ISharedComponent sharedComponent, int componentPoolIndex)
+        internal static ComponentArcheType RemoveComponent(ComponentArcheType archeType, IComponent component,
+            ComponentPoolConfig config)
         {
-            var result = new ComponentArcheType();
-            result.ComponentPoolIndexes = IndexHelpers
-                .MergeDistinctIndex(archeType.ComponentPoolIndexes, componentPoolIndex);
-            if (archeType.SharedComponents != null)
+            return new ComponentArcheType
             {
-                result.SharedComponents = archeType.SharedComponents
-                    .Union(new[] { sharedComponent })
-                    .OrderBy(x => x.GetHashCode())
-                    .ToArray();
+                PoolIndexes = archeType.PoolIndexes
+                    .Where(x => x != config.PoolIndex)
+                    .ToArray(),
+                SharedComponents = config.IsShared
+                    ? archeType.SharedComponents.Length > 1
+                        ? archeType.SharedComponents
+                            .Where(x => !x.Equals(component))
+                            .ToArray()
+                        : null
+                    : null
+            };
+        }
+
+        private static ISharedComponent[] MergeDistinctSharedComponents(ISharedComponent[] sharedComponents,
+            ISharedComponent sharedComponent)
+        {
+            if (sharedComponents == null)
+            {
+                sharedComponents = new ISharedComponent[1] { sharedComponent };
             }
-            else
-                result.SharedComponents = new[] { sharedComponent };
+            else if (!sharedComponents.Any(x => x.Equals(sharedComponent)))
+            {
+                Array.Resize(ref sharedComponents, sharedComponents.Length + 1);
+                sharedComponents[sharedComponents.Length - 1] = sharedComponent;
+                Array.Sort(sharedComponents, (x, y) => x.GetHashCode().CompareTo(y.GetHashCode()));
+            }
 
-            return result;
+            return sharedComponents;
         }
 
-        internal static ComponentArcheType RemoveSharedComponent(
-            ComponentArcheType archeType, ISharedComponent sharedComponent, int componentPoolIndex)
-        {
-            var result = new ComponentArcheType();
-            result.ComponentPoolIndexes = archeType.ComponentPoolIndexes
-                .Where(x => x != componentPoolIndex)
-                .ToArray();
-            if (archeType.SharedComponents.Count() > 1)
-                result.SharedComponents = archeType.SharedComponents
-                    .Where(x => !x.Equals(sharedComponent))
-                    .ToArray();
-
-            return result;
-        }
-
-        internal int[] ComponentPoolIndexes { get; private set; }
+        internal int[] PoolIndexes { get; private set; }
         internal ISharedComponent[] SharedComponents { get; private set; }
     }
 }
