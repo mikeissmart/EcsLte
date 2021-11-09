@@ -11,16 +11,17 @@ namespace EcsLte.PerformanceTest
             base.PreRun();
 
             _entities = _context.CreateEntities(TestConsts.EntityLoopCount);
-            var component = new TestSharedComponent1();
-            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                _context.AddComponent(_entities[i], component);
         }
 
         public override void Run()
         {
-            var component = new TestSharedComponent2();
+            var component1 = new TestSharedComponent1();
+            var component2 = new TestSharedComponent2();
             for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                _context.AddComponent(_entities[i], component);
+            {
+                _context.AddComponent(_entities[i], component1);
+                _context.AddComponent(_entities[i], component2);
+            }
         }
 
         public override bool CanRunParallel()
@@ -30,9 +31,14 @@ namespace EcsLte.PerformanceTest
 
         public override void RunParallel()
         {
-            var component = new TestSharedComponent2();
+            var component1 = new TestSharedComponent1();
+            var component2 = new TestSharedComponent2();
             ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                i => { _context.AddComponent(_entities[i], component); });
+                i =>
+                {
+                    _context.AddComponent(_entities[i], component1);
+                    _context.AddComponent(_entities[i], component2);
+                });
         }
     }
 }
