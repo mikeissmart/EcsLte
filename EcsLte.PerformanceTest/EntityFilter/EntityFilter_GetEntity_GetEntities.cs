@@ -8,10 +8,10 @@ namespace EcsLte.PerformanceTest
         {
             base.PreRun();
 
-            var component = new TestComponent1();
+            var component = new TestStandardComponent1();
             _context.CreateEntities(TestConsts.EntityLoopCount, new EntityBlueprint()
                 .AddComponent(component));
-            _filter = _context.FilterBy(Filter.AllOf<TestComponent1>());
+            _filter = _context.FilterBy(Filter.AllOf<TestStandardComponent1>());
         }
 
         public override void Run()

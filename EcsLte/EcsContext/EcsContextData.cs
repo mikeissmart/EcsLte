@@ -18,7 +18,7 @@ namespace EcsLte
     internal class EcsContextData
     {
         private const int _entitiesInitSize = 4;
-        private readonly Dictionary<int, ComponentArcheTypeData> _componentArcheDataTypes;
+        private readonly Dictionary<ComponentArcheType, ComponentArcheTypeData> _componentArcheDataTypes;
 
         private readonly List<EntityCollection> _entityCollections;
         private readonly Dictionary<int, EntityFilterGroupData> _entityFilterGroups;
@@ -34,7 +34,7 @@ namespace EcsLte
             _entityFilters = new Dictionary<Filter, EntityFilterData>();
             _entityGroups = new Dictionary<int, EntityGroupData>();
             _entityFilterGroups = new Dictionary<int, EntityFilterGroupData>();
-            _componentArcheDataTypes = new Dictionary<int, ComponentArcheTypeData>();
+            _componentArcheDataTypes = new Dictionary<ComponentArcheType, ComponentArcheTypeData>();
             _entityComponentArcheTypes = new ComponentArcheTypeData[_entitiesInitSize];
             _entitiesCurrentSize = _entitiesInitSize;
             _nextId = 1;
@@ -363,13 +363,12 @@ namespace EcsLte
             if (ComponentArcheType.IsEmpty(archeType))
                 return null;
 
-            var archeTypeHashCode = ComponentArcheType.CalculateHashCode(archeType);
             lock (_componentArcheDataTypes)
             {
-                if (!_componentArcheDataTypes.TryGetValue(archeTypeHashCode, out var data))
+                if (!_componentArcheDataTypes.TryGetValue(archeType, out var data))
                 {
                     data = ComponentArcheTypeData.Initialize(archeType);
-                    _componentArcheDataTypes.Add(archeTypeHashCode, data);
+                    _componentArcheDataTypes.Add(archeType, data);
 
                     if (AnyArcheTypeDataAdded != null)
                         AnyArcheTypeDataAdded.Invoke(data);
@@ -381,10 +380,9 @@ namespace EcsLte
 
         internal void RemoveComponentArcheTypeData(ComponentArcheTypeData archeTypeData)
         {
-            var archeTypeHashCode = ComponentArcheType.CalculateHashCode(archeTypeData.ArcheType);
             lock (_componentArcheDataTypes)
             {
-                if (_componentArcheDataTypes.Remove(archeTypeHashCode))
+                if (_componentArcheDataTypes.Remove(archeTypeData.ArcheType))
                     ComponentArcheTypeData.Uninitialize(archeTypeData);
             }
         }

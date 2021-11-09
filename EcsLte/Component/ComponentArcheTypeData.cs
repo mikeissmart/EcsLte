@@ -35,8 +35,11 @@ namespace EcsLte
             if (data.ArcheTypeDataRemoved != null)
                 data.ArcheTypeDataRemoved.Invoke(data);
 
-            data._entities.UncachedData.Clear();
-            data._entities.SetDirty();
+            lock (data._entities)
+            {
+                data._entities.UncachedData.Clear();
+                data._entities.SetDirty();
+            }
             data.EntityAdded = null;
             data.EntityRemoved = null;
             data.EntityUpdated = null;

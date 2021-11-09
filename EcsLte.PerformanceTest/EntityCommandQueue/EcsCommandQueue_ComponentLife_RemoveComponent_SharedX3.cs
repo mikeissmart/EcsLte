@@ -1,0 +1,53 @@
+using EcsLte.Utilities;
+
+namespace EcsLte.PerformanceTest
+{
+    internal class EntityCommandQueue_ComponentLife_RemoveComponent_SharedX3 : BasePerformanceTest
+    {
+        private Entity[] _entities;
+
+        public override void PreRun()
+        {
+            base.PreRun();
+
+            _entities = _context.CreateEntities(TestConsts.EntityLoopCount);
+            var component1 = new TestSharedComponent1();
+            var component2 = new TestSharedComponent2();
+            var component3 = new TestSharedComponent3();
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
+            {
+                _context.AddComponent(_entities[i], component1);
+                _context.AddComponent(_entities[i], component2);
+                _context.AddComponent(_entities[i], component3);
+            }
+        }
+
+        public override void Run()
+        {
+            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
+            {
+                _context.DefaultCommand.RemoveComponent<TestSharedComponent1>(_entities[i]);
+                _context.DefaultCommand.RemoveComponent<TestSharedComponent2>(_entities[i]);
+                _context.DefaultCommand.RemoveComponent<TestSharedComponent3>(_entities[i]);
+            }
+            _context.DefaultCommand.RunCommands();
+        }
+
+        public override bool CanRunParallel()
+        {
+            return true;
+        }
+
+        public override void RunParallel()
+        {
+            ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
+                i =>
+                {
+                    _context.DefaultCommand.RemoveComponent<TestSharedComponent1>(_entities[i]);
+                    _context.DefaultCommand.RemoveComponent<TestSharedComponent2>(_entities[i]);
+                    _context.DefaultCommand.RemoveComponent<TestSharedComponent3>(_entities[i]);
+                });
+            _context.DefaultCommand.RunCommands();
+        }
+    }
+}

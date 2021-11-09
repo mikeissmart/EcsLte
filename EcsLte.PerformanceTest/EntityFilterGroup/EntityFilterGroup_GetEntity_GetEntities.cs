@@ -8,10 +8,13 @@ namespace EcsLte.PerformanceTest
         {
             base.PreRun();
 
-            var component = new TestSharedComponent1 { Prop = 1 };
+            var sharedComponent = new TestSharedComponent1 { Prop = 1 };
+            var standardComponent = new TestStandardComponent1 { Prop = 1 };
             _context.CreateEntities(TestConsts.EntityLoopCount, new EntityBlueprint()
-                .AddComponent(component));
-            _entityFilterGroup = _context.FilterByGroupWith(Filter.AllOf<TestSharedComponent1>(), component);
+                .AddComponent(sharedComponent)
+                .AddComponent(standardComponent));
+            _entityFilterGroup = _context.FilterByGroupWith(
+                Filter.AllOf<TestSharedComponent1>(), sharedComponent);
         }
 
         public override void Run()

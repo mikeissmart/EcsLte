@@ -1,21 +1,12 @@
+using System;
 using EcsLte;
 
-public struct TestComponent1 : IComponent
+public struct TestStandardComponent1 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent2 : IComponent
-{
-    public int Prop { get; set; }
-}
-
-public struct TestRecordableComponent1 : IRecordableComponent
-{
-    public int Prop { get; set; }
-}
-
-public struct TestRecordableComponent2 : IRecordableComponent
+public struct TestStandardComponent2 : IComponent
 {
     public int Prop { get; set; }
 }
@@ -26,6 +17,11 @@ public struct TestUniqueComponent1 : IUniqueComponent
 }
 
 public struct TestUniqueComponent2 : IUniqueComponent
+{
+    public int Prop { get; set; }
+}
+
+public struct TestUniqueComponent3 : IUniqueComponent
 {
     public int Prop { get; set; }
 }
@@ -75,487 +71,487 @@ public struct TestSharedComponent9 : ISharedComponent
     public int Prop { get; set; }
 }
 
-public struct TestComponent3 : IComponent
+public struct TestStandardComponent3 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent4 : IComponent
+public struct TestStandardComponent4 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent5 : IComponent
+public struct TestStandardComponent5 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent6 : IComponent
+public struct TestStandardComponent6 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent7 : IComponent
+public struct TestStandardComponent7 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent8 : IComponent
+public struct TestStandardComponent8 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent9 : IComponent
+public struct TestStandardComponent9 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent10 : IComponent
+public struct TestStandardComponent10 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent11 : IComponent
+public struct TestStandardComponent11 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent12 : IComponent
+public struct TestStandardComponent12 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent13 : IComponent
+public struct TestStandardComponent13 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent14 : IComponent
+public struct TestStandardComponent14 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent15 : IComponent
+public struct TestStandardComponent15 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent16 : IComponent
+public struct TestStandardComponent16 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent17 : IComponent
+public struct TestStandardComponent17 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent18 : IComponent
+public struct TestStandardComponent18 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent19 : IComponent
+public struct TestStandardComponent19 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent20 : IComponent
+public struct TestStandardComponent20 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent21 : IComponent
+public struct TestStandardComponent21 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent22 : IComponent
+public struct TestStandardComponent22 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent23 : IComponent
+public struct TestStandardComponent23 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent24 : IComponent
+public struct TestStandardComponent24 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent25 : IComponent
+public struct TestStandardComponent25 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent26 : IComponent
+public struct TestStandardComponent26 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent27 : IComponent
+public struct TestStandardComponent27 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent28 : IComponent
+public struct TestStandardComponent28 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent29 : IComponent
+public struct TestStandardComponent29 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent30 : IComponent
+public struct TestStandardComponent30 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent31 : IComponent
+public struct TestStandardComponent31 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent32 : IComponent
+public struct TestStandardComponent32 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent33 : IComponent
+public struct TestStandardComponent33 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent34 : IComponent
+public struct TestStandardComponent34 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent35 : IComponent
+public struct TestStandardComponent35 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent36 : IComponent
+public struct TestStandardComponent36 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent37 : IComponent
+public struct TestStandardComponent37 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent38 : IComponent
+public struct TestStandardComponent38 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent39 : IComponent
+public struct TestStandardComponent39 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent40 : IComponent
+public struct TestStandardComponent40 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent41 : IComponent
+public struct TestStandardComponent41 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent42 : IComponent
+public struct TestStandardComponent42 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent43 : IComponent
+public struct TestStandardComponent43 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent44 : IComponent
+public struct TestStandardComponent44 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent45 : IComponent
+public struct TestStandardComponent45 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent46 : IComponent
+public struct TestStandardComponent46 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent47 : IComponent
+public struct TestStandardComponent47 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent48 : IComponent
+public struct TestStandardComponent48 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent49 : IComponent
+public struct TestStandardComponent49 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent50 : IComponent
+public struct TestStandardComponent50 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent51 : IComponent
+public struct TestStandardComponent51 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent52 : IComponent
+public struct TestStandardComponent52 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent53 : IComponent
+public struct TestStandardComponent53 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent54 : IComponent
+public struct TestStandardComponent54 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent55 : IComponent
+public struct TestStandardComponent55 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent56 : IComponent
+public struct TestStandardComponent56 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent57 : IComponent
+public struct TestStandardComponent57 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent58 : IComponent
+public struct TestStandardComponent58 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent59 : IComponent
+public struct TestStandardComponent59 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent60 : IComponent
+public struct TestStandardComponent60 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent61 : IComponent
+public struct TestStandardComponent61 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent62 : IComponent
+public struct TestStandardComponent62 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent63 : IComponent
+public struct TestStandardComponent63 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent64 : IComponent
+public struct TestStandardComponent64 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent65 : IComponent
+public struct TestStandardComponent65 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent66 : IComponent
+public struct TestStandardComponent66 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent67 : IComponent
+public struct TestStandardComponent67 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent68 : IComponent
+public struct TestStandardComponent68 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent69 : IComponent
+public struct TestStandardComponent69 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent70 : IComponent
+public struct TestStandardComponent70 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent71 : IComponent
+public struct TestStandardComponent71 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent72 : IComponent
+public struct TestStandardComponent72 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent73 : IComponent
+public struct TestStandardComponent73 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent74 : IComponent
+public struct TestStandardComponent74 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent75 : IComponent
+public struct TestStandardComponent75 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent76 : IComponent
+public struct TestStandardComponent76 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent77 : IComponent
+public struct TestStandardComponent77 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent78 : IComponent
+public struct TestStandardComponent78 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent79 : IComponent
+public struct TestStandardComponent79 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent80 : IComponent
+public struct TestStandardComponent80 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent81 : IComponent
+public struct TestStandardComponent81 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent82 : IComponent
+public struct TestStandardComponent82 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent83 : IComponent
+public struct TestStandardComponent83 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent84 : IComponent
+public struct TestStandardComponent84 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent85 : IComponent
+public struct TestStandardComponent85 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent86 : IComponent
+public struct TestStandardComponent86 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent87 : IComponent
+public struct TestStandardComponent87 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent88 : IComponent
+public struct TestStandardComponent88 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent89 : IComponent
+public struct TestStandardComponent89 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent90 : IComponent
+public struct TestStandardComponent90 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent91 : IComponent
+public struct TestStandardComponent91 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent92 : IComponent
+public struct TestStandardComponent92 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent93 : IComponent
+public struct TestStandardComponent93 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent94 : IComponent
+public struct TestStandardComponent94 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent95 : IComponent
+public struct TestStandardComponent95 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent96 : IComponent
+public struct TestStandardComponent96 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent97 : IComponent
+public struct TestStandardComponent97 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent98 : IComponent
+public struct TestStandardComponent98 : IComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent99 : IComponent
+public struct TestStandardComponent99 : IComponent
 {
     public int Prop { get; set; }
 }

@@ -10,7 +10,7 @@ namespace EcsLte.PerformanceTest
         {
             base.PreRun();
 
-            _filter = Filter.AllOf<TestComponent1>();
+            _filter = Filter.AllOf<TestStandardComponent1>();
         }
 
         public override void Run()

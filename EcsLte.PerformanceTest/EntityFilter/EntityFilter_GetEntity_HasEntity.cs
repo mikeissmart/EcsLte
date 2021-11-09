@@ -11,8 +11,8 @@ namespace EcsLte.PerformanceTest
         {
             base.PreRun();
 
-            var component = new TestComponent1();
-            _entityFilter = _context.FilterBy(Filter.AllOf<TestComponent1>());
+            var component = new TestStandardComponent1();
+            _entityFilter = _context.FilterBy(Filter.AllOf<TestStandardComponent1>());
             _entities = _context.CreateEntities(TestConsts.EntityLoopCount);
             for (var i = 0; i < _entities.Length; i++)
                 _context.AddComponent(_entities[i], component);
