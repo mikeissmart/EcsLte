@@ -2,37 +2,34 @@ using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class EcsContext_ComponentLife_ReplaceComponent_Shared : BasePerformanceTest
-    {
-        private Entity[] _entities;
+	internal class EcsContext_ComponentLife_ReplaceComponent_Shared : BasePerformanceTest
+	{
+		private Entity[] _entities;
 
-        public override void PreRun()
-        {
-            base.PreRun();
+		public override void PreRun()
+		{
+			base.PreRun();
 
-            _entities = _context.CreateEntities(TestConsts.EntityLoopCount);
-            var component = new TestSharedComponent1();
-            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                _context.AddComponent(_entities[i], component);
-        }
+			_entities = _context.CreateEntities(TestConsts.EntityLoopCount);
+			var component = new TestSharedComponent1();
+			for (var i = 0; i < TestConsts.EntityLoopCount; i++)
+				_context.AddComponent(_entities[i], component);
+		}
 
-        public override void Run()
-        {
-            var component = new TestSharedComponent1();
-            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                _context.ReplaceComponent(_entities[i], component);
-        }
+		public override void Run()
+		{
+			var component = new TestSharedComponent1();
+			for (var i = 0; i < TestConsts.EntityLoopCount; i++)
+				_context.ReplaceComponent(_entities[i], component);
+		}
 
-        public override bool CanRunParallel()
-        {
-            return true;
-        }
+		public override bool CanRunParallel() => true;
 
-        public override void RunParallel()
-        {
-            var component = new TestSharedComponent1();
-            ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                i => { _context.ReplaceComponent(_entities[i], component); });
-        }
-    }
+		public override void RunParallel()
+		{
+			var component = new TestSharedComponent1();
+			ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
+				i => { _context.ReplaceComponent(_entities[i], component); });
+		}
+	}
 }

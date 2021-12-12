@@ -1,7 +1,7 @@
 namespace EcsLte.UnitTest.InterfaceTests
 {
-    public interface IEcsContextTest
-    {
-        void CurrentContext();
-    }
+	public interface IEcsContextTest
+	{
+		void CurrentContext();
+	}
 }

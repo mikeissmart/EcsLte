@@ -2,34 +2,31 @@ using EcsLte.Utilities;
 
 namespace EcsLte.PerformanceTest
 {
-    internal class EcsContext_EcsContext_FilterAll : BasePerformanceTest
-    {
-        private Filter _filter;
+	internal class EcsContext_EcsContext_FilterAll : BasePerformanceTest
+	{
+		private Filter _filter;
 
-        public override void PreRun()
-        {
-            base.PreRun();
+		public override void PreRun()
+		{
+			base.PreRun();
 
-            _filter = Filter.AllOfComponentIndexes();
-        }
+			_filter = Filter.AllOfComponentIndexes();
+		}
 
-        public override void Run()
-        {
-            EntityFilter entityFilter;
-            for (var i = 0; i < TestConsts.EntityLoopCount; i++)
-                entityFilter = _context.FilterBy(_filter);
-        }
+		public override void Run()
+		{
+			EntityFilter entityFilter;
+			for (var i = 0; i < TestConsts.EntityLoopCount; i++)
+				entityFilter = _context.FilterBy(_filter);
+		}
 
-        public override bool CanRunParallel()
-        {
-            return true;
-        }
+		public override bool CanRunParallel() => true;
 
-        public override void RunParallel()
-        {
-            EntityFilter entityFilter;
-            ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
-                i => { entityFilter = _context.FilterBy(_filter); });
-        }
-    }
+		public override void RunParallel()
+		{
+			EntityFilter entityFilter;
+			ParallelRunner.RunParallelFor(TestConsts.EntityLoopCount,
+				i => { entityFilter = _context.FilterBy(_filter); });
+		}
+	}
 }

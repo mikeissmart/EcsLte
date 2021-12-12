@@ -1,7 +1,7 @@
 namespace EcsLte
 {
-    public interface IEcsContext
-    {
-        EcsContext CurrentContext { get; }
-    }
+	public interface IEcsContext
+	{
+		EcsContext CurrentContext { get; }
+	}
 }
