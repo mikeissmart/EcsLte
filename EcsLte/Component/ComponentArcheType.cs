@@ -4,7 +4,7 @@ using EcsLte.Utilities;
 
 namespace EcsLte
 {
-	internal struct ComponentArcheType : IEquatable<ComponentArcheType>
+	public struct ComponentArcheType : IEquatable<ComponentArcheType>
 	{
 		public static bool IsEmpty(ComponentArcheType archeType) => archeType.PoolIndexes.Length == 0;
 
@@ -88,23 +88,29 @@ namespace EcsLte
 
 		public bool Equals(ComponentArcheType other)
 		{
-			if (SharedComponents == null && other.SharedComponents == null)
-				return true;
-			if ((SharedComponents == null || other.SharedComponents == null) ||
-				(SharedComponents.Length != other.SharedComponents.Length))
-				return false;
 			if (PoolIndexes.Length != other.PoolIndexes.Length)
 				return false;
-			for (var i = 0; i < SharedComponents.Length; i++)
-			{
-				if (!SharedComponents[i].Equals(other.SharedComponents[i]))
-					return false;
-			}
+			if ((SharedComponents == null && other.SharedComponents != null) ||
+				(SharedComponents != null && other.SharedComponents == null))
+				return false;
+
 			for (var i = 0; i < PoolIndexes.Length; i++)
 			{
 				if (PoolIndexes[i] != other.PoolIndexes[i])
 					return false;
 			}
+
+			if (SharedComponents != null && other.SharedComponents != null)
+			{
+				if (SharedComponents.Length != other.SharedComponents.Length)
+					return false;
+				for (var i = 0; i < SharedComponents.Length; i++)
+				{
+					if (!SharedComponents[i].Equals(other.SharedComponents[i]))
+						return false;
+				}
+			}
+
 			return true;
 		}
 	}

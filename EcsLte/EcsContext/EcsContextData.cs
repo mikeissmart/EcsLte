@@ -18,7 +18,7 @@ namespace EcsLte
 	internal class EcsContextData
 	{
 		private const int _entitiesInitSize = 4;
-		private readonly Dictionary<ComponentArcheType, ComponentArcheTypeData> _componentArcheDataTypes;
+		private readonly List<Dictionary<int, ComponentArcheTypeData>> _componentArcheDataTypes;
 
 		private readonly List<EntityCollection> _entityCollections;
 		private readonly Dictionary<int, EntityFilterGroupData> _entityFilterGroups;
@@ -34,7 +34,7 @@ namespace EcsLte
 			_entityFilters = new Dictionary<Filter, EntityFilterData>();
 			_entityGroups = new Dictionary<int, EntityGroupData>();
 			_entityFilterGroups = new Dictionary<int, EntityFilterGroupData>();
-			_componentArcheDataTypes = new Dictionary<ComponentArcheType, ComponentArcheTypeData>();
+			_componentArcheDataTypes = new List<Dictionary<int, ComponentArcheTypeData>>();
 			_entityComponentArcheTypes = new ComponentArcheTypeData[_entitiesInitSize];
 			_entitiesCurrentSize = _entitiesInitSize;
 			_nextId = 1;
@@ -98,8 +98,12 @@ namespace EcsLte
 			foreach (var entityFilterGroup in data._entityFilterGroups.Values)
 				EntityFilterGroupData.Uninitialize(entityFilterGroup);
 			data._entityFilterGroups.Clear();
-			foreach (var archeTypeData in data._componentArcheDataTypes.Values)
-				ComponentArcheTypeData.Uninitialize(archeTypeData);
+			foreach (var archeTypeDatas in data._componentArcheDataTypes)
+			{
+				foreach (var archeTypeData in archeTypeDatas.Values)
+					ComponentArcheTypeData.Uninitialize(archeTypeData);
+				archeTypeDatas.Clear();
+			}
 			data._componentArcheDataTypes.Clear();
 			Array.Clear(data._entityComponentArcheTypes, 0, data._entitiesCurrentSize);
 			// data._entitiesCurrentSize keep
@@ -320,20 +324,16 @@ namespace EcsLte
 			}
 		}
 
-		internal void AddEntityToArcheType(Entity entity, ComponentArcheType archeType)
+		// base					900
+		// no Create/get		520
+		// dic to int vs type	720
+
+		internal ComponentArcheTypeData AddEntityToArcheType(Entity entity, ComponentArcheType archeType)
 		{
 			var archeTypeData = CreateOrGetComponentArcheTypeData(archeType);
 			if (archeTypeData != null)
 				archeTypeData.AddEntity(entity);
-			EntityComponentArcheTypes[entity.Id] = archeTypeData;
-		}
-
-		internal void RemoveEntityFromArcheType(Entity entity, ComponentArcheTypeData archeTypeData)
-		{
-			archeTypeData.RemoveEntity(entity);
-			EntityComponentArcheTypes[entity.Id] = null;
-			if (archeTypeData.Count == 0)
-				RemoveComponentArcheTypeData(archeTypeData);
+			return archeTypeData;
 		}
 
 		internal ComponentArcheTypeData[] FilterComponentArcheTypeData(Filter? filter,
@@ -342,6 +342,10 @@ namespace EcsLte
 			lock (_componentArcheDataTypes)
 			{
 				var query = _componentArcheDataTypes
+					.Skip(sharedComponents == null || _componentArcheDataTypes.Count <= sharedComponents.Length
+						? 0
+						: sharedComponents.Length)
+					.SelectMany(x => x)
 					.AsParallel();
 
 				if (filter != null)
@@ -365,10 +369,15 @@ namespace EcsLte
 
 			lock (_componentArcheDataTypes)
 			{
-				if (!_componentArcheDataTypes.TryGetValue(archeType, out var data))
+				while (_componentArcheDataTypes.Count < archeType.PoolIndexes.Length)
+					_componentArcheDataTypes.Add(new Dictionary<int, ComponentArcheTypeData>());
+
+				var archeTypeData = _componentArcheDataTypes[archeType.PoolIndexes.Length - 1];
+				var hasCode = archeType.GetHashCode();
+				if (!archeTypeData.TryGetValue(hasCode, out var data))
 				{
 					data = ComponentArcheTypeData.Initialize(archeType);
-					_componentArcheDataTypes.Add(archeType, data);
+					archeTypeData.Add(hasCode, data);
 
 					if (AnyArcheTypeDataAdded != null)
 						AnyArcheTypeDataAdded.Invoke(data);
@@ -378,14 +387,14 @@ namespace EcsLte
 			}
 		}
 
-		internal void RemoveComponentArcheTypeData(ComponentArcheTypeData archeTypeData)
+		/*internal void RemoveComponentArcheTypeData(ComponentArcheTypeData archeTypeData)
 		{
 			lock (_componentArcheDataTypes)
 			{
 				if (_componentArcheDataTypes.Remove(archeTypeData.ArcheType))
 					ComponentArcheTypeData.Uninitialize(archeTypeData);
 			}
-		}
+		}*/
 
 		internal void ResizeEntityCollections(int newSize)
 		{

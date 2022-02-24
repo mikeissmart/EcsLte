@@ -392,6 +392,7 @@ namespace EcsLte
 		public void AddComponent<TComponent>(Entity entity, TComponent component)
 			where TComponent : IComponent
 		{
+			// bar min 212
 			if (HasComponent<TComponent>(entity))
 				throw new EntityAlreadyHasComponentException(this, entity, typeof(TComponent));
 
@@ -407,6 +408,8 @@ namespace EcsLte
 
 			_data.ComponentPools[config.PoolIndex].AddComponent(entity.Id, component);
 
+			// base						930
+			// No adding to archetype	360
 			ComponentArcheType nextArcheType;
 			if (oldArcheTypeData != null)
 				nextArcheType = ComponentArcheType.AppendComponent(
@@ -416,8 +419,8 @@ namespace EcsLte
 					component, config);
 
 			if (oldArcheTypeData != null)
-				_data.RemoveEntityFromArcheType(entity, oldArcheTypeData);
-			_data.AddEntityToArcheType(entity, nextArcheType);
+				oldArcheTypeData.RemoveEntity(entity);
+			_data.EntityComponentArcheTypes[entity.Id] = _data.AddEntityToArcheType(entity, nextArcheType);
 		}
 
 		public void ReplaceComponent<TComponent>(Entity entity, TComponent newComponent)
@@ -445,8 +448,8 @@ namespace EcsLte
 					nextArcheType = ComponentArcheType.AppendComponent(
 						nextArcheType, newComponent, config);
 
-					_data.RemoveEntityFromArcheType(entity, oldArcheTypeData);
-					_data.AddEntityToArcheType(entity, nextArcheType);
+					oldArcheTypeData.RemoveEntity(entity);
+					_data.EntityComponentArcheTypes[entity.Id] = _data.AddEntityToArcheType(entity, nextArcheType);
 				}
 				else
 				{
@@ -473,8 +476,8 @@ namespace EcsLte
 			var nextArcheType = ComponentArcheType.RemoveComponent(
 				oldArcheTypeData.ArcheType, oldComponent, config);
 
-			_data.RemoveEntityFromArcheType(entity, oldArcheTypeData);
-			_data.AddEntityToArcheType(entity, nextArcheType);
+			oldArcheTypeData.RemoveEntity(entity);
+			_data.EntityComponentArcheTypes[entity.Id] = _data.AddEntityToArcheType(entity, nextArcheType);
 		}
 
 		public void RemoveAllComponents(Entity entity)
@@ -482,10 +485,10 @@ namespace EcsLte
 			if (!HasEntity(entity))
 				throw new EntityDoesNotExistException(this, entity);
 
-			var archeTypeData = _data.EntityComponentArcheTypes[entity.Id];
-			if (archeTypeData != null)
+			var oldArcheTypeData = _data.EntityComponentArcheTypes[entity.Id];
+			if (oldArcheTypeData != null)
 			{
-				var archeType = archeTypeData.ArcheType;
+				var archeType = oldArcheTypeData.ArcheType;
 				for (var i = 0; i < archeType.PoolIndexes.Length; i++)
 				{
 					var poolIndex = archeType.PoolIndexes[i];
@@ -496,7 +499,8 @@ namespace EcsLte
 					_data.ComponentPools[poolIndex].RemoveComponent(entity.Id);
 				}
 
-				_data.RemoveEntityFromArcheType(entity, archeTypeData);
+				oldArcheTypeData.RemoveEntity(entity);
+				_data.EntityComponentArcheTypes[entity.Id] = null;
 			}
 		}
 

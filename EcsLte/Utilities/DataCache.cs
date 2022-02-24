@@ -4,7 +4,6 @@ namespace EcsLte.Utilities
 {
 	public class DataCache<TUncached, TCached>
 	{
-		private readonly object _isDirtyLock;
 		private readonly Func<TUncached, TCached> _recacheFunc;
 		private TCached _cachedData;
 		private bool _isDirty;
@@ -15,7 +14,6 @@ namespace EcsLte.Utilities
 		{
 			_recacheFunc = recacheFunc;
 			_isDirty = true;
-			_isDirtyLock = new object();
 
 			UncachedData = initializeUncache;
 		}
@@ -36,17 +34,10 @@ namespace EcsLte.Utilities
 		{
 			get
 			{
-				lock (_isDirtyLock)
+				if (_isDirty)
 				{
-					if (_isDirty)
-					{
-						lock (this)
-						{
-							_cachedData = _recacheFunc(UncachedData);
-						}
-
-						_isDirty = false;
-					}
+					_cachedData = _recacheFunc(UncachedData);
+					_isDirty = false;
 				}
 
 				return _cachedData;

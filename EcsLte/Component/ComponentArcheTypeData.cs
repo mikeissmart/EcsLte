@@ -9,9 +9,14 @@ namespace EcsLte
 	internal class ComponentArcheTypeData : IGetEntity
 	{
 		private DataCache<Dictionary<int, Entity>, Entity[]> _entities;
+		private readonly object _modifyLock;
 
-		public ComponentArcheTypeData() => _entities = new DataCache<Dictionary<int, Entity>, Entity[]>(
-				new Dictionary<int, Entity>(), UpdateCachedData);
+		public ComponentArcheTypeData()
+		{
+			_entities = new DataCache<Dictionary<int, Entity>, Entity[]>(
+					new Dictionary<int, Entity>(), UpdateCachedData);
+			_modifyLock = new object();
+		}
 
 		internal ComponentArcheType ArcheType { get; private set; }
 		internal int Count => _entities.UncachedData.Count;
@@ -32,7 +37,7 @@ namespace EcsLte
 			if (data.ArcheTypeDataRemoved != null)
 				data.ArcheTypeDataRemoved.Invoke(data);
 
-			lock (data._entities)
+			lock (data._modifyLock)
 			{
 				data._entities.UncachedData.Clear();
 				data._entities.SetDirty();
@@ -54,7 +59,7 @@ namespace EcsLte
 
 		internal void AddEntity(Entity entity)
 		{
-			lock (_entities)
+			lock (_modifyLock)
 			{
 				_entities.UncachedData.Add(entity.Id, entity);
 				_entities.SetDirty();
@@ -66,7 +71,7 @@ namespace EcsLte
 
 		internal void RemoveEntity(Entity entity)
 		{
-			lock (_entities)
+			lock (_modifyLock)
 			{
 				_entities.UncachedData.Remove(entity.Id);
 				_entities.SetDirty();

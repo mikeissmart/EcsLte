@@ -57,10 +57,13 @@ namespace EcsLte.PerformanceTest
 				File.WriteAllText($"{resultDir}/PerformanceTest {DateTime.Now.ToString("yyyy-MM-dd HHmm")}.csv", _toCsv.ToString());
 			}
 
+			//Run(typeof(EcsContext_ComponentLife_ReplaceComponent_StandardX3));
+
+			Console.WriteLine("");
 			Console.WriteLine("Press any key to continue...");
-#if RELEASE
-            Console.ReadKey();
-#endif
+			//#if RELEASE
+			Console.ReadKey();
+			//#endif
 		}
 
 		private static void Run(Type testType)
