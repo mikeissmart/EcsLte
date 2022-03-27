@@ -1,117 +1,173 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using EcsLte.Utilities;
+using System.Text;
 
 namespace EcsLte
 {
-	public struct ComponentArcheType : IEquatable<ComponentArcheType>
+	internal struct ComponentArcheType : IEquatable<ComponentArcheType>
 	{
-		public static bool IsEmpty(ComponentArcheType archeType) => archeType.PoolIndexes.Length == 0;
+		public ComponentConfig[] ComponentConfigs { get; set; }
+		public ShareComponentDataIndex[] ShareComponentDataIndexes { get; set; }
 
-		internal static ComponentArcheType AppendComponent(IComponent component, ComponentPoolConfig config) => new ComponentArcheType
+		public static ComponentArcheType AppendComponent(ComponentArcheType archeType, ComponentConfig config)
 		{
-			PoolIndexes = new[] { config.PoolIndex },
-			SharedComponents = config.IsShared
-					? new[] { (ISharedComponent)component }
-					: null
-		};
-
-		internal static ComponentArcheType AppendComponent(ComponentArcheType archeType, IComponent component,
-			ComponentPoolConfig config)
-		{
-			if (archeType.PoolIndexes == null)
-				return AppendComponent(component, config);
-
-			return new ComponentArcheType
+			if (archeType.ComponentConfigs == null)
 			{
-				PoolIndexes = IndexHelpers.MergeDistinctIndex(archeType.PoolIndexes, config.PoolIndex),
-				SharedComponents = config.IsShared
-					? MergeDistinctSharedComponents(archeType.SharedComponents, (ISharedComponent)component)
-					: null
-			};
-		}
-
-		internal static ComponentArcheType RemoveComponent(ComponentArcheType archeType, IComponent component,
-			ComponentPoolConfig config) => new ComponentArcheType
-			{
-				PoolIndexes = archeType.PoolIndexes
-					.Where(x => x != config.PoolIndex)
-					.ToArray(),
-				SharedComponents = config.IsShared
-					? archeType.SharedComponents.Length > 1
-						? archeType.SharedComponents
-							.Where(x => !x.Equals(component))
-							.ToArray()
-						: null
-					: null
-			};
-
-		private static ISharedComponent[] MergeDistinctSharedComponents(ISharedComponent[] sharedComponents,
-			ISharedComponent sharedComponent)
-		{
-			if (sharedComponents == null)
-			{
-				sharedComponents = new ISharedComponent[1] { sharedComponent };
-			}
-			else if (!sharedComponents.Any(x => x.Equals(sharedComponent)))
-			{
-				Array.Resize(ref sharedComponents, sharedComponents.Length + 1);
-				sharedComponents[sharedComponents.Length - 1] = sharedComponent;
-				Array.Sort(sharedComponents, (x, y) => x.GetHashCode().CompareTo(y.GetHashCode()));
-			}
-
-			return sharedComponents;
-		}
-
-		internal int[] PoolIndexes { get; private set; }
-		internal ISharedComponent[] SharedComponents { get; private set; }
-
-		public override int GetHashCode()
-		{
-			var hashCode = -1663471673;
-			if (PoolIndexes != null)
-			{
-				hashCode = hashCode * -1521134295 + PoolIndexes.Length;
-				foreach (var index in PoolIndexes)
-					hashCode = hashCode * -1521134295 + index.GetHashCode();
-			}
-
-			if (SharedComponents != null)
-			{
-				hashCode = hashCode * -1521134295 + SharedComponents.Length;
-				foreach (var component in SharedComponents)
-					hashCode = hashCode * -1521134295 + component.GetHashCode();
-			}
-
-			return hashCode;
-		}
-
-		public bool Equals(ComponentArcheType other)
-		{
-			if (PoolIndexes.Length != other.PoolIndexes.Length)
-				return false;
-			if ((SharedComponents == null && other.SharedComponents != null) ||
-				(SharedComponents != null && other.SharedComponents == null))
-				return false;
-
-			for (var i = 0; i < PoolIndexes.Length; i++)
-			{
-				if (PoolIndexes[i] != other.PoolIndexes[i])
-					return false;
-			}
-
-			if (SharedComponents != null && other.SharedComponents != null)
-			{
-				if (SharedComponents.Length != other.SharedComponents.Length)
-					return false;
-				for (var i = 0; i < SharedComponents.Length; i++)
+				return new ComponentArcheType
 				{
-					if (!SharedComponents[i].Equals(other.SharedComponents[i]))
-						return false;
+					ComponentConfigs = new[] { config },
+					ShareComponentDataIndexes = new ShareComponentDataIndex[0]
+				};
+			}
+
+			var newArcheType = new ComponentArcheType
+			{
+				ComponentConfigs = new ComponentConfig[archeType.ComponentConfigs.Length + 1],
+				ShareComponentDataIndexes = new ShareComponentDataIndex[archeType.ShareComponentDataIndexes.Length]
+			};
+
+			Array.Copy(archeType.ComponentConfigs, newArcheType.ComponentConfigs, archeType.ComponentConfigs.Length);
+			Array.Copy(archeType.ShareComponentDataIndexes, newArcheType.ShareComponentDataIndexes, archeType.ShareComponentDataIndexes.Length);
+
+			newArcheType.ComponentConfigs[archeType.ComponentConfigs.Length] = config;
+			Array.Sort(newArcheType.ComponentConfigs);
+
+			return newArcheType;
+		}
+
+		public static ComponentArcheType AppendComponent(ComponentArcheType archeType, ComponentConfig config, int sharedComponentDataIndex)
+		{
+			if (archeType.ComponentConfigs == null)
+			{
+				return new ComponentArcheType
+				{
+					ComponentConfigs = new[] { config },
+					ShareComponentDataIndexes = new ShareComponentDataIndex[0]
+				};
+			}
+
+			var newArcheType = new ComponentArcheType
+			{
+				ComponentConfigs = new ComponentConfig[archeType.ComponentConfigs.Length + 1],
+				ShareComponentDataIndexes = new ShareComponentDataIndex[archeType.ShareComponentDataIndexes.Length + 1]
+			};
+
+			Array.Copy(archeType.ComponentConfigs, newArcheType.ComponentConfigs, archeType.ComponentConfigs.Length);
+			Array.Copy(archeType.ShareComponentDataIndexes, newArcheType.ShareComponentDataIndexes, archeType.ShareComponentDataIndexes.Length);
+
+			newArcheType.ComponentConfigs[archeType.ComponentConfigs.Length] = config;
+			newArcheType.ShareComponentDataIndexes[archeType.ShareComponentDataIndexes.Length] = new ShareComponentDataIndex
+			{
+				SharedIndex = config.SharedIndex,
+				SharedDataIndex = sharedComponentDataIndex
+			};
+			Array.Sort(newArcheType.ComponentConfigs);
+			Array.Sort(newArcheType.ShareComponentDataIndexes);
+
+			return newArcheType;
+		}
+
+		public static ComponentArcheType ReplaceSharedComponent(ComponentArcheType archeType, ComponentConfig config, int sharedComponentDataIndex)
+		{
+			var newArcheType = new ComponentArcheType
+			{
+				ComponentConfigs = new ComponentConfig[archeType.ComponentConfigs.Length],
+				ShareComponentDataIndexes = new ShareComponentDataIndex[archeType.ShareComponentDataIndexes.Length]
+			};
+
+			Array.Copy(archeType.ComponentConfigs, newArcheType.ComponentConfigs, archeType.ComponentConfigs.Length);
+			Array.Copy(archeType.ShareComponentDataIndexes, newArcheType.ShareComponentDataIndexes, archeType.ShareComponentDataIndexes.Length);
+
+			for (int i = 0; i < newArcheType.ShareComponentDataIndexes.Length; i++)
+			{
+				if (newArcheType.ShareComponentDataIndexes[i].SharedIndex == config.SharedIndex)
+				{
+					newArcheType.ShareComponentDataIndexes[i] = new ShareComponentDataIndex
+					{
+						SharedIndex = config.SharedIndex,
+						SharedDataIndex = sharedComponentDataIndex
+					};
+					break;
 				}
 			}
 
+			return newArcheType;
+		}
+
+		public static ComponentArcheType RemoveComponent(ComponentArcheType archeType, ComponentConfig config)
+		{
+			var newArcheType = new ComponentArcheType
+			{
+				ComponentConfigs = archeType.ComponentConfigs
+					.Where(x => x != config)
+					.ToArray()
+			};
+
+			if (config.IsShared)
+			{
+				newArcheType.ShareComponentDataIndexes = archeType.ShareComponentDataIndexes
+					.Where(x => x.SharedIndex != config.SharedIndex)
+					.ToArray();
+			}
+			else
+				Array.Copy(archeType.ShareComponentDataIndexes, newArcheType.ShareComponentDataIndexes, archeType.ShareComponentDataIndexes.Length);
+
+			return newArcheType;
+		}
+
+		public static bool operator !=(ComponentArcheType lhs, ComponentArcheType rhs) => !(lhs == rhs);
+
+		public static bool operator ==(ComponentArcheType lhs, ComponentArcheType rhs)
+		{
+			if ((lhs.ComponentConfigs == null && rhs.ComponentConfigs != null) ||
+				(lhs.ComponentConfigs != null && rhs.ComponentConfigs == null))
+				return false;
+			if (lhs.ComponentConfigs == null && rhs.ComponentConfigs == null)
+				return true;
+			if (lhs.ComponentConfigs.Length != rhs.ComponentConfigs.Length)
+				return false;
+			for (int i = 0; i < lhs.ComponentConfigs.Length; i++)
+			{
+				if (lhs.ComponentConfigs[i] != rhs.ComponentConfigs[i])
+					return false;
+			}
+
+			if ((lhs.ShareComponentDataIndexes == null && rhs.ShareComponentDataIndexes != null) ||
+				(lhs.ShareComponentDataIndexes != null && rhs.ShareComponentDataIndexes == null))
+				return false;
+			if (lhs.ShareComponentDataIndexes == null && rhs.ShareComponentDataIndexes == null)
+				return true;
+			if (lhs.ShareComponentDataIndexes.Length != rhs.ShareComponentDataIndexes.Length)
+				return false;
+			for (int i = 0; i < lhs.ShareComponentDataIndexes.Length; i++)
+			{
+				if (lhs.ShareComponentDataIndexes[i] != rhs.ShareComponentDataIndexes[i])
+					return false;
+			}
+
 			return true;
+		}
+
+		public bool IsEmpty()
+			=> ComponentConfigs == null || ComponentConfigs.Length == 0;
+
+		public bool Equals(ComponentArcheType other)
+			=> this == other;
+
+		public override bool Equals(object other)
+			=> other is ComponentArcheType obj && this == obj;
+
+		public override int GetHashCode()
+		{
+			var hashCode = 1922561553;
+			hashCode = hashCode * -1521134295 + (ComponentConfigs != null
+				? EqualityComparer<ComponentConfig[]>.Default.GetHashCode(ComponentConfigs)
+				: 0);
+			hashCode = hashCode * -1521134295 + (ShareComponentDataIndexes != null
+				? EqualityComparer<ShareComponentDataIndex[]>.Default.GetHashCode(ShareComponentDataIndexes)
+				: 0);
+			return hashCode;
 		}
 	}
 }

@@ -1,0 +1,31 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "850d603b-b663-4f39-9d9c-0cdff78ba234": {
+      "ProjectGuid": "850d603b-b663-4f39-9d9c-0cdff78ba234",
+      "DisplayName": "EcsLte",
+      "ColorIndex": 0
+    },
+    "0436b5b7-3b80-499c-9fe6-4a8f793615df": {
+      "ProjectGuid": "0436b5b7-3b80-499c-9fe6-4a8f793615df",
+      "DisplayName": "EcsLte.BencharkTest",
+      "ColorIndex": 1
+    },
+    "01ccdd40-2655-46a3-b17e-cb5da3496ba0": {
+      "ProjectGuid": "01ccdd40-2655-46a3-b17e-cb5da3496ba0",
+      "DisplayName": "EcsLte.UnitTest",
+      "ColorIndex": 2
+    },
+    "ee3f4a86-1760-4078-96eb-9d429a0e9100": {
+      "ProjectGuid": "ee3f4a86-1760-4078-96eb-9d429a0e9100",
+      "DisplayName": "Solution Items",
+      "ColorIndex": 3
+    },
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "Miscellaneous Files",
+      "ColorIndex": -1
+    }
+  },
+  "NextColorIndex": 4
+}

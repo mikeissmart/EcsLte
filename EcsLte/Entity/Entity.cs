@@ -1,9 +1,9 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace EcsLte
 {
-	internal delegate void EntityEvent(Entity entity);
-
 	public struct Entity : IEquatable<Entity>, IComparable<Entity>
 	{
 		public static readonly Entity Null = new Entity();
@@ -30,8 +30,14 @@ namespace EcsLte
 
 		public override bool Equals(object other) => other is Entity obj && this == obj;
 
-		public override int GetHashCode() => (Id, Version).GetHashCode();
-
 		public override string ToString() => $"({Id}, {Version})";
-	}
+
+        public override int GetHashCode()
+        {
+            int hashCode = -612338121;
+            hashCode = hashCode * -1521134295 + Id.GetHashCode();
+            hashCode = hashCode * -1521134295 + Version.GetHashCode();
+            return hashCode;
+        }
+    }
 }

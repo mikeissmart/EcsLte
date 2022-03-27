@@ -1,12 +1,17 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace EcsLte.Exceptions
 {
 	public class EcsLteException : Exception
 	{
-		public EcsLteException(string message, string hint)
-			: base(hint != null ? message + Environment.NewLine + hint : message)
+		public EcsLteException(string message) : base(message)
 		{
 		}
+
+		protected static string TypesToString(Type[] types)
+			=> string.Join(", ", types.Select(x => x.Name));
 	}
 }

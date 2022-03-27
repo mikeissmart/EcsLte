@@ -1,9 +1,14 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using EcsLte.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace EcsLte.UnitTest.EcsContextsTests
 {
-	[TestClass]
+	/*[TestClass]
 	public class EcsContexts_EcsContextLife
 	{
 		[TestMethod]
@@ -66,5 +71,5 @@ namespace EcsLte.UnitTest.EcsContextsTests
 
 			Assert.ThrowsException<EcsContextIsDestroyedException>(() => EcsContexts.DestroyContext(context));
 		}
-	}
+	}*/
 }

@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "A1csc8MiyjWzsbgCY2WTbAq8xEQJ4ptdJeEa4R96O/FHndPqYBPIJeEBcNZsIeoF+Oguo/3AOPtDN2ZLLnm9ng==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\mtaylor\\Documents\\Projects\\VisualStudio\\EcsLte\\EcsLte\\EcsLte\\EcsLte.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\mtaylor\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "C:\\Users\\mtaylor\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512",
+    "C:\\Users\\mtaylor\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\4.5.2\\system.runtime.compilerservices.unsafe.4.5.2.nupkg.sha512"
+  ],
+  "logs": []
+}

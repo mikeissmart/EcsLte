@@ -1,4 +1,4 @@
-namespace EcsLte
+﻿namespace EcsLte
 {
 	public interface IComponent
 	{
