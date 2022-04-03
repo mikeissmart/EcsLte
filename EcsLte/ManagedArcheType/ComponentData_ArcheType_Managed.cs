@@ -109,6 +109,12 @@ namespace EcsLte.ManagedArcheType
             }
         }
 
+        internal void SetEntityBlueprintData(EntityData_ArcheType_Managed entityData, EntityBlueprintData_ArcheType_Managed blueprintData)
+        {
+            for (int i = 0; i < blueprintData.Configs.Length; i++)
+                _componentPools[i].SetComponent(entityData.Index, blueprintData.Components[i]);
+        }
+
         public void SetComponent(EntityData_ArcheType_Managed entityData, ComponentConfig config, IComponent component)
         {
             _componentPools[_configs[config]].SetComponent(entityData.Index, component);

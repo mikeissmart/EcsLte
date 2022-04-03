@@ -6,7 +6,14 @@ namespace EcsLte.Data
 {
 	internal interface IIndexDictionary
 	{
-		int GetIndexObj(object value);
+		/// <summary>
+		/// Return true = new index for value, false = existing index for value
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="index"></param>
+		/// <returns></returns>
+		bool GetIndexObj(object key, out int index);
+		int GetIndexObj(object key);
 		void Clear();
 	}
 
@@ -27,51 +34,84 @@ namespace EcsLte.Data
 		}
 	}
 
-	internal class IndexDictionary<TValue> : IIndexDictionary
+	internal class IndexDictionary<TKey> : IIndexDictionary
 	{
-		private readonly Dictionary<TValue, int> _indexes;
+		private readonly Dictionary<TKey, int> _indexes;
 		private int _nextIndex;
 
 		public IndexDictionary()
 		{
-			_indexes = new Dictionary<TValue, int>();
-			_nextIndex = 1;
+			_indexes = new Dictionary<TKey, int>();
 		}
 
-		public int GetIndex(TValue value)
+		public IEnumerable<TKey> Keys { get => _indexes.Keys; }
+		public IEnumerable<int> Indexes { get => _indexes.Values; }
+		public IEnumerable<KeyValuePair<TKey,int>> KeyValuePairs { get => _indexes; }
+
+		public Dictionary<TKey, int> GetDictionary()
 		{
-			if (!_indexes.TryGetValue(value, out int index))
+			return _indexes;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="index"></param>
+		/// <returns>true = new index for value, false = existing index for value</returns>
+		public bool GetIndex(TKey key, out int index)
+		{
+			if (!_indexes.TryGetValue(key, out index))
 			{
 				index = _nextIndex++;
-				_indexes.Add(value, index);
+				_indexes.Add(key, index);
+				return true;
 			}
+
+			return false;
+		}
+		public int GetIndex(TKey key)
+		{
+			if (!_indexes.TryGetValue(key, out var index))
+			{
+				index = _nextIndex++;
+				_indexes.Add(key, index);
+			}
+
 			return index;
 		}
 
-		public void RemoveValue(TValue value)
+		public bool GetIndexObj(object key, out int index)
 		{
-			_indexes.Remove(value);
+			if (key is TKey val)
+				return GetIndex(val, out index);
+			throw new InvalidCastException("key");
 		}
 
-		public int GetIndexObj(object value)
+		public int GetIndexObj(object key)
 		{
-			if (value is TValue val)
+			if (key is TKey val)
 				return GetIndex(val);
-			throw new InvalidCastException("value");
+			throw new InvalidCastException("key");
+		}
+
+		public void RemoveValue(TKey key)
+		{
+			_indexes.Remove(key);
 		}
 
 		public void RemoveObj(object value)
 		{
-			if (value is TValue val)
+			if (value is TKey val)
 				RemoveValue(val);
 			else
-				throw new InvalidCastException("value");
+				throw new InvalidCastException("key");
 		}
 
 		public void Clear()
 		{
 			_indexes.Clear();
-			_nextIndex = 1;
+			_nextIndex = 0;
 		}
 	}
 }

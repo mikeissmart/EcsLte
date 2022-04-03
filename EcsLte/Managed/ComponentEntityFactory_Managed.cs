@@ -45,23 +45,63 @@ namespace EcsLte.Managed
                 _entities.UncachedData[entity.Id] == entity;
         }
 
-        public Entity CreateEntity()
+        public Entity CreateEntity(IEntityBlueprint blueprint)
         {
             CheckUnusedCapacity(1);
 
-            var entity = AllocateEntity();
+            var entity = AllocateEntity(out var entityData);
+            if (blueprint != null)
+            {
+                foreach (var pair in ((EntityBlueprint_Managed)blueprint).GetComponentConfigsAndDataOrdered())
+                    AddComponentPostCheck(entity, entityData, pair.Value, pair.Key);
+            }
             _entities.SetDirty();
 
             return entity;
         }
 
-        public Entity[] CreateEntities(int count)
+        public Entity[] CreateEntities(int count, IEntityBlueprint blueprint)
         {
+            if (count <= 0)
+                throw new ArgumentOutOfRangeException("count", "Must be greater than 0.");
+            if (count == 1)
+                return new Entity[] { CreateEntity(blueprint) };
+
             CheckUnusedCapacity(count);
 
             var entities = new Entity[count];
-            for (int i = 0; i < count; i++)
-                entities[i] = AllocateEntity();
+            if (blueprint != null)
+            {
+                var componentConfigsAndDatas = ((EntityBlueprint_Managed)blueprint).GetComponentConfigsAndDataOrdered();
+                foreach (var pair in componentConfigsAndDatas)
+                {
+                    if (pair.Key.IsUnique)
+                    {
+                        var config = pair.Key;
+                        var uniqueEntity = _uniqueComponentEntities[config.UniqueIndex];
+                        if (uniqueEntity == Entity.Null)
+                            uniqueEntity = AllocateEntity(out _);
+
+                        throw new EntityAlreadyHasComponentException(uniqueEntity,
+                            ComponentConfigs.Instance.AllComponentTypes[pair.Key.ComponentIndex]);
+                    }
+                }
+
+                var components = new IComponent[ComponentConfigs.Instance.AllComponentCount];
+                foreach (var pair in componentConfigsAndDatas)
+                    components[pair.Key.ComponentIndex] = pair.Value;
+
+                for (int i = 0; i < count; i++)
+                {
+                    entities[i] = AllocateEntity(out var entityData);
+                    Array.Copy(components, entityData.Components, components.Length);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < count; i++)
+                    entities[i] = AllocateEntity(out _);
+            }
             _entities.SetDirty();
 
             return entities;
@@ -198,7 +238,7 @@ namespace EcsLte.Managed
                     typeof(TComponentUnique));
 
             var config = ComponentConfig<TComponentUnique>.Config;
-            var entity = CreateEntity();
+            var entity = CreateEntity(null);
             AddComponentPostCheck(entity, componentUnique, config);
             _uniqueComponentEntities[config.UniqueIndex] = entity;
 
@@ -272,32 +312,6 @@ namespace EcsLte.Managed
             return entity;
         }
 
-        private Entity AllocateEntity()
-        {
-            Entity entity;
-            if (_reusableEntities.Count > 0)
-            {
-                entity = _reusableEntities.Pop();
-                entity.Version++;
-            }
-            else
-            {
-                entity = new Entity
-                {
-                    Id = _nextId++,
-                    Version = 1
-                };
-                _entityDatas[entity.Id] = new EntityData_Managed
-                {
-                    Components = new IComponent[ComponentConfigs.Instance.AllComponentCount]
-                };
-            }
-            _entities.UncachedData[entity.Id] = entity;
-            _entitiesCount++;
-
-            return entity;
-        }
-
         private void AddComponentPostCheck<TComponent>(Entity entity, TComponent component, ComponentConfig config) where TComponent : unmanaged, IComponent
         {
             if (config.IsUnique)
@@ -310,6 +324,20 @@ namespace EcsLte.Managed
             }
 
             _entityDatas[entity.Id].Components[config.ComponentIndex] = component;
+        }
+
+        private void AddComponentPostCheck(Entity entity, EntityData_Managed entityData, IComponent component, ComponentConfig config)
+        {
+            if (config.IsUnique)
+            {
+                if (_uniqueComponentEntities[config.UniqueIndex] != Entity.Null)
+                    throw new EntityAlreadyHasComponentException(
+                        _uniqueComponentEntities[config.UniqueIndex],
+                        ComponentConfigs.Instance.AllComponentTypes[config.ComponentIndex]);
+                _uniqueComponentEntities[config.UniqueIndex] = entity;
+            }
+
+            entityData.Components[config.ComponentIndex] = component;
         }
 
         private TComponent GetComponentPostCheck<TComponent>(Entity entity, ComponentConfig config) where TComponent : unmanaged, IComponent

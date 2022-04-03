@@ -83,14 +83,18 @@ namespace EcsLte.NativeArcheTypeContinous
 			return data;
 		}
 
+		public unsafe void SetEntityBlueprintData(EntityData_ArcheType_Native_Continuous* entityData, byte* blueprintComponentsBuffer, int blueprintComponentsBufferLengthInBytes)
+		{
+			MemoryHelper.Copy(
+				blueprintComponentsBuffer,
+				_dataChunkCache->GetDataChunk(entityData->DataChunkIndex)->Buffer + TypeCache<Entity>.SizeInBytes + (entityData->Index * _lengthPerComponentOffsetInBytes),
+				blueprintComponentsBufferLengthInBytes);
+		}
+
 		public unsafe void AddEntity(Entity entity, EntityData_ArcheType_Native_Continuous* entityData)
 		{
 			var dataChunkIndex = GetAvailableDataChunkIndex();
 			var dataChunk = _dataChunkCache->GetDataChunk(dataChunkIndex);
-
-			var maxIndex = EcsSettings.UnmanagedDataChunkInBytes / _lengthPerComponentOffsetInBytes;
-			if (dataChunk->Count >= maxIndex)
-				;
 
 			fixed (ComponentData_ArcheType_Native_Continuous* selfPtr = &this)
 			{

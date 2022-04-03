@@ -11,8 +11,8 @@ namespace EcsLte
 
 		Entity[] GetEntities();
 		bool HasEntity(Entity entity);
-		Entity CreateEntity();
-		Entity[] CreateEntities(int count);
+		Entity CreateEntity(IEntityBlueprint blueprint);
+		Entity[] CreateEntities(int count, IEntityBlueprint blueprint);
 		void DestroyEntity(Entity entity);
 		void DestroyEntities(IEnumerable<Entity> entities);
 		bool HasComponent<TComponent>(Entity entity) where TComponent : unmanaged, IComponent;

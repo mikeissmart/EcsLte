@@ -142,6 +142,159 @@ namespace EcsLte.UnitTest.EcsContextTests
         }
 
         [TestMethod]
+        public void GetComponent_Blueprint_Normal()
+        {
+            AssertBlueprintGetComponent(1,
+                new TestComponent1 { Prop = 1 });
+        }
+
+        [TestMethod]
+        public void GetComponent_Blueprint_Normal_Large()
+        {
+            AssertBlueprintGetComponent(UnitTestConsts.LargeCount,
+                new TestComponent1 { Prop = 1 });
+        }
+
+        [TestMethod]
+        public void GetComponent_Blueprint_NormalShared()
+        {
+            AssertBlueprintGetComponent(1,
+                new TestComponent1 { Prop = 1 },
+                new TestSharedComponent1 { Prop = 2 });
+        }
+
+        [TestMethod]
+        public void GetComponent_Blueprint_NormalShared_Large()
+        {
+            AssertBlueprintGetComponent(UnitTestConsts.LargeCount,
+                new TestComponent1 { Prop = 1 },
+                new TestSharedComponent1 { Prop = 2 });
+        }
+
+        [TestMethod]
+        public void GetComponent_Blueprint_NormalSharedUnique()
+        {
+            AssertBlueprintGetComponent(1,
+                new TestComponent1 { Prop = 1 },
+                new TestSharedComponent1 { Prop = 2 },
+                new TestUniqueComponent1 { Prop = 3 });
+        }
+
+        [TestMethod]
+        public void GetComponent_Blueprint_NormalUnique()
+        {
+            AssertBlueprintGetComponent(1,
+                new TestComponent1 { Prop = 1 },
+                new TestUniqueComponent1 { Prop = 2 });
+        }
+
+        [TestMethod]
+        public void GetComponent_Blueprint_NormalUniqueShared()
+        {
+            AssertBlueprintGetComponent(1,
+                new TestComponent1 { Prop = 1 },
+                new TestSharedComponent1 { Prop = 2 },
+                new TestUniqueComponent1 { Prop = 3 });
+        }
+
+        [TestMethod]
+        public void GetComponent_Blueprint_Shared()
+        {
+            AssertBlueprintGetComponent(1,
+                new TestSharedComponent1 { Prop = 1 });
+        }
+
+        [TestMethod]
+        public void GetComponent_Blueprint_Shared_Large()
+        {
+            AssertBlueprintGetComponent(UnitTestConsts.LargeCount,
+                new TestSharedComponent1 { Prop = 1 });
+        }
+
+        [TestMethod]
+        public void GetComponent_Blueprint_SharedNormal()
+        {
+            AssertBlueprintGetComponent(1,
+                new TestSharedComponent1 { Prop = 1 },
+                new TestComponent1 { Prop = 2 });
+        }
+
+        [TestMethod]
+        public void GetComponent_Blueprint_SharedNormal_Large()
+        {
+            AssertBlueprintGetComponent(UnitTestConsts.LargeCount,
+                new TestSharedComponent1 { Prop = 1 },
+                new TestComponent1 { Prop = 2 });
+        }
+
+        [TestMethod]
+        public void GetComponent_Blueprint_SharedNormalUnique()
+        {
+            AssertBlueprintGetComponent(1,
+                new TestSharedComponent1 { Prop = 1 },
+                new TestComponent1 { Prop = 2 },
+                new TestUniqueComponent1 { Prop = 3 });
+        }
+
+        [TestMethod]
+        public void GetComponent_Blueprint_SharedUnique()
+        {
+            AssertBlueprintGetComponent(1,
+                new TestSharedComponent1 { Prop = 1 },
+                new TestUniqueComponent1 { Prop = 2 });
+        }
+
+        [TestMethod]
+        public void GetComponent_Blueprint_SharedUniqueNormal()
+        {
+            AssertBlueprintGetComponent(1,
+                new TestSharedComponent1 { Prop = 1 },
+                new TestUniqueComponent1 { Prop = 2 },
+                new TestComponent1 { Prop = 3 });
+        }
+
+        [TestMethod]
+        public void GetComponent_Blueprint_Unique()
+        {
+            AssertBlueprintGetComponent(1,
+                new TestUniqueComponent1 { Prop = 1 });
+        }
+
+        [TestMethod]
+        public void GetComponent_Blueprint_UniqueNormal()
+        {
+            AssertBlueprintGetComponent(1,
+                new TestUniqueComponent1 { Prop = 1 },
+                new TestComponent1 { Prop = 2 });
+        }
+
+        [TestMethod]
+        public void GetComponent_Blueprint_UniqueNormalShared()
+        {
+            AssertBlueprintGetComponent(1,
+                new TestUniqueComponent1 { Prop = 1 },
+                new TestComponent1 { Prop = 2 },
+                new TestSharedComponent1 { Prop = 3 });
+        }
+
+        [TestMethod]
+        public void GetComponent_Blueprint_UniqueShared()
+        {
+            AssertBlueprintGetComponent(1,
+                new TestUniqueComponent1 { Prop = 1 },
+                new TestSharedComponent1 { Prop = 2 });
+        }
+
+        [TestMethod]
+        public void GetComponent_Blueprint_UniqueSharedNormal()
+        {
+            AssertBlueprintGetComponent(1,
+                new TestUniqueComponent1 { Prop = 1 },
+                new TestSharedComponent1 { Prop = 2 },
+                new TestComponent1 { Prop = 3 });
+        }
+
+        [TestMethod]
         public void GetComponent_Normal()
         {
             AssertGetComponent(1,
@@ -979,6 +1132,63 @@ namespace EcsLte.UnitTest.EcsContextTests
             }
             for (int i = 0; i < isOk.Length; i++)
                 Assert.IsTrue(isOk[i] == 1);
+        }
+
+        private void AssertBlueprintGetComponent<T1>(int entityCount, T1 component1)
+            where T1 : unmanaged, IComponent, ITestComponent
+        {
+            var blueprint = GetBlueprint();
+            blueprint.AddComponent(component1);
+
+            var entities = Context.CreateEntities(entityCount, blueprint);
+
+            for (int i = 0; i < entities.Length; i++)
+            {
+                Assert.IsTrue(Context.GetComponent<T1>(entities[i]).Prop == component1.Prop,
+                    $"Enity.Id {entities[i].Id}");
+            }
+        }
+
+        private void AssertBlueprintGetComponent<T1, T2>(int entityCount, T1 component1, T2 component2)
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+        {
+            var blueprint = GetBlueprint();
+            blueprint.AddComponent(component1);
+            blueprint.AddComponent(component2);
+
+            var entities = Context.CreateEntities(entityCount, blueprint);
+
+            for (int i = 0; i < entities.Length; i++)
+            {
+                Assert.IsTrue(Context.GetComponent<T1>(entities[i]).Prop == component1.Prop,
+                    $"Enity.Id {entities[i].Id}");
+                Assert.IsTrue(Context.GetComponent<T2>(entities[i]).Prop == component2.Prop,
+                    $"Enity.Id {entities[i].Id}");
+            }
+        }
+
+        private void AssertBlueprintGetComponent<T1, T2, T3>(int entityCount, T1 component1, T2 component2, T3 component3)
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
+        {
+            var blueprint = GetBlueprint();
+            blueprint.AddComponent(component1);
+            blueprint.AddComponent(component2);
+            blueprint.AddComponent(component3);
+
+            var entities = Context.CreateEntities(entityCount, blueprint);
+
+            for (int i = 0; i < entities.Length; i++)
+            {
+                Assert.IsTrue(Context.GetComponent<T1>(entities[i]).Prop == component1.Prop,
+                    $"Enity.Id {entities[i].Id}");
+                Assert.IsTrue(Context.GetComponent<T2>(entities[i]).Prop == component2.Prop,
+                    $"Enity.Id {entities[i].Id}");
+                Assert.IsTrue(Context.GetComponent<T3>(entities[i]).Prop == component3.Prop,
+                    $"Enity.Id {entities[i].Id}");
+            }
         }
 
         private void AssertGetComponent<T1>(int entityCount, T1 component1)

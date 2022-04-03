@@ -18,7 +18,7 @@ namespace EcsLte.ManagedArcheType
         private readonly Stack<Entity> _reusableEntities;
         private readonly Entity[] _uniqueComponentEntities;
         private readonly IComponent[] _uniqueComponents;
-        private readonly Dictionary<Component_ArcheType_Managed, ComponentData_ArcheType_Managed> _archeTypeDatas;
+        private ArcheTypeFactory_ArcheType_Managed _archeTypeFactory;
         private readonly IIndexDictionary[] _sharedComponentIndexes;
         private int _nextId;
 
@@ -35,7 +35,7 @@ namespace EcsLte.ManagedArcheType
             _reusableEntities = new Stack<Entity>();
             _uniqueComponentEntities =  new Entity[ComponentConfigs.Instance.UniqueComponentCount];
             _uniqueComponents = new IComponent[ComponentConfigs.Instance.UniqueComponentCount];
-            _archeTypeDatas = new Dictionary<Component_ArcheType_Managed, ComponentData_ArcheType_Managed>();
+            _archeTypeFactory = new ArcheTypeFactory_ArcheType_Managed();
             _sharedComponentIndexes = IndexDictionary.CreateSharedComponentIndexDictionaries();
             _nextId = 1;
         }
@@ -52,23 +52,76 @@ namespace EcsLte.ManagedArcheType
                 _entities.UncachedData[entity.Id] == entity;
         }
 
-        public Entity CreateEntity()
+        public Entity CreateEntity(IEntityBlueprint blueprint)
         {
             CheckUnusedCapacity(1);
 
-            var entity = AllocateEntity();
+            var entity = AllocateEntity(out var entityData);
+            if (blueprint != null)
+            {
+                var archeType = ((EntityBlueprint_ArcheType_Managed)blueprint).GetArcheType(this, _sharedComponentIndexes, out var blueprintData);
+                var archeTypeData = _archeTypeFactory.GetArcheTypeData(archeType);
+
+                for (int i = 0; i < blueprintData.UniqueComponents.Length; i++)
+                {
+                    var config = blueprintData.UniqueConfigs[i];
+                    var component = blueprintData.UniqueComponents[i];
+
+                    if (_uniqueComponentEntities[config.UniqueIndex] != Entity.Null)
+                        throw new EntityAlreadyHasComponentException(_uniqueComponentEntities[config.UniqueIndex],
+                            ComponentConfigs.Instance.AllComponentTypes[config.ComponentIndex]);
+                    _uniqueComponentEntities[config.UniqueIndex] = entity;
+                    archeTypeData.SetUniqueComponent(config, component, _uniqueComponents);
+                }
+
+                archeTypeData.AddEntity(entity, entityData);
+                archeTypeData.SetEntityBlueprintData(entityData, blueprintData);
+            }
             _entities.SetDirty();
 
             return entity;
         }
 
-        public Entity[] CreateEntities(int count)
+        public Entity[] CreateEntities(int count, IEntityBlueprint blueprint)
         {
+            if (count <= 0)
+                throw new ArgumentOutOfRangeException("count", "Must be greater than 0.");
+            if (count == 1)
+                return new Entity[] { CreateEntity(blueprint) };
+
             CheckUnusedCapacity(count);
 
             var entities = new Entity[count];
-            for (int i = 0; i < count; i++)
-                entities[i] = AllocateEntity();
+            if (blueprint != null)
+            {
+                var archeType = ((EntityBlueprint_ArcheType_Managed)blueprint).GetArcheType(this, _sharedComponentIndexes, out var blueprintData);
+                var archeTypeData = _archeTypeFactory.GetArcheTypeData(archeType);
+
+                if (blueprintData.UniqueComponents.Length > 0)
+                {
+                    var config = blueprintData.UniqueConfigs[0];
+                    var uniqueEntity = _uniqueComponentEntities[config.UniqueIndex];
+                    if (uniqueEntity == Entity.Null)
+                        uniqueEntity = AllocateEntity(out _);
+
+                    throw new EntityAlreadyHasComponentException(uniqueEntity,
+                        ComponentConfigs.Instance.AllComponentTypes[config.ComponentIndex]);
+                }
+
+                for (int i = 0; i < count; i++)
+                {
+                    var entity = AllocateEntity(out var entityData);
+                    entities[i] = entity;
+
+                    archeTypeData.AddEntity(entity, entityData);
+                    archeTypeData.SetEntityBlueprintData(entityData, blueprintData);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < count; i++)
+                    entities[i] = AllocateEntity(out _);
+            }
             _entities.SetDirty();
 
             return entities;
@@ -208,7 +261,7 @@ namespace EcsLte.ManagedArcheType
                     _uniqueComponentEntities[ComponentConfig<TComponentUnique>.Config.UniqueIndex],
                     typeof(TComponentUnique));
 
-            var entity = CreateEntity();
+            var entity = CreateEntity(null);
             AddComponentPostCheck(entity, componentUnique, ComponentConfig<TComponentUnique>.Config, _entityDatas[entity.Id]);
 
             return entity;
@@ -252,13 +305,14 @@ namespace EcsLte.ManagedArcheType
             }
         }
 
-        private Entity AllocateEntity()
+        private Entity AllocateEntity(out EntityData_ArcheType_Managed entityData)
         {
             Entity entity;
             if (_reusableEntities.Count > 0)
             {
                 entity = _reusableEntities.Pop();
                 entity.Version++;
+                entityData = _entityDatas[entity.Id];
             }
             else
             {
@@ -267,7 +321,8 @@ namespace EcsLte.ManagedArcheType
                     Id = _nextId++,
                     Version = 1
                 };
-                _entityDatas[entity.Id] = new EntityData_ArcheType_Managed();
+                entityData = new EntityData_ArcheType_Managed();
+                _entityDatas[entity.Id] = entityData;
             }
             _entities.UncachedData[entity.Id] = entity;
             _entitiesCount++;
@@ -275,26 +330,12 @@ namespace EcsLte.ManagedArcheType
             return entity;
         }
 
-        private ComponentData_ArcheType_Managed GetComponentArcheTypeDataAndTransferEntity(Component_ArcheType_Managed archeType, Entity entity, EntityData_ArcheType_Managed entityData)
-        {
-            if (!_archeTypeDatas.TryGetValue(archeType, out var nextArcheTypeData))
-            {
-                nextArcheTypeData = ComponentData_ArcheType_Managed.Alloc(archeType);
-                _archeTypeDatas.Add(archeType, nextArcheTypeData);
-            }
-
-            if (entityData.ComponentArcheTypeData != null)
-                nextArcheTypeData.TransferEntity(entityData.ComponentArcheTypeData, entity, entityData);
-            else
-                nextArcheTypeData.AddEntity(entity, entityData);
-
-            return nextArcheTypeData;
-        }
-
         private void AddComponentPostCheck<TComponent>(Entity entity, TComponent component, ComponentConfig config, EntityData_ArcheType_Managed entityData) where TComponent : unmanaged, IComponent
         {
             Component_ArcheType_Managed nextArcheType;
-            if (entityData.ComponentArcheTypeData != null)
+            var prevArcheTypeData = entityData.ComponentArcheTypeData;
+
+            if (prevArcheTypeData != null)
                 nextArcheType = entityData.ComponentArcheTypeData.ArcheType;
             else
                 nextArcheType = new Component_ArcheType_Managed();
@@ -317,7 +358,12 @@ namespace EcsLte.ManagedArcheType
                 nextArcheType = Component_ArcheType_Managed.AppendComponent(nextArcheType, config);
 
 
-            var nextArcheTypeData = GetComponentArcheTypeDataAndTransferEntity(nextArcheType, entity, entityData);
+            var nextArcheTypeData = _archeTypeFactory.GetArcheTypeData(nextArcheType);
+            if (prevArcheTypeData != null)
+                nextArcheTypeData.TransferEntity(prevArcheTypeData, entity, entityData);
+            else
+                nextArcheTypeData.AddEntity(entity, entityData);
+
             if (config.IsUnique)
                 nextArcheTypeData.SetUniqueComponent(config, component, _uniqueComponents);
             else
@@ -350,7 +396,9 @@ namespace EcsLte.ManagedArcheType
                         prevArcheTypeData.ArcheType,
                         config,
                         nextSharedIndex);
-                    var nextArcheTypeData = GetComponentArcheTypeDataAndTransferEntity(nextArcheType, entity, entityData);
+                    var nextArcheTypeData = _archeTypeFactory.GetArcheTypeData(nextArcheType);
+
+                    nextArcheTypeData.TransferEntity(prevArcheTypeData, entity, entityData);
                     nextArcheTypeData.SetComponent(entityData, config, component);
                 }
                 else
@@ -386,7 +434,8 @@ namespace EcsLte.ManagedArcheType
                         : Component_ArcheType_Managed.RemoveComponent(prevArcheTypeData.ArcheType, config);
                 }
 
-                GetComponentArcheTypeDataAndTransferEntity(nextArcheType, entity, entityData);
+                var nextArcheTypeData = _archeTypeFactory.GetArcheTypeData(nextArcheType);
+                nextArcheTypeData.TransferEntity(prevArcheTypeData, entity, entityData);
             }
         }
 

@@ -147,6 +147,14 @@ namespace EcsLte.NativeArcheType
             }
 		}
 
+		public unsafe void SetEntityBlueprintData(EntityData_ArcheType_Native* entityData, byte* blueprintComponentsBuffer, int blueprintComponentsBufferLengthInBytes)
+		{
+			MemoryHelper.Copy(
+				blueprintComponentsBuffer,
+				entityData->DataChunk->Buffer + TypeCache<Entity>.SizeInBytes + (entityData->Index * _lengthPerComponentOffsetInBytes),
+				blueprintComponentsBufferLengthInBytes);
+		}
+
 		public unsafe void SetComponent(EntityData_ArcheType_Native* entityData, ComponentConfig config, void* componentData)
         {
 			GetComponentIndex(config, out var configIndex);

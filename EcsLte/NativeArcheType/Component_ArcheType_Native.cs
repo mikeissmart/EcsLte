@@ -212,6 +212,28 @@ namespace EcsLte.NativeArcheType
             return newArcheType;
         }
 
+        /*public unsafe static Component_ArcheType_Native Clone(Component_ArcheType_Native archeType)
+        {
+            if (archeType.ComponentConfigs == null)
+                return new Component_ArcheType_Native();
+
+            var clone = new Component_ArcheType_Native
+            {
+                ComponentConfigs = MemoryHelper.Alloc<ComponentConfig>(archeType.ComponentConfigLength),
+                ShareComponentDataIndexes = archeType.SharedComponentDataLength > 0
+                    ? MemoryHelper.Alloc<ShareComponentDataIndex>(archeType.SharedComponentDataLength)
+                    : null,
+                ComponentConfigLength = archeType.ComponentConfigLength,
+                SharedComponentDataLength = archeType.SharedComponentDataLength
+            };
+
+            CopyComponentConfigs(ref archeType, ref clone);
+            if (clone.SharedComponentDataLength > 0)
+                CopySharedDataIndexes(ref archeType, ref clone);
+
+            return clone;
+        }*/
+
         public unsafe void Dispose()
         {
             if (ComponentConfigLength != 0)

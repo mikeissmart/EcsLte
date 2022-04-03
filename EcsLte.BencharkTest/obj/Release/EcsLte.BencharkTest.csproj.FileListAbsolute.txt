@@ -95,3 +95,8 @@ C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BencharkTe
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BencharkTest\obj\Release\EcsLte.BencharkTest.csproj.CopyComplete
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BencharkTest\obj\Release\EcsLte.BencharkTest.exe
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BencharkTest\obj\Release\EcsLte.BencharkTest.pdb
+C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BencharkTest\bin\Release\EPPlus.dll
+C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BencharkTest\bin\Release\Microsoft.IO.RecyclableMemoryStream.dll
+C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BencharkTest\bin\Release\System.ComponentModel.Annotations.dll
+C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BencharkTest\bin\Release\EPPlus.xml
+C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BencharkTest\bin\Release\Microsoft.IO.RecyclableMemoryStream.xml

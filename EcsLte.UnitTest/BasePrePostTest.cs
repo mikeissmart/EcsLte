@@ -1,4 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using EcsLte.Managed;
+using EcsLte.ManagedArcheType;
+using EcsLte.Native;
+using EcsLte.NativeArcheType;
+using EcsLte.NativeArcheTypeContinous;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,6 +40,22 @@ namespace EcsLte.UnitTest
             if (!Context.IsDestroyed)
                 EcsContexts.DestroyContext(Context);
             Context = null;
+        }
+
+        protected IEntityBlueprint GetBlueprint()
+        {
+            if (typeof(TEcsContextType) == typeof(EcsContextType_Managed))
+                return new EntityBlueprint_Managed();
+            else if (typeof(TEcsContextType) == typeof(EcsContextType_Managed_ArcheType))
+                return new EntityBlueprint_ArcheType_Managed();
+            else if (typeof(TEcsContextType) == typeof(EcsContextType_Native))
+                return new EntityBlueprint_Native();
+            else if (typeof(TEcsContextType) == typeof(EcsContextType_Native_ArcheType))
+                return new EntityBlueprint_ArcheType_Native();
+            else if (typeof(TEcsContextType) == typeof(EcsContextType_Native_ArcheType_Continuous))
+                return new EntityBlueprint_ArcheType_Native_Continuous();
+            else
+                throw new InvalidOperationException();
         }
     }
 }

@@ -1,4 +1,9 @@
 ﻿using BenchmarkDotNet.Attributes;
+using EcsLte.Managed;
+using EcsLte.ManagedArcheType;
+using EcsLte.Native;
+using EcsLte.NativeArcheType;
+using EcsLte.NativeArcheTypeContinous;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -108,6 +113,73 @@ namespace EcsLte.BencharkTest
                 default:
                     throw new InvalidOperationException();
             }
+        }
+
+        public static IEntityBlueprint GetEntityBlueprint(EcsContextType contextType, EntityComponentArrangement arrangement)
+        {
+            IEntityBlueprint blueprint;
+            switch (contextType)
+            {
+                case EcsContextType.Managed:
+                    blueprint = new EntityBlueprint_Managed();
+                    break;
+                case EcsContextType.Managed_ArcheType:
+                    blueprint = new EntityBlueprint_ArcheType_Managed();
+                    break;
+                case EcsContextType.Native:
+                    blueprint = new EntityBlueprint_Native();
+                    break;
+                case EcsContextType.Native_ArcheType:
+                    blueprint = new EntityBlueprint_ArcheType_Native();
+                    break;
+                case EcsContextType.Native_ArcheType_Continous:
+                    blueprint = new EntityBlueprint_ArcheType_Native_Continuous();
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
+
+            switch (arrangement)
+            {
+                case EntityComponentArrangement.Normal_x1:
+                    blueprint.AddComponent(_component1);
+                    break;
+                case EntityComponentArrangement.Normal_x2:
+                    blueprint.AddComponent(_component1);
+                    blueprint.AddComponent(_component2);
+                    break;
+                case EntityComponentArrangement.Shared_x1:
+                    blueprint.AddComponent(_componentShared1);
+                    break;
+                case EntityComponentArrangement.Shared_x2:
+                    blueprint.AddComponent(_componentShared1);
+                    blueprint.AddComponent(_componentShared2);
+                    break;
+                case EntityComponentArrangement.Normal_x1_Shared_x1:
+                    blueprint.AddComponent(_component1);
+                    blueprint.AddComponent(_componentShared1);
+                    break;
+                case EntityComponentArrangement.Normal_x1_Shared_x2:
+                    blueprint.AddComponent(_component1);
+                    blueprint.AddComponent(_componentShared1);
+                    blueprint.AddComponent(_componentShared2);
+                    break;
+                case EntityComponentArrangement.Normal_x2_Shared_x1:
+                    blueprint.AddComponent(_component1);
+                    blueprint.AddComponent(_component2);
+                    blueprint.AddComponent(_componentShared1);
+                    break;
+                case EntityComponentArrangement.Normal_x2_Shared_x2:
+                    blueprint.AddComponent(_component1);
+                    blueprint.AddComponent(_component2);
+                    blueprint.AddComponent(_componentShared1);
+                    blueprint.AddComponent(_componentShared2);
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
+
+            return blueprint;
         }
     }
 }

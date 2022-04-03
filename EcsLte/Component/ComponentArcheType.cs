@@ -5,7 +5,7 @@ using System.Text;
 
 namespace EcsLte
 {
-	internal struct ComponentArcheType : IEquatable<ComponentArcheType>
+	/*internal struct ComponentArcheType : IEquatable<ComponentArcheType>
 	{
 		public ComponentConfig[] ComponentConfigs { get; set; }
 		public ShareComponentDataIndex[] ShareComponentDataIndexes { get; set; }
@@ -169,5 +169,5 @@ namespace EcsLte
 				: 0);
 			return hashCode;
 		}
-	}
+	}*/
 }

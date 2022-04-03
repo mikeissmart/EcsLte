@@ -13,7 +13,7 @@ namespace EcsLte.BencharkTest.EcsContextTests
     public class EcsContext_EntityLifeTest
     {
         private EcsContext _context;
-        private Entity[] _entities_CreateEntity;
+        private Entity[] _entities;
         private Entity[][] _entities_CreateEntities;
 
         [ParamsAllValues]
@@ -32,13 +32,13 @@ namespace EcsLte.BencharkTest.EcsContextTests
         }
 
         [IterationSetup(Target = nameof(CreateEntites))]
-        public void IterationSetup_Create()
+        public void IterationSetup_CreateEntites()
         {
             _entities_CreateEntities = new Entity[BenchmarkTestConsts.MediumCount][];
         }
 
         [IterationCleanup(Target = nameof(CreateEntites))]
-        public void IterationCleanup_Create()
+        public void IterationCleanup_CreateEntites()
         {
             foreach (var entities in _entities_CreateEntities)
                 _context.DestroyEntities(entities);
@@ -54,39 +54,39 @@ namespace EcsLte.BencharkTest.EcsContextTests
         [IterationSetup(Target = nameof(CreateEntity))]
         public void IterationSetup_CreateEntity()
         {
-            _entities_CreateEntity = new Entity[BenchmarkTestConsts.LargeCount];
+            _entities = new Entity[BenchmarkTestConsts.LargeCount];
         }
 
         [IterationCleanup(Target = nameof(CreateEntity))]
         public void IterationCleanup_CreateEntity()
         {
-            _context.DestroyEntities(_entities_CreateEntity);
+            _context.DestroyEntities(_entities);
         }
 
         [Benchmark]
         public void CreateEntity()
         {
             for (int i = 0; i < BenchmarkTestConsts.LargeCount; i++)
-                _entities_CreateEntity[i] = _context.CreateEntity();
+                _entities[i] = _context.CreateEntity();
         }
 
         [IterationSetup(Targets = new[] { nameof(DestroyEntities), nameof(DestroyEntity) })]
         public void IterationSetup_Destroy()
         {
-            _entities_CreateEntity = _context.CreateEntities(BenchmarkTestConsts.LargeCount);
+            _entities = _context.CreateEntities(BenchmarkTestConsts.LargeCount);
         }
 
         [Benchmark]
         public void DestroyEntities()
         {
-            _context.DestroyEntities(_entities_CreateEntity);
+            _context.DestroyEntities(_entities);
         }
 
         [Benchmark]
         public void DestroyEntity()
         {
-            for (int i = 0; i < _entities_CreateEntity.Length; i++)
-                _context.DestroyEntity(_entities_CreateEntity[i]);
+            for (int i = 0; i < _entities.Length; i++)
+                _context.DestroyEntity(_entities[i]);
         }
     }
 }

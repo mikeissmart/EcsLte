@@ -94,27 +94,78 @@ namespace EcsLte.Native
                 entity.Id < Capacity &&
                 _entities[entity.Id] == entity;
         }
-
-        public unsafe Entity CreateEntity()
+        public unsafe Entity CreateEntity(IEntityBlueprint blueprint)
         {
             CheckUnusedCapacity(1);
 
-            var entity = AllocateEntity();
+            var entity = AllocateEntity(out var entityData);
+            if (blueprint != null)
+            {
+                foreach (var pair in ((EntityBlueprint_Native)blueprint).GetComponentConfigsAndDataOrdered())
+                    AddComponentPostCheck(entity, entityData, pair.Value.GetData(), pair.Key);
+            }
+
             _cachedEntitiesDirty = true;
 
             return entity;
         }
 
-        public unsafe Entity[] CreateEntities(int count)
+        public unsafe Entity[] CreateEntities(int count, IEntityBlueprint blueprint)
         {
             if (count <= 0)
-                throw new ArgumentOutOfRangeException("count", "Must be greater than 1.");
+                throw new ArgumentOutOfRangeException("count", "Must be greater than 0.");
+            if (count == 1)
+                return new Entity[] { CreateEntity(blueprint) };
 
             CheckUnusedCapacity(count);
 
             var entities = new Entity[count];
-            for (int i = 0; i < count; i++)
-                entities[i] = AllocateEntity();
+            if (blueprint != null)
+            {
+                var componentConfigsAndDatas = ((EntityBlueprint_Native)blueprint).GetComponentConfigsAndDataOrdered();
+                foreach (var pair in componentConfigsAndDatas)
+                {
+                    if (pair.Key.IsUnique)
+                    {
+                        var config = pair.Key;
+                        var uniqueEntity = _uniqueComponentEntities[config.UniqueIndex];
+                        if (uniqueEntity == Entity.Null)
+                            uniqueEntity = AllocateEntity(out _);
+
+                        throw new EntityAlreadyHasComponentException(uniqueEntity,
+                            ComponentConfigs.Instance.AllComponentTypes[pair.Key.ComponentIndex]);
+                    }
+                }
+
+                var components = (byte*)MemoryHelper.Alloc(_componentTotalSizeInBytes);
+                for (int i = 0; i < componentConfigsAndDatas.Length; i++)
+                {
+                    var pair = componentConfigsAndDatas[i];
+                    var configOffset = _configs[pair.Key.ComponentIndex];
+                    var hasComPtr = components + configOffset.OffsetInBytes;
+                    var comPtr = hasComPtr + 1;
+
+                    MemoryHelper.Copy(
+                        pair.Value.GetData(),
+                        comPtr,
+                        pair.Key.UnmanagedInBytesSize);
+                    *hasComPtr = 1;
+                }
+
+                for (int i = 0; i < count; i++)
+                {
+                    entities[i] = AllocateEntity(out var entityData);
+                    MemoryHelper.Copy(
+                        components,
+                        entityData->Components,
+                        _componentTotalSizeInBytes);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < count; i++)
+                    entities[i] = AllocateEntity(out _);
+            }
             _cachedEntitiesDirty = true;
 
             return entities;
@@ -291,7 +342,7 @@ namespace EcsLte.Native
                     typeof(TComponentUnique));
 
             var config = ComponentConfig<TComponentUnique>.Config;
-            var entity = CreateEntity();
+            var entity = CreateEntity(null);
             AddComponentPostCheck(entity, componentUnique, config);
             _uniqueComponentEntities[config.UniqueIndex] = entity;
 
@@ -413,30 +464,6 @@ namespace EcsLte.Native
             return entity;
         }
 
-        private unsafe Entity AllocateEntity()
-        {
-            Entity entity;
-            if (_reusableEntitiesCount > 0)
-            {
-                entity = _reusableEntities[--_reusableEntitiesCount];
-                entity.Version++;
-                _entityDatas[entity.Id] = new EntityData_Native();
-            }
-            else
-            {
-                entity = new Entity
-                {
-                    Id = _nextId++,
-                    Version = 1
-                };
-            }
-            _entities[entity.Id] = entity;
-            (&_entityDatas[entity.Id])->Components = GetCacheComponents();
-            _entitiesCount++;
-
-            return entity;
-        }
-
         private unsafe void AddComponentPostCheck<TComponent>(Entity entity, TComponent component, ComponentConfig config) where TComponent : unmanaged, IComponent
         {
             if (config.IsUnique)
@@ -454,6 +481,28 @@ namespace EcsLte.Native
             var comPtr = hasComPtr + 1;
 
             *(TComponent*)comPtr = component;
+            *hasComPtr = 1;
+            entityData->ComponentCount++;
+        }
+
+        private unsafe void AddComponentPostCheck(Entity entity, EntityData_Native* entityData, void* component, ComponentConfig config)
+        {
+            if (config.IsUnique)
+            {
+                if (_uniqueComponentEntities[config.UniqueIndex] != Entity.Null)
+                    throw new EntityAlreadyHasComponentException(
+                        _uniqueComponentEntities[config.UniqueIndex],
+                        ComponentConfigs.Instance.AllComponentTypes[config.ComponentIndex]);
+                _uniqueComponentEntities[config.UniqueIndex] = entity;
+            }
+
+            var hasComPtr = entityData->Components + _configs[config.ComponentIndex].OffsetInBytes;
+            var comPtr = hasComPtr + 1;
+
+            MemoryHelper.Copy(
+                component,
+                comPtr,
+                config.UnmanagedInBytesSize);
             *hasComPtr = 1;
             entityData->ComponentCount++;
         }

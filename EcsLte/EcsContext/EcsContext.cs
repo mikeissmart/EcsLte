@@ -53,20 +53,20 @@ namespace EcsLte
 
 		#region EntityLife
 
-		public Entity CreateEntity()
+		public Entity CreateEntity(IEntityBlueprint blueprint = null)
 		{
 			if (IsDestroyed)
 				throw new EcsContextIsDestroyedException(this);
 
-			return _componentEntityFactory.CreateEntity();
+			return _componentEntityFactory.CreateEntity(blueprint);
 		}
 
-		public Entity[] CreateEntities(int count)
+		public Entity[] CreateEntities(int count, IEntityBlueprint blueprint = null)
 		{
 			if (IsDestroyed)
 				throw new EcsContextIsDestroyedException(this);
 
-			return _componentEntityFactory.CreateEntities(count);
+			return _componentEntityFactory.CreateEntities(count, blueprint);
 		}
 
 		public void DestroyEntity(Entity entity)
