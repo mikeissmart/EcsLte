@@ -1,5 +1,4 @@
-﻿using BenchmarkDotNet.Columns;
-using BenchmarkDotNet.Exporters;
+﻿using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Reports;
 using OfficeOpenXml;
@@ -11,7 +10,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace EcsLte.BencharkTest.Exporters
 {
@@ -21,10 +19,7 @@ namespace EcsLte.BencharkTest.Exporters
         protected override string FileExtension => "csv";
         protected override string FileCaption => "context-report";
 
-        public EcsContextCsvExcelExporter()
-        {
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-        }
+        public EcsContextCsvExcelExporter() => ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
         public override void ExportToLog(Summary summary, ILogger logger)
         {
@@ -51,7 +46,7 @@ namespace EcsLte.BencharkTest.Exporters
                 worksheet.Cells[row, 1].Value = "Type";
                 worksheet.Cells[row, 2].Value = "Method";
                 worksheet.Cells[row, 3].Value = "ComponentArrangement";
-                for (int i = 0; i < allContexts.Count; i++)
+                for (var i = 0; i < allContexts.Count; i++)
                     worksheet.Cells[1, i + 4].Value = allContexts[i];
                 row++;
                 strBuilder.AppendLine($"Type,Method,ComponentArrangement,{ string.Join(",", allContexts)}");
@@ -78,7 +73,7 @@ namespace EcsLte.BencharkTest.Exporters
                     {
                         if (dataList.Any(x => x.Type == type && x.Method == method && allComArrs.Contains(x.ComponentArrangement)))
                         {
-                            for (int i = 0; i < allComArrs.Count; i++)
+                            for (var i = 0; i < allComArrs.Count; i++)
                             {
                                 var comArr = allComArrs[i];
                                 var contexts = dataList
@@ -90,7 +85,7 @@ namespace EcsLte.BencharkTest.Exporters
 
                                 if (contexts.Count > 0)
                                 {
-                                    for (int j = 0; j < contexts.Count; j++)
+                                    for (var j = 0; j < contexts.Count; j++)
                                     {
                                         var data = dataList
                                             .Where(x => x.Type == type && x.Method == method &&
@@ -129,7 +124,7 @@ namespace EcsLte.BencharkTest.Exporters
 
                             if (contexts.Count > 0)
                             {
-                                for (int j = 0; j < contexts.Count; j++)
+                                for (var j = 0; j < contexts.Count; j++)
                                 {
                                     var data = dataList
                                         .Where(x => x.Type == type && x.Method == method && x.EcsContext == allContexts[j])
@@ -156,7 +151,7 @@ namespace EcsLte.BencharkTest.Exporters
                 }
                 ExcelWriteTotals(worksheet, "AllTotals", allTotals, row, contextStartCol, contextEndCol);
 
-                for (int i = 0; i < contextStartCol + allContexts.Count; i++)
+                for (var i = 0; i < contextStartCol + allContexts.Count; i++)
                     worksheet.Cells[1, i + 1].AutoFitColumns();
 
                 package.Save();
@@ -167,7 +162,7 @@ namespace EcsLte.BencharkTest.Exporters
         private void ExcelWriteTotals(ExcelWorksheet worksheet, string name, decimal[] totals, int row, int contextStartCol, int contextEndCol)
         {
             worksheet.Cells[row, 1].Value = name;
-            for (int i = 0; i < contextEndCol - contextStartCol; i++)
+            for (var i = 0; i < contextEndCol - contextStartCol; i++)
                 worksheet.Cells[row, i + contextStartCol].Value = totals[i];
             ExcelCreateThreeColorScaleRule(worksheet, new ExcelAddress(row, contextStartCol, row, contextStartCol + contextEndCol));
         }
@@ -195,7 +190,7 @@ namespace EcsLte.BencharkTest.Exporters
                 .Select(x => TimeUnit.Convert(x.ResultStatistics.Mean, TimeUnit.Nanosecond, bestTimeUnit))
                 .ToArray();
             var data = new List<CustomCsvData>();
-            for (int i = 0; i < summary.Table.FullContent.Count(); i++)
+            for (var i = 0; i < summary.Table.FullContent.Count(); i++)
             {
                 var line = summary.Table.FullContent[i];
                 data.Add(new CustomCsvData
@@ -215,7 +210,7 @@ namespace EcsLte.BencharkTest.Exporters
                             : line[contextCol.Index]
                         : "?",
                     Mean = meanCol != null
-                        ? Decimal.Round((decimal)timedMeans[i], 3, MidpointRounding.AwayFromZero)
+                        ? decimal.Round((decimal)timedMeans[i], 3, MidpointRounding.AwayFromZero)
                         : 0,
                 });
             }
@@ -252,7 +247,7 @@ namespace EcsLte.BencharkTest.Exporters
 
             public override int GetHashCode()
             {
-                int hashCode = -612338121;
+                var hashCode = -612338121;
                 hashCode = hashCode * -1521134295 + Type.GetHashCode();
                 hashCode = hashCode * -1521134295 + Method.GetHashCode();
                 hashCode = hashCode * -1521134295 + ComponentArrangement.GetHashCode();

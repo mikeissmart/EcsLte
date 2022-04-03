@@ -1,11 +1,6 @@
 ﻿using EcsLte.Exceptions;
 using EcsLte.UnitTest.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EcsLte.UnitTest.EcsContextTests
 {
@@ -64,11 +59,8 @@ namespace EcsLte.UnitTest.EcsContextTests
         }
 
         [TestMethod]
-        public void AddComponent_Null()
-        {
-            Assert.ThrowsException<EntityDoesNotExistException>(() =>
-                Context.AddComponent(Entity.Null, new TestComponent1()));
-        }
+        public void AddComponent_Null() => Assert.ThrowsException<EntityDoesNotExistException>(() =>
+                                             Context.AddComponent(Entity.Null, new TestComponent1()));
 
         [TestMethod]
         public void AddUniqueComponent_Destroyed()
@@ -96,11 +88,8 @@ namespace EcsLte.UnitTest.EcsContextTests
         }
 
         [TestMethod]
-        public void RemoveAllComponents_Null()
-        {
-            Assert.ThrowsException<EntityDoesNotExistException>(() =>
-                Context.RemoveAllComponents(Entity.Null));
-        }
+        public void RemoveAllComponents_Null() => Assert.ThrowsException<EntityDoesNotExistException>(() =>
+                                                    Context.RemoveAllComponents(Entity.Null));
 
         [TestMethod]
         public void RemoveComponent_Destroyed()
@@ -144,11 +133,8 @@ namespace EcsLte.UnitTest.EcsContextTests
         }
 
         [TestMethod]
-        public void RemoveComponent_Null()
-        {
-            Assert.ThrowsException<EntityDoesNotExistException>(() =>
-                Context.RemoveComponent<TestComponent1>(Entity.Null));
-        }
+        public void RemoveComponent_Null() => Assert.ThrowsException<EntityDoesNotExistException>(() =>
+                                                Context.RemoveComponent<TestComponent1>(Entity.Null));
 
         [TestMethod]
         public void RemoveUniqueComponent_Destroyed()
@@ -185,11 +171,8 @@ namespace EcsLte.UnitTest.EcsContextTests
         }
 
         [TestMethod]
-        public void ReplaceComponent_Null()
-        {
-            Assert.ThrowsException<EntityDoesNotExistException>(() =>
-                Context.ReplaceComponent(Entity.Null, new TestComponent1()));
-        }
+        public void ReplaceComponent_Null() => Assert.ThrowsException<EntityDoesNotExistException>(() =>
+                                                 Context.ReplaceComponent(Entity.Null, new TestComponent1()));
 
         [TestMethod]
         public void ReplaceUniqueComponent_Destroyed()

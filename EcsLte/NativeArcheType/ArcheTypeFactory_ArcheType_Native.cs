@@ -2,7 +2,6 @@
 using EcsLte.Data.Unmanaged;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte.NativeArcheType
 {
@@ -42,7 +41,9 @@ namespace EcsLte.NativeArcheType
                 isNew = true;
             }
             else
+            {
                 archeTypeData = (ComponentData_ArcheType_Native*)dataList[index].Ptr;
+            }
 
             return isNew;
         }
@@ -70,7 +71,9 @@ namespace EcsLte.NativeArcheType
                 isNew = true;
             }
             else
+            {
                 archeTypeData = (ComponentData_ArcheType_Native*)dataList[index].Ptr;
+            }
 
             archeTypeIndex = new ArcheTypeIndex_ArcheType_Native
             {
@@ -81,10 +84,7 @@ namespace EcsLte.NativeArcheType
             return isNew;
         }
 
-        public unsafe ComponentData_ArcheType_Native* GetArcheTypeData(ArcheTypeIndex_ArcheType_Native archeTypeIndex)
-        {
-            return (ComponentData_ArcheType_Native*)_archeTypeDatas[archeTypeIndex.ComponentsLength][archeTypeIndex.Index].Ptr;
-        }
+        public unsafe ComponentData_ArcheType_Native* GetArcheTypeData(ArcheTypeIndex_ArcheType_Native archeTypeIndex) => (ComponentData_ArcheType_Native*)_archeTypeDatas[archeTypeIndex.ComponentsLength][archeTypeIndex.Index].Ptr;
 
         public unsafe void Dispose()
         {

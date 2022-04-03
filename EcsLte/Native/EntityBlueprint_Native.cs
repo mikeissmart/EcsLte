@@ -1,8 +1,6 @@
 ﻿using EcsLte.Exceptions;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace EcsLte.Native
 {
@@ -10,15 +8,9 @@ namespace EcsLte.Native
     {
         private readonly Dictionary<ComponentConfig, IEntityBlueprintComponentData_Native> _components;
 
-        public EntityBlueprint_Native()
-        {
-            _components = new Dictionary<ComponentConfig, IEntityBlueprintComponentData_Native>();
-        }
+        public EntityBlueprint_Native() => _components = new Dictionary<ComponentConfig, IEntityBlueprintComponentData_Native>();
 
-        public bool HasComponent<TComponent>() where TComponent : unmanaged, IComponent
-        {
-            return _components.ContainsKey(ComponentConfig<TComponent>.Config);
-        }
+        public bool HasComponent<TComponent>() where TComponent : unmanaged, IComponent => _components.ContainsKey(ComponentConfig<TComponent>.Config);
 
         public TComponent GetComponent<TComponent>() where TComponent : unmanaged, IComponent
         {
@@ -55,10 +47,7 @@ namespace EcsLte.Native
             _components.Remove(config);
         }
 
-        internal KeyValuePair<ComponentConfig, IEntityBlueprintComponentData_Native>[] GetComponentConfigsAndDataOrdered()
-        {
-            return _components.OrderBy(x => x.Key.ComponentIndex)
+        internal KeyValuePair<ComponentConfig, IEntityBlueprintComponentData_Native>[] GetComponentConfigsAndDataOrdered() => _components.OrderBy(x => x.Key.ComponentIndex)
                 .ToArray();
-        }
     }
 }

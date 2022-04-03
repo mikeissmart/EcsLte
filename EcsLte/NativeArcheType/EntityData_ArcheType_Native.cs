@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
-using EcsLte.Data.Unmanaged;
+﻿using System.Runtime.InteropServices;
 
 namespace EcsLte.NativeArcheType
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct EntityData_ArcheType_Native
-	{
+    {
         public unsafe ComponentData_ArcheType_Native* ComponentArcheTypeData { get; set; }
         public unsafe DataChunk_ArcheType_Native* DataChunk { get; set; }
         public int Index { get; set; }

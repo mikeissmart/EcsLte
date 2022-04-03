@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using EcsLte.Data.Unmanaged;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-namespace EcsLte.UnitTest.Data.Unmanaged
+﻿namespace EcsLte.UnitTest.Data.Unmanaged
 {
-	/*[TestClass]
+    /*[TestClass]
 	public class Unmanaged_NativeArray
 	{
 		private struct Item

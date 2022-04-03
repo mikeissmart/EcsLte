@@ -1,10 +1,7 @@
 ﻿using EcsLte.Data;
 using EcsLte.Exceptions;
-using EcsLte.ManagedArcheType;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace EcsLte.ManagedArcheType
 {
@@ -15,18 +12,12 @@ namespace EcsLte.ManagedArcheType
         private Component_ArcheType_Managed _archeType;
         private bool _isArcheTypeDirty;
 
-        public EntityBlueprint_ArcheType_Managed()
-        {
-            _components = new DataCache<Dictionary<ComponentConfig, IComponent>, EntityBlueprintData_ArcheType_Managed>(
+        public EntityBlueprint_ArcheType_Managed() => _components = new DataCache<Dictionary<ComponentConfig, IComponent>, EntityBlueprintData_ArcheType_Managed>(
                 UpdateCachedBlueprintData,
                 new Dictionary<ComponentConfig, IComponent>(),
                 null);
-        }
 
-        public bool HasComponent<TComponent>() where TComponent : unmanaged, IComponent
-        {
-            return _components.UncachedData.ContainsKey(ComponentConfig<TComponent>.Config);
-        }
+        public bool HasComponent<TComponent>() where TComponent : unmanaged, IComponent => _components.UncachedData.ContainsKey(ComponentConfig<TComponent>.Config);
 
         public TComponent GetComponent<TComponent>() where TComponent : unmanaged, IComponent
         {

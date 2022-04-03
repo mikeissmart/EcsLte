@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace EcsLte.UnitTest.Interfaces
+﻿namespace EcsLte.UnitTest.Interfaces
 {
-	public interface IEntityLifeTest
-	{
+    public interface IEntityLifeTest
+    {
         void CreateEntities();
         void CreateEntities_Destroy();
         void CreateEntities_Large();
@@ -25,6 +19,6 @@ namespace EcsLte.UnitTest.Interfaces
         void DestroyEntities_Null();
         void DestroyEntity();
         void DestroyEntity_Destroy();
-		void DestroyEntity_Null();
-	}
+        void DestroyEntity_Null();
+    }
 }

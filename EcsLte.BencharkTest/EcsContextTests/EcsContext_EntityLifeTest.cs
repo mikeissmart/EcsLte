@@ -1,10 +1,4 @@
 ﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnostics.Windows.Configs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EcsLte.BencharkTest.EcsContextTests
 {
@@ -20,22 +14,13 @@ namespace EcsLte.BencharkTest.EcsContextTests
         public EcsContextType ContextType { get; set; }
 
         [GlobalSetup]
-        public void GlobalSetup()
-        {
-            _context = SetupCleanupTest.EcsContext_Setup(ContextType);
-        }
+        public void GlobalSetup() => _context = SetupCleanupTest.EcsContext_Setup(ContextType);
 
         [GlobalCleanup]
-        public void GlobalCleanup()
-        {
-            SetupCleanupTest.EcsContext_Cleanup(_context);
-        }
+        public void GlobalCleanup() => SetupCleanupTest.EcsContext_Cleanup(_context);
 
         [IterationSetup(Target = nameof(CreateEntites))]
-        public void IterationSetup_CreateEntites()
-        {
-            _entities_CreateEntities = new Entity[BenchmarkTestConsts.MediumCount][];
-        }
+        public void IterationSetup_CreateEntites() => _entities_CreateEntities = new Entity[BenchmarkTestConsts.MediumCount][];
 
         [IterationCleanup(Target = nameof(CreateEntites))]
         public void IterationCleanup_CreateEntites()
@@ -47,45 +32,33 @@ namespace EcsLte.BencharkTest.EcsContextTests
         [Benchmark]
         public void CreateEntites()
         {
-            for (int i = 0; i < BenchmarkTestConsts.MediumCount; i++)
+            for (var i = 0; i < BenchmarkTestConsts.MediumCount; i++)
                 _entities_CreateEntities[i] = _context.CreateEntities(BenchmarkTestConsts.SmallCount);
         }
 
         [IterationSetup(Target = nameof(CreateEntity))]
-        public void IterationSetup_CreateEntity()
-        {
-            _entities = new Entity[BenchmarkTestConsts.LargeCount];
-        }
+        public void IterationSetup_CreateEntity() => _entities = new Entity[BenchmarkTestConsts.LargeCount];
 
         [IterationCleanup(Target = nameof(CreateEntity))]
-        public void IterationCleanup_CreateEntity()
-        {
-            _context.DestroyEntities(_entities);
-        }
+        public void IterationCleanup_CreateEntity() => _context.DestroyEntities(_entities);
 
         [Benchmark]
         public void CreateEntity()
         {
-            for (int i = 0; i < BenchmarkTestConsts.LargeCount; i++)
+            for (var i = 0; i < BenchmarkTestConsts.LargeCount; i++)
                 _entities[i] = _context.CreateEntity();
         }
 
         [IterationSetup(Targets = new[] { nameof(DestroyEntities), nameof(DestroyEntity) })]
-        public void IterationSetup_Destroy()
-        {
-            _entities = _context.CreateEntities(BenchmarkTestConsts.LargeCount);
-        }
+        public void IterationSetup_Destroy() => _entities = _context.CreateEntities(BenchmarkTestConsts.LargeCount);
 
         [Benchmark]
-        public void DestroyEntities()
-        {
-            _context.DestroyEntities(_entities);
-        }
+        public void DestroyEntities() => _context.DestroyEntities(_entities);
 
         [Benchmark]
         public void DestroyEntity()
         {
-            for (int i = 0; i < _entities.Length; i++)
+            for (var i = 0; i < _entities.Length; i++)
                 _context.DestroyEntity(_entities[i]);
         }
     }

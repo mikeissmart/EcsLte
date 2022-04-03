@@ -1,11 +1,6 @@
 ﻿using EcsLte.Exceptions;
 using EcsLte.UnitTest.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EcsLte.UnitTest.EcsContextTests
 {
@@ -32,11 +27,8 @@ namespace EcsLte.UnitTest.EcsContextTests
         }
 
         [TestMethod]
-        public void GetAllComponents_Null()
-        {
-            Assert.ThrowsException<EntityDoesNotExistException>(() =>
-                Context.GetAllComponents(Entity.Null));
-        }
+        public void GetAllComponents_Null() => Assert.ThrowsException<EntityDoesNotExistException>(() =>
+                                                 Context.GetAllComponents(Entity.Null));
 
         [TestMethod]
         public void GetComponent_Destroyed()
@@ -47,11 +39,8 @@ namespace EcsLte.UnitTest.EcsContextTests
         }
 
         [TestMethod]
-        public void GetComponent_Null()
-        {
-            Assert.ThrowsException<EntityDoesNotExistException>(() =>
-                Context.GetComponent<TestComponent1>(Entity.Null));
-        }
+        public void GetComponent_Null() => Assert.ThrowsException<EntityDoesNotExistException>(() =>
+                                             Context.GetComponent<TestComponent1>(Entity.Null));
 
         [TestMethod]
         public void GetUniqueComponent_Destroyed()
@@ -62,11 +51,8 @@ namespace EcsLte.UnitTest.EcsContextTests
         }
 
         [TestMethod]
-        public void GetUniqueComponent_None()
-        {
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
-                Context.GetUniqueComponent<TestUniqueComponent1>());
-        }
+        public void GetUniqueComponent_None() => Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+                                                   Context.GetUniqueComponent<TestUniqueComponent1>());
 
         [TestMethod]
         public void GetUniqueEntity_Destroyed()
@@ -77,11 +63,8 @@ namespace EcsLte.UnitTest.EcsContextTests
         }
 
         [TestMethod]
-        public void GetUniqueEntity_None()
-        {
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
-                Context.GetUniqueEntity<TestUniqueComponent1>());
-        }
+        public void GetUniqueEntity_None() => Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+                                                Context.GetUniqueEntity<TestUniqueComponent1>());
 
         [TestMethod]
         public void HasComponent_Destroyed()
@@ -92,11 +75,8 @@ namespace EcsLte.UnitTest.EcsContextTests
         }
 
         [TestMethod]
-        public void HasComponent_Null()
-        {
-            Assert.ThrowsException<EntityDoesNotExistException>(() =>
-                Context.HasComponent<TestComponent1>(Entity.Null));
-        }
+        public void HasComponent_Null() => Assert.ThrowsException<EntityDoesNotExistException>(() =>
+                                             Context.HasComponent<TestComponent1>(Entity.Null));
 
         [TestMethod]
         public void HasUniqueComponent_Destroyed()
@@ -107,10 +87,7 @@ namespace EcsLte.UnitTest.EcsContextTests
         }
 
         [TestMethod]
-        public void HasUniqueComponent_None()
-        {
-            Assert.IsFalse(Context.HasUniqueComponent<TestUniqueComponent1>());
-        }
+        public void HasUniqueComponent_None() => Assert.IsFalse(Context.HasUniqueComponent<TestUniqueComponent1>());
     }
 }
 

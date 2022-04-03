@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte.NativeArcheType
 {
@@ -32,7 +30,7 @@ namespace EcsLte.NativeArcheType
 
         public override int GetHashCode()
         {
-            int hashCode = -612338121;
+            var hashCode = -612338121;
             hashCode = hashCode * -1521134295 + ComponentsLength.GetHashCode();
             hashCode = hashCode * -1521134295 + Index.GetHashCode();
             return hashCode;

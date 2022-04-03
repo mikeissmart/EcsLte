@@ -2,10 +2,8 @@
 using EcsLte.Data.Unmanaged;
 using EcsLte.Exceptions;
 using EcsLte.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace EcsLte.NativeArcheType
 {
@@ -16,18 +14,12 @@ namespace EcsLte.NativeArcheType
         private ArcheTypeIndex_ArcheType_Native _archeTypeIndex;
         private bool _isArcheTypeIndexDirty;
 
-        public EntityBlueprint_ArcheType_Native()
-        {
-            _components = new DataCache<Dictionary<ComponentConfig, IEntityBlueprintComponentData_ArcheType_Native>, EntityBlueprintData_ArcheType_Native>(
+        public EntityBlueprint_ArcheType_Native() => _components = new DataCache<Dictionary<ComponentConfig, IEntityBlueprintComponentData_ArcheType_Native>, EntityBlueprintData_ArcheType_Native>(
                 UpdateCachedBlueprintData,
                 new Dictionary<ComponentConfig, IEntityBlueprintComponentData_ArcheType_Native>(),
                 null);
-        }
 
-        public bool HasComponent<TComponent>() where TComponent : unmanaged, IComponent
-        {
-            return _components.UncachedData.ContainsKey(ComponentConfig<TComponent>.Config);
-        }
+        public bool HasComponent<TComponent>() where TComponent : unmanaged, IComponent => _components.UncachedData.ContainsKey(ComponentConfig<TComponent>.Config);
 
         public TComponent GetComponent<TComponent>() where TComponent : unmanaged, IComponent
         {
@@ -57,7 +49,9 @@ namespace EcsLte.NativeArcheType
                 _components.SetDirty();
             }
             else
+            {
                 _components.UncachedData[config] = new EntityBlueprintComponentData_ArcheType_Native<TComponent> { Component = component };
+            }
 
             _isArcheTypeIndexDirty = true;
         }

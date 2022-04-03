@@ -1,67 +1,60 @@
-﻿using EcsLte.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿using System;
 
 namespace EcsLte.Data.Unmanaged
 {
-	public unsafe struct NativeDynamicList : IDisposable
-	{
-		private NativeDynamicArray _array;
-		private int _countInBytes;
-		private int _capacityInBytes;
+    public unsafe struct NativeDynamicList : IDisposable
+    {
+        private NativeDynamicArray _array;
+        private int _countInBytes;
+        private int _capacityInBytes;
 
-		public static NativeDynamicList Alloc<T>(int initialCount = 0, int initialCapacity = 4) where T : unmanaged
-		{
-			return Alloc(TypeCache<T>.SizeInBytes, initialCount, initialCapacity);
-		}
+        public static NativeDynamicList Alloc<T>(int initialCount = 0, int initialCapacity = 4) where T : unmanaged => Alloc(TypeCache<T>.SizeInBytes, initialCount, initialCapacity);
 
-		public static NativeDynamicList Alloc(int itemSizeInBytes, int initialCount = 0, int initialCapacity = 4)
-		{
-			if (initialCount < 0)
-				throw new ArgumentOutOfRangeException(nameof(initialCount), "Must be greater than 0.");
-			if (initialCapacity <= 0)
-				throw new ArgumentOutOfRangeException(nameof(initialCapacity), "Must be greater than 0.");
-			if (itemSizeInBytes <= 0)
-				throw new ArgumentOutOfRangeException(nameof(itemSizeInBytes), "Must be greater than 0.");
-			if (initialCapacity < initialCount)
-				throw new ArgumentException("Must Capacity be greater than Count.");
-
-			var list = new NativeDynamicList
-			{
-				_array = NativeDynamicArray.Alloc(itemSizeInBytes * initialCapacity),
-				_countInBytes = initialCount * itemSizeInBytes,
-				_capacityInBytes = initialCapacity * itemSizeInBytes
-			};
-
-			return list;
-		}
-
-		public void Add<T>(ref T item) where T : unmanaged
+        public static NativeDynamicList Alloc(int itemSizeInBytes, int initialCount = 0, int initialCapacity = 4)
         {
-			var itemSizeInBytes = TypeCache<T>.SizeInBytes;
-			if (_countInBytes + itemSizeInBytes > _capacityInBytes)
+            if (initialCount < 0)
+                throw new ArgumentOutOfRangeException(nameof(initialCount), "Must be greater than 0.");
+            if (initialCapacity <= 0)
+                throw new ArgumentOutOfRangeException(nameof(initialCapacity), "Must be greater than 0.");
+            if (itemSizeInBytes <= 0)
+                throw new ArgumentOutOfRangeException(nameof(itemSizeInBytes), "Must be greater than 0.");
+            if (initialCapacity < initialCount)
+                throw new ArgumentException("Must Capacity be greater than Count.");
+
+            var list = new NativeDynamicList
             {
-				var newLengthInBytes = (int)Math.Pow(2, (int)Math.Log(_countInBytes + itemSizeInBytes, 2) + 1);
-				_array.Resize(newLengthInBytes);
-			}
-			_array.Set(_countInBytes, ref item);
-			_countInBytes += itemSizeInBytes;
-		}
+                _array = NativeDynamicArray.Alloc(itemSizeInBytes * initialCapacity),
+                _countInBytes = initialCount * itemSizeInBytes,
+                _capacityInBytes = initialCapacity * itemSizeInBytes
+            };
 
-		public T Get<T>(int offsetInBytes) where T : unmanaged
-		{
-			var itemSizeInBytes = TypeCache<T>.SizeInBytes;
-			if (offsetInBytes <= 0)
-				throw new ArgumentOutOfRangeException(nameof(offsetInBytes), "Must be greater than 0.");
-			if (offsetInBytes + itemSizeInBytes > _countInBytes)
-				throw new ArgumentOutOfRangeException(nameof(offsetInBytes));
+            return list;
+        }
 
-			return _array.Get<T>(offsetInBytes);
-		}
+        public void Add<T>(ref T item) where T : unmanaged
+        {
+            var itemSizeInBytes = TypeCache<T>.SizeInBytes;
+            if (_countInBytes + itemSizeInBytes > _capacityInBytes)
+            {
+                var newLengthInBytes = (int)Math.Pow(2, (int)Math.Log(_countInBytes + itemSizeInBytes, 2) + 1);
+                _array.Resize(newLengthInBytes);
+            }
+            _array.Set(_countInBytes, ref item);
+            _countInBytes += itemSizeInBytes;
+        }
 
-		/*public int IndexOf<T>(ref T item) where T : unmanaged
+        public T Get<T>(int offsetInBytes) where T : unmanaged
+        {
+            var itemSizeInBytes = TypeCache<T>.SizeInBytes;
+            if (offsetInBytes <= 0)
+                throw new ArgumentOutOfRangeException(nameof(offsetInBytes), "Must be greater than 0.");
+            if (offsetInBytes + itemSizeInBytes > _countInBytes)
+                throw new ArgumentOutOfRangeException(nameof(offsetInBytes));
+
+            return _array.Get<T>(offsetInBytes);
+        }
+
+        /*public int IndexOf<T>(ref T item) where T : unmanaged
 		{
 			var itemSizeInBytes = TypeCache<T>.SizeInBytes;
 			var itemCount = Count<T>();
@@ -166,52 +159,52 @@ namespace EcsLte.Data.Unmanaged
 			return ref _array.Get<T>(count * itemSizeInBytes);
 		}*/
 
-		public int Count<T>() where T : unmanaged
-		{
-			if (_countInBytes == 0)
-				return 0;
-
-			return TypeCache<T>.SizeInBytes / _countInBytes;
-		}
-
-		public int Count(int itemSizeInBytes)
-		{
-			if (_countInBytes == 0)
-				return 0;
-
-			return itemSizeInBytes / _countInBytes;
-		}
-
-		public int Capacity<T>() where T : unmanaged
-		{
-			if (_capacityInBytes == 0)
-				return 0;
-
-			return TypeCache<T>.SizeInBytes / _capacityInBytes;
-		}
-
-		public int Capacity(int itemSizeInBytes)
-		{
-			if (_capacityInBytes == 0)
-				return 0;
-
-			return itemSizeInBytes / _capacityInBytes;
-		}
-
-		public void Clear()
+        public int Count<T>() where T : unmanaged
         {
-			if (_countInBytes > 0)
+            if (_countInBytes == 0)
+                return 0;
+
+            return TypeCache<T>.SizeInBytes / _countInBytes;
+        }
+
+        public int Count(int itemSizeInBytes)
+        {
+            if (_countInBytes == 0)
+                return 0;
+
+            return itemSizeInBytes / _countInBytes;
+        }
+
+        public int Capacity<T>() where T : unmanaged
+        {
+            if (_capacityInBytes == 0)
+                return 0;
+
+            return TypeCache<T>.SizeInBytes / _capacityInBytes;
+        }
+
+        public int Capacity(int itemSizeInBytes)
+        {
+            if (_capacityInBytes == 0)
+                return 0;
+
+            return itemSizeInBytes / _capacityInBytes;
+        }
+
+        public void Clear()
+        {
+            if (_countInBytes > 0)
             {
-				_array.Clear();
-				_countInBytes = 0;
+                _array.Clear();
+                _countInBytes = 0;
             }
         }
 
         public void Dispose()
-		{
-			_array.Dispose();
-			_countInBytes = 0;
-			_capacityInBytes = 0;
-		}
+        {
+            _array.Dispose();
+            _countInBytes = 0;
+            _capacityInBytes = 0;
+        }
     }
 }

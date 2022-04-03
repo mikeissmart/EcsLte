@@ -1,8 +1,5 @@
 ﻿using EcsLte.Utilities;
-using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace EcsLte.NativeArcheTypeContinous
 {
@@ -22,10 +19,7 @@ namespace EcsLte.NativeArcheTypeContinous
             }
         }
 
-        public bool IsFull(int capacity)
-        {
-            return Count == capacity;
-        }
+        public bool IsFull(int capacity) => Count == capacity;
 
         public unsafe void Clear()
         {

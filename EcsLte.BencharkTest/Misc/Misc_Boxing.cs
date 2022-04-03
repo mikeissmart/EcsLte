@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BenchmarkDotNet.Attributes;
-
-namespace EcsLte.BencharkTest
+﻿namespace EcsLte.BencharkTest
 {
-	/*[MemoryDiagnoser]
+    /*[MemoryDiagnoser]
 	public class Misc_Boxing
 	{
 		private interface ITest { }

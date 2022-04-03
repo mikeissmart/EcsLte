@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EcsLte.ManagedArcheType
+﻿namespace EcsLte.ManagedArcheType
 {
     internal class EntityBlueprintData_ArcheType_Managed
     {

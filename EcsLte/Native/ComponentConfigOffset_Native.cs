@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EcsLte.Native
+﻿namespace EcsLte.Native
 {
     public struct ComponentConfigOffset_Native
     {

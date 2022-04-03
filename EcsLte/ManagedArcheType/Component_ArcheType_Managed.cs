@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace EcsLte.ManagedArcheType
 {
@@ -95,7 +93,7 @@ namespace EcsLte.ManagedArcheType
             Array.Copy(archeType.ComponentConfigs, newArcheType.ComponentConfigs, archeType.ComponentConfigs.Length);
             Array.Copy(archeType.ShareComponentDataIndexes, newArcheType.ShareComponentDataIndexes, archeType.ShareComponentDataIndexes.Length);
 
-            for (int i = 0; i < newArcheType.ShareComponentDataIndexes.Length; i++)
+            for (var i = 0; i < newArcheType.ShareComponentDataIndexes.Length; i++)
             {
                 var check = newArcheType.ShareComponentDataIndexes[i];
                 if (check.SharedIndex == sharedDataIndex.SharedIndex)
@@ -158,20 +156,25 @@ namespace EcsLte.ManagedArcheType
             if ((lhs.ComponentConfigs == null && rhs.ComponentConfigs != null ||
                 lhs.ComponentConfigs != null && rhs.ComponentConfigs == null) &&
                 lhs.ComponentConfigs.Length != rhs.ComponentConfigs.Length)
+            {
                 return false;
+            }
+
             if ((lhs.ShareComponentDataIndexes == null && rhs.ShareComponentDataIndexes != null ||
                 lhs.ShareComponentDataIndexes != null && rhs.ShareComponentDataIndexes == null) &&
                 lhs.ShareComponentDataIndexes.Length != rhs.ShareComponentDataIndexes.Length)
+            {
                 return false;
-            
-            for (int i = 0; i < lhs.ComponentConfigs.Length; i++)
+            }
+
+            for (var i = 0; i < lhs.ComponentConfigs.Length; i++)
             {
                 if (lhs.ComponentConfigs[i] != rhs.ComponentConfigs[i])
                     return false;
             }
             if (lhs.ShareComponentDataIndexes != null)
             {
-                for (int i = 0; i < lhs.ShareComponentDataIndexes.Length; i++)
+                for (var i = 0; i < lhs.ShareComponentDataIndexes.Length; i++)
                 {
                     if (lhs.ShareComponentDataIndexes[i] != rhs.ShareComponentDataIndexes[i])
                         return false;
@@ -192,11 +195,13 @@ namespace EcsLte.ManagedArcheType
             var hashCode = -612338121;
             if (ComponentConfigs != null)
             {
-                for (int i = 0; i < ComponentConfigs.Length; i++)
+                for (var i = 0; i < ComponentConfigs.Length; i++)
                     hashCode = hashCode * -1521134295 + ComponentConfigs[i].GetHashCode();
                 if (ShareComponentDataIndexes != null)
-                    for (int i = 0; i < ShareComponentDataIndexes.Length; i++)
+                {
+                    for (var i = 0; i < ShareComponentDataIndexes.Length; i++)
                         hashCode = hashCode * -1521134295 + ShareComponentDataIndexes[i].GetHashCode();
+                }
             }
 
             return hashCode;

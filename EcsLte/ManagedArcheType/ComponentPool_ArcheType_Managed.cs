@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte.ManagedArcheType
 {
@@ -17,29 +15,14 @@ namespace EcsLte.ManagedArcheType
     {
         private TComponent[] _components;
 
-        public ComponentPool_ArcheType_Managed(int initCapacity)
-        {
-            _components = new TComponent[initCapacity];
-        }
+        public ComponentPool_ArcheType_Managed(int initCapacity) => _components = new TComponent[initCapacity];
 
-        public IComponent GetComponent(int index)
-        {
-            return _components[index];
-        }
+        public IComponent GetComponent(int index) => _components[index];
 
-        public void SetComponent(int index, IComponent component)
-        {
-            _components[index] = (TComponent)component;
-        }
+        public void SetComponent(int index, IComponent component) => _components[index] = (TComponent)component;
 
-        public void MoveComponent(int sourceIndex, int destinationIndex)
-        {
-            _components[destinationIndex] = _components[sourceIndex];
-        }
+        public void MoveComponent(int sourceIndex, int destinationIndex) => _components[destinationIndex] = _components[sourceIndex];
 
-        public void Resize(int newCapacity)
-        {
-            Array.Resize(ref _components, newCapacity);
-        }
+        public void Resize(int newCapacity) => Array.Resize(ref _components, newCapacity);
     }
 }

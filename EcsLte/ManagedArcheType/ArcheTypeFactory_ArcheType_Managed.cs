@@ -1,14 +1,12 @@
 ﻿using EcsLte.Data;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte.ManagedArcheType
 {
     public class ArcheTypeFactory_ArcheType_Managed
     {
-        private List<IndexDictionary<Component_ArcheType_Managed>> _archeTypeIndexes;
-        private List<List<ComponentData_ArcheType_Managed>> _archeTypeDatas;
+        private readonly List<IndexDictionary<Component_ArcheType_Managed>> _archeTypeIndexes;
+        private readonly List<List<ComponentData_ArcheType_Managed>> _archeTypeDatas;
 
         public ArcheTypeFactory_ArcheType_Managed()
         {
@@ -26,7 +24,9 @@ namespace EcsLte.ManagedArcheType
                 dataList.Add(archeTypeData);
             }
             else
+            {
                 archeTypeData = dataList[index];
+            }
 
             return archeTypeData;
         }

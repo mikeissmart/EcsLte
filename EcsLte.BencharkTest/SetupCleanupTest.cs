@@ -1,14 +1,9 @@
-﻿using BenchmarkDotNet.Attributes;
-using EcsLte.Managed;
+﻿using EcsLte.Managed;
 using EcsLte.ManagedArcheType;
 using EcsLte.Native;
 using EcsLte.NativeArcheType;
 using EcsLte.NativeArcheTypeContinous;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EcsLte.BencharkTest
 {
@@ -57,36 +52,36 @@ namespace EcsLte.BencharkTest
             switch (arrangement)
             {
                 case EntityComponentArrangement.Normal_x1:
-                    for (int i = 0; i < entities.Length; i++)
+                    for (var i = 0; i < entities.Length; i++)
                         context.AddComponent(entities[i], _component1);
                     break;
                 case EntityComponentArrangement.Normal_x2:
-                    for (int i = 0; i < entities.Length; i++)
+                    for (var i = 0; i < entities.Length; i++)
                     {
                         context.AddComponent(entities[i], _component1);
                         context.AddComponent(entities[i], _component2);
                     }
                     break;
                 case EntityComponentArrangement.Shared_x1:
-                    for (int i = 0; i < entities.Length; i++)
+                    for (var i = 0; i < entities.Length; i++)
                         context.AddComponent(entities[i], _componentShared1);
                     break;
                 case EntityComponentArrangement.Shared_x2:
-                    for (int i = 0; i < entities.Length; i++)
+                    for (var i = 0; i < entities.Length; i++)
                     {
                         context.AddComponent(entities[i], _componentShared1);
                         context.AddComponent(entities[i], _componentShared2);
                     }
                     break;
                 case EntityComponentArrangement.Normal_x1_Shared_x1:
-                    for (int i = 0; i < entities.Length; i++)
+                    for (var i = 0; i < entities.Length; i++)
                     {
                         context.AddComponent(entities[i], _component1);
                         context.AddComponent(entities[i], _componentShared1);
                     }
                     break;
                 case EntityComponentArrangement.Normal_x1_Shared_x2:
-                    for (int i = 0; i < entities.Length; i++)
+                    for (var i = 0; i < entities.Length; i++)
                     {
                         context.AddComponent(entities[i], _component1);
                         context.AddComponent(entities[i], _componentShared1);
@@ -94,7 +89,7 @@ namespace EcsLte.BencharkTest
                     }
                     break;
                 case EntityComponentArrangement.Normal_x2_Shared_x1:
-                    for (int i = 0; i < entities.Length; i++)
+                    for (var i = 0; i < entities.Length; i++)
                     {
                         context.AddComponent(entities[i], _component1);
                         context.AddComponent(entities[i], _component2);
@@ -102,7 +97,7 @@ namespace EcsLte.BencharkTest
                     }
                     break;
                 case EntityComponentArrangement.Normal_x2_Shared_x2:
-                    for (int i = 0; i < entities.Length; i++)
+                    for (var i = 0; i < entities.Length; i++)
                     {
                         context.AddComponent(entities[i], _component1);
                         context.AddComponent(entities[i], _component2);

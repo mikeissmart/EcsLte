@@ -1,11 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnostics.Windows.Configs;
-using EcsLte.BencharkTest.Interfaces;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EcsLte.BencharkTest.EcsContextTests
 {
@@ -35,21 +29,15 @@ namespace EcsLte.BencharkTest.EcsContextTests
         }
 
         [GlobalCleanup]
-        public void GlobalCleanup()
-        {
-            SetupCleanupTest.EcsContext_Cleanup(_context);
-        }
+        public void GlobalCleanup() => SetupCleanupTest.EcsContext_Cleanup(_context);
 
         [IterationSetup]
-        public void IterationSetup()
-        {
-            SetupCleanupTest.EntityComponent_AddComponent(ComponentArrangement, _context, _entities);
-        }
+        public void IterationSetup() => SetupCleanupTest.EntityComponent_AddComponent(ComponentArrangement, _context, _entities);
 
         [IterationCleanup]
         public void IterationCleanup()
         {
-            for (int i = 0; i < _entities.Length; i++)
+            for (var i = 0; i < _entities.Length; i++)
                 _context.RemoveAllComponents(_entities[i]);
         }
 
@@ -59,10 +47,7 @@ namespace EcsLte.BencharkTest.EcsContextTests
         }
 
         [Benchmark]
-        public void AddComponent()
-        {
-            SetupCleanupTest.EntityComponent_AddComponent(ComponentArrangement, _context, _entities);
-        }
+        public void AddComponent() => SetupCleanupTest.EntityComponent_AddComponent(ComponentArrangement, _context, _entities);
 
         [Benchmark]
         public void ReplaceComponent()
@@ -70,36 +55,36 @@ namespace EcsLte.BencharkTest.EcsContextTests
             switch (ComponentArrangement)
             {
                 case EntityComponentArrangement.Normal_x1:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                         _context.ReplaceComponent(_entities[i], _replaceComponent1);
                     break;
                 case EntityComponentArrangement.Normal_x2:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         _context.ReplaceComponent(_entities[i], _replaceComponent1);
                         _context.ReplaceComponent(_entities[i], _replaceComponent2);
                     }
                     break;
                 case EntityComponentArrangement.Shared_x1:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                         _context.ReplaceComponent(_entities[i], _replaceComponentShared1);
                     break;
                 case EntityComponentArrangement.Shared_x2:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         _context.ReplaceComponent(_entities[i], _replaceComponentShared1);
                         _context.ReplaceComponent(_entities[i], _replaceComponentShared2);
                     }
                     break;
                 case EntityComponentArrangement.Normal_x1_Shared_x1:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         _context.ReplaceComponent(_entities[i], _replaceComponent1);
                         _context.ReplaceComponent(_entities[i], _replaceComponentShared1);
                     }
                     break;
                 case EntityComponentArrangement.Normal_x1_Shared_x2:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         _context.ReplaceComponent(_entities[i], _replaceComponent1);
                         _context.ReplaceComponent(_entities[i], _replaceComponentShared1);
@@ -107,7 +92,7 @@ namespace EcsLte.BencharkTest.EcsContextTests
                     }
                     break;
                 case EntityComponentArrangement.Normal_x2_Shared_x1:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         _context.ReplaceComponent(_entities[i], _replaceComponent1);
                         _context.ReplaceComponent(_entities[i], _replaceComponent2);
@@ -115,7 +100,7 @@ namespace EcsLte.BencharkTest.EcsContextTests
                     }
                     break;
                 case EntityComponentArrangement.Normal_x2_Shared_x2:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         _context.ReplaceComponent(_entities[i], _replaceComponent1);
                         _context.ReplaceComponent(_entities[i], _replaceComponent2);
@@ -134,36 +119,36 @@ namespace EcsLte.BencharkTest.EcsContextTests
             switch (ComponentArrangement)
             {
                 case EntityComponentArrangement.Normal_x1:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                         _context.RemoveComponent<TestComponent1>(_entities[i]);
                     break;
                 case EntityComponentArrangement.Normal_x2:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         _context.RemoveComponent<TestComponent1>(_entities[i]);
                         _context.RemoveComponent<TestComponent2>(_entities[i]);
                     }
                     break;
                 case EntityComponentArrangement.Shared_x1:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                         _context.RemoveComponent<TestSharedComponent1>(_entities[i]);
                     break;
                 case EntityComponentArrangement.Shared_x2:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         _context.RemoveComponent<TestSharedComponent1>(_entities[i]);
                         _context.RemoveComponent<TestSharedComponent2>(_entities[i]);
                     }
                     break;
                 case EntityComponentArrangement.Normal_x1_Shared_x1:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         _context.RemoveComponent<TestComponent1>(_entities[i]);
                         _context.RemoveComponent<TestSharedComponent1>(_entities[i]);
                     }
                     break;
                 case EntityComponentArrangement.Normal_x1_Shared_x2:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         _context.RemoveComponent<TestComponent1>(_entities[i]);
                         _context.RemoveComponent<TestSharedComponent1>(_entities[i]);
@@ -171,7 +156,7 @@ namespace EcsLte.BencharkTest.EcsContextTests
                     }
                     break;
                 case EntityComponentArrangement.Normal_x2_Shared_x1:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         _context.RemoveComponent<TestComponent1>(_entities[i]);
                         _context.RemoveComponent<TestComponent2>(_entities[i]);
@@ -179,7 +164,7 @@ namespace EcsLte.BencharkTest.EcsContextTests
                     }
                     break;
                 case EntityComponentArrangement.Normal_x2_Shared_x2:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         _context.RemoveComponent<TestComponent1>(_entities[i]);
                         _context.RemoveComponent<TestComponent2>(_entities[i]);
@@ -195,7 +180,7 @@ namespace EcsLte.BencharkTest.EcsContextTests
         [Benchmark]
         public void RemoveAllComponents()
         {
-            for (int i = 0; i < _entities.Length; i++)
+            for (var i = 0; i < _entities.Length; i++)
                 _context.RemoveAllComponents(_entities[i]);
         }
     }

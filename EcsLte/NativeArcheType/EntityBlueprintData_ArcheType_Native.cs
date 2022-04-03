@@ -1,7 +1,4 @@
 ﻿using EcsLte.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte.NativeArcheType
 {
@@ -29,10 +26,5 @@ namespace EcsLte.NativeArcheType
 
             return components;
         }
-    }
-
-    internal struct TestComp
-    {
-        public int Prop { get; set; }
     }
 }

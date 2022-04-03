@@ -1,11 +1,4 @@
 ﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnostics.Windows.Configs;
-using EcsLte.BencharkTest.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EcsLte.BencharkTest.EcsContextTests
 {
@@ -29,22 +22,16 @@ namespace EcsLte.BencharkTest.EcsContextTests
         }
 
         [GlobalCleanup]
-        public void GlobalCleanup()
-        {
-            SetupCleanupTest.EcsContext_Cleanup(_context);
-        }
+        public void GlobalCleanup() => SetupCleanupTest.EcsContext_Cleanup(_context);
 
         [IterationCleanup]
-        public void IterationCleanup_CreateEntites()
-        {
-            _context.DestroyEntities(_entities);
-        }
+        public void IterationCleanup_CreateEntites() => _context.DestroyEntities(_entities);
 
         [Benchmark]
         public void CreateEntityBlueprint()
         {
             var blueprint = SetupCleanupTest.GetEntityBlueprint(ContextType, ComponentArrangement);
-            for (int i = 0; i < BenchmarkTestConsts.LargeCount; i++)
+            for (var i = 0; i < BenchmarkTestConsts.LargeCount; i++)
                 _entities[i] = _context.CreateEntity(blueprint);
         }
 

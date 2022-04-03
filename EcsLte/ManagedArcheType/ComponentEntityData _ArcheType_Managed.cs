@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EcsLte.ManagedArcheType
+﻿namespace EcsLte.ManagedArcheType
 {
     public class ComponentEntityData__ArcheType_Managed
     {

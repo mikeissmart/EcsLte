@@ -3,7 +3,6 @@ using EcsLte.Data.Unmanaged;
 using EcsLte.NativeArcheType;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte.NativeArcheTypeContinous
 {
@@ -44,7 +43,9 @@ namespace EcsLte.NativeArcheTypeContinous
                 isNew = true;
             }
             else
+            {
                 archeTypeData = (ComponentData_ArcheType_Native_Continuous*)dataList[index].Ptr;
+            }
 
             return isNew;
         }
@@ -73,7 +74,9 @@ namespace EcsLte.NativeArcheTypeContinous
                 isNew = true;
             }
             else
+            {
                 archeTypeData = (ComponentData_ArcheType_Native_Continuous*)dataList[index].Ptr;
+            }
 
             archeTypeIndex = new ArcheTypeIndex_ArcheType_Native
             {
@@ -84,10 +87,7 @@ namespace EcsLte.NativeArcheTypeContinous
             return isNew;
         }
 
-        public unsafe ComponentData_ArcheType_Native_Continuous* GetArcheTypeData(ArcheTypeIndex_ArcheType_Native archeTypeIndex)
-        {
-            return (ComponentData_ArcheType_Native_Continuous*)_archeTypeDatas[archeTypeIndex.ComponentsLength][archeTypeIndex.Index].Ptr;
-        }
+        public unsafe ComponentData_ArcheType_Native_Continuous* GetArcheTypeData(ArcheTypeIndex_ArcheType_Native archeTypeIndex) => (ComponentData_ArcheType_Native_Continuous*)_archeTypeDatas[archeTypeIndex.ComponentsLength][archeTypeIndex.Index].Ptr;
 
         public unsafe void Dispose()
         {

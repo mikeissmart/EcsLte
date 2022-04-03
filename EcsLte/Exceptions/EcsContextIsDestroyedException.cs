@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EcsLte.Exceptions
+﻿namespace EcsLte.Exceptions
 {
-	public class EcsContextIsDestroyedException : EcsLteException
-	{
-		public EcsContextIsDestroyedException(EcsContext context)
-			: base($"EcsContext '{context.Name}' is already destroyed.")
-		{
-		}
-	}
+    public class EcsContextIsDestroyedException : EcsLteException
+    {
+        public EcsContextIsDestroyedException(EcsContext context)
+            : base($"EcsContext '{context.Name}' is already destroyed.")
+        {
+        }
+    }
 }

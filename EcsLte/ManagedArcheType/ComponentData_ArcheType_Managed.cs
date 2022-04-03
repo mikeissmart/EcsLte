@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte.ManagedArcheType
 {
     public class ComponentData_ArcheType_Managed
     {
-        private static int _componentPoolInitLength = 4;
+        private static readonly int _componentPoolInitLength = 4;
 
         private Dictionary<ComponentConfig, int> _configs;
         private IComponentPool_ArcheType_Managed[] _componentPools;
@@ -19,9 +18,10 @@ namespace EcsLte.ManagedArcheType
 
         public static ComponentData_ArcheType_Managed Alloc(Component_ArcheType_Managed archeType)
         {
-            var data = new ComponentData_ArcheType_Managed();
-
-            data._configs = new Dictionary<ComponentConfig, int>();
+            var data = new ComponentData_ArcheType_Managed
+            {
+                _configs = new Dictionary<ComponentConfig, int>()
+            };
             var uniqueConfigs = new List<ComponentConfig>();
 
             foreach (var config in archeType.ComponentConfigs)
@@ -83,8 +83,10 @@ namespace EcsLte.ManagedArcheType
                 _entityDatas[EntityCount - 1] = null;
             }
             else
+            {
                 // Is last entity
                 _entityDatas[entityData.Index] = null;
+            }
 
             entityData.ComponentArcheTypeData = null;
             entityData.Index = -1;
@@ -111,40 +113,28 @@ namespace EcsLte.ManagedArcheType
 
         internal void SetEntityBlueprintData(EntityData_ArcheType_Managed entityData, EntityBlueprintData_ArcheType_Managed blueprintData)
         {
-            for (int i = 0; i < blueprintData.Configs.Length; i++)
+            for (var i = 0; i < blueprintData.Configs.Length; i++)
                 _componentPools[i].SetComponent(entityData.Index, blueprintData.Components[i]);
         }
 
-        public void SetComponent(EntityData_ArcheType_Managed entityData, ComponentConfig config, IComponent component)
-        {
-            _componentPools[_configs[config]].SetComponent(entityData.Index, component);
-        }
+        public void SetComponent(EntityData_ArcheType_Managed entityData, ComponentConfig config, IComponent component) => _componentPools[_configs[config]].SetComponent(entityData.Index, component);
 
-        public IComponent GetComponent(EntityData_ArcheType_Managed entityData, ComponentConfig config)
-        {
-            return _componentPools[_configs[config]].GetComponent(entityData.Index);
-        }
+        public IComponent GetComponent(EntityData_ArcheType_Managed entityData, ComponentConfig config) => _componentPools[_configs[config]].GetComponent(entityData.Index);
 
         public IComponent[] GetAllComponents(EntityData_ArcheType_Managed entityData, IComponent[] uniqueComponents)
         {
             var components = new IComponent[_configs.Count + _uniqueConfigs.Length];
 
-            for (int i = 0; i < _configs.Count; i++)
+            for (var i = 0; i < _configs.Count; i++)
                 components[i] = _componentPools[i].GetComponent(entityData.Index);
-            for (int i = 0; i < _uniqueConfigs.Length; i++)
+            for (var i = 0; i < _uniqueConfigs.Length; i++)
                 components[i + _configs.Count] = uniqueComponents[_uniqueConfigs[i].UniqueIndex];
 
             return components;
         }
 
-        public void SetUniqueComponent(ComponentConfig config, IComponent component, IComponent[] uniqueComponents)
-        {
-            uniqueComponents[config.UniqueIndex] = component;
-        }
+        public void SetUniqueComponent(ComponentConfig config, IComponent component, IComponent[] uniqueComponents) => uniqueComponents[config.UniqueIndex] = component;
 
-        public IComponent GetUniqueComponent(ComponentConfig config, IComponent[] uniqueComponents)
-        {
-            return uniqueComponents[config.UniqueIndex];
-        }
+        public IComponent GetUniqueComponent(ComponentConfig config, IComponent[] uniqueComponents) => uniqueComponents[config.UniqueIndex];
     }
 }

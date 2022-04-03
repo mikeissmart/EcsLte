@@ -1,8 +1,6 @@
 ﻿using EcsLte.Data.Unmanaged;
 using EcsLte.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte.NativeArcheTypeContinous
 {
@@ -10,7 +8,7 @@ namespace EcsLte.NativeArcheTypeContinous
     {
         private static readonly int _dataChunkInitLength = 4;
 
-		private unsafe byte* _dataChunks;
+        private unsafe byte* _dataChunks;
         private int _dataChunksLength;
         private int _dataChunkSizeInBytes;
         private unsafe int* _unusedDataChunkIndexes;
@@ -25,10 +23,7 @@ namespace EcsLte.NativeArcheTypeContinous
             return data;
         }
 
-        public unsafe DataChunk_ArcheType_Native_Continuous* GetDataChunk(int index)
-        {
-            return (DataChunk_ArcheType_Native_Continuous*)(_dataChunks + (index * _dataChunkSizeInBytes));
-        }
+        public unsafe DataChunk_ArcheType_Native_Continuous* GetDataChunk(int index) => (DataChunk_ArcheType_Native_Continuous*)(_dataChunks + (index * _dataChunkSizeInBytes));
 
         public unsafe int GetDataChunkIndex()
         {
@@ -79,7 +74,7 @@ namespace EcsLte.NativeArcheTypeContinous
         {
             CheckUnusedCapacity(length);
 
-            for (int i = 0; i < length; i++)
+            for (var i = 0; i < length; i++)
             {
                 var index = dataChunkIndexes[i];
                 MemoryHelper.Clear(_dataChunks + (index * _dataChunkSizeInBytes), _dataChunkSizeInBytes);
@@ -97,7 +92,7 @@ namespace EcsLte.NativeArcheTypeContinous
             _unusedDataChunksCount = _dataChunkInitLength;
             _unusedDataChunksLength = _dataChunkInitLength;
 
-            for (int i = 0; i < _dataChunkInitLength; i++)
+            for (var i = 0; i < _dataChunkInitLength; i++)
                 _unusedDataChunkIndexes[i] = i;
         }
 
@@ -113,7 +108,7 @@ namespace EcsLte.NativeArcheTypeContinous
 
                 CheckUnusedCapacity(newCapacity - _dataChunksLength);
 
-                for (int i = _dataChunksLength; i < newCapacity; i++)
+                for (var i = _dataChunksLength; i < newCapacity; i++)
                     _unusedDataChunkIndexes[_unusedDataChunksCount++] = i;
 
                 _dataChunksLength = newCapacity;

@@ -3,7 +3,6 @@ using EcsLte.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace EcsLte.Managed
 {
@@ -18,8 +17,8 @@ namespace EcsLte.Managed
         private readonly Entity[] _uniqueComponentEntities;
         private int _nextId;
 
-        public int Count { get => _entitiesCount; }
-        public int Capacity { get => _entities.UncachedData.Length; }
+        public int Count => _entitiesCount;
+        public int Capacity => _entities.UncachedData.Length;
 
         public ComponentEntityFactory_Managed()
         {
@@ -33,17 +32,11 @@ namespace EcsLte.Managed
             _nextId = 1;
         }
 
-        public Entity[] GetEntities()
-        {
-            return _entities.CachedData;
-        }
+        public Entity[] GetEntities() => _entities.CachedData;
 
-        public bool HasEntity(Entity entity)
-        {
-            return entity.Id > 0 &&
+        public bool HasEntity(Entity entity) => entity.Id > 0 &&
                 entity.Id < Capacity &&
                 _entities.UncachedData[entity.Id] == entity;
-        }
 
         public Entity CreateEntity(IEntityBlueprint blueprint)
         {
@@ -91,7 +84,7 @@ namespace EcsLte.Managed
                 foreach (var pair in componentConfigsAndDatas)
                     components[pair.Key.ComponentIndex] = pair.Value;
 
-                for (int i = 0; i < count; i++)
+                for (var i = 0; i < count; i++)
                 {
                     entities[i] = AllocateEntity(out var entityData);
                     Array.Copy(components, entityData.Components, components.Length);
@@ -99,7 +92,7 @@ namespace EcsLte.Managed
             }
             else
             {
-                for (int i = 0; i < count; i++)
+                for (var i = 0; i < count; i++)
                     entities[i] = AllocateEntity(out _);
             }
             _entities.SetDirty();
@@ -173,9 +166,11 @@ namespace EcsLte.Managed
         public TComponentUnique GetUniqueComponent<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent
         {
             if (!HasUniqueComponent<TComponentUnique>())
+            {
                 throw new EntityNotHaveComponentException(
                     _uniqueComponentEntities[ComponentConfig<TComponentUnique>.Config.UniqueIndex],
                     typeof(TComponentUnique));
+            }
 
             var config = ComponentConfig<TComponentUnique>.Config;
 
@@ -185,9 +180,11 @@ namespace EcsLte.Managed
         public Entity GetUniqueEntity<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent
         {
             if (!HasUniqueComponent<TComponentUnique>())
+            {
                 throw new EntityNotHaveComponentException(
                     _uniqueComponentEntities[ComponentConfig<TComponentUnique>.Config.UniqueIndex],
                     typeof(TComponentUnique));
+            }
 
             return _uniqueComponentEntities[ComponentConfig<TComponentUnique>.Config.UniqueIndex];
         }
@@ -226,16 +223,18 @@ namespace EcsLte.Managed
                 throw new EntityDoesNotExistException(entity);
 
             var entityData = _entityDatas[entity.Id];
-            for (int i = 0; i < entityData.Components.Length; i++)
+            for (var i = 0; i < entityData.Components.Length; i++)
                 entityData.Components[i] = null;
         }
 
         public Entity AddUniqueComponent<TComponentUnique>(TComponentUnique componentUnique) where TComponentUnique : unmanaged, IUniqueComponent
         {
             if (HasUniqueComponent<TComponentUnique>())
+            {
                 throw new EntityAlreadyHasComponentException(
                     _uniqueComponentEntities[ComponentConfig<TComponentUnique>.Config.UniqueIndex],
                     typeof(TComponentUnique));
+            }
 
             var config = ComponentConfig<TComponentUnique>.Config;
             var entity = CreateEntity(null);
@@ -260,9 +259,11 @@ namespace EcsLte.Managed
         public void RemoveUniqueComponent<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent
         {
             if (!HasUniqueComponent<TComponentUnique>())
+            {
                 throw new EntityNotHaveComponentException(
                     _uniqueComponentEntities[ComponentConfig<TComponentUnique>.Config.UniqueIndex],
                     typeof(TComponentUnique));
+            }
 
             var config = ComponentConfig<TComponentUnique>.Config;
             var entity = _uniqueComponentEntities[config.UniqueIndex];
@@ -317,9 +318,12 @@ namespace EcsLte.Managed
             if (config.IsUnique)
             {
                 if (_uniqueComponentEntities[config.UniqueIndex] != Entity.Null)
+                {
                     throw new EntityAlreadyHasComponentException(
                         _uniqueComponentEntities[config.UniqueIndex],
                         ComponentConfigs.Instance.AllComponentTypes[config.ComponentIndex]);
+                }
+
                 _uniqueComponentEntities[config.UniqueIndex] = entity;
             }
 
@@ -331,19 +335,19 @@ namespace EcsLte.Managed
             if (config.IsUnique)
             {
                 if (_uniqueComponentEntities[config.UniqueIndex] != Entity.Null)
+                {
                     throw new EntityAlreadyHasComponentException(
                         _uniqueComponentEntities[config.UniqueIndex],
                         ComponentConfigs.Instance.AllComponentTypes[config.ComponentIndex]);
+                }
+
                 _uniqueComponentEntities[config.UniqueIndex] = entity;
             }
 
             entityData.Components[config.ComponentIndex] = component;
         }
 
-        private TComponent GetComponentPostCheck<TComponent>(Entity entity, ComponentConfig config) where TComponent : unmanaged, IComponent
-        {
-            return (TComponent)_entityDatas[entity.Id].Components[config.ComponentIndex];
-        }
+        private TComponent GetComponentPostCheck<TComponent>(Entity entity, ComponentConfig config) where TComponent : unmanaged, IComponent => (TComponent)_entityDatas[entity.Id].Components[config.ComponentIndex];
 
         private Entity[] UpdateCachedEntities(Entity[] uncachedData)
             => uncachedData

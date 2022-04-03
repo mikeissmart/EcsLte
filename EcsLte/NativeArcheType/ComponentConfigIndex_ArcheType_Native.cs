@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EcsLte.NativeArcheType
+﻿namespace EcsLte.NativeArcheType
 {
     public struct ComponentConfigIndex_ArcheType_Native
     {

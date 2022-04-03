@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BenchmarkDotNet.Attributes;
-using EcsLte.Data.Unmanaged;
-
-namespace EcsLte.BencharkTest.Data.Unmanaged
+﻿namespace EcsLte.BencharkTest.Data.Unmanaged
 {
-	/*[MemoryDiagnoser]
+    /*[MemoryDiagnoser]
 	public class Unmanaged_NativeList_Add
 	{
 		private NativeList _nativeList;

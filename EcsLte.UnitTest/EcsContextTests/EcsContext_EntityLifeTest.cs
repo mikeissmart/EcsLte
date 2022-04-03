@@ -2,10 +2,6 @@
 using EcsLte.UnitTest.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EcsLte.UnitTest.EcsContextTests
 {
@@ -42,7 +38,7 @@ namespace EcsLte.UnitTest.EcsContextTests
         {
             var entities = Context.CreateEntities(UnitTestConsts.LargeCount);
 
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
             {
                 Assert.IsTrue(entities[i].Id == i + 1, $"Entity.Id {entities[i].Id}");
                 Assert.IsTrue(entities[i].Version == 1, $"Entity.Id {entities[i].Id}");
@@ -100,10 +96,10 @@ namespace EcsLte.UnitTest.EcsContextTests
         public void CreateEntity_Large()
         {
             var entities = new Entity[UnitTestConsts.LargeCount];
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
                 entities[i] = Context.CreateEntity();
 
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
             {
                 Assert.IsTrue(entities[i].Id == i + 1, $"Entity.Id {entities[i].Id}");
                 Assert.IsTrue(entities[i].Version == 1, $"Entity.Id {entities[i].Id}");
@@ -128,11 +124,11 @@ namespace EcsLte.UnitTest.EcsContextTests
         public void CreateEntity_Reuse_Large()
         {
             var entities = new Entity[UnitTestConsts.LargeCount];
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
                 entities[i] = Context.CreateEntity();
             Context.DestroyEntities(entities);
 
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
                 entities[i] = Context.CreateEntity();
             for (int i = 0, lifoId = UnitTestConsts.LargeCount; i < entities.Length; i++, lifoId--)
             {
@@ -169,23 +165,17 @@ namespace EcsLte.UnitTest.EcsContextTests
             Context.DestroyEntities(entities);
 
             Assert.IsTrue(Context.GetEntities().Length == 0);
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
                 Assert.IsFalse(Context.HasEntity(entities[i]), $"Entity.Id {entities[i].Id}");
         }
 
         [TestMethod]
-        public void DestroyEntities_EntityNull()
-        {
-            Assert.ThrowsException<ArgumentNullException>(() =>
-                Context.DestroyEntities(null));
-        }
+        public void DestroyEntities_EntityNull() => Assert.ThrowsException<ArgumentNullException>(() =>
+                                                      Context.DestroyEntities(null));
 
         [TestMethod]
-        public void DestroyEntities_Null()
-        {
-            Assert.ThrowsException<EntityDoesNotExistException>(() =>
-                Context.DestroyEntities(new Entity[] { Entity.Null }));
-        }
+        public void DestroyEntities_Null() => Assert.ThrowsException<EntityDoesNotExistException>(() =>
+                                                Context.DestroyEntities(new Entity[] { Entity.Null }));
 
         [TestMethod]
         public void DestroyEntity()
@@ -207,11 +197,8 @@ namespace EcsLte.UnitTest.EcsContextTests
         }
 
         [TestMethod]
-        public void DestroyEntity_Null()
-        {
-            Assert.ThrowsException<EntityDoesNotExistException>(() =>
-                Context.DestroyEntity(Entity.Null));
-        }
+        public void DestroyEntity_Null() => Assert.ThrowsException<EntityDoesNotExistException>(() =>
+                                              Context.DestroyEntity(Entity.Null));
     }
 }
 

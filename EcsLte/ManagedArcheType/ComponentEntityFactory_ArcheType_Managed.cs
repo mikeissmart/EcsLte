@@ -1,10 +1,8 @@
 ﻿using EcsLte.Data;
 using EcsLte.Exceptions;
-using EcsLte.Managed;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace EcsLte.ManagedArcheType
 {
@@ -18,12 +16,12 @@ namespace EcsLte.ManagedArcheType
         private readonly Stack<Entity> _reusableEntities;
         private readonly Entity[] _uniqueComponentEntities;
         private readonly IComponent[] _uniqueComponents;
-        private ArcheTypeFactory_ArcheType_Managed _archeTypeFactory;
+        private readonly ArcheTypeFactory_ArcheType_Managed _archeTypeFactory;
         private readonly IIndexDictionary[] _sharedComponentIndexes;
         private int _nextId;
 
-        public int Count { get => _entitiesCount; }
-        public int Capacity { get => _entities.UncachedData.Length; }
+        public int Count => _entitiesCount;
+        public int Capacity => _entities.UncachedData.Length;
 
         public ComponentEntityFactory_ArcheType_Managed()
         {
@@ -33,24 +31,18 @@ namespace EcsLte.ManagedArcheType
             _entityDatas = new EntityData_ArcheType_Managed[_entitiesInitCapacity];
             _entitiesCount = 0;
             _reusableEntities = new Stack<Entity>();
-            _uniqueComponentEntities =  new Entity[ComponentConfigs.Instance.UniqueComponentCount];
+            _uniqueComponentEntities = new Entity[ComponentConfigs.Instance.UniqueComponentCount];
             _uniqueComponents = new IComponent[ComponentConfigs.Instance.UniqueComponentCount];
             _archeTypeFactory = new ArcheTypeFactory_ArcheType_Managed();
             _sharedComponentIndexes = IndexDictionary.CreateSharedComponentIndexDictionaries();
             _nextId = 1;
         }
 
-        public Entity[] GetEntities()
-        {
-            return _entities.CachedData;
-        }
+        public Entity[] GetEntities() => _entities.CachedData;
 
-        public bool HasEntity(Entity entity)
-        {
-            return entity.Id > 0 &&
+        public bool HasEntity(Entity entity) => entity.Id > 0 &&
                 entity.Id < Capacity &&
                 _entities.UncachedData[entity.Id] == entity;
-        }
 
         public Entity CreateEntity(IEntityBlueprint blueprint)
         {
@@ -62,14 +54,17 @@ namespace EcsLte.ManagedArcheType
                 var archeType = ((EntityBlueprint_ArcheType_Managed)blueprint).GetArcheType(this, _sharedComponentIndexes, out var blueprintData);
                 var archeTypeData = _archeTypeFactory.GetArcheTypeData(archeType);
 
-                for (int i = 0; i < blueprintData.UniqueComponents.Length; i++)
+                for (var i = 0; i < blueprintData.UniqueComponents.Length; i++)
                 {
                     var config = blueprintData.UniqueConfigs[i];
                     var component = blueprintData.UniqueComponents[i];
 
                     if (_uniqueComponentEntities[config.UniqueIndex] != Entity.Null)
+                    {
                         throw new EntityAlreadyHasComponentException(_uniqueComponentEntities[config.UniqueIndex],
                             ComponentConfigs.Instance.AllComponentTypes[config.ComponentIndex]);
+                    }
+
                     _uniqueComponentEntities[config.UniqueIndex] = entity;
                     archeTypeData.SetUniqueComponent(config, component, _uniqueComponents);
                 }
@@ -108,7 +103,7 @@ namespace EcsLte.ManagedArcheType
                         ComponentConfigs.Instance.AllComponentTypes[config.ComponentIndex]);
                 }
 
-                for (int i = 0; i < count; i++)
+                for (var i = 0; i < count; i++)
                 {
                     var entity = AllocateEntity(out var entityData);
                     entities[i] = entity;
@@ -119,7 +114,7 @@ namespace EcsLte.ManagedArcheType
             }
             else
             {
-                for (int i = 0; i < count; i++)
+                for (var i = 0; i < count; i++)
                     entities[i] = AllocateEntity(out _);
             }
             _entities.SetDirty();
@@ -196,9 +191,11 @@ namespace EcsLte.ManagedArcheType
         public TComponentUnique GetUniqueComponent<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent
         {
             if (!HasUniqueComponent<TComponentUnique>())
+            {
                 throw new EntityNotHaveComponentException(
                     _uniqueComponentEntities[ComponentConfig<TComponentUnique>.Config.UniqueIndex],
                     typeof(TComponentUnique));
+            }
 
             var config = ComponentConfig<TComponentUnique>.Config;
 
@@ -209,9 +206,11 @@ namespace EcsLte.ManagedArcheType
         public Entity GetUniqueEntity<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent
         {
             if (!HasUniqueComponent<TComponentUnique>())
+            {
                 throw new EntityNotHaveComponentException(
                     _uniqueComponentEntities[ComponentConfig<TComponentUnique>.Config.UniqueIndex],
                     typeof(TComponentUnique));
+            }
 
             return _uniqueComponentEntities[ComponentConfig<TComponentUnique>.Config.UniqueIndex];
         }
@@ -257,9 +256,11 @@ namespace EcsLte.ManagedArcheType
         public Entity AddUniqueComponent<TComponentUnique>(TComponentUnique componentUnique) where TComponentUnique : unmanaged, IUniqueComponent
         {
             if (HasUniqueComponent<TComponentUnique>())
+            {
                 throw new EntityAlreadyHasComponentException(
                     _uniqueComponentEntities[ComponentConfig<TComponentUnique>.Config.UniqueIndex],
                     typeof(TComponentUnique));
+            }
 
             var entity = CreateEntity(null);
             AddComponentPostCheck(entity, componentUnique, ComponentConfig<TComponentUnique>.Config, _entityDatas[entity.Id]);
@@ -282,9 +283,11 @@ namespace EcsLte.ManagedArcheType
         public void RemoveUniqueComponent<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent
         {
             if (!HasUniqueComponent<TComponentUnique>())
+            {
                 throw new EntityNotHaveComponentException(
                     _uniqueComponentEntities[ComponentConfig<TComponentUnique>.Config.UniqueIndex],
                     typeof(TComponentUnique));
+            }
 
             var config = ComponentConfig<TComponentUnique>.Config;
             var entity = _uniqueComponentEntities[config.UniqueIndex];
@@ -355,8 +358,9 @@ namespace EcsLte.ManagedArcheType
                     _sharedComponentIndexes[config.SharedIndex].GetIndexObj(component));
             }
             else
+            {
                 nextArcheType = Component_ArcheType_Managed.AppendComponent(nextArcheType, config);
-
+            }
 
             var nextArcheTypeData = _archeTypeFactory.GetArcheTypeData(nextArcheType);
             if (prevArcheTypeData != null)
@@ -383,7 +387,9 @@ namespace EcsLte.ManagedArcheType
             var prevArcheTypeData = entityData.ComponentArcheTypeData;
 
             if (config.IsUnique)
+            {
                 prevArcheTypeData.SetUniqueComponent(config, component, _uniqueComponents);
+            }
             else if (config.IsShared)
             {
                 var nextSharedIndex = _sharedComponentIndexes[config.SharedIndex].GetIndexObj(component);
@@ -402,10 +408,14 @@ namespace EcsLte.ManagedArcheType
                     nextArcheTypeData.SetComponent(entityData, config, component);
                 }
                 else
+                {
                     prevArcheTypeData.SetComponent(entityData, config, component);
+                }
             }
             else
+            {
                 prevArcheTypeData.SetComponent(entityData, config, component);
+            }
         }
 
         private void RemoveComponentPostCheck<TComponent>(Entity entity, ComponentConfig config, EntityData_ArcheType_Managed entityData) where TComponent : unmanaged, IComponent

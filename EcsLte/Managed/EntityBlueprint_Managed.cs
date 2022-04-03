@@ -1,10 +1,7 @@
 ﻿using EcsLte.Data;
 using EcsLte.Exceptions;
-using EcsLte.ManagedArcheType;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace EcsLte.Managed
 {
@@ -12,18 +9,12 @@ namespace EcsLte.Managed
     {
         private readonly DataCache<Dictionary<ComponentConfig, IComponent>, KeyValuePair<ComponentConfig, IComponent>[]> _components;
 
-        public EntityBlueprint_Managed()
-        {
-            _components = new DataCache<Dictionary<ComponentConfig, IComponent>, KeyValuePair<ComponentConfig, IComponent>[]>(
+        public EntityBlueprint_Managed() => _components = new DataCache<Dictionary<ComponentConfig, IComponent>, KeyValuePair<ComponentConfig, IComponent>[]>(
                 UpdateCachedComponents,
                 new Dictionary<ComponentConfig, IComponent>(),
                 null);
-        }
 
-        public bool HasComponent<TComponent>() where TComponent : unmanaged, IComponent
-        {
-            return _components.UncachedData.ContainsKey(ComponentConfig<TComponent>.Config);
-        }
+        public bool HasComponent<TComponent>() where TComponent : unmanaged, IComponent => _components.UncachedData.ContainsKey(ComponentConfig<TComponent>.Config);
 
         public TComponent GetComponent<TComponent>() where TComponent : unmanaged, IComponent
         {
@@ -51,7 +42,7 @@ namespace EcsLte.Managed
                 _components.UncachedData.Add(config, component);
                 _components.SetDirty();
             }
-            
+
             _components.UncachedData[config] = component;
         }
 
@@ -65,10 +56,7 @@ namespace EcsLte.Managed
             _components.SetDirty();
         }
 
-        internal KeyValuePair<ComponentConfig, IComponent>[] GetComponentConfigsAndDataOrdered()
-        {
-            return _components.CachedData;
-        }
+        internal KeyValuePair<ComponentConfig, IComponent>[] GetComponentConfigsAndDataOrdered() => _components.CachedData;
 
         private KeyValuePair<ComponentConfig, IComponent>[] UpdateCachedComponents(Dictionary<ComponentConfig, IComponent> uncachedData)
             => uncachedData.OrderBy(x => x.Key.ComponentIndex)

@@ -5,21 +5,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace EcsLte.Native
 {
     public class ComponentEntityFactory_Native : IComponentEntityFactory
     {
-        private static int _initEntityLength = 4;
+        private static readonly int _initEntityLength = 4;
 
-        private unsafe ComponentConfigOffset_Native* _configs;
+        private readonly unsafe ComponentConfigOffset_Native* _configs;
         private int _componentTotalSizeInBytes;
         private unsafe Entity* _entities;
         private unsafe EntityData_Native* _entityDatas;
         private int _entitiesCount;
         private int _entitiesLength;
-        private Queue<PtrWrapper> _componentsCache;
+        private readonly Queue<PtrWrapper> _componentsCache;
         private Entity[] _cachedEntites;
         private bool _cachedEntitiesDirty;
         private unsafe Entity* _reusableEntities;
@@ -28,14 +27,14 @@ namespace EcsLte.Native
         private unsafe Entity* _uniqueComponentEntities;
         private int _nextId;
 
-        public int Count { get => _entitiesCount; }
-        public int Capacity { get => _entitiesLength; }
+        public int Count => _entitiesCount;
+        public int Capacity => _entitiesLength;
 
         public unsafe ComponentEntityFactory_Native()
         {
             _configs = MemoryHelper.Alloc<ComponentConfigOffset_Native>(ComponentConfigs.Instance.AllComponentCount);
             var offsetInBytes = 0;
-            for (int i = 0; i < ComponentConfigs.Instance.AllComponentCount; i++)
+            for (var i = 0; i < ComponentConfigs.Instance.AllComponentCount; i++)
             {
                 var config = ComponentConfigs.Instance.AllComponentConfigs[i];
                 _configs[i] = new ComponentConfigOffset_Native
@@ -76,7 +75,7 @@ namespace EcsLte.Native
                     Array.Resize(ref _cachedEntites, Count);
 
                 var cachedIndex = 0;
-                for (int i = 1; i <= Count; i++)
+                for (var i = 1; i <= Count; i++)
                 {
                     var entity = _entities[i];
                     if (entity.IsNotNull)
@@ -88,12 +87,9 @@ namespace EcsLte.Native
             return _cachedEntites;
         }
 
-        public unsafe bool HasEntity(Entity entity)
-        {
-            return entity.Id > 0 &&
+        public unsafe bool HasEntity(Entity entity) => entity.Id > 0 &&
                 entity.Id < Capacity &&
                 _entities[entity.Id] == entity;
-        }
         public unsafe Entity CreateEntity(IEntityBlueprint blueprint)
         {
             CheckUnusedCapacity(1);
@@ -138,7 +134,7 @@ namespace EcsLte.Native
                 }
 
                 var components = (byte*)MemoryHelper.Alloc(_componentTotalSizeInBytes);
-                for (int i = 0; i < componentConfigsAndDatas.Length; i++)
+                for (var i = 0; i < componentConfigsAndDatas.Length; i++)
                 {
                     var pair = componentConfigsAndDatas[i];
                     var configOffset = _configs[pair.Key.ComponentIndex];
@@ -152,7 +148,7 @@ namespace EcsLte.Native
                     *hasComPtr = 1;
                 }
 
-                for (int i = 0; i < count; i++)
+                for (var i = 0; i < count; i++)
                 {
                     entities[i] = AllocateEntity(out var entityData);
                     MemoryHelper.Copy(
@@ -163,7 +159,7 @@ namespace EcsLte.Native
             }
             else
             {
-                for (int i = 0; i < count; i++)
+                for (var i = 0; i < count; i++)
                     entities[i] = AllocateEntity(out _);
             }
             _cachedEntitiesDirty = true;
@@ -237,7 +233,7 @@ namespace EcsLte.Native
             var entityData = _entityDatas[entity.Id];
             var components = new IComponent[entityData.ComponentCount];
             var componentsIndex = 0;
-            for (int i = 0; i < ComponentConfigs.Instance.AllComponentCount; i++)
+            for (var i = 0; i < ComponentConfigs.Instance.AllComponentCount; i++)
             {
                 var configOffset = _configs[i];
                 var hasComPtr = entityData.Components + configOffset.OffsetInBytes;
@@ -265,9 +261,11 @@ namespace EcsLte.Native
         public unsafe TComponentUnique GetUniqueComponent<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent
         {
             if (!HasUniqueComponent<TComponentUnique>())
+            {
                 throw new EntityNotHaveComponentException(
                     _uniqueComponentEntities[ComponentConfig<TComponentUnique>.Config.UniqueIndex],
                     typeof(TComponentUnique));
+            }
 
             var config = ComponentConfig<TComponentUnique>.Config;
 
@@ -277,9 +275,11 @@ namespace EcsLte.Native
         public unsafe Entity GetUniqueEntity<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent
         {
             if (!HasUniqueComponent<TComponentUnique>())
+            {
                 throw new EntityNotHaveComponentException(
                     _uniqueComponentEntities[ComponentConfig<TComponentUnique>.Config.UniqueIndex],
                     typeof(TComponentUnique));
+            }
 
             return _uniqueComponentEntities[ComponentConfig<TComponentUnique>.Config.UniqueIndex];
         }
@@ -337,9 +337,11 @@ namespace EcsLte.Native
         public unsafe Entity AddUniqueComponent<TComponentUnique>(TComponentUnique componentUnique) where TComponentUnique : unmanaged, IUniqueComponent
         {
             if (HasUniqueComponent<TComponentUnique>())
+            {
                 throw new EntityAlreadyHasComponentException(
                     _uniqueComponentEntities[ComponentConfig<TComponentUnique>.Config.UniqueIndex],
                     typeof(TComponentUnique));
+            }
 
             var config = ComponentConfig<TComponentUnique>.Config;
             var entity = CreateEntity(null);
@@ -366,9 +368,11 @@ namespace EcsLte.Native
         public unsafe void RemoveUniqueComponent<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent
         {
             if (!HasUniqueComponent<TComponentUnique>())
+            {
                 throw new EntityNotHaveComponentException(
                     _uniqueComponentEntities[ComponentConfig<TComponentUnique>.Config.UniqueIndex],
                     typeof(TComponentUnique));
+            }
 
             var config = ComponentConfig<TComponentUnique>.Config;
             var entity = _uniqueComponentEntities[config.UniqueIndex];
@@ -385,7 +389,7 @@ namespace EcsLte.Native
             MemoryHelper.Free(_configs);
             _componentTotalSizeInBytes = 0;
             MemoryHelper.Free(_entities);
-            for (int i = 0; i < _entitiesCount; i++)
+            for (var i = 0; i < _entitiesCount; i++)
                 MemoryHelper.Free(_entityDatas[i].Components);
             MemoryHelper.Free(_entityDatas);
             _entitiesCount = 0;
@@ -469,9 +473,12 @@ namespace EcsLte.Native
             if (config.IsUnique)
             {
                 if (_uniqueComponentEntities[config.UniqueIndex] != Entity.Null)
+                {
                     throw new EntityAlreadyHasComponentException(
                         _uniqueComponentEntities[config.UniqueIndex],
                         typeof(TComponent));
+                }
+
                 _uniqueComponentEntities[config.UniqueIndex] = entity;
             }
 
@@ -490,9 +497,12 @@ namespace EcsLte.Native
             if (config.IsUnique)
             {
                 if (_uniqueComponentEntities[config.UniqueIndex] != Entity.Null)
+                {
                     throw new EntityAlreadyHasComponentException(
                         _uniqueComponentEntities[config.UniqueIndex],
                         ComponentConfigs.Instance.AllComponentTypes[config.ComponentIndex]);
+                }
+
                 _uniqueComponentEntities[config.UniqueIndex] = entity;
             }
 

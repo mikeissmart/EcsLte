@@ -1,15 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using EcsLte;
-using EcsLte.Exceptions;
-using EcsLte.NativeArcheType;
-using EcsLte.UnitTest.Interfaces;
-using EcsLte.Utilities;
+﻿using EcsLte.UnitTest.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace EcsLte.UnitTest.EcsContextTests
@@ -19,433 +8,274 @@ namespace EcsLte.UnitTest.EcsContextTests
         where TEcsContextType : IEcsContextType
     {
         [TestMethod]
-        public void GetAllComponents_Normal()
-        {
-            AssertGetAllComponents(
+        public void GetAllComponents_Normal() => AssertGetAllComponents(
                 new TestComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void GetAllComponents_NormalShared()
-        {
-            AssertGetAllComponents(
+        public void GetAllComponents_NormalShared() => AssertGetAllComponents(
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetAllComponents_NormalSharedUnique()
-        {
-            AssertGetAllComponents(
+        public void GetAllComponents_NormalSharedUnique() => AssertGetAllComponents(
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 },
                 new TestUniqueComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void GetAllComponents_NormalUnique()
-        {
-            AssertGetAllComponents(
+        public void GetAllComponents_NormalUnique() => AssertGetAllComponents(
                 new TestComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetAllComponents_NormalUniqueShared()
-        {
-            AssertGetAllComponents(
+        public void GetAllComponents_NormalUniqueShared() => AssertGetAllComponents(
                 new TestComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 },
                 new TestSharedComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void GetAllComponents_Shared()
-        {
-            AssertGetAllComponents(
+        public void GetAllComponents_Shared() => AssertGetAllComponents(
                 new TestSharedComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void GetAllComponents_SharedNormal()
-        {
-            AssertGetAllComponents(
+        public void GetAllComponents_SharedNormal() => AssertGetAllComponents(
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetAllComponents_SharedNormalUnique()
-        {
-            AssertGetAllComponents(
+        public void GetAllComponents_SharedNormalUnique() => AssertGetAllComponents(
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 },
                 new TestUniqueComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void GetAllComponents_SharedUnique()
-        {
-            AssertGetAllComponents(
+        public void GetAllComponents_SharedUnique() => AssertGetAllComponents(
                 new TestSharedComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetAllComponents_SharedUniqueNormal()
-        {
-            AssertGetAllComponents(
+        public void GetAllComponents_SharedUniqueNormal() => AssertGetAllComponents(
                 new TestSharedComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 },
                 new TestComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void GetAllComponents_Unique()
-        {
-            AssertGetAllComponents(
+        public void GetAllComponents_Unique() => AssertGetAllComponents(
                 new TestUniqueComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void GetAllComponents_UniqueNormal()
-        {
-            AssertGetAllComponents(
+        public void GetAllComponents_UniqueNormal() => AssertGetAllComponents(
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetAllComponents_UniqueNormalShared()
-        {
-            AssertGetAllComponents(
+        public void GetAllComponents_UniqueNormalShared() => AssertGetAllComponents(
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 },
                 new TestSharedComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void GetAllComponents_UniqueShared()
-        {
-            AssertGetAllComponents(
+        public void GetAllComponents_UniqueShared() => AssertGetAllComponents(
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetAllComponents_UniqueSharedNormal()
-        {
-            AssertGetAllComponents(
+        public void GetAllComponents_UniqueSharedNormal() => AssertGetAllComponents(
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 },
                 new TestComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void GetComponent_Blueprint_Normal()
-        {
-            AssertBlueprintGetComponent(1,
+        public void GetComponent_Blueprint_Normal() => AssertBlueprintGetComponent(1,
                 new TestComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void GetComponent_Blueprint_Normal_Large()
-        {
-            AssertBlueprintGetComponent(UnitTestConsts.LargeCount,
+        public void GetComponent_Blueprint_Normal_Large() => AssertBlueprintGetComponent(UnitTestConsts.LargeCount,
                 new TestComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void GetComponent_Blueprint_NormalShared()
-        {
-            AssertBlueprintGetComponent(1,
+        public void GetComponent_Blueprint_NormalShared() => AssertBlueprintGetComponent(1,
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetComponent_Blueprint_NormalShared_Large()
-        {
-            AssertBlueprintGetComponent(UnitTestConsts.LargeCount,
+        public void GetComponent_Blueprint_NormalShared_Large() => AssertBlueprintGetComponent(UnitTestConsts.LargeCount,
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetComponent_Blueprint_NormalSharedUnique()
-        {
-            AssertBlueprintGetComponent(1,
+        public void GetComponent_Blueprint_NormalSharedUnique() => AssertBlueprintGetComponent(1,
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 },
                 new TestUniqueComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void GetComponent_Blueprint_NormalUnique()
-        {
-            AssertBlueprintGetComponent(1,
+        public void GetComponent_Blueprint_NormalUnique() => AssertBlueprintGetComponent(1,
                 new TestComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetComponent_Blueprint_NormalUniqueShared()
-        {
-            AssertBlueprintGetComponent(1,
+        public void GetComponent_Blueprint_NormalUniqueShared() => AssertBlueprintGetComponent(1,
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 },
                 new TestUniqueComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void GetComponent_Blueprint_Shared()
-        {
-            AssertBlueprintGetComponent(1,
+        public void GetComponent_Blueprint_Shared() => AssertBlueprintGetComponent(1,
                 new TestSharedComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void GetComponent_Blueprint_Shared_Large()
-        {
-            AssertBlueprintGetComponent(UnitTestConsts.LargeCount,
+        public void GetComponent_Blueprint_Shared_Large() => AssertBlueprintGetComponent(UnitTestConsts.LargeCount,
                 new TestSharedComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void GetComponent_Blueprint_SharedNormal()
-        {
-            AssertBlueprintGetComponent(1,
+        public void GetComponent_Blueprint_SharedNormal() => AssertBlueprintGetComponent(1,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetComponent_Blueprint_SharedNormal_Large()
-        {
-            AssertBlueprintGetComponent(UnitTestConsts.LargeCount,
+        public void GetComponent_Blueprint_SharedNormal_Large() => AssertBlueprintGetComponent(UnitTestConsts.LargeCount,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetComponent_Blueprint_SharedNormalUnique()
-        {
-            AssertBlueprintGetComponent(1,
+        public void GetComponent_Blueprint_SharedNormalUnique() => AssertBlueprintGetComponent(1,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 },
                 new TestUniqueComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void GetComponent_Blueprint_SharedUnique()
-        {
-            AssertBlueprintGetComponent(1,
+        public void GetComponent_Blueprint_SharedUnique() => AssertBlueprintGetComponent(1,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetComponent_Blueprint_SharedUniqueNormal()
-        {
-            AssertBlueprintGetComponent(1,
+        public void GetComponent_Blueprint_SharedUniqueNormal() => AssertBlueprintGetComponent(1,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 },
                 new TestComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void GetComponent_Blueprint_Unique()
-        {
-            AssertBlueprintGetComponent(1,
+        public void GetComponent_Blueprint_Unique() => AssertBlueprintGetComponent(1,
                 new TestUniqueComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void GetComponent_Blueprint_UniqueNormal()
-        {
-            AssertBlueprintGetComponent(1,
+        public void GetComponent_Blueprint_UniqueNormal() => AssertBlueprintGetComponent(1,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetComponent_Blueprint_UniqueNormalShared()
-        {
-            AssertBlueprintGetComponent(1,
+        public void GetComponent_Blueprint_UniqueNormalShared() => AssertBlueprintGetComponent(1,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 },
                 new TestSharedComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void GetComponent_Blueprint_UniqueShared()
-        {
-            AssertBlueprintGetComponent(1,
+        public void GetComponent_Blueprint_UniqueShared() => AssertBlueprintGetComponent(1,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetComponent_Blueprint_UniqueSharedNormal()
-        {
-            AssertBlueprintGetComponent(1,
+        public void GetComponent_Blueprint_UniqueSharedNormal() => AssertBlueprintGetComponent(1,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 },
                 new TestComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void GetComponent_Normal()
-        {
-            AssertGetComponent(1,
+        public void GetComponent_Normal() => AssertGetComponent(1,
                 new TestComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void GetComponent_Normal_Large()
-        {
-            AssertGetComponent(UnitTestConsts.LargeCount,
+        public void GetComponent_Normal_Large() => AssertGetComponent(UnitTestConsts.LargeCount,
                 new TestComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void GetComponent_NormalShared()
-        {
-            AssertGetComponent(1,
+        public void GetComponent_NormalShared() => AssertGetComponent(1,
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetComponent_NormalShared_Large()
-        {
-            AssertGetComponent(UnitTestConsts.LargeCount,
+        public void GetComponent_NormalShared_Large() => AssertGetComponent(UnitTestConsts.LargeCount,
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetComponent_NormalSharedUnique()
-        {
-            AssertGetComponent(1,
+        public void GetComponent_NormalSharedUnique() => AssertGetComponent(1,
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 },
                 new TestUniqueComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void GetComponent_NormalUnique()
-        {
-            AssertGetComponent(1,
+        public void GetComponent_NormalUnique() => AssertGetComponent(1,
                 new TestComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetComponent_NormalUniqueShared()
-        {
-            AssertGetComponent(1,
+        public void GetComponent_NormalUniqueShared() => AssertGetComponent(1,
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 },
                 new TestUniqueComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void GetComponent_Shared()
-        {
-            AssertGetComponent(1,
+        public void GetComponent_Shared() => AssertGetComponent(1,
                 new TestSharedComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void GetComponent_Shared_Large()
-        {
-            AssertGetComponent(UnitTestConsts.LargeCount,
+        public void GetComponent_Shared_Large() => AssertGetComponent(UnitTestConsts.LargeCount,
                 new TestSharedComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void GetComponent_SharedNormal()
-        {
-            AssertGetComponent(1,
+        public void GetComponent_SharedNormal() => AssertGetComponent(1,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetComponent_SharedNormal_Large()
-        {
-            AssertGetComponent(UnitTestConsts.LargeCount,
+        public void GetComponent_SharedNormal_Large() => AssertGetComponent(UnitTestConsts.LargeCount,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetComponent_SharedNormalUnique()
-        {
-            AssertGetComponent(1,
+        public void GetComponent_SharedNormalUnique() => AssertGetComponent(1,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 },
                 new TestUniqueComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void GetComponent_SharedUnique()
-        {
-            AssertGetComponent(1,
+        public void GetComponent_SharedUnique() => AssertGetComponent(1,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetComponent_SharedUniqueNormal()
-        {
-            AssertGetComponent(1,
+        public void GetComponent_SharedUniqueNormal() => AssertGetComponent(1,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 },
                 new TestComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void GetComponent_Unique()
-        {
-            AssertGetComponent(1,
+        public void GetComponent_Unique() => AssertGetComponent(1,
                 new TestUniqueComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void GetComponent_UniqueNormal()
-        {
-            AssertGetComponent(1,
+        public void GetComponent_UniqueNormal() => AssertGetComponent(1,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetComponent_UniqueNormalShared()
-        {
-            AssertGetComponent(1,
+        public void GetComponent_UniqueNormalShared() => AssertGetComponent(1,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 },
                 new TestSharedComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void GetComponent_UniqueShared()
-        {
-            AssertGetComponent(1,
+        public void GetComponent_UniqueShared() => AssertGetComponent(1,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void GetComponent_UniqueSharedNormal()
-        {
-            AssertGetComponent(1,
+        public void GetComponent_UniqueSharedNormal() => AssertGetComponent(1,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 },
                 new TestComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
         public void HasComponent_Normal_Has()
@@ -499,556 +329,352 @@ namespace EcsLte.UnitTest.EcsContextTests
         }
 
         [TestMethod]
-        public void RemoveAllComponents_Normal()
-        {
-            AssertRemoveAllComponents(
+        public void RemoveAllComponents_Normal() => AssertRemoveAllComponents(
                 new TestComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void RemoveAllComponents_NormalShared()
-        {
-            AssertRemoveAllComponents(
+        public void RemoveAllComponents_NormalShared() => AssertRemoveAllComponents(
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void RemoveAllComponents_NormalSharedUnique()
-        {
-            AssertRemoveAllComponents(
+        public void RemoveAllComponents_NormalSharedUnique() => AssertRemoveAllComponents(
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 },
                 new TestUniqueComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void RemoveAllComponents_NormalUnique()
-        {
-            AssertRemoveAllComponents(
+        public void RemoveAllComponents_NormalUnique() => AssertRemoveAllComponents(
                 new TestComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void RemoveAllComponents_NormalUniqueShared()
-        {
-            AssertRemoveAllComponents(
+        public void RemoveAllComponents_NormalUniqueShared() => AssertRemoveAllComponents(
                 new TestComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 },
                 new TestSharedComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void RemoveAllComponents_Shared()
-        {
-            AssertRemoveAllComponents(
+        public void RemoveAllComponents_Shared() => AssertRemoveAllComponents(
                 new TestSharedComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void RemoveAllComponents_SharedNormal()
-        {
-            AssertRemoveAllComponents(
+        public void RemoveAllComponents_SharedNormal() => AssertRemoveAllComponents(
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void RemoveAllComponents_SharedNormalUnique()
-        {
-            AssertRemoveAllComponents(
+        public void RemoveAllComponents_SharedNormalUnique() => AssertRemoveAllComponents(
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 },
-                new TestUniqueComponent1 { Prop = 3});
-        }
+                new TestUniqueComponent1 { Prop = 3 });
 
         [TestMethod]
-        public void RemoveAllComponents_SharedUnique()
-        {
-            AssertRemoveAllComponents(
+        public void RemoveAllComponents_SharedUnique() => AssertRemoveAllComponents(
                 new TestSharedComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void RemoveAllComponents_SharedUniqueNormal()
-        {
-            AssertRemoveAllComponents(
+        public void RemoveAllComponents_SharedUniqueNormal() => AssertRemoveAllComponents(
                 new TestSharedComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 },
                 new TestComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void RemoveAllComponents_Unique()
-        {
-            AssertRemoveAllComponents(
+        public void RemoveAllComponents_Unique() => AssertRemoveAllComponents(
                 new TestUniqueComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void RemoveAllComponents_UniqueNormal()
-        {
-            AssertRemoveAllComponents(
+        public void RemoveAllComponents_UniqueNormal() => AssertRemoveAllComponents(
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void RemoveAllComponents_UniqueNormalShared()
-        {
-            AssertRemoveAllComponents(
+        public void RemoveAllComponents_UniqueNormalShared() => AssertRemoveAllComponents(
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 },
                 new TestSharedComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void RemoveAllComponents_UniqueShared()
-        {
-            AssertRemoveAllComponents(
+        public void RemoveAllComponents_UniqueShared() => AssertRemoveAllComponents(
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void RemoveAllComponents_UniqueSharedNormal()
-        {
-            AssertRemoveAllComponents(
+        public void RemoveAllComponents_UniqueSharedNormal() => AssertRemoveAllComponents(
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 },
                 new TestComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_Normal()
-        {
-            AssertRemoveComponent(1, false,
+        public void RemoveComponent_Normal() => AssertRemoveComponent(1, false,
                 new TestComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_Normal_Large()
-        {
-            AssertRemoveComponent(UnitTestConsts.LargeCount, false,
+        public void RemoveComponent_Normal_Large() => AssertRemoveComponent(UnitTestConsts.LargeCount, false,
                 new TestComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_Normal_Large_Reverse()
-        {
-            AssertRemoveComponent(UnitTestConsts.LargeCount, true,
+        public void RemoveComponent_Normal_Large_Reverse() => AssertRemoveComponent(UnitTestConsts.LargeCount, true,
                 new TestComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_NormalShared()
-        {
-            AssertRemoveComponent(1, false,
+        public void RemoveComponent_NormalShared() => AssertRemoveComponent(1, false,
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_NormalShared_Large()
-        {
-            AssertRemoveComponent(UnitTestConsts.LargeCount, false,
+        public void RemoveComponent_NormalShared_Large() => AssertRemoveComponent(UnitTestConsts.LargeCount, false,
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_NormalShared_Large_Reverse()
-        {
-            AssertRemoveComponent(UnitTestConsts.LargeCount, true,
+        public void RemoveComponent_NormalShared_Large_Reverse() => AssertRemoveComponent(UnitTestConsts.LargeCount, true,
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_NormalSharedUnique()
-        {
-            AssertRemoveComponent(1, false,
+        public void RemoveComponent_NormalSharedUnique() => AssertRemoveComponent(1, false,
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 },
                 new TestUniqueComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_NormalUnique()
-        {
-            AssertRemoveComponent(1, false,
+        public void RemoveComponent_NormalUnique() => AssertRemoveComponent(1, false,
                 new TestComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_NormalUniqueShared()
-        {
-            AssertRemoveComponent(1, false,
+        public void RemoveComponent_NormalUniqueShared() => AssertRemoveComponent(1, false,
                 new TestComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 },
                 new TestSharedComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_Shared()
-        {
-            AssertRemoveComponent(1, false,
+        public void RemoveComponent_Shared() => AssertRemoveComponent(1, false,
                 new TestSharedComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_Shared_Large()
-        {
-            AssertRemoveComponent(UnitTestConsts.LargeCount, false,
+        public void RemoveComponent_Shared_Large() => AssertRemoveComponent(UnitTestConsts.LargeCount, false,
                 new TestSharedComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_Shared_Large_Reverse()
-        {
-            AssertRemoveComponent(UnitTestConsts.LargeCount, true,
+        public void RemoveComponent_Shared_Large_Reverse() => AssertRemoveComponent(UnitTestConsts.LargeCount, true,
                 new TestSharedComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_SharedNormal()
-        {
-            AssertRemoveComponent(1, false,
+        public void RemoveComponent_SharedNormal() => AssertRemoveComponent(1, false,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_SharedNormal_Large()
-        {
-            AssertRemoveComponent(UnitTestConsts.LargeCount, false,
+        public void RemoveComponent_SharedNormal_Large() => AssertRemoveComponent(UnitTestConsts.LargeCount, false,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_SharedNormal_Large_Reverse()
-        {
-            AssertRemoveComponent(UnitTestConsts.LargeCount, true,
+        public void RemoveComponent_SharedNormal_Large_Reverse() => AssertRemoveComponent(UnitTestConsts.LargeCount, true,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_SharedNormalUnique()
-        {
-            AssertRemoveComponent(1, false,
+        public void RemoveComponent_SharedNormalUnique() => AssertRemoveComponent(1, false,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 },
                 new TestUniqueComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_SharedUnique()
-        {
-            AssertRemoveComponent(1, false,
+        public void RemoveComponent_SharedUnique() => AssertRemoveComponent(1, false,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_SharedUniqueNormal()
-        {
-            AssertRemoveComponent(1, false,
+        public void RemoveComponent_SharedUniqueNormal() => AssertRemoveComponent(1, false,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 },
                 new TestComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_Unique()
-        {
-            AssertRemoveComponent(1, false,
+        public void RemoveComponent_Unique() => AssertRemoveComponent(1, false,
                 new TestUniqueComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_UniqueNormal()
-        {
-            AssertRemoveComponent(1, false,
+        public void RemoveComponent_UniqueNormal() => AssertRemoveComponent(1, false,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_UniqueNormalShared()
-        {
-            AssertRemoveComponent(1, false,
+        public void RemoveComponent_UniqueNormalShared() => AssertRemoveComponent(1, false,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 },
                 new TestSharedComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_UniqueShared()
-        {
-            AssertRemoveComponent(1, false,
+        public void RemoveComponent_UniqueShared() => AssertRemoveComponent(1, false,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void RemoveComponent_UniqueSharedNormal()
-        {
-            AssertRemoveComponent(1, false,
+        public void RemoveComponent_UniqueSharedNormal() => AssertRemoveComponent(1, false,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 },
                 new TestComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_Normal_Add()
-        {
-            AssertReplaceComponent(false,
+        public void ReplaceComponent_Normal_Add() => AssertReplaceComponent(false,
                 new TestComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_Normal_Replace()
-        {
-            AssertReplaceComponent(true,
+        public void ReplaceComponent_Normal_Replace() => AssertReplaceComponent(true,
                 new TestComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_NormalShared_Add()
-        {
-            AssertReplaceComponent(false,
+        public void ReplaceComponent_NormalShared_Add() => AssertReplaceComponent(false,
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_NormalShared_Replace()
-        {
-            AssertReplaceComponent(true,
+        public void ReplaceComponent_NormalShared_Replace() => AssertReplaceComponent(true,
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_NormalSharedUnique_Add()
-        {
-            AssertReplaceComponent(false,
+        public void ReplaceComponent_NormalSharedUnique_Add() => AssertReplaceComponent(false,
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 },
                 new TestUniqueComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_NormalSharedUnique_Replace()
-        {
-            AssertReplaceComponent(true,
+        public void ReplaceComponent_NormalSharedUnique_Replace() => AssertReplaceComponent(true,
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 },
                 new TestUniqueComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_NormalUnique_Add()
-        {
-            AssertReplaceComponent(false,
+        public void ReplaceComponent_NormalUnique_Add() => AssertReplaceComponent(false,
                 new TestComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_NormalUnique_Replace()
-        {
-            AssertReplaceComponent(true,
+        public void ReplaceComponent_NormalUnique_Replace() => AssertReplaceComponent(true,
                 new TestComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_NormalUniqueShared_Add()
-        {
-            AssertReplaceComponent(false,
+        public void ReplaceComponent_NormalUniqueShared_Add() => AssertReplaceComponent(false,
                 new TestComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 },
                 new TestSharedComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_NormalUniqueShared_Replace()
-        {
-            AssertReplaceComponent(true,
+        public void ReplaceComponent_NormalUniqueShared_Replace() => AssertReplaceComponent(true,
                 new TestComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 },
                 new TestSharedComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_Shared_Add()
-        {
-            AssertReplaceComponent(false,
+        public void ReplaceComponent_Shared_Add() => AssertReplaceComponent(false,
                 new TestSharedComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_Shared_Replace()
-        {
-            AssertReplaceComponent(true,
+        public void ReplaceComponent_Shared_Replace() => AssertReplaceComponent(true,
                 new TestSharedComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_SharedNormal_Add()
-        {
-            AssertReplaceComponent(false,
+        public void ReplaceComponent_SharedNormal_Add() => AssertReplaceComponent(false,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_SharedNormal_Replace()
-        {
-            AssertReplaceComponent(true,
+        public void ReplaceComponent_SharedNormal_Replace() => AssertReplaceComponent(true,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_SharedNormalUnique_Add()
-        {
-            AssertReplaceComponent(false,
+        public void ReplaceComponent_SharedNormalUnique_Add() => AssertReplaceComponent(false,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 },
                 new TestUniqueComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_SharedNormalUnique_Replace()
-        {
-            AssertReplaceComponent(true,
+        public void ReplaceComponent_SharedNormalUnique_Replace() => AssertReplaceComponent(true,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 },
                 new TestUniqueComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_SharedUnique_Add()
-        {
-            AssertReplaceComponent(false,
+        public void ReplaceComponent_SharedUnique_Add() => AssertReplaceComponent(false,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_SharedUnique_Replace()
-        {
-            AssertReplaceComponent(true,
+        public void ReplaceComponent_SharedUnique_Replace() => AssertReplaceComponent(true,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_SharedUniqueNormal_Add()
-        {
-            AssertReplaceComponent(false,
+        public void ReplaceComponent_SharedUniqueNormal_Add() => AssertReplaceComponent(false,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 },
                 new TestComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_SharedUniqueNormal_Replace()
-        {
-            AssertReplaceComponent(true,
+        public void ReplaceComponent_SharedUniqueNormal_Replace() => AssertReplaceComponent(true,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 },
                 new TestComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_Unique_Add()
-        {
-            AssertReplaceComponent(false,
+        public void ReplaceComponent_Unique_Add() => AssertReplaceComponent(false,
                 new TestUniqueComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_Unique_Replace()
-        {
-            AssertReplaceComponent(true,
+        public void ReplaceComponent_Unique_Replace() => AssertReplaceComponent(true,
                 new TestUniqueComponent1 { Prop = 1 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_UniqueNormal_Add()
-        {
-            AssertReplaceComponent(false,
+        public void ReplaceComponent_UniqueNormal_Add() => AssertReplaceComponent(false,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_UniqueNormal_Replace()
-        {
-            AssertReplaceComponent(true,
+        public void ReplaceComponent_UniqueNormal_Replace() => AssertReplaceComponent(true,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_UniqueNormalShared_Add()
-        {
-            AssertReplaceComponent(false,
+        public void ReplaceComponent_UniqueNormalShared_Add() => AssertReplaceComponent(false,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 },
                 new TestSharedComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_UniqueNormalShared_Replace()
-        {
-            AssertReplaceComponent(true,
+        public void ReplaceComponent_UniqueNormalShared_Replace() => AssertReplaceComponent(true,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 },
                 new TestSharedComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_UniqueShared_Add()
-        {
-            AssertReplaceComponent(false,
+        public void ReplaceComponent_UniqueShared_Add() => AssertReplaceComponent(false,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_UniqueShared_Replace()
-        {
-            AssertReplaceComponent(true,
+        public void ReplaceComponent_UniqueShared_Replace() => AssertReplaceComponent(true,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_UniqueSharedNormal_Add()
-        {
-            AssertReplaceComponent(false,
+        public void ReplaceComponent_UniqueSharedNormal_Add() => AssertReplaceComponent(false,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 },
                 new TestComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
-        public void ReplaceComponent_UniqueSharedNormal_Replace()
-        {
-            AssertReplaceComponent(true,
+        public void ReplaceComponent_UniqueSharedNormal_Replace() => AssertReplaceComponent(true,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 },
                 new TestComponent1 { Prop = 3 });
-        }
 
         [TestMethod]
         public void Unique_GetUniqueComponent()
@@ -1097,14 +723,14 @@ namespace EcsLte.UnitTest.EcsContextTests
             var components = Context.GetAllComponents(entity);
             Assert.IsTrue(components.Length == 2);
             var isOk = new int[2];
-            for (int i = 0; i < isOk.Length; i++)
+            for (var i = 0; i < isOk.Length; i++)
             {
                 if (components[i] is T1)
                     isOk[0] += ((T1)components[i]).Prop == component1.Prop ? 1 : 0;
                 if (components[i] is T2)
                     isOk[1] += ((T2)components[i]).Prop == component2.Prop ? 1 : 0;
             }
-            for (int i = 0; i < isOk.Length; i++)
+            for (var i = 0; i < isOk.Length; i++)
                 Assert.IsTrue(isOk[i] == 1);
         }
 
@@ -1121,7 +747,7 @@ namespace EcsLte.UnitTest.EcsContextTests
             var components = Context.GetAllComponents(entity);
             Assert.IsTrue(components.Length == 3);
             var isOk = new int[3];
-            for (int i = 0; i < isOk.Length; i++)
+            for (var i = 0; i < isOk.Length; i++)
             {
                 if (components[i] is T1)
                     isOk[0] += ((T1)components[i]).Prop == component1.Prop ? 1 : 0;
@@ -1130,7 +756,7 @@ namespace EcsLte.UnitTest.EcsContextTests
                 if (components[i] is T3)
                     isOk[2] += ((T3)components[i]).Prop == component3.Prop ? 1 : 0;
             }
-            for (int i = 0; i < isOk.Length; i++)
+            for (var i = 0; i < isOk.Length; i++)
                 Assert.IsTrue(isOk[i] == 1);
         }
 
@@ -1142,7 +768,7 @@ namespace EcsLte.UnitTest.EcsContextTests
 
             var entities = Context.CreateEntities(entityCount, blueprint);
 
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
             {
                 Assert.IsTrue(Context.GetComponent<T1>(entities[i]).Prop == component1.Prop,
                     $"Enity.Id {entities[i].Id}");
@@ -1159,7 +785,7 @@ namespace EcsLte.UnitTest.EcsContextTests
 
             var entities = Context.CreateEntities(entityCount, blueprint);
 
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
             {
                 Assert.IsTrue(Context.GetComponent<T1>(entities[i]).Prop == component1.Prop,
                     $"Enity.Id {entities[i].Id}");
@@ -1180,7 +806,7 @@ namespace EcsLte.UnitTest.EcsContextTests
 
             var entities = Context.CreateEntities(entityCount, blueprint);
 
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
             {
                 Assert.IsTrue(Context.GetComponent<T1>(entities[i]).Prop == component1.Prop,
                     $"Enity.Id {entities[i].Id}");
@@ -1195,12 +821,12 @@ namespace EcsLte.UnitTest.EcsContextTests
             where T1 : unmanaged, IComponent, ITestComponent
         {
             var entities = Context.CreateEntities(entityCount);
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
             {
                 Context.AddComponent(entities[i], component1);
             }
 
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
             {
                 Assert.IsTrue(Context.GetComponent<T1>(entities[i]).Prop == component1.Prop,
                     $"Enity.Id {entities[i].Id}");
@@ -1212,13 +838,13 @@ namespace EcsLte.UnitTest.EcsContextTests
             where T2 : unmanaged, IComponent, ITestComponent
         {
             var entities = Context.CreateEntities(entityCount);
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
             {
                 Context.AddComponent(entities[i], component1);
                 Context.AddComponent(entities[i], component2);
             }
 
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
             {
                 Assert.IsTrue(Context.GetComponent<T1>(entities[i]).Prop == component1.Prop,
                     $"Enity.Id {entities[i].Id}");
@@ -1233,14 +859,14 @@ namespace EcsLte.UnitTest.EcsContextTests
             where T3 : unmanaged, IComponent, ITestComponent
         {
             var entities = Context.CreateEntities(entityCount);
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
             {
                 Context.AddComponent(entities[i], component1);
                 Context.AddComponent(entities[i], component2);
                 Context.AddComponent(entities[i], component3);
             }
 
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
             {
                 Assert.IsTrue(Context.GetComponent<T1>(entities[i]).Prop == component1.Prop,
                     $"Enity.Id {entities[i].Id}");
@@ -1297,14 +923,14 @@ namespace EcsLte.UnitTest.EcsContextTests
             where T1 : unmanaged, IComponent, ITestComponent
         {
             var entities = Context.CreateEntities(entityCount);
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
             {
                 Context.AddComponent(entities[i], component1);
             }
 
             var id = reverse ? entities.Length - 1 : 0;
             var changeId = reverse ? -1 : 1;
-            for (int i = 0; i < entities.Length; i++, id += changeId)
+            for (var i = 0; i < entities.Length; i++, id += changeId)
             {
                 Context.RemoveComponent<T1>(entities[id]);
                 Assert.IsFalse(Context.HasComponent<T1>(entities[id]),
@@ -1317,7 +943,7 @@ namespace EcsLte.UnitTest.EcsContextTests
             where T2 : unmanaged, IComponent, ITestComponent
         {
             var entities = Context.CreateEntities(entityCount);
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
             {
                 Context.AddComponent(entities[i], component1);
                 Context.AddComponent(entities[i], component2);
@@ -1325,7 +951,7 @@ namespace EcsLte.UnitTest.EcsContextTests
 
             var id = reverse ? entities.Length - 1 : 0;
             var changeId = reverse ? -1 : 1;
-            for (int i = 0; i < entities.Length; i++, id += changeId)
+            for (var i = 0; i < entities.Length; i++, id += changeId)
             {
                 Context.RemoveComponent<T1>(entities[id]);
                 Assert.IsFalse(Context.HasComponent<T1>(entities[id]),
@@ -1345,7 +971,7 @@ namespace EcsLte.UnitTest.EcsContextTests
             where T3 : unmanaged, IComponent, ITestComponent
         {
             var entities = Context.CreateEntities(entityCount);
-            for (int i = 0; i < entities.Length; i++)
+            for (var i = 0; i < entities.Length; i++)
             {
                 Context.AddComponent(entities[i], component1);
                 Context.AddComponent(entities[i], component2);
@@ -1354,7 +980,7 @@ namespace EcsLte.UnitTest.EcsContextTests
 
             var id = reverse ? entities.Length - 1 : 0;
             var changeId = reverse ? -1 : 1;
-            for (int i = 0; i < entities.Length; i++, id += changeId)
+            for (var i = 0; i < entities.Length; i++, id += changeId)
             {
                 Context.RemoveComponent<T1>(entities[id]);
                 Assert.IsFalse(Context.HasComponent<T1>(entities[id]),

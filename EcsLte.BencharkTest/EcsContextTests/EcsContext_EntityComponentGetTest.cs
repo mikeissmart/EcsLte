@@ -1,11 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnostics.Windows.Configs;
-using EcsLte.BencharkTest.Interfaces;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EcsLte.BencharkTest.EcsContextTests
 {
@@ -31,10 +25,7 @@ namespace EcsLte.BencharkTest.EcsContextTests
         }
 
         [GlobalCleanup]
-        public void GlobalCleanup()
-        {
-            SetupCleanupTest.EcsContext_Cleanup(_context);
-        }
+        public void GlobalCleanup() => SetupCleanupTest.EcsContext_Cleanup(_context);
 
         [Benchmark]
         public void HasComponent()
@@ -43,36 +34,36 @@ namespace EcsLte.BencharkTest.EcsContextTests
             switch (ComponentArrangement)
             {
                 case EntityComponentArrangement.Normal_x1:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                         hasComponent = _context.HasComponent<TestComponent1>(_entities[i]);
                     break;
                 case EntityComponentArrangement.Normal_x2:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         hasComponent = _context.HasComponent<TestComponent1>(_entities[i]);
                         hasComponent = _context.HasComponent<TestComponent2>(_entities[i]);
                     }
                     break;
                 case EntityComponentArrangement.Shared_x1:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                         hasComponent = _context.HasComponent<TestSharedComponent1>(_entities[i]);
                     break;
                 case EntityComponentArrangement.Shared_x2:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         hasComponent = _context.HasComponent<TestSharedComponent1>(_entities[i]);
                         hasComponent = _context.HasComponent<TestSharedComponent2>(_entities[i]);
                     }
                     break;
                 case EntityComponentArrangement.Normal_x1_Shared_x1:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         hasComponent = _context.HasComponent<TestComponent1>(_entities[i]);
                         hasComponent = _context.HasComponent<TestSharedComponent1>(_entities[i]);
                     }
                     break;
                 case EntityComponentArrangement.Normal_x1_Shared_x2:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         hasComponent = _context.HasComponent<TestComponent1>(_entities[i]);
                         hasComponent = _context.HasComponent<TestSharedComponent1>(_entities[i]);
@@ -80,7 +71,7 @@ namespace EcsLte.BencharkTest.EcsContextTests
                     }
                     break;
                 case EntityComponentArrangement.Normal_x2_Shared_x1:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         hasComponent = _context.HasComponent<TestComponent1>(_entities[i]);
                         hasComponent = _context.HasComponent<TestComponent2>(_entities[i]);
@@ -88,7 +79,7 @@ namespace EcsLte.BencharkTest.EcsContextTests
                     }
                     break;
                 case EntityComponentArrangement.Normal_x2_Shared_x2:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         hasComponent = _context.HasComponent<TestComponent1>(_entities[i]);
                         hasComponent = _context.HasComponent<TestComponent2>(_entities[i]);
@@ -108,36 +99,36 @@ namespace EcsLte.BencharkTest.EcsContextTests
             switch (ComponentArrangement)
             {
                 case EntityComponentArrangement.Normal_x1:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                         getComponent = _context.GetComponent<TestComponent1>(_entities[i]);
                     break;
                 case EntityComponentArrangement.Normal_x2:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         getComponent = _context.GetComponent<TestComponent1>(_entities[i]);
                         getComponent = _context.GetComponent<TestComponent2>(_entities[i]);
                     }
                     break;
                 case EntityComponentArrangement.Shared_x1:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                         getComponent = _context.GetComponent<TestSharedComponent1>(_entities[i]);
                     break;
                 case EntityComponentArrangement.Shared_x2:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         getComponent = _context.GetComponent<TestSharedComponent1>(_entities[i]);
                         getComponent = _context.GetComponent<TestSharedComponent2>(_entities[i]);
                     }
                     break;
                 case EntityComponentArrangement.Normal_x1_Shared_x1:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         getComponent = _context.GetComponent<TestComponent1>(_entities[i]);
                         getComponent = _context.GetComponent<TestSharedComponent1>(_entities[i]);
                     }
                     break;
                 case EntityComponentArrangement.Normal_x1_Shared_x2:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         getComponent = _context.GetComponent<TestComponent1>(_entities[i]);
                         getComponent = _context.GetComponent<TestSharedComponent1>(_entities[i]);
@@ -145,7 +136,7 @@ namespace EcsLte.BencharkTest.EcsContextTests
                     }
                     break;
                 case EntityComponentArrangement.Normal_x2_Shared_x1:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         getComponent = _context.GetComponent<TestComponent1>(_entities[i]);
                         getComponent = _context.GetComponent<TestComponent2>(_entities[i]);
@@ -153,7 +144,7 @@ namespace EcsLte.BencharkTest.EcsContextTests
                     }
                     break;
                 case EntityComponentArrangement.Normal_x2_Shared_x2:
-                    for (int i = 0; i < _entities.Length; i++)
+                    for (var i = 0; i < _entities.Length; i++)
                     {
                         getComponent = _context.GetComponent<TestComponent1>(_entities[i]);
                         getComponent = _context.GetComponent<TestComponent2>(_entities[i]);
@@ -170,7 +161,7 @@ namespace EcsLte.BencharkTest.EcsContextTests
         public void GetAllComponents()
         {
             IComponent[] components;
-            for (int i = 0; i < _entities.Length; i++)
+            for (var i = 0; i < _entities.Length; i++)
                 components = _context.GetAllComponents(_entities[i]);
         }
     }

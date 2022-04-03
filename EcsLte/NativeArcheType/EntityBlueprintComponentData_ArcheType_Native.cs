@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EcsLte.NativeArcheType
+﻿namespace EcsLte.NativeArcheType
 {
     internal interface IEntityBlueprintComponentData_ArcheType_Native
     {
@@ -22,9 +18,6 @@ namespace EcsLte.NativeArcheType
             }
         }
 
-        public IComponent GetComponent()
-        {
-            return Component;
-        }
+        public IComponent GetComponent() => Component;
     }
 }
