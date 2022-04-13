@@ -37,7 +37,7 @@ namespace EcsLte
         private static ComponentConfig _config;
         private static bool _hasConfig;
 
-        internal static ComponentConfig Config
+        public static ComponentConfig Config
         {
             get
             {

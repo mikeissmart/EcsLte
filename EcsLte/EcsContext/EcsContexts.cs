@@ -17,7 +17,7 @@ namespace EcsLte
             new DictionaryDataCache<string, EcsContext>(UpdateContextsCache);
 
         public static EcsContext[] Contexts => _ecsContexts.CachedData;
-        public static EcsContext Default_Managed { get; set; } =
+        /*public static EcsContext Default_Managed { get; set; } =
             CreateEcsContext_Managed("Default_Managed");
         public static EcsContext Default_Managed_ArcheType { get; set; } =
             CreateEcsContext_ArcheType_Managed("Default_Managed_ArcheType");
@@ -26,7 +26,7 @@ namespace EcsLte
         public static EcsContext Default_Native_ArcheType { get; set; } =
             CreateEcsContext_ArcheType_Native("Default_ArcheType_Native");
         public static EcsContext Default_Native_ArcheType_Continuous { get; set; } =
-            CreateEcsContext_ArcheType_Native_Continuous("Default_ArcheType_Native_Continuous");
+            CreateEcsContext_ArcheType_Native_Continuous("Default_ArcheType_Native_Continuous");*/
 
         public static bool HasContext(string name) =>
             _ecsContexts.Has(name);

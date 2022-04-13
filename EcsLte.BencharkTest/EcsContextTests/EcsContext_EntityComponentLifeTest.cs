@@ -16,7 +16,7 @@ namespace EcsLte.BencharkTest.EcsContextTests
         private TestSharedComponent2 _replaceComponentShared2 = new TestSharedComponent2 { Prop = 5 };
 
         [ParamsAllValues]
-        public EntityComponentArrangement ComponentArrangement { get; set; }
+        public EntityComponentArrangement ComponentArrangement { get; set; } = EntityComponentArrangement.Normal_x1;
 
         [ParamsAllValues]
         public EcsContextType ContextType { get; set; }
@@ -44,6 +44,7 @@ namespace EcsLte.BencharkTest.EcsContextTests
         [IterationSetup(Target = nameof(AddComponent))]
         public void AddComponent_Setup()
         {
+            // Keep this so default IterationSetup isnt used
         }
 
         [Benchmark]

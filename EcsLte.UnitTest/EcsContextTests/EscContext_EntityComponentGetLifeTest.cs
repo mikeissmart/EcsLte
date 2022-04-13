@@ -1,4 +1,5 @@
-﻿using EcsLte.UnitTest.Interfaces;
+﻿using EcsLte.Exceptions;
+using EcsLte.UnitTest.Interfaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace EcsLte.UnitTest.EcsContextTests
@@ -8,79 +9,97 @@ namespace EcsLte.UnitTest.EcsContextTests
         where TEcsContextType : IEcsContextType
     {
         [TestMethod]
-        public void GetAllComponents_Normal() => AssertGetAllComponents(
+        public void GetAllComponents_Normal() => AssertGetAllComponents(1,
                 new TestComponent1 { Prop = 1 });
 
         [TestMethod]
-        public void GetAllComponents_NormalShared() => AssertGetAllComponents(
+        public void GetAllComponents_Normal_Large() => AssertGetAllComponents(UnitTestConsts.LargeCount,
+                new TestComponent1 { Prop = 1 });
+
+        [TestMethod]
+        public void GetAllComponents_NormalShared() => AssertGetAllComponents(1,
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
 
         [TestMethod]
-        public void GetAllComponents_NormalSharedUnique() => AssertGetAllComponents(
+        public void GetAllComponents_NormalShared_Large() => AssertGetAllComponents(UnitTestConsts.LargeCount,
+                new TestComponent1 { Prop = 1 },
+                new TestSharedComponent1 { Prop = 2 });
+
+        [TestMethod]
+        public void GetAllComponents_NormalSharedUnique() => AssertGetAllComponents(1,
                 new TestComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 },
                 new TestUniqueComponent1 { Prop = 3 });
 
         [TestMethod]
-        public void GetAllComponents_NormalUnique() => AssertGetAllComponents(
+        public void GetAllComponents_NormalUnique() => AssertGetAllComponents(1,
                 new TestComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 });
 
         [TestMethod]
-        public void GetAllComponents_NormalUniqueShared() => AssertGetAllComponents(
+        public void GetAllComponents_NormalUniqueShared() => AssertGetAllComponents(1,
                 new TestComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 },
                 new TestSharedComponent1 { Prop = 3 });
 
         [TestMethod]
-        public void GetAllComponents_Shared() => AssertGetAllComponents(
+        public void GetAllComponents_Shared() => AssertGetAllComponents(1,
                 new TestSharedComponent1 { Prop = 1 });
 
         [TestMethod]
-        public void GetAllComponents_SharedNormal() => AssertGetAllComponents(
+        public void GetAllComponents_Shared_Large() => AssertGetAllComponents(UnitTestConsts.LargeCount,
+                new TestSharedComponent1 { Prop = 1 });
+
+        [TestMethod]
+        public void GetAllComponents_SharedNormal() => AssertGetAllComponents(1,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
 
         [TestMethod]
-        public void GetAllComponents_SharedNormalUnique() => AssertGetAllComponents(
+        public void GetAllComponents_SharedNormal_Large() => AssertGetAllComponents(UnitTestConsts.LargeCount,
+                new TestSharedComponent1 { Prop = 1 },
+                new TestComponent1 { Prop = 2 });
+
+        [TestMethod]
+        public void GetAllComponents_SharedNormalUnique() => AssertGetAllComponents(1,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 },
                 new TestUniqueComponent1 { Prop = 3 });
 
         [TestMethod]
-        public void GetAllComponents_SharedUnique() => AssertGetAllComponents(
+        public void GetAllComponents_SharedUnique() => AssertGetAllComponents(1,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 });
 
         [TestMethod]
-        public void GetAllComponents_SharedUniqueNormal() => AssertGetAllComponents(
+        public void GetAllComponents_SharedUniqueNormal() => AssertGetAllComponents(1,
                 new TestSharedComponent1 { Prop = 1 },
                 new TestUniqueComponent1 { Prop = 2 },
                 new TestComponent1 { Prop = 3 });
 
         [TestMethod]
-        public void GetAllComponents_Unique() => AssertGetAllComponents(
+        public void GetAllComponents_Unique() => AssertGetAllComponents(1,
                 new TestUniqueComponent1 { Prop = 1 });
 
         [TestMethod]
-        public void GetAllComponents_UniqueNormal() => AssertGetAllComponents(
+        public void GetAllComponents_UniqueNormal() => AssertGetAllComponents(1,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 });
 
         [TestMethod]
-        public void GetAllComponents_UniqueNormalShared() => AssertGetAllComponents(
+        public void GetAllComponents_UniqueNormalShared() => AssertGetAllComponents(1,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestComponent1 { Prop = 2 },
                 new TestSharedComponent1 { Prop = 3 });
 
         [TestMethod]
-        public void GetAllComponents_UniqueShared() => AssertGetAllComponents(
+        public void GetAllComponents_UniqueShared() => AssertGetAllComponents(1,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 });
 
         [TestMethod]
-        public void GetAllComponents_UniqueSharedNormal() => AssertGetAllComponents(
+        public void GetAllComponents_UniqueSharedNormal() => AssertGetAllComponents(1,
                 new TestUniqueComponent1 { Prop = 1 },
                 new TestSharedComponent1 { Prop = 2 },
                 new TestComponent1 { Prop = 3 });
@@ -693,6 +712,17 @@ namespace EcsLte.UnitTest.EcsContextTests
         }
 
         [TestMethod]
+        public void Unique_GetUniqueEntity_RemoveAllComponents()
+        {
+            var entity = Context.AddUniqueComponent(new TestUniqueComponent1());
+
+            Context.RemoveAllComponents(entity);
+
+            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+                Context.GetUniqueEntity<TestUniqueComponent1>());
+        }
+
+        [TestMethod]
         public void Unique_HasUniqueComponent()
         {
             Context.AddUniqueComponent(new TestUniqueComponent1 { Prop = 1 });
@@ -700,64 +730,122 @@ namespace EcsLte.UnitTest.EcsContextTests
             Assert.IsTrue(Context.HasUniqueComponent<TestUniqueComponent1>());
         }
 
-        private void AssertGetAllComponents<T1>(T1 component1)
-            where T1 : unmanaged, IComponent, ITestComponent
+        [TestMethod]
+        public void Unique_HasUniqueComponent_RemoveAllComponents()
         {
-            var entity = Context.CreateEntity();
-            Context.AddComponent(entity, component1);
+            var entity = Context.AddUniqueComponent(new TestUniqueComponent1 { Prop = 1 });
 
-            var components = Context.GetAllComponents(entity);
-            Assert.IsTrue(components.Length == 1);
-            Assert.IsTrue(components[0] is T1);
-            Assert.IsTrue(((T1)components[0]).Prop == component1.Prop);
+            Context.RemoveAllComponents(entity);
+
+            Assert.IsFalse(Context.HasUniqueComponent<TestUniqueComponent1>());
         }
 
-        private void AssertGetAllComponents<T1, T2>(T1 component1, T2 component2)
+        private void AssertGetAllComponents<T1>(int entityCount, T1 component1)
+            where T1 : unmanaged, IComponent, ITestComponent
+        {
+            var entities = Context.CreateEntities(entityCount);
+            for (var i = 0; i < entities.Length; i++)
+            {
+                Context.AddComponent(entities[i], component1);
+            }
+
+            for (var i = 0; i < entities.Length; i++)
+            {
+                var entity = entities[i];
+                var components = Context.GetAllComponents(entity);
+                Assert.IsTrue(components.Length == 1,
+                    $"Enity.Id {entities[i].Id}");
+                Assert.IsTrue(components[0] is T1,
+                    $"Enity.Id {entities[i].Id}");
+                Assert.IsTrue(((T1)components[0]).Prop == component1.Prop,
+                    $"Enity.Id {entities[i].Id}");
+            }
+        }
+
+        private void AssertGetAllComponents<T1, T2>(int entityCount, T1 component1, T2 component2)
             where T1 : unmanaged, IComponent, ITestComponent
             where T2 : unmanaged, IComponent, ITestComponent
         {
-            var entity = Context.CreateEntity();
-            Context.AddComponent(entity, component1);
-            Context.AddComponent(entity, component2);
-
-            var components = Context.GetAllComponents(entity);
-            Assert.IsTrue(components.Length == 2);
-            var isOk = new int[2];
-            for (var i = 0; i < isOk.Length; i++)
+            var entities = Context.CreateEntities(entityCount);
+            for (var i = 0; i < entities.Length; i++)
             {
-                if (components[i] is T1)
-                    isOk[0] += ((T1)components[i]).Prop == component1.Prop ? 1 : 0;
-                if (components[i] is T2)
-                    isOk[1] += ((T2)components[i]).Prop == component2.Prop ? 1 : 0;
+                var entity = entities[i];
+                Context.AddComponent(entity, component1);
+                Context.AddComponent(entity, component2);
             }
-            for (var i = 0; i < isOk.Length; i++)
-                Assert.IsTrue(isOk[i] == 1);
+
+            var entitiesIsOk = new int[entityCount][];
+            for (var i = 0; i < entitiesIsOk.Length; i++)
+            {
+                var isOk = new int[2];
+                var entity = entities[i];
+                var components = Context.GetAllComponents(entity);
+                Assert.IsTrue(components.Length == 2);
+                for (var j = 0; j < components.Length; j++)
+                {
+                    if (components[j] is T1)
+                        isOk[0] += ((T1)components[j]).Prop == component1.Prop ? 1 : 0;
+                    if (components[j] is T2)
+                        isOk[1] += ((T2)components[j]).Prop == component2.Prop ? 1 : 0;
+                }
+
+                entitiesIsOk[i] = isOk;
+            }
+
+            for (var i = 0; i < entitiesIsOk.Length; i++)
+            {
+                var isOk = entitiesIsOk[i];
+                for (var j = 0; j < isOk.Length; j++)
+                {
+                    Assert.IsTrue(isOk[j] == 1,
+                        $"Enity.Id {entities[i].Id}");
+                }
+            }
         }
 
-        private void AssertGetAllComponents<T1, T2, T3>(T1 component1, T2 component2, T3 component3)
+        private void AssertGetAllComponents<T1, T2, T3>(int entityCount, T1 component1, T2 component2, T3 component3)
             where T1 : unmanaged, IComponent, ITestComponent
             where T2 : unmanaged, IComponent, ITestComponent
             where T3 : unmanaged, IComponent, ITestComponent
         {
-            var entity = Context.CreateEntity();
-            Context.AddComponent(entity, component1);
-            Context.AddComponent(entity, component2);
-            Context.AddComponent(entity, component3);
-
-            var components = Context.GetAllComponents(entity);
-            Assert.IsTrue(components.Length == 3);
-            var isOk = new int[3];
-            for (var i = 0; i < isOk.Length; i++)
+            var entities = Context.CreateEntities(entityCount);
+            for (var i = 0; i < entities.Length; i++)
             {
-                if (components[i] is T1)
-                    isOk[0] += ((T1)components[i]).Prop == component1.Prop ? 1 : 0;
-                if (components[i] is T2)
-                    isOk[1] += ((T2)components[i]).Prop == component2.Prop ? 1 : 0;
-                if (components[i] is T3)
-                    isOk[2] += ((T3)components[i]).Prop == component3.Prop ? 1 : 0;
+                var entity = entities[i];
+                Context.AddComponent(entity, component1);
+                Context.AddComponent(entity, component2);
+                Context.AddComponent(entity, component3);
             }
-            for (var i = 0; i < isOk.Length; i++)
-                Assert.IsTrue(isOk[i] == 1);
+
+            var entitiesIsOk = new int[entityCount][];
+            for (var i = 0; i < entitiesIsOk.Length; i++)
+            {
+                var isOk = new int[3];
+                var entity = entities[i];
+                var components = Context.GetAllComponents(entity);
+                Assert.IsTrue(components.Length == 3);
+                for (var j = 0; j < components.Length; j++)
+                {
+                    if (components[j] is T1)
+                        isOk[0] += ((T1)components[j]).Prop == component1.Prop ? 1 : 0;
+                    if (components[j] is T2)
+                        isOk[1] += ((T2)components[j]).Prop == component2.Prop ? 1 : 0;
+                    if (components[j] is T3)
+                        isOk[2] += ((T3)components[j]).Prop == component3.Prop ? 1 : 0;
+                }
+
+                entitiesIsOk[i] = isOk;
+            }
+
+            for (var i = 0; i < entitiesIsOk.Length; i++)
+            {
+                var isOk = entitiesIsOk[i];
+                for (var j = 0; j < isOk.Length; j++)
+                {
+                    Assert.IsTrue(isOk[j] == 1,
+                        $"Enity.Id {entities[i].Id}");
+                }
+            }
         }
 
         private void AssertBlueprintGetComponent<T1>(int entityCount, T1 component1)

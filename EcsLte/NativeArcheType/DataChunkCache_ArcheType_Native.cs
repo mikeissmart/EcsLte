@@ -5,23 +5,11 @@ using System.Collections.Generic;
 
 namespace EcsLte.NativeArcheType
 {
-    public class DataChunkCache_ArcheType_Native
+    public class DataChunkCache_ArcheType_Native : IDisposable
     {
-        private static DataChunkCache_ArcheType_Native _instance;
-
         private readonly Queue<IntPtr> _cacheQueue;
 
-        public static DataChunkCache_ArcheType_Native Instance
-        {
-            get
-            {
-                if (_instance == null)
-                    _instance = new DataChunkCache_ArcheType_Native();
-                return _instance;
-            }
-        }
-
-        private DataChunkCache_ArcheType_Native() => _cacheQueue = new Queue<IntPtr>();
+        public DataChunkCache_ArcheType_Native() => _cacheQueue = new Queue<IntPtr>();
 
         public unsafe DataChunk_ArcheType_Native* GetDataChunk(bool clear)
         {
@@ -47,5 +35,14 @@ namespace EcsLte.NativeArcheType
         }
 
         public unsafe void Cache(DataChunk_ArcheType_Native* dataChunk) => _cacheQueue.Enqueue((IntPtr)dataChunk);
+
+        public unsafe void Dispose()
+        {
+            foreach (var ptr in _cacheQueue)
+            {
+                MemoryHelper.Free((void*)ptr);
+            }
+            _cacheQueue.Clear();
+        }
     }
 }

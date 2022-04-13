@@ -12,8 +12,10 @@ namespace EcsLte.NativeArcheType
 
         private unsafe ComponentConfigIndex_ArcheType_Native* _configs;
         private int _configsLength;
+        private unsafe ComponentConfigIndex_ArcheType_Native* _uniqueConfigs;
+        private int _uniqueConfigsLength;
         /// <summary>
-        /// [Entity,Component1,Component2],[Entity,Component1,Component2]
+        /// [Component1,Component2],[Component1,Component2]
         /// </summary>
         private unsafe DataChunk_ArcheType_Native** _dataChunks;
         private int _lengthPerComponentOffsetInBytes;
@@ -21,13 +23,17 @@ namespace EcsLte.NativeArcheType
         private int _dataChunksCount;
         private int _dataChunksLength;
         private unsafe DataChunk_ArcheType_Native* _lastDataChunk;
-        private unsafe ComponentConfigIndex_ArcheType_Native* _uniqueConfigs;
-        private int _uniqueConfigsLength;
+        private unsafe Entity* _entities;
+        private int _entitiesLength;
 
         public Component_ArcheType_Native ArcheType { get; private set; }
+        public int ArcheTypeIndex { get; private set; }
         public int EntityCount { get; private set; }
+        public unsafe DataChunk_ArcheType_Native** DataChunks => _dataChunks;
+        public int DataChunkCount => DataChunkCount;
+        public int LengthPerComponentOffsetInBytes => _lengthPerComponentOffsetInBytes;
 
-        public static unsafe ComponentData_ArcheType_Native* Alloc(Component_ArcheType_Native archeType, ComponentConfigIndex_ArcheType_Native* uniqueConfigs)
+        public static unsafe ComponentData_ArcheType_Native* Alloc(Component_ArcheType_Native archeType, ComponentConfigIndex_ArcheType_Native* uniqueConfigs, int archeTypeIndex)
         {
             var data = MemoryHelper.Alloc<ComponentData_ArcheType_Native>(1);
 
@@ -41,12 +47,12 @@ namespace EcsLte.NativeArcheType
                     data->_configsLength++;
             }
 
-            var componentOffsetInBytes = TypeCache<Entity>.SizeInBytes;
             if (data->_configsLength > 0)
                 data->_configs = MemoryHelper.Alloc<ComponentConfigIndex_ArcheType_Native>(data->_configsLength);
             if (data->_uniqueConfigsLength > 0)
                 data->_uniqueConfigs = MemoryHelper.Alloc<ComponentConfigIndex_ArcheType_Native>(data->_uniqueConfigsLength);
 
+            var componentOffsetInBytes = 0;
             for (int i = 0, componentArcheIndex = 0, uniqueArcheIndex = 0; i < archeType.ComponentConfigLength; i++)
             {
                 var config = archeType.ComponentConfigs[i];
@@ -65,74 +71,109 @@ namespace EcsLte.NativeArcheType
                     data->_uniqueConfigs[uniqueArcheIndex++] = uniqueConfigs[config.UniqueIndex];
                 }
             }
+            if (componentOffsetInBytes == 0)
+                componentOffsetInBytes = 1;
 
             var dataChunkLengthInBytes = EcsSettings.UnmanagedDataChunkInBytes;
-            data->_capacityPerDataChunk = Math.Min(dataChunkLengthInBytes / componentOffsetInBytes,
-                dataChunkLengthInBytes / TypeCache<Entity>.SizeInBytes);
+            data->_capacityPerDataChunk = dataChunkLengthInBytes / componentOffsetInBytes;
             data->_lengthPerComponentOffsetInBytes = componentOffsetInBytes;
 
             data->ArcheType = archeType;
+            data->ArcheTypeIndex = archeTypeIndex;
 
             return data;
         }
 
-        public unsafe void AddEntity(Entity entity, EntityData_ArcheType_Native* entityData)
+        public unsafe void CopyEntities(Entity[] entities, int startingIndex)
         {
-            var dataChunk = GetAvailableDataChunk();
+            fixed (Entity* entitiesPtr = &entities[startingIndex])
+            {
+                MemoryHelper.Copy(
+                    _entities,
+                    entitiesPtr,
+                    EntityCount * TypeCache<Entity>.SizeInBytes);
+            }
+        }
+
+        public unsafe Entity GetEntity(int entityIndex) => _entities[entityIndex];
+
+        public unsafe void AddEntity(ArcheTypeFactory_ArcheType_Native archeTypeFactory, DataChunkCache_ArcheType_Native dataChunkCache, Entity entity, EntityData_ArcheType_Native* entityData)
+        {
+            var dataChunk = GetAvailableDataChunk(dataChunkCache);
 
             fixed (ComponentData_ArcheType_Native* selfPtr = &this)
             {
                 entityData->ComponentArcheTypeData = selfPtr;
+                //TODO uncomment after blueprintBenchmark-archeTypeFactory.SetEntitiesDirty(selfPtr);
             }
             entityData->DataChunk = dataChunk;
-            entityData->Index = dataChunk->Count++;
+            entityData->DataChunkIndex = dataChunk->Count++;
+            entityData->EntityIndex = EntityCount;
 
-            *(Entity*)(dataChunk->Buffer + (entityData->Index * _lengthPerComponentOffsetInBytes)) = entity;
-            EntityCount++;
+            _entities[EntityCount++] = entity;
         }
 
-        public unsafe void RemoveEntity(EntityData_ArcheType_Native* entityData, EntityData_ArcheType_Native* entityDatas)
+        public unsafe void RemoveEntity(ArcheTypeFactory_ArcheType_Native archeTypeFactory, DataChunkCache_ArcheType_Native dataChunkCache, EntityData_ArcheType_Native* entityData, EntityData_ArcheType_Native* entityDatas)
         {
-            if (_lastDataChunk != entityData->DataChunk ||
-                (_lastDataChunk == entityData->DataChunk && _lastDataChunk->Count - 1 != entityData->Index))
+            if (entityData->EntityIndex != EntityCount - 1)
             {
-                // Is not last entity
-                TransferEntityInternaly(entityData, entityDatas, _lastDataChunk, _lastDataChunk->Count - 1);
+                // Move last entity to removed entity slot
+                var lastEntity = _entities[EntityCount - 1];
+                var lastEntityData = &entityDatas[lastEntity.Id];
+
+                if (lastEntityData->DataChunk == entityData->DataChunk)
+                {
+                    // Is last data chunk, not last Entity
+                    MemoryHelper.CopyBlock(
+                        lastEntityData->DataChunk->Buffer,
+                        lastEntityData->DataChunkIndex * _lengthPerComponentOffsetInBytes,
+                        entityData->DataChunkIndex * _lengthPerComponentOffsetInBytes,
+                        _lengthPerComponentOffsetInBytes);
+                }
+                else
+                {
+                    // Is not last data chunk, not last Entity
+                    MemoryHelper.Copy(
+                        lastEntityData->DataChunk->Buffer + (lastEntityData->DataChunkIndex * _lengthPerComponentOffsetInBytes),
+                        entityData->DataChunk->Buffer + (entityData->DataChunkIndex * _lengthPerComponentOffsetInBytes),
+                        _lengthPerComponentOffsetInBytes);
+                    lastEntityData->DataChunk = entityData->DataChunk;
+                }
+
+                _entities[entityData->EntityIndex] = lastEntity;
+                lastEntityData->EntityIndex = entityData->EntityIndex;
+                lastEntityData->DataChunkIndex = entityData->DataChunkIndex;
             }
-            else
-            {
-                // Is last entity
-                _lastDataChunk->Count--;
-            }
+            _lastDataChunk->Count--;
 
             if (_lastDataChunk->Count == 0)
             {
-                DataChunkCache_ArcheType_Native.Instance.Cache(_lastDataChunk);
-                _dataChunksCount--;
-                _dataChunks[_dataChunksCount] = null;
+                dataChunkCache.Cache(_lastDataChunk);
+                _dataChunks[--_dataChunksCount] = null;
                 if (_dataChunksCount > 0)
                     _lastDataChunk = _dataChunks[_dataChunksCount - 1];
                 else
                     _lastDataChunk = null;
             }
 
+            /*TODO uncomment after blueprintBenchmark-fixed (ComponentData_ArcheType_Native* selfPtr = &this)
+            {
+                archeTypeFactory.SetEntitiesDirty(selfPtr);
+            }-TODO uncomment after blueprintBenchmark*/
             entityData->Clear();
             EntityCount--;
         }
 
-        public unsafe void TransferEntity(ComponentData_ArcheType_Native* sourceArcheTypeData, Entity entity, EntityData_ArcheType_Native* entityData, EntityData_ArcheType_Native* entityDatas)
+        public unsafe void TransferEntity(ArcheTypeFactory_ArcheType_Native archeTypeFactory, DataChunkCache_ArcheType_Native dataChunkCache, ComponentData_ArcheType_Native* sourceArcheTypeData, Entity entity, EntityData_ArcheType_Native* entityData, EntityData_ArcheType_Native* entityDatas)
         {
-            var prevArcheTypeData = entityData->ComponentArcheTypeData;
+            var nextEntityData = new EntityData_ArcheType_Native();
+            AddEntity(archeTypeFactory, dataChunkCache, entity, &nextEntityData);
+
             var prevDataChunk = entityData->DataChunk;
-            var prevIndex = entityData->Index;
-            var prevIndexOffsetInBytes = entityData->Index * sourceArcheTypeData->_lengthPerComponentOffsetInBytes;
+            var prevIndexOffsetInBytes = entityData->DataChunkIndex * sourceArcheTypeData->_lengthPerComponentOffsetInBytes;
 
-            sourceArcheTypeData->RemoveEntity(entityData, entityDatas);
-            AddEntity(entity, entityData);
-
-            var nextDataChunk = entityData->DataChunk;
-            var nextIndex = entityData->Index;
-            var nextIndexOffsetInBytes = entityData->Index * _lengthPerComponentOffsetInBytes;
+            var nextDataChunk = nextEntityData.DataChunk;
+            var nextIndexOffsetInBytes = nextEntityData.DataChunkIndex * _lengthPerComponentOffsetInBytes;
 
             for (var i = 0; i < sourceArcheTypeData->_configsLength; i++)
             {
@@ -145,17 +186,20 @@ namespace EcsLte.NativeArcheType
                         sourceConfigIndex.Config.UnmanagedInBytesSize);
                 }
             }
+
+            sourceArcheTypeData->RemoveEntity(archeTypeFactory, dataChunkCache, entityData, entityDatas);
+            entityDatas[entity.Id] = nextEntityData;
         }
 
         public unsafe void SetEntityBlueprintData(EntityData_ArcheType_Native* entityData, byte* blueprintComponentsBuffer, int blueprintComponentsBufferLengthInBytes) => MemoryHelper.Copy(
                 blueprintComponentsBuffer,
-                entityData->DataChunk->Buffer + TypeCache<Entity>.SizeInBytes + (entityData->Index * _lengthPerComponentOffsetInBytes),
+                entityData->DataChunk->Buffer + (entityData->DataChunkIndex * _lengthPerComponentOffsetInBytes),
                 blueprintComponentsBufferLengthInBytes);
 
         public unsafe void SetComponent(EntityData_ArcheType_Native* entityData, ComponentConfig config, void* componentData)
         {
             GetComponentIndex(config, out var configIndex);
-            var indexOffsetInBytes = entityData->Index * _lengthPerComponentOffsetInBytes;
+            var indexOffsetInBytes = entityData->DataChunkIndex * _lengthPerComponentOffsetInBytes;
 
             MemoryHelper.Copy(
                 componentData,
@@ -166,14 +210,14 @@ namespace EcsLte.NativeArcheType
         public unsafe void* GetComponent(EntityData_ArcheType_Native* entityData, ComponentConfig config)
         {
             GetComponentIndex(config, out var configIndex);
-            var indexOffsetInBytes = entityData->Index * _lengthPerComponentOffsetInBytes;
+            var indexOffsetInBytes = entityData->DataChunkIndex * _lengthPerComponentOffsetInBytes;
 
             return entityData->DataChunk->Buffer + indexOffsetInBytes + configIndex.OffsetInBytes;
         }
 
         public unsafe IComponent[] GetAllComponents(EntityData_ArcheType_Native* entityData, byte* uniqueComponents)
         {
-            var indexOffsetInBytes = entityData->Index * _lengthPerComponentOffsetInBytes;
+            var indexOffsetInBytes = entityData->DataChunkIndex * _lengthPerComponentOffsetInBytes;
             var components = new IComponent[_configsLength + _uniqueConfigsLength];
 
             for (var i = 0; i < _configsLength; i++)
@@ -211,6 +255,15 @@ namespace EcsLte.NativeArcheType
             return uniqueComponents + configIndex.OffsetInBytes;
         }
 
+        public unsafe void GetMappedComponentOffsets(ComponentConfig[] configs, ref int[] mappedComponentOffsets)
+        {
+            for (var i = 0; i < configs.Length; i++)
+            {
+                GetComponentIndex(configs[i], out var configOffset);
+                mappedComponentOffsets[i] = configOffset.OffsetInBytes;
+            }
+        }
+
         public unsafe void Dispose()
         {
             if (_configsLength > 0)
@@ -219,10 +272,16 @@ namespace EcsLte.NativeArcheType
                 _configs = null;
                 _configsLength = 0;
             }
+            if (_uniqueConfigsLength > 0)
+            {
+                MemoryHelper.Free(_uniqueConfigs);
+                _uniqueConfigs = null;
+                _uniqueConfigsLength = 0;
+            }
             if (_dataChunks != null)
             {
                 for (var i = 0; i < _dataChunksCount; i++)
-                    DataChunkCache_ArcheType_Native.Instance.Cache(_dataChunks[i]);
+                    MemoryHelper.Free(_dataChunks[i]);
                 MemoryHelper.Free(_dataChunks);
                 _dataChunks = null;
             }
@@ -231,15 +290,15 @@ namespace EcsLte.NativeArcheType
             _dataChunksCount = 0;
             _dataChunksLength = 0;
             _lastDataChunk = null;
-            if (_uniqueConfigsLength > 0)
+            if (_entitiesLength > 0)
             {
-                MemoryHelper.Free(_uniqueConfigs);
-                _uniqueConfigs = null;
-                _uniqueConfigsLength = 0;
+                MemoryHelper.Free(_entities);
+                _entities = null;
+                _entitiesLength = 0;
             }
         }
 
-        private unsafe DataChunk_ArcheType_Native* GetAvailableDataChunk()
+        private unsafe DataChunk_ArcheType_Native* GetAvailableDataChunk(DataChunkCache_ArcheType_Native dataChunkCache)
         {
             if (_lastDataChunk == null || _lastDataChunk->IsFull(_capacityPerDataChunk))
             {
@@ -247,6 +306,8 @@ namespace EcsLte.NativeArcheType
                 {
                     _dataChunks = (DataChunk_ArcheType_Native**)MemoryHelper.Alloc(_dataChunkPtrSizeInBytes);
                     _dataChunksLength = 1;
+                    _entities = MemoryHelper.Alloc<Entity>(_capacityPerDataChunk);
+                    _entitiesLength = _capacityPerDataChunk;
                 }
                 else if (_dataChunksCount == _dataChunksLength)
                 {
@@ -255,11 +316,15 @@ namespace EcsLte.NativeArcheType
                         _dataChunkPtrSizeInBytes * _dataChunksLength,
                         _dataChunkPtrSizeInBytes * (_dataChunksLength + 1));
                     _dataChunksLength++;
+                    _entities = (Entity*)MemoryHelper.Realloc(
+                        _entities,
+                        _entitiesLength * TypeCache<Entity>.SizeInBytes,
+                        (_entitiesLength + _capacityPerDataChunk) * TypeCache<Entity>.SizeInBytes);
+                    _entitiesLength += _capacityPerDataChunk;
                 }
 
-                _lastDataChunk = DataChunkCache_ArcheType_Native.Instance.GetDataChunk(false);
-                _dataChunks[_dataChunksCount] = _lastDataChunk;
-                _dataChunksCount++;
+                _lastDataChunk = dataChunkCache.GetDataChunk(false);
+                _dataChunks[_dataChunksCount++] = _lastDataChunk;
             }
 
             return _lastDataChunk;
@@ -327,31 +392,6 @@ namespace EcsLte.NativeArcheType
             }
 
             return false;
-        }
-
-        private unsafe void TransferEntityInternaly(EntityData_ArcheType_Native* destEntityData, EntityData_ArcheType_Native* entityDatas, DataChunk_ArcheType_Native* sourceDataChunk, int sourceIndex)
-        {
-            var sourceEntity = (Entity*)(sourceDataChunk->Buffer + (sourceIndex * _lengthPerComponentOffsetInBytes));
-            var sourceEntityData = &entityDatas[sourceEntity->Id];
-
-            if (destEntityData->DataChunk == sourceDataChunk)
-            {
-                MemoryHelper.CopyBlock(
-                    sourceDataChunk->Buffer,
-                    (sourceIndex * _lengthPerComponentOffsetInBytes),
-                    (destEntityData->Index * _lengthPerComponentOffsetInBytes),
-                    _lengthPerComponentOffsetInBytes);
-            }
-            else
-            {
-                MemoryHelper.Copy(
-                    sourceDataChunk->Buffer + (sourceIndex * _lengthPerComponentOffsetInBytes),
-                    destEntityData->DataChunk->Buffer + (destEntityData->Index * _lengthPerComponentOffsetInBytes),
-                    _lengthPerComponentOffsetInBytes);
-                sourceEntityData->DataChunk = destEntityData->DataChunk;
-            }
-            sourceEntityData->Index = destEntityData->Index;
-            sourceDataChunk->Count--;
         }
     }
 }

@@ -6,7 +6,21 @@ namespace EcsLte.ManagedArcheType
     public struct Component_ArcheType_Managed : IEquatable<Component_ArcheType_Managed>
     {
         public ComponentConfig[] ComponentConfigs { get; set; }
-        public ShareComponentDataIndex[] ShareComponentDataIndexes { get; set; }
+        public SharedComponentDataIndex[] SharedComponentDataIndexes { get; set; }
+
+        public bool HasComponentConfig(ComponentConfig config)
+        {
+            if (ComponentConfigs != null)
+            {
+                for (var i = 0; i < ComponentConfigs.Length; i++)
+                {
+                    if (ComponentConfigs[i] == config)
+                        return true;
+                }
+            }
+
+            return false;
+        }
 
         public static Component_ArcheType_Managed AppendComponent(Component_ArcheType_Managed archeType, ComponentConfig config)
         {
@@ -15,15 +29,15 @@ namespace EcsLte.ManagedArcheType
                 return new Component_ArcheType_Managed
                 {
                     ComponentConfigs = new ComponentConfig[] { config },
-                    ShareComponentDataIndexes = null
+                    SharedComponentDataIndexes = null
                 };
             }
 
             var newArcheType = new Component_ArcheType_Managed
             {
                 ComponentConfigs = new ComponentConfig[archeType.ComponentConfigs.Length + 1],
-                ShareComponentDataIndexes = archeType.ShareComponentDataIndexes != null
-                    ? new ShareComponentDataIndex[archeType.ShareComponentDataIndexes.Length]
+                SharedComponentDataIndexes = archeType.SharedComponentDataIndexes != null
+                    ? new SharedComponentDataIndex[archeType.SharedComponentDataIndexes.Length]
                     : null
             };
 
@@ -31,15 +45,15 @@ namespace EcsLte.ManagedArcheType
             newArcheType.ComponentConfigs[newArcheType.ComponentConfigs.Length - 1] = config;
             Array.Sort(newArcheType.ComponentConfigs);
 
-            if (newArcheType.ShareComponentDataIndexes != null)
-                Array.Copy(archeType.ShareComponentDataIndexes, newArcheType.ShareComponentDataIndexes, archeType.ShareComponentDataIndexes.Length);
+            if (newArcheType.SharedComponentDataIndexes != null)
+                Array.Copy(archeType.SharedComponentDataIndexes, newArcheType.SharedComponentDataIndexes, archeType.SharedComponentDataIndexes.Length);
 
             return newArcheType;
         }
 
         public static Component_ArcheType_Managed AppendComponent(Component_ArcheType_Managed archeType, ComponentConfig config, int sharedComponentDataIndex)
         {
-            var sharedDataIndex = new ShareComponentDataIndex
+            var sharedDataIndex = new SharedComponentDataIndex
             {
                 SharedIndex = config.SharedIndex,
                 SharedDataIndex = sharedComponentDataIndex
@@ -50,27 +64,27 @@ namespace EcsLte.ManagedArcheType
                 return new Component_ArcheType_Managed
                 {
                     ComponentConfigs = new ComponentConfig[] { config },
-                    ShareComponentDataIndexes = new ShareComponentDataIndex[] { sharedDataIndex }
+                    SharedComponentDataIndexes = new SharedComponentDataIndex[] { sharedDataIndex }
                 };
             }
 
             var newArcheType = new Component_ArcheType_Managed
             {
                 ComponentConfigs = new ComponentConfig[archeType.ComponentConfigs.Length + 1],
-                ShareComponentDataIndexes = archeType.ShareComponentDataIndexes != null
-                    ? new ShareComponentDataIndex[archeType.ShareComponentDataIndexes.Length + 1]
-                    : new ShareComponentDataIndex[] { sharedDataIndex }
+                SharedComponentDataIndexes = archeType.SharedComponentDataIndexes != null
+                    ? new SharedComponentDataIndex[archeType.SharedComponentDataIndexes.Length + 1]
+                    : new SharedComponentDataIndex[] { sharedDataIndex }
             };
 
             Array.Copy(archeType.ComponentConfigs, newArcheType.ComponentConfigs, archeType.ComponentConfigs.Length);
             newArcheType.ComponentConfigs[newArcheType.ComponentConfigs.Length - 1] = config;
             Array.Sort(newArcheType.ComponentConfigs);
 
-            if (newArcheType.ShareComponentDataIndexes.Length > 1)
+            if (newArcheType.SharedComponentDataIndexes.Length > 1)
             {
-                Array.Copy(archeType.ShareComponentDataIndexes, newArcheType.ShareComponentDataIndexes, archeType.ShareComponentDataIndexes.Length);
-                newArcheType.ShareComponentDataIndexes[newArcheType.ShareComponentDataIndexes.Length - 1] = sharedDataIndex;
-                Array.Sort(newArcheType.ShareComponentDataIndexes);
+                Array.Copy(archeType.SharedComponentDataIndexes, newArcheType.SharedComponentDataIndexes, archeType.SharedComponentDataIndexes.Length);
+                newArcheType.SharedComponentDataIndexes[newArcheType.SharedComponentDataIndexes.Length - 1] = sharedDataIndex;
+                Array.Sort(newArcheType.SharedComponentDataIndexes);
             }
 
             return newArcheType;
@@ -78,7 +92,7 @@ namespace EcsLte.ManagedArcheType
 
         public static Component_ArcheType_Managed ReplaceSharedComponent(Component_ArcheType_Managed archeType, ComponentConfig config, int sharedComponentDataIndex)
         {
-            var sharedDataIndex = new ShareComponentDataIndex
+            var sharedDataIndex = new SharedComponentDataIndex
             {
                 SharedIndex = config.SharedIndex,
                 SharedDataIndex = sharedComponentDataIndex
@@ -87,18 +101,18 @@ namespace EcsLte.ManagedArcheType
             var newArcheType = new Component_ArcheType_Managed
             {
                 ComponentConfigs = new ComponentConfig[archeType.ComponentConfigs.Length],
-                ShareComponentDataIndexes = new ShareComponentDataIndex[archeType.ShareComponentDataIndexes.Length]
+                SharedComponentDataIndexes = new SharedComponentDataIndex[archeType.SharedComponentDataIndexes.Length]
             };
 
             Array.Copy(archeType.ComponentConfigs, newArcheType.ComponentConfigs, archeType.ComponentConfigs.Length);
-            Array.Copy(archeType.ShareComponentDataIndexes, newArcheType.ShareComponentDataIndexes, archeType.ShareComponentDataIndexes.Length);
+            Array.Copy(archeType.SharedComponentDataIndexes, newArcheType.SharedComponentDataIndexes, archeType.SharedComponentDataIndexes.Length);
 
-            for (var i = 0; i < newArcheType.ShareComponentDataIndexes.Length; i++)
+            for (var i = 0; i < newArcheType.SharedComponentDataIndexes.Length; i++)
             {
-                var check = newArcheType.ShareComponentDataIndexes[i];
+                var check = newArcheType.SharedComponentDataIndexes[i];
                 if (check.SharedIndex == sharedDataIndex.SharedIndex)
                 {
-                    newArcheType.ShareComponentDataIndexes[i] = sharedDataIndex;
+                    newArcheType.SharedComponentDataIndexes[i] = sharedDataIndex;
                     break;
                 }
             }
@@ -116,13 +130,13 @@ namespace EcsLte.ManagedArcheType
                 ComponentConfigs = archeType.ComponentConfigs
                     .Where(x => x.ComponentIndex != config.ComponentIndex)
                     .ToArray(),
-                ShareComponentDataIndexes = archeType.ShareComponentDataIndexes != null
-                    ? new ShareComponentDataIndex[archeType.ShareComponentDataIndexes.Length]
+                SharedComponentDataIndexes = archeType.SharedComponentDataIndexes != null
+                    ? new SharedComponentDataIndex[archeType.SharedComponentDataIndexes.Length]
                     : null
             };
 
-            if (archeType.ShareComponentDataIndexes != null)
-                Array.Copy(archeType.ShareComponentDataIndexes, newArcheType.ShareComponentDataIndexes, archeType.ShareComponentDataIndexes.Length);
+            if (archeType.SharedComponentDataIndexes != null)
+                Array.Copy(archeType.SharedComponentDataIndexes, newArcheType.SharedComponentDataIndexes, archeType.SharedComponentDataIndexes.Length);
 
             return newArcheType;
         }
@@ -139,8 +153,8 @@ namespace EcsLte.ManagedArcheType
                         .Where(x => x.ComponentIndex != config.ComponentIndex)
                         .ToArray()
                     : null,
-                ShareComponentDataIndexes = archeType.ShareComponentDataIndexes.Length > 1
-                    ? archeType.ShareComponentDataIndexes
+                SharedComponentDataIndexes = archeType.SharedComponentDataIndexes.Length > 1
+                    ? archeType.SharedComponentDataIndexes
                         .Where(x => x.SharedIndex != config.SharedIndex)
                         .ToArray()
                     : null
@@ -160,9 +174,9 @@ namespace EcsLte.ManagedArcheType
                 return false;
             }
 
-            if ((lhs.ShareComponentDataIndexes == null && rhs.ShareComponentDataIndexes != null ||
-                lhs.ShareComponentDataIndexes != null && rhs.ShareComponentDataIndexes == null) &&
-                lhs.ShareComponentDataIndexes.Length != rhs.ShareComponentDataIndexes.Length)
+            if ((lhs.SharedComponentDataIndexes == null && rhs.SharedComponentDataIndexes != null ||
+                lhs.SharedComponentDataIndexes != null && rhs.SharedComponentDataIndexes == null) &&
+                lhs.SharedComponentDataIndexes.Length != rhs.SharedComponentDataIndexes.Length)
             {
                 return false;
             }
@@ -172,11 +186,11 @@ namespace EcsLte.ManagedArcheType
                 if (lhs.ComponentConfigs[i] != rhs.ComponentConfigs[i])
                     return false;
             }
-            if (lhs.ShareComponentDataIndexes != null)
+            if (lhs.SharedComponentDataIndexes != null)
             {
-                for (var i = 0; i < lhs.ShareComponentDataIndexes.Length; i++)
+                for (var i = 0; i < lhs.SharedComponentDataIndexes.Length; i++)
                 {
-                    if (lhs.ShareComponentDataIndexes[i] != rhs.ShareComponentDataIndexes[i])
+                    if (lhs.SharedComponentDataIndexes[i] != rhs.SharedComponentDataIndexes[i])
                         return false;
                 }
             }
@@ -197,10 +211,10 @@ namespace EcsLte.ManagedArcheType
             {
                 for (var i = 0; i < ComponentConfigs.Length; i++)
                     hashCode = hashCode * -1521134295 + ComponentConfigs[i].GetHashCode();
-                if (ShareComponentDataIndexes != null)
+                if (SharedComponentDataIndexes != null)
                 {
-                    for (var i = 0; i < ShareComponentDataIndexes.Length; i++)
-                        hashCode = hashCode * -1521134295 + ShareComponentDataIndexes[i].GetHashCode();
+                    for (var i = 0; i < SharedComponentDataIndexes.Length; i++)
+                        hashCode = hashCode * -1521134295 + SharedComponentDataIndexes[i].GetHashCode();
                 }
             }
 

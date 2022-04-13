@@ -47,7 +47,7 @@ namespace EcsLte.Utilities
         public static unsafe void Clear(void* ptr, int lengthInBytes) => Unsafe.InitBlock(ptr, 0, (uint)lengthInBytes);
     }
 
-    public static class MemoryHelperSafePtr
+    /*public static class MemoryHelperSafePtr
     {
         public static unsafe SafePtr Alloc(int lengthInBytes, bool clear = true)
         {
@@ -128,5 +128,5 @@ namespace EcsLte.Utilities
                 throw new ArgumentOutOfRangeException(nameof(ptr));
             Unsafe.InitBlock(ptr.Ptr, 0, (uint)lengthInBytes);
         }
-    }
+    }*/
 }

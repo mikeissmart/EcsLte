@@ -7,7 +7,7 @@ namespace EcsLte.NativeArcheType
     public struct Component_ArcheType_Native : IEquatable<Component_ArcheType_Native>, IDisposable
     {
         public unsafe ComponentConfig* ComponentConfigs;
-        public unsafe ShareComponentDataIndex* ShareComponentDataIndexes;
+        public unsafe SharedComponentDataIndex* SharedComponentDataIndexes;
         public int ComponentConfigLength { get; set; }
         public int SharedComponentDataLength { get; set; }
 
@@ -26,7 +26,7 @@ namespace EcsLte.NativeArcheType
         {
             for (var i = 0; i < SharedComponentDataLength; i++)
             {
-                var check = ShareComponentDataIndexes[i];
+                var check = SharedComponentDataIndexes[i];
                 if (check.SharedIndex == config.ComponentIndex &&
                     check.SharedDataIndex == sharedDataIndex)
                 {
@@ -47,7 +47,7 @@ namespace EcsLte.NativeArcheType
                 return new Component_ArcheType_Native
                 {
                     ComponentConfigs = configs,
-                    ShareComponentDataIndexes = null,
+                    SharedComponentDataIndexes = null,
                     ComponentConfigLength = 1,
                     SharedComponentDataLength = 0
                 };
@@ -56,15 +56,18 @@ namespace EcsLte.NativeArcheType
             var newArcheType = new Component_ArcheType_Native
             {
                 ComponentConfigs = MemoryHelper.Alloc<ComponentConfig>(archeType.ComponentConfigLength + 1),
-                ShareComponentDataIndexes = archeType.SharedComponentDataLength > 0
-                    ? MemoryHelper.Alloc<ShareComponentDataIndex>(archeType.SharedComponentDataLength)
+                SharedComponentDataIndexes = archeType.SharedComponentDataLength > 0
+                    ? MemoryHelper.Alloc<SharedComponentDataIndex>(archeType.SharedComponentDataLength)
                     : null,
                 ComponentConfigLength = archeType.ComponentConfigLength + 1,
                 SharedComponentDataLength = archeType.SharedComponentDataLength
             };
 
-            CopyComponentConfigs(ref archeType, ref newArcheType);
-            ComponentConfigInsertSort(newArcheType.ComponentConfigs, newArcheType.ComponentConfigLength, config);
+            ComponentConfigCopyInsertSort(
+                archeType.ComponentConfigs,
+                archeType.ComponentConfigLength,
+                newArcheType.ComponentConfigs,
+                config);
 
             if (newArcheType.SharedComponentDataLength > 0)
                 CopySharedDataIndexes(ref archeType, ref newArcheType);
@@ -74,7 +77,7 @@ namespace EcsLte.NativeArcheType
 
         public static unsafe Component_ArcheType_Native AppendComponent(Component_ArcheType_Native archeType, ComponentConfig config, int sharedComponentDataIndex)
         {
-            var sharedDataIndex = new ShareComponentDataIndex
+            var sharedDataIndex = new SharedComponentDataIndex
             {
                 SharedIndex = config.SharedIndex,
                 SharedDataIndex = sharedComponentDataIndex
@@ -84,13 +87,13 @@ namespace EcsLte.NativeArcheType
             {
                 var configs = MemoryHelper.Alloc<ComponentConfig>(1);
                 configs[0] = config;
-                var sharedIndexes = MemoryHelper.Alloc<ShareComponentDataIndex>(1);
+                var sharedIndexes = MemoryHelper.Alloc<SharedComponentDataIndex>(1);
                 sharedIndexes[0] = sharedDataIndex;
 
                 return new Component_ArcheType_Native
                 {
                     ComponentConfigs = configs,
-                    ShareComponentDataIndexes = sharedIndexes,
+                    SharedComponentDataIndexes = sharedIndexes,
                     ComponentConfigLength = 1,
                     SharedComponentDataLength = 1
                 };
@@ -99,22 +102,28 @@ namespace EcsLte.NativeArcheType
             var newArcheType = new Component_ArcheType_Native
             {
                 ComponentConfigs = MemoryHelper.Alloc<ComponentConfig>(archeType.ComponentConfigLength + 1),
-                ShareComponentDataIndexes = MemoryHelper.Alloc<ShareComponentDataIndex>(archeType.SharedComponentDataLength + 1),
+                SharedComponentDataIndexes = MemoryHelper.Alloc<SharedComponentDataIndex>(archeType.SharedComponentDataLength + 1),
                 ComponentConfigLength = archeType.ComponentConfigLength + 1,
                 SharedComponentDataLength = archeType.SharedComponentDataLength + 1
             };
 
-            CopyComponentConfigs(ref archeType, ref newArcheType);
-            ComponentConfigInsertSort(newArcheType.ComponentConfigs, newArcheType.ComponentConfigLength, config);
+            ComponentConfigCopyInsertSort(
+                archeType.ComponentConfigs,
+                archeType.ComponentConfigLength,
+                newArcheType.ComponentConfigs,
+                config);
 
             if (archeType.SharedComponentDataLength > 0)
             {
-                CopySharedDataIndexes(ref archeType, ref newArcheType);
-                ShareComponentDataIndexInsertSort(newArcheType.ShareComponentDataIndexes, newArcheType.SharedComponentDataLength, sharedDataIndex);
+                ShareComponentDataIndexCopyInsertSort(
+                    archeType.SharedComponentDataIndexes,
+                    archeType.SharedComponentDataLength,
+                    newArcheType.SharedComponentDataIndexes,
+                    sharedDataIndex);
             }
             else
             {
-                newArcheType.ShareComponentDataIndexes[0] = sharedDataIndex;
+                newArcheType.SharedComponentDataIndexes[0] = sharedDataIndex;
             }
 
             return newArcheType;
@@ -122,7 +131,7 @@ namespace EcsLte.NativeArcheType
 
         public static unsafe Component_ArcheType_Native ReplaceSharedComponent(Component_ArcheType_Native archeType, ComponentConfig config, int sharedComponentDataIndex)
         {
-            var sharedDataIndex = new ShareComponentDataIndex
+            var sharedDataIndex = new SharedComponentDataIndex
             {
                 SharedIndex = config.SharedIndex,
                 SharedDataIndex = sharedComponentDataIndex
@@ -130,7 +139,7 @@ namespace EcsLte.NativeArcheType
             var newArcheType = new Component_ArcheType_Native
             {
                 ComponentConfigs = MemoryHelper.Alloc<ComponentConfig>(archeType.ComponentConfigLength),
-                ShareComponentDataIndexes = MemoryHelper.Alloc<ShareComponentDataIndex>(archeType.SharedComponentDataLength),
+                SharedComponentDataIndexes = MemoryHelper.Alloc<SharedComponentDataIndex>(archeType.SharedComponentDataLength),
                 ComponentConfigLength = archeType.ComponentConfigLength,
                 SharedComponentDataLength = archeType.SharedComponentDataLength
             };
@@ -140,10 +149,10 @@ namespace EcsLte.NativeArcheType
 
             for (var i = 0; i < newArcheType.SharedComponentDataLength; i++)
             {
-                var check = newArcheType.ShareComponentDataIndexes[i];
+                var check = newArcheType.SharedComponentDataIndexes[i];
                 if (check.SharedIndex == sharedDataIndex.SharedIndex)
                 {
-                    newArcheType.ShareComponentDataIndexes[i] = sharedDataIndex;
+                    newArcheType.SharedComponentDataIndexes[i] = sharedDataIndex;
                     break;
                 }
             }
@@ -159,8 +168,8 @@ namespace EcsLte.NativeArcheType
             var newArcheType = new Component_ArcheType_Native
             {
                 ComponentConfigs = MemoryHelper.Alloc<ComponentConfig>(archeType.ComponentConfigLength - 1),
-                ShareComponentDataIndexes = archeType.SharedComponentDataLength > 0
-                    ? MemoryHelper.Alloc<ShareComponentDataIndex>(archeType.SharedComponentDataLength)
+                SharedComponentDataIndexes = archeType.SharedComponentDataLength > 0
+                    ? MemoryHelper.Alloc<SharedComponentDataIndex>(archeType.SharedComponentDataLength)
                     : null,
                 ComponentConfigLength = archeType.ComponentConfigLength - 1,
                 SharedComponentDataLength = archeType.SharedComponentDataLength
@@ -187,8 +196,8 @@ namespace EcsLte.NativeArcheType
             var newArcheType = new Component_ArcheType_Native
             {
                 ComponentConfigs = MemoryHelper.Alloc<ComponentConfig>(archeType.ComponentConfigLength - 1),
-                ShareComponentDataIndexes = archeType.SharedComponentDataLength > 1
-                    ? MemoryHelper.Alloc<ShareComponentDataIndex>(archeType.SharedComponentDataLength - 1)
+                SharedComponentDataIndexes = archeType.SharedComponentDataLength > 1
+                    ? MemoryHelper.Alloc<SharedComponentDataIndex>(archeType.SharedComponentDataLength - 1)
                     : null,
                 ComponentConfigLength = archeType.ComponentConfigLength - 1,
                 SharedComponentDataLength = archeType.SharedComponentDataLength - 1
@@ -204,46 +213,24 @@ namespace EcsLte.NativeArcheType
             {
                 for (int i = 0, j = 0; i < archeType.SharedComponentDataLength; i++)
                 {
-                    var check = archeType.ShareComponentDataIndexes[i];
+                    var check = archeType.SharedComponentDataIndexes[i];
                     if (check.SharedIndex != config.SharedIndex)
-                        newArcheType.ShareComponentDataIndexes[j++] = check;
+                        newArcheType.SharedComponentDataIndexes[j++] = check;
                 }
             }
 
             return newArcheType;
         }
 
-        /*public unsafe static Component_ArcheType_Native Clone(Component_ArcheType_Native archeType)
-        {
-            if (archeType.ComponentConfigs == null)
-                return new Component_ArcheType_Native();
-
-            var clone = new Component_ArcheType_Native
-            {
-                ComponentConfigs = MemoryHelper.Alloc<ComponentConfig>(archeType.ComponentConfigLength),
-                ShareComponentDataIndexes = archeType.SharedComponentDataLength > 0
-                    ? MemoryHelper.Alloc<ShareComponentDataIndex>(archeType.SharedComponentDataLength)
-                    : null,
-                ComponentConfigLength = archeType.ComponentConfigLength,
-                SharedComponentDataLength = archeType.SharedComponentDataLength
-            };
-
-            CopyComponentConfigs(ref archeType, ref clone);
-            if (clone.SharedComponentDataLength > 0)
-                CopySharedDataIndexes(ref archeType, ref clone);
-
-            return clone;
-        }*/
-
         public unsafe void Dispose()
         {
             if (ComponentConfigLength != 0)
                 MemoryHelper.Free(ComponentConfigs);
             if (SharedComponentDataLength != 0)
-                MemoryHelper.Free(ShareComponentDataIndexes);
+                MemoryHelper.Free(SharedComponentDataIndexes);
 
             ComponentConfigs = null;
-            ShareComponentDataIndexes = null;
+            SharedComponentDataIndexes = null;
             ComponentConfigLength = 0;
             SharedComponentDataLength = 0;
         }
@@ -265,7 +252,7 @@ namespace EcsLte.NativeArcheType
                 }
                 for (var i = 0; i < lhs.SharedComponentDataLength; i++)
                 {
-                    if (lhs.ShareComponentDataIndexes[i] != rhs.ShareComponentDataIndexes[i])
+                    if (lhs.SharedComponentDataIndexes[i] != rhs.SharedComponentDataIndexes[i])
                         return false;
                 }
             }
@@ -287,28 +274,92 @@ namespace EcsLte.NativeArcheType
                 for (var i = 0; i < ComponentConfigLength; i++)
                     hashCode = hashCode * -1521134295 + ComponentConfigs[i].GetHashCode();
                 for (var i = 0; i < SharedComponentDataLength; i++)
-                    hashCode = hashCode * -1521134295 + ShareComponentDataIndexes[i].GetHashCode();
+                    hashCode = hashCode * -1521134295 + SharedComponentDataIndexes[i].GetHashCode();
             }
 
             return hashCode;
         }
 
-        private static unsafe void ComponentConfigInsertSort(ComponentConfig* configs, int length, ComponentConfig value)
+        /*private static unsafe void ComponentConfigInsertSort(ComponentConfig* configs, int length, ComponentConfig value)
         {
             for (length--; length > 0 && value.CompareTo(configs[length - 1]) < 0; length--)
                 configs[length] = configs[length - 1];
             configs[length] = value;
+        }*/
+
+        private static unsafe void ComponentConfigCopyInsertSort(ComponentConfig* source, int sourceLength, ComponentConfig* destination, ComponentConfig insert)
+        {
+            var index = sourceLength - 1;
+            for (; index >= 0; index--)
+            {
+                if (source[index].ComponentIndex < insert.ComponentIndex)
+                    break;
+            }
+
+            // Copy before insert
+            if (index >= 0)
+            {
+                MemoryHelper.Copy(
+                    source,
+                    destination,
+                    //1 - 0 = 1
+                    (index + 1) * TypeCache<ComponentConfig>.SizeInBytes);
+            }
+
+            // insert
+            destination[index + 1] = insert;
+
+            // Copy after insert
+            if (sourceLength - 1 != index)
+            {
+                MemoryHelper.Copy(
+                    &source[index + 1],
+                    &destination[index + 2],
+                    (sourceLength - (index + 1)) * TypeCache<ComponentConfig>.SizeInBytes);
+            }
         }
 
-        private static unsafe void ShareComponentDataIndexInsertSort(ShareComponentDataIndex* sharedIndexes, int length, ShareComponentDataIndex value)
+        private static unsafe void ShareComponentDataIndexCopyInsertSort(SharedComponentDataIndex* source, int sourceLength, SharedComponentDataIndex* destination, SharedComponentDataIndex insert)
+        {
+            var index = sourceLength - 1;
+            for (; index >= 0; index--)
+            {
+                if (source[index].SharedIndex < insert.SharedIndex)
+                    break;
+            }
+
+            // Copy before insert
+            if (index >= 0)
+            {
+                MemoryHelper.Copy(
+                    source,
+                    destination,
+                    //1 - 0 = 1
+                    (index + 1) * TypeCache<SharedComponentDataIndex>.SizeInBytes);
+            }
+
+            // insert
+            destination[index + 1] = insert;
+
+            // Copy after insert
+            if (sourceLength - 1 != index)
+            {
+                MemoryHelper.Copy(
+                    &source[index + 1],
+                    &destination[index + 2],
+                    (sourceLength - (index + 1)) * TypeCache<SharedComponentDataIndex>.SizeInBytes);
+            }
+        }
+
+        /*private static unsafe void ShareComponentDataIndexInsertSort(SharedComponentDataIndex* sharedIndexes, int length, SharedComponentDataIndex value)
         {
             for (length--; length > 0 && value.CompareTo(sharedIndexes[length - 1]) < 0; length--)
                 sharedIndexes[length] = sharedIndexes[length - 1];
             sharedIndexes[length] = value;
-        }
+        }*/
 
         private static unsafe void CopyComponentConfigs(ref Component_ArcheType_Native source, ref Component_ArcheType_Native destination) => MemoryHelper.Copy(source.ComponentConfigs, destination.ComponentConfigs, TypeCache<ComponentConfig>.SizeInBytes * source.ComponentConfigLength);
 
-        private static unsafe void CopySharedDataIndexes(ref Component_ArcheType_Native source, ref Component_ArcheType_Native destination) => MemoryHelper.Copy(source.ShareComponentDataIndexes, destination.ShareComponentDataIndexes, TypeCache<ShareComponentDataIndex>.SizeInBytes * source.SharedComponentDataLength);
+        private static unsafe void CopySharedDataIndexes(ref Component_ArcheType_Native source, ref Component_ArcheType_Native destination) => MemoryHelper.Copy(source.SharedComponentDataIndexes, destination.SharedComponentDataIndexes, TypeCache<SharedComponentDataIndex>.SizeInBytes * source.SharedComponentDataLength);
     }
 }

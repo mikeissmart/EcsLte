@@ -63,6 +63,7 @@
     <Compile Include="EcsContextTests\EscContext_EntityComponentLifeTest.cs" />
     <Compile Include="EcsContextTests\EscContext_EntityGetTest.cs" />
     <Compile Include="EcsContextType.cs" />
+    <Compile Include="EntityQueryTests\EntityQuery_WhereOfTest.cs" />
     <Compile Include="Interfaces\IEntityComponentGetLifeTest.cs" />
     <Compile Include="Interfaces\IEntityComponentGetTest.cs" />
     <Compile Include="Interfaces\IEntityComponentLifeTest.cs" />

@@ -1,5 +1,5 @@
 ﻿using EcsLte.Data;
-using EcsLte.Data.Unmanaged;
+using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
 
@@ -7,16 +7,33 @@ namespace EcsLte.NativeArcheType
 {
     public class ArcheTypeFactory_ArcheType_Native : IDisposable
     {
+        private class ArcheTypeEntityQueries
+        {
+            public unsafe ComponentData_ArcheType_Native* ArcheTypeData { get; set; }
+            public List<EntityQueryData_ArcheType> EntityQueryDatas { get; set; } = new List<EntityQueryData_ArcheType>();
+        }
+
         private List<IndexDictionary<Component_ArcheType_Native>> _archeTypeIndexes;
         /// <summary>
         /// ComponentData_ArcheType_Native*
         /// </summary>
-        private List<List<PtrWrapper>> _archeTypeDatas;
+        private List<List<ArcheTypeEntityQueries>> _archeTypeDatas;
+        private readonly unsafe ComponentData_ArcheType_Native* _defaultArcheTypeData;
+        //TODO uncomment after blueprintBenchmark-private readonly Dictionary<int, EntityQueryData_ArcheType> _masterEntityQueryDatas;
+        //TODO uncomment after blueprintBenchmark-private readonly List<EntityQueryData_ArcheType>[] _componentEntityQueryDatas;
 
-        public ArcheTypeFactory_ArcheType_Native()
+        public unsafe ComponentData_ArcheType_Native* DefaultArcheTypeData => _defaultArcheTypeData;
+
+        public unsafe ArcheTypeFactory_ArcheType_Native()
         {
             _archeTypeIndexes = new List<IndexDictionary<Component_ArcheType_Native>>();
-            _archeTypeDatas = new List<List<PtrWrapper>>();
+            _archeTypeDatas = new List<List<ArcheTypeEntityQueries>>();
+            /*TODO uncomment after blueprintBenchmark-_masterEntityQueryDatas = new Dictionary<int, EntityQueryData_ArcheType>();
+            _componentEntityQueryDatas = new List<EntityQueryData_ArcheType>[ComponentConfigs.Instance.AllComponentCount];
+            for (int i = 0; i < ComponentConfigs.Instance.AllComponentCount; i++)
+                _componentEntityQueryDatas[i] = new List<EntityQueryData_ArcheType>();-TODO uncomment after blueprintBenchmark*/
+
+            GetArcheTypeData(new Component_ArcheType_Native(), null, out _defaultArcheTypeData);
         }
 
         /// <summary>
@@ -32,18 +49,7 @@ namespace EcsLte.NativeArcheType
             ComponentConfigIndex_ArcheType_Native* uniqueConfigs,
             out ComponentData_ArcheType_Native* archeTypeData)
         {
-            GetIndexDictionaryAndArcheTypeDataList(archeType.ComponentConfigLength, out var indexDic, out var dataList);
-            var isNew = false;
-            if (indexDic.GetIndex(archeType, out var index))
-            {
-                archeTypeData = ComponentData_ArcheType_Native.Alloc(archeType, uniqueConfigs);
-                dataList.Add(new PtrWrapper { Ptr = archeTypeData });
-                isNew = true;
-            }
-            else
-            {
-                archeTypeData = (ComponentData_ArcheType_Native*)dataList[index].Ptr;
-            }
+            var isNew = InternalGetArcheTypeData(archeType, uniqueConfigs, out archeTypeData, out _);
 
             return isNew;
         }
@@ -62,19 +68,7 @@ namespace EcsLte.NativeArcheType
             out ComponentData_ArcheType_Native* archeTypeData,
             out ArcheTypeIndex_ArcheType_Native archeTypeIndex)
         {
-            GetIndexDictionaryAndArcheTypeDataList(archeType.ComponentConfigLength, out var indexDic, out var dataList);
-            var isNew = false;
-            if (indexDic.GetIndex(archeType, out var index))
-            {
-                archeTypeData = ComponentData_ArcheType_Native.Alloc(archeType, uniqueConfigs);
-                dataList.Add(new PtrWrapper { Ptr = archeTypeData });
-                isNew = true;
-            }
-            else
-            {
-                archeTypeData = (ComponentData_ArcheType_Native*)dataList[index].Ptr;
-            }
-
+            var isNew = InternalGetArcheTypeData(archeType, uniqueConfigs, out archeTypeData, out var index);
             archeTypeIndex = new ArcheTypeIndex_ArcheType_Native
             {
                 ComponentsLength = archeType.ComponentConfigLength,
@@ -84,7 +78,45 @@ namespace EcsLte.NativeArcheType
             return isNew;
         }
 
-        public unsafe ComponentData_ArcheType_Native* GetArcheTypeData(ArcheTypeIndex_ArcheType_Native archeTypeIndex) => (ComponentData_ArcheType_Native*)_archeTypeDatas[archeTypeIndex.ComponentsLength][archeTypeIndex.Index].Ptr;
+        public unsafe ComponentData_ArcheType_Native* GetArcheTypeData(ArcheTypeIndex_ArcheType_Native archeTypeIndex) => _archeTypeDatas[archeTypeIndex.ComponentsLength][archeTypeIndex.Index].ArcheTypeData;
+
+        /*TODO uncomment after blueprintBenchmark-public unsafe void SetEntitiesDirty(ComponentData_ArcheType_Native* archeTypeData)
+        {
+            var configCount = archeTypeData->ArcheType.ComponentConfigLength;
+            var archeTypeIndex = archeTypeData->ArcheTypeIndex;
+            foreach (var queryData in _archeTypeDatas[configCount][archeTypeIndex].EntityQueryDatas)
+                queryData.SetEntitiesDirty();
+        }
+
+        public unsafe void AddToMasterQuery(EntityQuery_ArcheType entityQuery)
+        {
+            if (entityQuery.Data.CheckConfigsZero())
+                throw new EntityQueryNoWhereOfException();
+
+            if (_masterEntityQueryDatas.TryGetValue(entityQuery.Data.GetHashCode(), out var entityQueryData))
+                // Make sure query is using singular data
+                entityQuery.Data = entityQueryData;
+            else
+            {
+                // Add to master query and component queries
+                _masterEntityQueryDatas.Add(entityQuery.Data.GetHashCode(), entityQuery.Data);
+                foreach (var config in entityQueryData.AllConfigs)
+                    _componentEntityQueryDatas[config.ComponentIndex].Add(entityQueryData);
+                foreach (var config in entityQueryData.AnyConfigs)
+                    _componentEntityQueryDatas[config.ComponentIndex].Add(entityQueryData);
+                foreach (var config in entityQueryData.NoneConfigs)
+                    _componentEntityQueryDatas[config.ComponentIndex].Add(entityQueryData);
+
+                foreach (var archeTypeDataList in _archeTypeDatas)
+                {
+                    foreach (var archeTypeQueryData in archeTypeDataList)
+                    {
+                        if (entityQueryData.FilterArcheType_Native(archeTypeQueryData.ArcheTypeData))
+                            archeTypeQueryData.EntityQueryDatas.Add(entityQueryData);
+                    }
+                }
+            }
+        }-TODO uncomment after blueprintBenchmark*/
 
         public unsafe void Dispose()
         {
@@ -97,20 +129,59 @@ namespace EcsLte.NativeArcheType
             foreach (var dataList in _archeTypeDatas)
             {
                 foreach (var archeTypeData in dataList)
-                    ((ComponentData_ArcheType_Native*)archeTypeData.Ptr)->Dispose();
+                {
+                    archeTypeData.ArcheTypeData->Dispose();
+                    MemoryHelper.Free(archeTypeData.ArcheTypeData);
+                }
             }
             _archeTypeDatas = null;
+        }
+
+        private unsafe bool InternalGetArcheTypeData(
+            Component_ArcheType_Native archeType,
+            ComponentConfigIndex_ArcheType_Native* uniqueConfigs,
+            out ComponentData_ArcheType_Native* archeTypeData,
+            out int index)
+        {
+            GetIndexDictionaryAndArcheTypeDataList(archeType.ComponentConfigLength, out var indexDic, out var dataList);
+            var isNew = false;
+            if (indexDic.GetIndex(archeType, out index))
+            {
+                archeTypeData = ComponentData_ArcheType_Native.Alloc(archeType, uniqueConfigs, index);
+                var archeTypeQueryData = new ArcheTypeEntityQueries
+                {
+                    ArcheTypeData = archeTypeData
+                };
+                dataList.Add(archeTypeQueryData);
+                isNew = true;
+
+                /*TODO uncomment after blueprintBenchmark-for (var i = 0; i < archeType.ComponentConfigLength; i++)
+                {
+                    var config = archeType.ComponentConfigs[i];
+                    foreach (var entityQueryData in _componentEntityQueryDatas[config.ComponentIndex])
+                    {
+                        if (entityQueryData.FilterArcheType_Native(archeTypeData))
+                            archeTypeQueryData.EntityQueryDatas.Add(entityQueryData);
+                    }
+                }-TODO uncomment after blueprintBenchmark*/
+            }
+            else
+            {
+                archeTypeData = dataList[index].ArcheTypeData;
+            }
+
+            return isNew;
         }
 
         private void GetIndexDictionaryAndArcheTypeDataList(
             int configCount,
             out IndexDictionary<Component_ArcheType_Native> indexDic,
-            out List<PtrWrapper> dataList)
+            out List<ArcheTypeEntityQueries> dataList)
         {
             while (_archeTypeIndexes.Count <= configCount)
             {
                 _archeTypeIndexes.Add(new IndexDictionary<Component_ArcheType_Native>());
-                _archeTypeDatas.Add(new List<PtrWrapper>());
+                _archeTypeDatas.Add(new List<ArcheTypeEntityQueries>());
             }
 
             indexDic = _archeTypeIndexes[configCount];

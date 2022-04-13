@@ -67,6 +67,10 @@ project.lock.json
 project.fragment.lock.json
 artifacts/
 
+# Allow BenchmarkDotNet logs
+!/EcsLte.BencharkTest/Artifacts
+!/EcsLte.BencharkTest/Artifacts/*.log
+
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
 
@@ -102,6 +106,7 @@ StyleCopReport.xml
 *.pidb
 *.svclog
 *.scc
+
 
 # Chutzpah Test files
 _Chutzpah*

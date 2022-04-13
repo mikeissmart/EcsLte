@@ -73,14 +73,14 @@ namespace EcsLte.ManagedArcheType
                 };
 
                 var shareIndexes = ordered.Where(x => x.Key.IsShared)
-                    .Select(x => new ShareComponentDataIndex
+                    .Select(x => new SharedComponentDataIndex
                     {
                         SharedIndex = x.Key.SharedIndex,
                         SharedDataIndex = sharedComponentIndexes[x.Key.SharedIndex].GetIndexObj(x.Value),
                     });
 
                 if (shareIndexes.Count() > 0)
-                    _archeType.ShareComponentDataIndexes = shareIndexes.ToArray();
+                    _archeType.SharedComponentDataIndexes = shareIndexes.ToArray();
 
                 _isArcheTypeDirty = false;
                 _lastComponentEntityFactory = componentEntityFactory;

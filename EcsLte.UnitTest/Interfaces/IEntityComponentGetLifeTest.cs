@@ -3,12 +3,16 @@
     internal interface IEntityComponentGetLifeTest
     {
         void GetAllComponents_Normal();
+        void GetAllComponents_Normal_Large();
         void GetAllComponents_NormalShared();
+        void GetAllComponents_NormalShared_Large();
         void GetAllComponents_NormalSharedUnique();
         void GetAllComponents_NormalUnique();
         void GetAllComponents_NormalUniqueShared();
         void GetAllComponents_Shared();
+        void GetAllComponents_Shared_Large();
         void GetAllComponents_SharedNormal();
+        void GetAllComponents_SharedNormal_Large();
         void GetAllComponents_SharedNormalUnique();
         void GetAllComponents_SharedUnique();
         void GetAllComponents_SharedUniqueNormal();
@@ -131,6 +135,8 @@
         void ReplaceComponent_UniqueSharedNormal_Replace();
         void Unique_GetUniqueComponent();
         void Unique_GetUniqueEntity();
+        void Unique_GetUniqueEntity_RemoveAllComponents();
         void Unique_HasUniqueComponent();
+        void Unique_HasUniqueComponent_RemoveAllComponents();
     }
 }

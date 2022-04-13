@@ -20,7 +20,8 @@ namespace EcsLte
         public int EntityCount => _componentEntityFactory?.Count ?? 0;
         public int EntityCapacity => _componentEntityFactory?.Capacity ?? 0;
 
-        public void InternalDestroy()
+        public IEntityQuery EntityQuery() => _componentEntityFactory.EntityQueryCreate();
+        internal void InternalDestroy()
         {
             _componentEntityFactory.Dispose();
             _componentEntityFactory = null;

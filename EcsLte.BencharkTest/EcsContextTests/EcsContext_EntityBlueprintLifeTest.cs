@@ -25,7 +25,7 @@ namespace EcsLte.BencharkTest.EcsContextTests
         public void GlobalCleanup() => SetupCleanupTest.EcsContext_Cleanup(_context);
 
         [IterationCleanup]
-        public void IterationCleanup_CreateEntites() => _context.DestroyEntities(_entities);
+        public void IterationCleanup() => _context.DestroyEntities(_entities);
 
         [Benchmark]
         public void CreateEntityBlueprint()

@@ -26,13 +26,17 @@ namespace EcsLte.BencharkTest
             config.WithOptions(ConfigOptions.JoinSummary)
                     //.WithOptions(ConfigOptions.DisableLogFile)
                     //.AddColumn(CategoriesColumn.Default)
-                    .AddExporter(EcsContextCsvExcelExporter.Default)
+                    //.AddExporter(EcsContextCsvExcelExporter.Default)
                     .AddLogicalGroupRules(BenchmarkLogicalGroupRule.ByJob, BenchmarkLogicalGroupRule.ByMethod)
                     .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Declared, MethodOrderPolicy.Alphabetical));
 #if DEBUG
-            BenchmarkRunner.Run<TestBech>(config);
+            //BenchmarkRunner.Run<EcsContextTests.EcsContext_EntityComponentGetTest>(config);
+            BenchmarkRunner.Run(typeof(Program).Assembly, config);
+            Console.WriteLine("done");
+            Console.ReadLine();
 #else
 			BenchmarkRunner.Run(typeof(Program).Assembly, config);
+            //BenchmarkRunner.Run<EcsContextTests.EcsContext_EntityComponentLifeTest>(config);
 #endif
         }
     }

@@ -273,6 +273,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components.cs" />
+    <Compile Include="Data\Component_ArcheTypeTest.cs" />
     <Compile Include="EcsContextTests\EcsContext_EntityBlueprintLifeTest.cs" />
     <Compile Include="EcsContextTests\EcsContext_EntityComponentGetTest.cs" />
     <Compile Include="EntityComponentArrangement.cs" />
@@ -308,7 +309,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Artifacts\" />
+    <Folder Include="Artifacts\results\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

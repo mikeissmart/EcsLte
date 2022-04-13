@@ -7,13 +7,15 @@ namespace EcsLte.NativeArcheType
     {
         public unsafe ComponentData_ArcheType_Native* ComponentArcheTypeData { get; set; }
         public unsafe DataChunk_ArcheType_Native* DataChunk { get; set; }
-        public int Index { get; set; }
+        public int DataChunkIndex { get; set; }
+        public int EntityIndex { get; set; }
 
         public unsafe void Clear()
         {
             ComponentArcheTypeData = null;
             DataChunk = null;
-            Index = -1;
+            DataChunkIndex = -1;
+            EntityIndex = -1;
         }
     }
 }

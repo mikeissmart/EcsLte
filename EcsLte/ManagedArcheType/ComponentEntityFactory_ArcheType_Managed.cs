@@ -69,8 +69,12 @@ namespace EcsLte.ManagedArcheType
                     archeTypeData.SetUniqueComponent(config, component, _uniqueComponents);
                 }
 
-                archeTypeData.AddEntity(entity, entityData);
+                archeTypeData.AddEntity(_archeTypeFactory, entity, entityData);
                 archeTypeData.SetEntityBlueprintData(entityData, blueprintData);
+            }
+            else
+            {
+                _archeTypeFactory.DefaultArcheTypeData.AddEntity(_archeTypeFactory, entity, entityData);
             }
             _entities.SetDirty();
 
@@ -108,14 +112,18 @@ namespace EcsLte.ManagedArcheType
                     var entity = AllocateEntity(out var entityData);
                     entities[i] = entity;
 
-                    archeTypeData.AddEntity(entity, entityData);
+                    archeTypeData.AddEntity(_archeTypeFactory, entity, entityData);
                     archeTypeData.SetEntityBlueprintData(entityData, blueprintData);
                 }
             }
             else
             {
                 for (var i = 0; i < count; i++)
-                    entities[i] = AllocateEntity(out _);
+                {
+                    var entity = AllocateEntity(out var entityData);
+                    _archeTypeFactory.DefaultArcheTypeData.AddEntity(_archeTypeFactory, entity, entityData);
+                    entities[i] = entity;
+                }
             }
             _entities.SetDirty();
 
@@ -124,8 +132,16 @@ namespace EcsLte.ManagedArcheType
 
         public void DestroyEntity(Entity entity)
         {
-            // Remove components checks HasEntity
-            RemoveAllComponents(entity);
+            if (!HasEntity(entity))
+                throw new EntityDoesNotExistException(entity);
+
+            var entityData = _entityDatas[entity.Id];
+            if (entityData.ComponentArcheTypeData.ArcheType.ComponentConfigs != null)
+            {
+                foreach (var config in entityData.ComponentArcheTypeData.ArcheType.ComponentConfigs.Where(x => x.IsUnique))
+                    _uniqueComponentEntities[config.UniqueIndex] = Entity.Null;
+            }
+            entityData.ComponentArcheTypeData.RemoveEntity(_archeTypeFactory, entityData, _entityDatas);
 
             _entities.UncachedData[entity.Id] = Entity.Null;
             _reusableEntities.Push(entity);
@@ -140,7 +156,16 @@ namespace EcsLte.ManagedArcheType
 
             foreach (var entity in entities)
             {
-                RemoveAllComponents(entity);
+                if (!HasEntity(entity))
+                    throw new EntityDoesNotExistException(entity);
+
+                var entityData = _entityDatas[entity.Id];
+                if (entityData.ComponentArcheTypeData.ArcheType.ComponentConfigs != null)
+                {
+                    foreach (var config in entityData.ComponentArcheTypeData.ArcheType.ComponentConfigs.Where(x => x.IsUnique))
+                        _uniqueComponentEntities[config.UniqueIndex] = Entity.Null;
+                }
+                entityData.ComponentArcheTypeData.RemoveEntity(_archeTypeFactory, entityData, _entityDatas);
 
                 _entities.UncachedData[entity.Id] = Entity.Null;
                 _reusableEntities.Push(entity);
@@ -158,7 +183,7 @@ namespace EcsLte.ManagedArcheType
             var config = ComponentConfig<TComponent>.Config;
             var entityData = _entityDatas[entity.Id];
 
-            return entityData.ComponentArcheTypeData != null &&
+            return entityData.ComponentArcheTypeData.ArcheType.ComponentConfigs != null &&
                 entityData.ComponentArcheTypeData.ArcheType.ComponentConfigs.Contains(config);
         }
 
@@ -245,12 +270,18 @@ namespace EcsLte.ManagedArcheType
                 throw new EntityDoesNotExistException(entity);
 
             var entityData = _entityDatas[entity.Id];
-            if (entityData == null)
-                return;
-
             var prevArcheTypeData = entityData.ComponentArcheTypeData;
-            if (prevArcheTypeData != null)
-                prevArcheTypeData.RemoveEntity(entityData);
+
+            if (prevArcheTypeData.ArcheType.ComponentConfigs != null)
+            {
+                foreach (var config in prevArcheTypeData.ArcheType.ComponentConfigs)
+                {
+                    if (config.IsUnique)
+                        _uniqueComponentEntities[config.UniqueIndex] = Entity.Null;
+                }
+            }
+            if (prevArcheTypeData != _archeTypeFactory.DefaultArcheTypeData)
+                _archeTypeFactory.DefaultArcheTypeData.TransferEntity(_archeTypeFactory, prevArcheTypeData, entity, entityData, _entityDatas);
         }
 
         public Entity AddUniqueComponent<TComponentUnique>(TComponentUnique componentUnique) where TComponentUnique : unmanaged, IUniqueComponent
@@ -292,6 +323,324 @@ namespace EcsLte.ManagedArcheType
             var config = ComponentConfig<TComponentUnique>.Config;
             var entity = _uniqueComponentEntities[config.UniqueIndex];
             RemoveComponentPostCheck<TComponentUnique>(entity, config, _entityDatas[entity.Id]);
+        }
+
+        public SharedComponentDataIndex GetSharedComponentDataIndex<TSharedComponent>(TSharedComponent component) where TSharedComponent : ISharedComponent
+        {
+            var config = ComponentConfig<TSharedComponent>.Config;
+            return new SharedComponentDataIndex
+            {
+                SharedIndex = config.SharedIndex,
+                SharedDataIndex = _sharedComponentIndexes[config.SharedIndex].GetIndexObj(component)
+            };
+        }
+
+        public IEntityQuery EntityQueryCreate() => new EntityQuery_ArcheType(this);
+
+        public void EntityQueryAddToMaster(IEntityQuery query)
+        {
+            //_archeTypeFactory.AddToMasterQuery(query as EntityQuery_ArcheType);
+        }
+
+        public unsafe bool EntityQueryHasEntity(IEntityQueryData queryData, Entity entity)
+        {
+            var entityQueryData = queryData as EntityQueryData_ArcheType;
+
+            return HasEntity(entity) &&
+                entityQueryData.HasArcheTypeData_Managed(_entityDatas[entity.Id].ComponentArcheTypeData);
+        }
+
+        public Entity[] EntityQueryGetEntities(EntityQueryData_ArcheType entityQueryData)
+        {
+            var totalEntities = 0;
+            foreach (var archeTypeData in entityQueryData.ArcheType_Managed)
+                totalEntities += archeTypeData.EntityCount;
+
+            var entities = new Entity[totalEntities];
+            var startingIndex = 0;
+            foreach (var archeTypeData in entityQueryData.ArcheType_Managed)
+            {
+                archeTypeData.CopyEntities(entities, startingIndex);
+                startingIndex += archeTypeData.EntityCount;
+            }
+
+            return entities;
+        }
+
+        public unsafe void ForEach<T1>(IEntityQueryData queryData, EntityQueryActions.EntityQueryAction<T1> action)
+            where T1 : unmanaged, IComponent
+        {
+            var entityQueryData = queryData as EntityQueryData_ArcheType;
+
+            var configs = new[]
+            {
+                ComponentConfig<T1>.Config
+            };
+            var mappedComponentIndexes = new int[configs.Length];
+            var components = new IComponent[configs.Length];
+            foreach (var archeTypeData in entityQueryData.ArcheType_Managed)
+            {
+                archeTypeData.GetMappedComponentIndexes(configs, ref mappedComponentIndexes);
+                for (int i = 0, entityIndex = 0; i < archeTypeData.EntityCount; i++, entityIndex++)
+                {
+                    var entity = archeTypeData.GetEntityQueryForEachComponents(
+                        entityIndex, mappedComponentIndexes, ref components);
+                    action(entity,
+                        (T1)components[0]);
+                }
+            }
+        }
+
+        public unsafe void ForEach<T1, T2>(IEntityQueryData queryData, EntityQueryActions.EntityQueryAction<T1, T2> action)
+            where T1 : unmanaged, IComponent
+            where T2 : unmanaged, IComponent
+        {
+            var entityQueryData = queryData as EntityQueryData_ArcheType;
+
+            var configs = new[]
+            {
+                ComponentConfig<T1>.Config,
+                ComponentConfig<T2>.Config
+            };
+            var mappedComponentIndexes = new int[configs.Length];
+            var components = new IComponent[configs.Length];
+            foreach (var archeTypeData in entityQueryData.ArcheType_Managed)
+            {
+                archeTypeData.GetMappedComponentIndexes(configs, ref mappedComponentIndexes);
+                for (int i = 0, entityIndex = 0; i < archeTypeData.EntityCount; i++, entityIndex++)
+                {
+                    var entity = archeTypeData.GetEntityQueryForEachComponents(
+                        entityIndex, mappedComponentIndexes, ref components);
+                    action(entity,
+                        (T1)components[0],
+                        (T2)components[1]);
+                }
+            }
+        }
+
+        public unsafe void ForEach<T1, T2, T3>(IEntityQueryData queryData, EntityQueryActions.EntityQueryAction<T1, T2, T3> action)
+            where T1 : unmanaged, IComponent
+            where T2 : unmanaged, IComponent
+            where T3 : unmanaged, IComponent
+        {
+            var entityQueryData = queryData as EntityQueryData_ArcheType;
+
+            var configs = new[]
+            {
+                ComponentConfig<T1>.Config,
+                ComponentConfig<T2>.Config,
+                ComponentConfig<T3>.Config
+            };
+            var mappedComponentIndexes = new int[configs.Length];
+            var components = new IComponent[configs.Length];
+            foreach (var archeTypeData in entityQueryData.ArcheType_Managed)
+            {
+                archeTypeData.GetMappedComponentIndexes(configs, ref mappedComponentIndexes);
+                for (int i = 0, entityIndex = 0; i < archeTypeData.EntityCount; i++, entityIndex++)
+                {
+                    var entity = archeTypeData.GetEntityQueryForEachComponents(
+                        entityIndex, mappedComponentIndexes, ref components);
+                    action(entity,
+                        (T1)components[0],
+                        (T2)components[1],
+                        (T3)components[2]);
+                }
+            }
+        }
+
+        public unsafe void ForEach<T1, T2, T3, T4>(IEntityQueryData queryData, EntityQueryActions.EntityQueryAction<T1, T2, T3, T4> action)
+            where T1 : unmanaged, IComponent
+            where T2 : unmanaged, IComponent
+            where T3 : unmanaged, IComponent
+            where T4 : unmanaged, IComponent
+        {
+            var entityQueryData = queryData as EntityQueryData_ArcheType;
+
+            var configs = new[]
+            {
+                ComponentConfig<T1>.Config,
+                ComponentConfig<T2>.Config,
+                ComponentConfig<T3>.Config,
+                ComponentConfig<T4>.Config
+            };
+            var mappedComponentIndexes = new int[configs.Length];
+            var components = new IComponent[configs.Length];
+            foreach (var archeTypeData in entityQueryData.ArcheType_Managed)
+            {
+                archeTypeData.GetMappedComponentIndexes(configs, ref mappedComponentIndexes);
+                for (int i = 0, entityIndex = 0; i < archeTypeData.EntityCount; i++, entityIndex++)
+                {
+                    var entity = archeTypeData.GetEntityQueryForEachComponents(
+                        entityIndex, mappedComponentIndexes, ref components);
+                    action(entity,
+                        (T1)components[0],
+                        (T2)components[1],
+                        (T3)components[2],
+                        (T4)components[3]);
+                }
+            }
+        }
+
+        public unsafe void ForEach<T1, T2, T3, T4, T5>(IEntityQueryData queryData, EntityQueryActions.EntityQueryAction<T1, T2, T3, T4, T5> action)
+            where T1 : unmanaged, IComponent
+            where T2 : unmanaged, IComponent
+            where T3 : unmanaged, IComponent
+            where T4 : unmanaged, IComponent
+            where T5 : unmanaged, IComponent
+        {
+            var entityQueryData = queryData as EntityQueryData_ArcheType;
+
+            var configs = new[]
+            {
+                ComponentConfig<T1>.Config,
+                ComponentConfig<T2>.Config,
+                ComponentConfig<T3>.Config,
+                ComponentConfig<T4>.Config,
+                ComponentConfig<T5>.Config
+            };
+            var mappedComponentIndexes = new int[configs.Length];
+            var components = new IComponent[configs.Length];
+            foreach (var archeTypeData in entityQueryData.ArcheType_Managed)
+            {
+                archeTypeData.GetMappedComponentIndexes(configs, ref mappedComponentIndexes);
+                for (int i = 0, entityIndex = 0; i < archeTypeData.EntityCount; i++, entityIndex++)
+                {
+                    var entity = archeTypeData.GetEntityQueryForEachComponents(
+                        entityIndex, mappedComponentIndexes, ref components);
+                    action(entity,
+                        (T1)components[0],
+                        (T2)components[1],
+                        (T3)components[2],
+                        (T4)components[3],
+                        (T5)components[4]);
+                }
+            }
+        }
+
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(IEntityQueryData queryData, EntityQueryActions.EntityQueryAction<T1, T2, T3, T4, T5, T6> action)
+            where T1 : unmanaged, IComponent
+            where T2 : unmanaged, IComponent
+            where T3 : unmanaged, IComponent
+            where T4 : unmanaged, IComponent
+            where T5 : unmanaged, IComponent
+            where T6 : unmanaged, IComponent
+        {
+            var entityQueryData = queryData as EntityQueryData_ArcheType;
+
+            var configs = new[]
+            {
+                ComponentConfig<T1>.Config,
+                ComponentConfig<T2>.Config,
+                ComponentConfig<T3>.Config,
+                ComponentConfig<T4>.Config,
+                ComponentConfig<T5>.Config,
+                ComponentConfig<T6>.Config
+            };
+            var mappedComponentIndexes = new int[configs.Length];
+            var components = new IComponent[configs.Length];
+            foreach (var archeTypeData in entityQueryData.ArcheType_Managed)
+            {
+                archeTypeData.GetMappedComponentIndexes(configs, ref mappedComponentIndexes);
+                for (int i = 0, entityIndex = 0; i < archeTypeData.EntityCount; i++, entityIndex++)
+                {
+                    var entity = archeTypeData.GetEntityQueryForEachComponents(
+                        entityIndex, mappedComponentIndexes, ref components);
+                    action(entity,
+                        (T1)components[0],
+                        (T2)components[1],
+                        (T3)components[2],
+                        (T4)components[3],
+                        (T5)components[4],
+                        (T6)components[5]);
+                }
+            }
+        }
+
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(IEntityQueryData queryData, EntityQueryActions.EntityQueryAction<T1, T2, T3, T4, T5, T6, T7> action)
+            where T1 : unmanaged, IComponent
+            where T2 : unmanaged, IComponent
+            where T3 : unmanaged, IComponent
+            where T4 : unmanaged, IComponent
+            where T5 : unmanaged, IComponent
+            where T6 : unmanaged, IComponent
+            where T7 : unmanaged, IComponent
+        {
+            var entityQueryData = queryData as EntityQueryData_ArcheType;
+
+            var configs = new[]
+            {
+                ComponentConfig<T1>.Config,
+                ComponentConfig<T2>.Config,
+                ComponentConfig<T3>.Config,
+                ComponentConfig<T4>.Config,
+                ComponentConfig<T5>.Config,
+                ComponentConfig<T6>.Config,
+                ComponentConfig<T7>.Config
+            };
+            var mappedComponentIndexes = new int[configs.Length];
+            var components = new IComponent[configs.Length];
+            foreach (var archeTypeData in entityQueryData.ArcheType_Managed)
+            {
+                archeTypeData.GetMappedComponentIndexes(configs, ref mappedComponentIndexes);
+                for (int i = 0, entityIndex = 0; i < archeTypeData.EntityCount; i++, entityIndex++)
+                {
+                    var entity = archeTypeData.GetEntityQueryForEachComponents(
+                        entityIndex, mappedComponentIndexes, ref components);
+                    action(entity,
+                        (T1)components[0],
+                        (T2)components[1],
+                        (T3)components[2],
+                        (T4)components[3],
+                        (T5)components[4],
+                        (T6)components[5],
+                        (T7)components[6]);
+                }
+            }
+        }
+
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(IEntityQueryData queryData, EntityQueryActions.EntityQueryAction<T1, T2, T3, T4, T5, T6, T7, T8> action)
+            where T1 : unmanaged, IComponent
+            where T2 : unmanaged, IComponent
+            where T3 : unmanaged, IComponent
+            where T4 : unmanaged, IComponent
+            where T5 : unmanaged, IComponent
+            where T6 : unmanaged, IComponent
+            where T7 : unmanaged, IComponent
+            where T8 : unmanaged, IComponent
+        {
+            var entityQueryData = queryData as EntityQueryData_ArcheType;
+
+            var configs = new[]
+            {
+                ComponentConfig<T1>.Config,
+                ComponentConfig<T2>.Config,
+                ComponentConfig<T3>.Config,
+                ComponentConfig<T4>.Config,
+                ComponentConfig<T5>.Config,
+                ComponentConfig<T6>.Config,
+                ComponentConfig<T7>.Config,
+                ComponentConfig<T8>.Config
+            };
+            var mappedComponentIndexes = new int[configs.Length];
+            var components = new IComponent[configs.Length];
+            foreach (var archeTypeData in entityQueryData.ArcheType_Managed)
+            {
+                archeTypeData.GetMappedComponentIndexes(configs, ref mappedComponentIndexes);
+                for (int i = 0, entityIndex = 0; i < archeTypeData.EntityCount; i++, entityIndex++)
+                {
+                    var entity = archeTypeData.GetEntityQueryForEachComponents(
+                        entityIndex, mappedComponentIndexes, ref components);
+                    action(entity,
+                        (T1)components[0],
+                        (T2)components[1],
+                        (T3)components[2],
+                        (T4)components[3],
+                        (T5)components[4],
+                        (T6)components[5],
+                        (T7)components[6],
+                        (T8)components[7]);
+                }
+            }
         }
 
         public void Dispose() { }
@@ -362,16 +711,13 @@ namespace EcsLte.ManagedArcheType
                 nextArcheType = Component_ArcheType_Managed.AppendComponent(nextArcheType, config);
             }
 
-            var nextArcheTypeData = _archeTypeFactory.GetArcheTypeData(nextArcheType);
-            if (prevArcheTypeData != null)
-                nextArcheTypeData.TransferEntity(prevArcheTypeData, entity, entityData);
-            else
-                nextArcheTypeData.AddEntity(entity, entityData);
+            /*var nextArcheTypeData = _archeTypeFactory.GetArcheTypeData(nextArcheType);
+            nextArcheTypeData.TransferEntity(_archeTypeFactory, prevArcheTypeData, entity, entityData, _entityDatas);
 
             if (config.IsUnique)
                 nextArcheTypeData.SetUniqueComponent(config, component, _uniqueComponents);
             else
-                nextArcheTypeData.SetComponent(entityData, config, component);
+                nextArcheTypeData.SetComponent(entityData, config, component);*/
 
         }
 
@@ -393,7 +739,7 @@ namespace EcsLte.ManagedArcheType
             else if (config.IsShared)
             {
                 var nextSharedIndex = _sharedComponentIndexes[config.SharedIndex].GetIndexObj(component);
-                if (!prevArcheTypeData.ArcheType.ShareComponentDataIndexes
+                if (!prevArcheTypeData.ArcheType.SharedComponentDataIndexes
                     .Any(x => x.SharedIndex == config.ComponentIndex &&
                         x.SharedDataIndex == nextSharedIndex))
                 {
@@ -404,7 +750,7 @@ namespace EcsLte.ManagedArcheType
                         nextSharedIndex);
                     var nextArcheTypeData = _archeTypeFactory.GetArcheTypeData(nextArcheType);
 
-                    nextArcheTypeData.TransferEntity(prevArcheTypeData, entity, entityData);
+                    nextArcheTypeData.TransferEntity(_archeTypeFactory, prevArcheTypeData, entity, entityData, _entityDatas);
                     nextArcheTypeData.SetComponent(entityData, config, component);
                 }
                 else
@@ -426,7 +772,7 @@ namespace EcsLte.ManagedArcheType
             if (prevArcheTypeData.ArcheType.ComponentConfigs.Length == 1)
             {
                 // Only has one component, no need to check other configs
-                prevArcheTypeData.RemoveEntity(entityData);
+                _archeTypeFactory.DefaultArcheTypeData.TransferEntity(_archeTypeFactory, prevArcheTypeData, entity, entityData, _entityDatas);
                 if (config.IsUnique)
                     _uniqueComponentEntities[config.UniqueIndex] = Entity.Null;
             }
@@ -445,7 +791,7 @@ namespace EcsLte.ManagedArcheType
                 }
 
                 var nextArcheTypeData = _archeTypeFactory.GetArcheTypeData(nextArcheType);
-                nextArcheTypeData.TransferEntity(prevArcheTypeData, entity, entityData);
+                nextArcheTypeData.TransferEntity(_archeTypeFactory, prevArcheTypeData, entity, entityData, _entityDatas);
             }
         }
 

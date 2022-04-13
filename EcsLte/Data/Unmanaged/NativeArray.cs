@@ -21,7 +21,7 @@ namespace EcsLte.Data.Unmanaged
                 throw new ArgumentOutOfRangeException(nameof(length));
 
             var lengthInBytes = TypeCache<T>.SizeInBytes * length;
-            var ptr = (byte*)Marshal.AllocHGlobal(lengthInBytes);
+            var ptr = (byte*)MemoryHelper.Alloc(lengthInBytes);
             Unsafe.InitBlock(ptr, 0, (uint)lengthInBytes);
 
             var array = new NativeArrayPtr
@@ -39,7 +39,7 @@ namespace EcsLte.Data.Unmanaged
         {
             var length = items.Count();
             var lengthInBytes = TypeCache<T>.SizeInBytes * length;
-            var ptr = (byte*)Marshal.AllocHGlobal(lengthInBytes);
+            var ptr = (byte*)MemoryHelper.Alloc(lengthInBytes);
             Unsafe.InitBlock(ptr, 0, (uint)lengthInBytes);
 
             var array = new NativeArrayPtr
@@ -107,7 +107,7 @@ namespace EcsLte.Data.Unmanaged
 
             var oldLengthInBytes = ItemSize * Length;
             var newLengthInBytes = ItemSize * newLength;
-            var newPtr = (byte*)Marshal.AllocHGlobal(newLengthInBytes);
+            var newPtr = (byte*)MemoryHelper.Alloc(newLengthInBytes);
 
             if (newLength > Length)
                 Unsafe.InitBlock(newPtr + oldLengthInBytes, 0, (uint)(newLengthInBytes - oldLengthInBytes));

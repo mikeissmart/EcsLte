@@ -29,26 +29,7 @@ namespace EcsLte.NativeArcheTypeContinous
         {
             CheckCapacity(1);
 
-            var index = _unusedDataChunkIndexes[_unusedDataChunksCount - 1];
-            _unusedDataChunksCount--;
-
-            return index;
-        }
-
-        public unsafe int* GetDataChunkIndexes(int count)
-        {
-            CheckCapacity(count);
-
-            var indexes = MemoryHelper.Alloc<int>(count);
-            MemoryHelper.Copy(
-                _unusedDataChunkIndexes + (_unusedDataChunksCount - 1 - count),
-                indexes,
-                count * TypeCache<int>.SizeInBytes);
-            MemoryHelper.Clear(_unusedDataChunkIndexes + (_unusedDataChunksCount - 1 - count),
-                count * TypeCache<int>.SizeInBytes);
-            _unusedDataChunksCount -= count;
-
-            return indexes;
+            return _unusedDataChunkIndexes[--_unusedDataChunksCount];
         }
 
         public unsafe void CacheDataChunkIndex(int dataChunkIndex)
@@ -57,6 +38,7 @@ namespace EcsLte.NativeArcheTypeContinous
 
             MemoryHelper.Clear(_dataChunks + (dataChunkIndex * _dataChunkSizeInBytes), _dataChunkSizeInBytes);
             _unusedDataChunkIndexes[_unusedDataChunksCount++] = dataChunkIndex;
+            var a = GetDataChunk(dataChunkIndex);
         }
 
         public unsafe void CacheDataChunkIndexes(params int[] dataChunkIndexes)

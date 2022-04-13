@@ -105,7 +105,7 @@ namespace EcsLte.NativeArcheType
                 }
 
                 var shareIndexes = ordered.Where(x => x.Key.IsShared)
-                    .Select(x => new ShareComponentDataIndex
+                    .Select(x => new SharedComponentDataIndex
                     {
                         SharedIndex = x.Key.SharedIndex,
                         SharedDataIndex = sharedComponentIndexes[x.Key.SharedIndex].GetIndexObj(x.Value.GetComponent()),
@@ -116,13 +116,13 @@ namespace EcsLte.NativeArcheType
                 if (shareIndexes.Length > 0)
                 {
                     archeType.SharedComponentDataLength = shareIndexes.Length;
-                    archeType.ShareComponentDataIndexes = MemoryHelper.Alloc<ShareComponentDataIndex>(shareIndexes.Length);
-                    fixed (ShareComponentDataIndex* shareIndexesPtr = &shareIndexes[0])
+                    archeType.SharedComponentDataIndexes = MemoryHelper.Alloc<SharedComponentDataIndex>(shareIndexes.Length);
+                    fixed (SharedComponentDataIndex* shareIndexesPtr = &shareIndexes[0])
                     {
                         MemoryHelper.Copy(
                             shareIndexesPtr,
-                            archeType.ShareComponentDataIndexes,
-                            shareIndexes.Length * TypeCache<ShareComponentDataIndex>.SizeInBytes);
+                            archeType.SharedComponentDataIndexes,
+                            shareIndexes.Length * TypeCache<SharedComponentDataIndex>.SizeInBytes);
                     }
                 }
 

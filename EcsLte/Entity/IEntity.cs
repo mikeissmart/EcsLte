@@ -2,7 +2,7 @@
 
 namespace EcsLte
 {
-    internal interface IEntityGet
+    public interface IEntityGet
     {
         bool HasEntity(Entity entity);
         Entity[] GetEntities();
