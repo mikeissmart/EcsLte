@@ -64,7 +64,7 @@ namespace EcsLte.NativeArcheType
                         Index = componentArcheIndex++,
                         OffsetInBytes = componentOffsetInBytes
                     };
-                    componentOffsetInBytes += config.UnmanagedInBytesSize;
+                    componentOffsetInBytes += config.UnmanagedSizeInBytes;
                 }
                 else
                 {
@@ -183,7 +183,7 @@ namespace EcsLte.NativeArcheType
                     MemoryHelper.Copy(
                         prevDataChunk->Buffer + prevIndexOffsetInBytes + sourceConfigIndex.OffsetInBytes,
                         nextDataChunk->Buffer + nextIndexOffsetInBytes + destConfigIndex.OffsetInBytes,
-                        sourceConfigIndex.Config.UnmanagedInBytesSize);
+                        sourceConfigIndex.Config.UnmanagedSizeInBytes);
                 }
             }
 
@@ -204,7 +204,7 @@ namespace EcsLte.NativeArcheType
             MemoryHelper.Copy(
                 componentData,
                 entityData->DataChunk->Buffer + indexOffsetInBytes + configIndex.OffsetInBytes,
-                config.UnmanagedInBytesSize);
+                config.UnmanagedSizeInBytes);
         }
 
         public unsafe void* GetComponent(EntityData_ArcheType_Native* entityData, ComponentConfig config)
@@ -245,7 +245,7 @@ namespace EcsLte.NativeArcheType
             MemoryHelper.Copy(
                 componentData,
                 uniqueComponents + configIndex.OffsetInBytes,
-                config.UnmanagedInBytesSize);
+                config.UnmanagedSizeInBytes);
         }
 
         public unsafe void* GetUniqueComponent(ComponentConfig config, byte* uniqueComponents)

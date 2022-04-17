@@ -8,7 +8,7 @@ namespace EcsLte
         public int RecordableIndex { get; set; }
         public int UniqueIndex { get; set; }
         public int SharedIndex { get; set; }
-        public int UnmanagedInBytesSize { get; set; }
+        public int UnmanagedSizeInBytes { get; set; }
         public bool IsRecordable { get; set; }
         public bool IsUnique { get; set; }
         public bool IsShared { get; set; }

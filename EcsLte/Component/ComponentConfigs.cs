@@ -109,7 +109,7 @@ namespace EcsLte
                 if (IsBlittable(type))
                 {
                     config.IsBlittable = true;
-                    config.UnmanagedInBytesSize = Marshal.SizeOf(type);
+                    config.UnmanagedSizeInBytes = Marshal.SizeOf(type);
                 }
 
                 _componentConfigTypes.Add(type, config);

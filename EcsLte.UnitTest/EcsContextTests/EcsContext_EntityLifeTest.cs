@@ -212,7 +212,6 @@ namespace EcsLte.UnitTest.EcsContextTests.Managed
 
 namespace EcsLte.UnitTest.EcsContextTests.Managed.ArcheType
 {
-
     [TestClass]
     public class EcsContext_Managed_ArcheType_EntityLifeTest : BaseEscContext_EntityLifeTest<EcsContextType_Managed_ArcheType>
     {
@@ -221,7 +220,6 @@ namespace EcsLte.UnitTest.EcsContextTests.Managed.ArcheType
 
 namespace EcsLte.UnitTest.EcsContextTests.Native
 {
-
     [TestClass]
     public class EcsContext_Native_EntityLifeTest : BaseEscContext_EntityLifeTest<EcsContextType_Native>
     {
@@ -230,7 +228,6 @@ namespace EcsLte.UnitTest.EcsContextTests.Native
 
 namespace EcsLte.UnitTest.EcsContextTests.Native.ArcheType
 {
-
     [TestClass]
     public class EcsContext_Native_ArcheType_EntityLifeTest : BaseEscContext_EntityLifeTest<EcsContextType_Native_ArcheType>
     {
@@ -239,7 +236,6 @@ namespace EcsLte.UnitTest.EcsContextTests.Native.ArcheType
 
 namespace EcsLte.UnitTest.EcsContextTests.Native.ArcheType.Continuous
 {
-
     [TestClass]
     public class EcsContext_Native_ArcheType_Continuous_EntityLifeTest : BaseEscContext_EntityLifeTest<EcsContextType_Native_ArcheType_Continuous>
     {

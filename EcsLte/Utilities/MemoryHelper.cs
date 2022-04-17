@@ -40,7 +40,8 @@ namespace EcsLte.Utilities
         public static unsafe void Free(void* ptr) => Marshal.FreeHGlobal((IntPtr)ptr);
 
 
-        public static unsafe void CopyBlock(void* ptr, int sourceOffset, int destinationOffset, int sizeInBytes) => Unsafe.CopyBlock((byte*)ptr + destinationOffset, (byte*)ptr + sourceOffset, (uint)sizeInBytes);
+        public static unsafe void CopyBlock(void* ptr, int sourceOffset, int destinationOffset, int sizeInBytes)
+            => Unsafe.CopyBlock((byte*)ptr + destinationOffset, (byte*)ptr + sourceOffset, (uint)sizeInBytes);
 
         public static unsafe void Copy(void* sourcePtr, void* destinationPtr, int sizeInBytes) => Buffer.MemoryCopy(sourcePtr, destinationPtr, sizeInBytes, sizeInBytes);
 

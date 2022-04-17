@@ -20,8 +20,8 @@ namespace EcsLte.NativeArcheType
                 MemoryHelper.Copy(
                     Components[i].GetData(),
                     components + offset,
-                    config.UnmanagedInBytesSize);
-                offset += config.UnmanagedInBytesSize;
+                    config.UnmanagedSizeInBytes);
+                offset += config.UnmanagedSizeInBytes;
             }
 
             return components;

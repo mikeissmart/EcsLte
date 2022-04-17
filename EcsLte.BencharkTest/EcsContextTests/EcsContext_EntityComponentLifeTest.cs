@@ -16,7 +16,7 @@ namespace EcsLte.BencharkTest.EcsContextTests
         private TestSharedComponent2 _replaceComponentShared2 = new TestSharedComponent2 { Prop = 5 };
 
         [ParamsAllValues]
-        public EntityComponentArrangement ComponentArrangement { get; set; } = EntityComponentArrangement.Normal_x1;
+        public EntityComponentArrangement ComponentArrangement { get; set; }
 
         [ParamsAllValues]
         public EcsContextType ContextType { get; set; }

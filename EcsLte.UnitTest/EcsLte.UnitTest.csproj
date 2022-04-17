@@ -56,12 +56,15 @@
     <Compile Include="Data\Unmanaged\Unmanaged_NativeArray.cs" />
     <Compile Include="Data\Unmanaged\Unmanaged_NativeDynamicArray.cs" />
     <Compile Include="Data\Unmanaged\Unmanaged_NativeDynamicList.cs" />
+    <Compile Include="EcsContextHybridTests\EntityBlueprint_HybridTests.cs" />
     <Compile Include="EcsContextsTests\EcsContexts_EcsContextLife.cs" />
     <Compile Include="EcsContextTests\EscContext_EntityComponentGetLifeTest.cs" />
     <Compile Include="EcsContextTests\EcsContext_EntityLifeTest.cs" />
     <Compile Include="EcsContextTests\EscContext_EntityComponentGetTest.cs" />
     <Compile Include="EcsContextTests\EscContext_EntityComponentLifeTest.cs" />
     <Compile Include="EcsContextTests\EscContext_EntityGetTest.cs" />
+    <Compile Include="EcsContextHybridTests\EscContext_Hybrid_EntityComponentGetLifeTest.cs" />
+    <Compile Include="EcsContextHybridTests\EscContext_Hybrid_EntityLifeTest.cs" />
     <Compile Include="EcsContextType.cs" />
     <Compile Include="EntityQueryTests\EntityQuery_WhereOfTest.cs" />
     <Compile Include="Interfaces\IEntityComponentGetLifeTest.cs" />

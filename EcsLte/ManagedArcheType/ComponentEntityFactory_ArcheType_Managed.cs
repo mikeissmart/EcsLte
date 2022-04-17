@@ -711,13 +711,13 @@ namespace EcsLte.ManagedArcheType
                 nextArcheType = Component_ArcheType_Managed.AppendComponent(nextArcheType, config);
             }
 
-            /*var nextArcheTypeData = _archeTypeFactory.GetArcheTypeData(nextArcheType);
+            var nextArcheTypeData = _archeTypeFactory.GetArcheTypeData(nextArcheType);
             nextArcheTypeData.TransferEntity(_archeTypeFactory, prevArcheTypeData, entity, entityData, _entityDatas);
 
             if (config.IsUnique)
                 nextArcheTypeData.SetUniqueComponent(config, component, _uniqueComponents);
             else
-                nextArcheTypeData.SetComponent(entityData, config, component);*/
+                nextArcheTypeData.SetComponent(entityData, config, component);
 
         }
 

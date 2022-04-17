@@ -302,7 +302,6 @@ namespace EcsLte.NativeArcheType
                 MemoryHelper.Copy(
                     source,
                     destination,
-                    //1 - 0 = 1
                     (index + 1) * TypeCache<ComponentConfig>.SizeInBytes);
             }
 

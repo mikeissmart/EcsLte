@@ -63,7 +63,7 @@ namespace EcsLte.NativeArcheTypeContinous
                         Index = componentArcheIndex++,
                         OffsetInBytes = componentOffsetInBytes
                     };
-                    componentOffsetInBytes += config.UnmanagedInBytesSize;
+                    componentOffsetInBytes += config.UnmanagedSizeInBytes;
                 }
                 else
                 {
@@ -101,8 +101,6 @@ namespace EcsLte.NativeArcheTypeContinous
 
         public unsafe void AddEntity(ArcheTypeFactory_ArcheType_Native_Continuous archeTypeFactory, Entity entity, EntityData_ArcheType_Native_Continuous* entityData)
         {
-            if (entity.Id == 503439) //503805
-                ;
             var dataChunkIndex = GetAvailableDataChunkIndex();
             var dataChunk = _dataChunkCache->GetDataChunk(dataChunkIndex);
 
@@ -115,17 +113,7 @@ namespace EcsLte.NativeArcheTypeContinous
             entityData->DataChunkIndex = dataChunk->Count++;
             entityData->EntityIndex = EntityCount;
 
-            if (EntityCount > _entitiesLength)
-                ;
-
-            try
-            {
-                _entities[EntityCount++] = entity;
-            }
-            catch (Exception)
-            {
-                ;
-            }
+            _entities[EntityCount++] = entity;
         }
 
         public unsafe void RemoveEntity(ArcheTypeFactory_ArcheType_Native_Continuous archeTypeFactory, EntityData_ArcheType_Native_Continuous* entityData, EntityData_ArcheType_Native_Continuous* entityDatas)
@@ -201,7 +189,7 @@ namespace EcsLte.NativeArcheTypeContinous
                     MemoryHelper.Copy(
                         predDataChunk->Buffer + prevIndexOffsetInBytes + sourceConfigIndex.OffsetInBytes,
                         nextDataChunk->Buffer + nextIndexOffsetInBytes + destConfigIndex.OffsetInBytes,
-                        sourceConfigIndex.Config.UnmanagedInBytesSize);
+                        sourceConfigIndex.Config.UnmanagedSizeInBytes);
                 }
             }
 
@@ -222,7 +210,7 @@ namespace EcsLte.NativeArcheTypeContinous
             MemoryHelper.Copy(
                 componentData,
                 _dataChunkCache->GetDataChunk(entityData->ChunkIndex)->Buffer + indexOffsetInBytes + configIndex.OffsetInBytes,
-                config.UnmanagedInBytesSize);
+                config.UnmanagedSizeInBytes);
         }
 
         public unsafe void* GetComponent(EntityData_ArcheType_Native_Continuous* entityData, ComponentConfig config)
@@ -264,7 +252,7 @@ namespace EcsLte.NativeArcheTypeContinous
             MemoryHelper.Copy(
                 componentData,
                 uniqueComponents + configIndex.OffsetInBytes,
-                config.UnmanagedInBytesSize);
+                config.UnmanagedSizeInBytes);
         }
 
         public unsafe void* GetUniqueComponent(ComponentConfig config, byte* uniqueComponents)

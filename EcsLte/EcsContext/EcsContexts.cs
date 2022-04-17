@@ -1,5 +1,6 @@
 ﻿using EcsLte.Data;
 using EcsLte.Exceptions;
+using EcsLte.HybridArcheType;
 using EcsLte.Managed;
 using EcsLte.ManagedArcheType;
 using EcsLte.Native;
@@ -48,6 +49,10 @@ namespace EcsLte
         public static EcsContext CreateEcsContext_ArcheType_Native(string name) => AddEcsContext(x => new EcsContext(x, new ComponentEntityFactory_ArcheType_Native()), name);
 
         public static EcsContext CreateEcsContext_ArcheType_Native_Continuous(string name) => AddEcsContext(x => new EcsContext(x, new ComponentEntityFactory_ArcheType_Native_Continuous()), name);
+
+        public static EcsContext_Hybrid CreateEcsContext_Hybrid(string name) => new EcsContext_Hybrid(name, new ComponentEntityFactory_Hybrid());
+
+        public static void DestroyContext_Hybrid(EcsContext_Hybrid context) => context.InternalDestroy();
 
         public static void DestroyContext(EcsContext context)
         {

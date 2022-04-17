@@ -150,8 +150,8 @@ namespace EcsLte.NativeArcheTypeContinous
                 UniqueConfigs = uniquePairs.Select(x => x.Key).ToArray(),
                 Components = componentPairs.Select(x => x.Value).ToArray(),
                 UniqueComponents = uniquePairs.Select(x => x.Value).ToArray(),
-                ComponentsLengthInBytes = componentPairs.Select(x => x.Key.UnmanagedInBytesSize).Sum(),
-                UniqueComponentsLengthInBytes = uniquePairs.Select(x => x.Key.UnmanagedInBytesSize).Sum(),
+                ComponentsLengthInBytes = componentPairs.Select(x => x.Key.UnmanagedSizeInBytes).Sum(),
+                UniqueComponentsLengthInBytes = uniquePairs.Select(x => x.Key.UnmanagedSizeInBytes).Sum(),
             };
         }
     }

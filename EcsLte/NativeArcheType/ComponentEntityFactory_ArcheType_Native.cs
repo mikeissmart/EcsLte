@@ -60,7 +60,7 @@ namespace EcsLte.NativeArcheType
                     OffsetInBytes = _uniqueComponentsLengthInBytes,
                     Config = config
                 };
-                _uniqueComponentsLengthInBytes += config.UnmanagedInBytesSize;
+                _uniqueComponentsLengthInBytes += config.UnmanagedSizeInBytes;
             }
             _uniqueComponents = (byte*)MemoryHelper.Alloc(_uniqueComponentsLengthInBytes);
 
@@ -912,16 +912,15 @@ namespace EcsLte.NativeArcheType
             {
                 nextArcheType = Component_ArcheType_Native.AppendComponent(nextArcheType, config);
             }
-            nextArcheType.Dispose();
 
-            /*if (!_archeTypeFactory.GetArcheTypeData(nextArcheType, _uniqueConfigs, out var nextArcheTypeData))
+            if (!_archeTypeFactory.GetArcheTypeData(nextArcheType, _uniqueConfigs, out var nextArcheTypeData))
                 nextArcheType.Dispose();
             nextArcheTypeData->TransferEntity(_archeTypeFactory, _dataChunkCache, prevArcheTypeData, entity, entityData, _entityDatas);
 
             if (config.IsUnique)
                 nextArcheTypeData->SetUniqueComponent(config, &component, _uniqueComponents);
             else
-                nextArcheTypeData->SetComponent(entityData, config, &component);*/
+                nextArcheTypeData->SetComponent(entityData, config, &component);
         }
 
         private unsafe TComponent GetComponentPostCheck<TComponent>(Entity entity, ComponentConfig config) where TComponent : unmanaged, IComponent

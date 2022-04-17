@@ -273,9 +273,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Components.cs" />
+    <Compile Include="Data\ArrayManagedVsNative.cs" />
     <Compile Include="Data\Component_ArcheTypeTest.cs" />
     <Compile Include="EcsContextTests\EcsContext_EntityBlueprintLifeTest.cs" />
     <Compile Include="EcsContextTests\EcsContext_EntityComponentGetTest.cs" />
+    <Compile Include="EcsContextTests\EcsContext_HybridTests_ChangeComponent.cs" />
+    <Compile Include="EcsContextTests\EcsContext_HybridTests_CreateEntityAddComponent.cs" />
+    <Compile Include="EcsContextTests\EcsContext_HybridTests_CreateEntityAddComponent_Reuse.cs" />
     <Compile Include="EntityComponentArrangement.cs" />
     <Compile Include="Data\Unmanaged\NativeItems.cs" />
     <Compile Include="Data\Unmanaged\Unmanaged_MemoryAlloc.cs" />

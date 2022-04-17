@@ -48,7 +48,7 @@ namespace EcsLte.Native
                     Config = config,
                     OffsetInBytes = offsetInBytes,
                 };
-                offsetInBytes += config.UnmanagedInBytesSize;
+                offsetInBytes += config.UnmanagedSizeInBytes;
             }
             _componentTotalSizeInBytes = offsetInBytes;
 
@@ -802,7 +802,7 @@ namespace EcsLte.Native
             MemoryHelper.Copy(
                 component,
                 entityData->Component(configOffset.OffsetInBytes),
-                configOffset.Config.UnmanagedInBytesSize);
+                configOffset.Config.UnmanagedSizeInBytes);
             entityData->SetHasComponent(configOffset.Config.ComponentIndex, true);
             entityData->ComponentCount++;
             //TODO uncomment after blueprintBenchmark-OnAnyComponentAddedRemovedReplaced(entity, entityData, configOffset.Config);
@@ -813,7 +813,7 @@ namespace EcsLte.Native
         private unsafe void ReplaceComponentPostCheck(Entity entity, EntityData_Native* entityData, void* component, ComponentConfigOffset_Native configOffset) => MemoryHelper.Copy(
                 component,
                 entityData->Component(configOffset.OffsetInBytes),
-                configOffset.Config.UnmanagedInBytesSize);//TODO uncomment after blueprintBenchmark-OnAnyComponentAddedRemovedReplaced(entity, entityData, configOffset.Config);
+                configOffset.Config.UnmanagedSizeInBytes);//TODO uncomment after blueprintBenchmark-OnAnyComponentAddedRemovedReplaced(entity, entityData, configOffset.Config);
 
         private unsafe void RemoveComponentPostCheck(Entity entity, EntityData_Native* entityData, ComponentConfigOffset_Native configOffset)
         {
