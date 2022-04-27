@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace EcsLte.Exceptions
 {
@@ -9,7 +11,7 @@ namespace EcsLte.Exceptions
         {
         }
 
-        protected static string TypesToString(Type[] types)
+        protected static string TypesToString(List<Type> types)
             => string.Join(", ", types.Select(x => x.Name));
     }
 }

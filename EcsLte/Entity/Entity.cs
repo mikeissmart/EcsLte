@@ -1,4 +1,7 @@
-﻿using System;
+﻿using EcsLte.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace EcsLte
 {
@@ -16,14 +19,6 @@ namespace EcsLte
 
         public static bool operator ==(Entity lhs, Entity rhs) => lhs.Id == rhs.Id && lhs.Version == rhs.Version;
 
-        public int CompareTo(Entity other)
-        {
-            var compare = Version.CompareTo(other.Version);
-            if (compare == 0)
-                compare = Id.CompareTo(Id);
-            return compare;
-        }
-
         public bool Equals(Entity other) => this == other;
 
         public override bool Equals(object other) => other is Entity obj && this == obj;
@@ -32,10 +27,17 @@ namespace EcsLte
 
         public override int GetHashCode()
         {
-            var hashCode = -612338121;
-            hashCode = hashCode * -1521134295 + Id.GetHashCode();
-            hashCode = hashCode * -1521134295 + Version.GetHashCode();
-            return hashCode;
+            return HashCodeHelper.StartHashCode()
+                .AppendHashCode(Id)
+                .AppendHashCode(Version)
+                .HashCode;
+        }
+        public int CompareTo(Entity other)
+        {
+            var compare = Version.CompareTo(other.Version);
+            if (compare == 0)
+                compare = Id.CompareTo(Id);
+            return compare;
         }
     }
 }

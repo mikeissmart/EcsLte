@@ -1,18 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace EcsLte
 {
-    public struct ComponentConfig : IEquatable<ComponentConfig>, IComparable<ComponentConfig>
+    internal struct ComponentConfig : IEquatable<ComponentConfig>, IComparable<ComponentConfig>
     {
-        public int ComponentIndex { get; set; }
-        public int RecordableIndex { get; set; }
-        public int UniqueIndex { get; set; }
-        public int SharedIndex { get; set; }
-        public int UnmanagedSizeInBytes { get; set; }
-        public bool IsRecordable { get; set; }
-        public bool IsUnique { get; set; }
-        public bool IsShared { get; set; }
-        public bool IsBlittable { get; set; }
+        internal int ComponentIndex { get; set; }
+        internal int RecordableIndex { get; set; }
+        internal int UniqueIndex { get; set; }
+        internal int SharedIndex { get; set; }
+        internal int UnmanagedSizeInBytes { get; set; }
+        internal bool IsRecordable { get; set; }
+        internal bool IsUnique { get; set; }
+        internal bool IsShared { get; set; }
+        internal bool IsBlittable { get; set; }
 
         public static bool operator !=(ComponentConfig lhs, ComponentConfig rhs)
             => !(lhs == rhs);
@@ -32,12 +34,12 @@ namespace EcsLte
         public override int GetHashCode() => ComponentIndex.GetHashCode();
     }
 
-    public class ComponentConfig<TComponent> where TComponent : IComponent
+    internal class ComponentConfig<TComponent> where TComponent : IComponent
     {
         private static ComponentConfig _config;
         private static bool _hasConfig;
 
-        public static ComponentConfig Config
+        internal static ComponentConfig Config
         {
             get
             {

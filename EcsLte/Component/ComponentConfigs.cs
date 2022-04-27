@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
+using System.Text;
 
 namespace EcsLte
 {
@@ -27,26 +28,28 @@ namespace EcsLte
 
         internal ComponentConfig[] AllComponentConfigs { get; private set; }
         internal ComponentConfig[] AllRecordableConfigs { get; private set; }
-        internal ComponentConfig[] AllUniqueConfigs { get; private set; }
         internal ComponentConfig[] AllSharedConfigs { get; private set; }
+        internal ComponentConfig[] AllUniqueConfigs { get; private set; }
 
         internal Type[] AllComponentTypes { get; private set; }
         internal Type[] AllRecordableTypes { get; private set; }
-        internal Type[] AllUniqueTypes { get; private set; }
         internal Type[] AllSharedTypes { get; private set; }
+        internal Type[] AllUniqueTypes { get; private set; }
 
         internal int[] AllRecordableIndexes { get; private set; }
-        internal int[] AllUniqueIndexes { get; private set; }
         internal int[] AllSharedIndexes { get; private set; }
+        internal int[] AllUniqueIndexes { get; private set; }
 
         internal int AllComponentCount { get; private set; }
         internal int RecordableComponentCount { get; private set; }
-        internal int UniqueComponentCount { get; private set; }
         internal int SharedComponentCount { get; private set; }
+        internal int UniqueComponentCount { get; private set; }
 
-        internal ComponentConfig GetConfig(Type componentType) => _componentConfigTypes[componentType];
+        internal ComponentConfig GetConfig(Type componentType)
+            => _componentConfigTypes[componentType];
 
-        internal ComponentConfig GetConfig(int componentIndex) => _componentConfigIndexes[componentIndex];
+        internal ComponentConfig GetConfig(int componentIndex)
+            => _componentConfigIndexes[componentIndex];
 
         private void Initialize()
         {
@@ -54,6 +57,7 @@ namespace EcsLte
             var iRecordableComponentType = typeof(IRecordableComponent);
             var iUniqueComponentType = typeof(IUniqueComponent);
             var iSharedComponentType = typeof(ISharedComponent);
+            var equatableType = typeof(IEquatable<>);
             var componentTypes = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(x => x.GetTypes())
                 .Where(x =>
@@ -61,49 +65,41 @@ namespace EcsLte
                     !x.IsAbstract &&
                     iComponentType.IsAssignableFrom(x));
 
-            _componentConfigTypes = new Dictionary<Type, ComponentConfig>();
-            _componentConfigIndexes = new Dictionary<int, ComponentConfig>();
-            var recordableTypeIndexes = new Dictionary<int, Type>();
-            var uniqueTypeIndexes = new Dictionary<int, Type>();
-            var sharedTypeIndexes = new Dictionary<int, Type>();
-            var sharedNoEquatableOrGetHashCode = new List<Type>();
             var recordableIndex = 0;
             var uniqueIndex = 0;
             var sharedIndex = 0;
-            var equatableType = typeof(IEquatable<>);
+            var recordableNonBlittableErrorTypes = new List<Type>();
+            var sharedNoEquatableOrGetHashCode = new List<Type>();
+            var sharedUniqueErrorTypes = new List<Type>();
+            var configTypes = new List<ConfigType>();
 
             foreach (var type in componentTypes.OrderBy(x => x.FullName.ToString()))
             {
-                var componentIndex = _componentConfigIndexes.Count;
-                var config = new ComponentConfig
-                {
-                    ComponentIndex = componentIndex
-                };
+                var config = new ComponentConfig();
 
                 if (iRecordableComponentType.IsAssignableFrom(type))
                 {
-                    recordableTypeIndexes.Add(componentIndex, type);
                     config.RecordableIndex = recordableIndex++;
                     config.IsRecordable = true;
                 }
 
-                if (iUniqueComponentType.IsAssignableFrom(type))
-                {
-                    uniqueTypeIndexes.Add(componentIndex, type);
-                    config.UniqueIndex = uniqueIndex++;
-                    config.IsUnique = true;
-                }
-
                 if (iSharedComponentType.IsAssignableFrom(type))
                 {
+                    config.SharedIndex = sharedIndex++;
+                    config.IsShared = true;
                     var sharedEquatableType = equatableType.MakeGenericType(type);
                     var hasEquatable = type.GetInterfaces().Any(x => x.IsGenericType && x == sharedEquatableType);
                     var getHashOverride = type.GetMethod("GetHashCode").DeclaringType == type;
                     if (!hasEquatable || !getHashOverride)
                         sharedNoEquatableOrGetHashCode.Add(type);
-                    sharedTypeIndexes.Add(componentIndex, type);
-                    config.SharedIndex = sharedIndex++;
-                    config.IsShared = true;
+                }
+
+                if (iUniqueComponentType.IsAssignableFrom(type))
+                {
+                    config.UniqueIndex = uniqueIndex++;
+                    config.IsUnique = true;
+                    if (config.IsShared)
+                        sharedUniqueErrorTypes.Add(type);
                 }
 
                 if (IsBlittable(type))
@@ -111,57 +107,111 @@ namespace EcsLte
                     config.IsBlittable = true;
                     config.UnmanagedSizeInBytes = Marshal.SizeOf(type);
                 }
+                else if (config.IsRecordable)
+                    recordableNonBlittableErrorTypes.Add(type);
 
-                _componentConfigTypes.Add(type, config);
-                _componentConfigIndexes.Add(componentIndex, config);
+                configTypes.Add(new ConfigType
+                {
+                    Config = config,
+                    Type = type
+                });
             }
 
-            var recordableUnblittableTypes = _componentConfigTypes
-                .Where(x => x.Value.IsRecordable && !x.Value.IsBlittable)
-                .Select(x => x.Key)
-                .ToArray();
-            var uniqueSharedTypes = _componentConfigTypes
-                .Where(x => x.Value.IsUnique && x.Value.IsShared)
-                .Select(x => x.Key)
-                .ToArray();
-
-            if (_componentConfigTypes.Count == 0)
+            if (configTypes.Count == 0)
                 throw new ComponentNoneException();
-
-            if (recordableUnblittableTypes.Length > 0)
-                throw new ComponentRecordableNotBlittable(recordableUnblittableTypes);
-
-            if (uniqueSharedTypes.Length > 0)
-                throw new ComponentUniqueSharedException(uniqueSharedTypes);
-
+            if (recordableNonBlittableErrorTypes.Count > 0)
+                throw new ComponentRecordableNotBlittableException(recordableNonBlittableErrorTypes);
+            if (sharedUniqueErrorTypes.Count > 0)
+                throw new ComponentSharedUniqueException(sharedUniqueErrorTypes);
             if (sharedNoEquatableOrGetHashCode.Count > 0)
-                throw new ComponentNoSharedEquatableHashCodeException(sharedNoEquatableOrGetHashCode.ToArray());
+                throw new ComponentSharedUniqueException(sharedNoEquatableOrGetHashCode);
 
-            AllComponentConfigs = _componentConfigTypes.Values.ToArray();
-            AllRecordableConfigs = _componentConfigTypes.Values.Where(x => x.IsRecordable).ToArray();
-            AllUniqueConfigs = _componentConfigTypes.Values.Where(x => x.IsUnique).ToArray();
-            AllSharedConfigs = _componentConfigTypes.Values.Where(x => x.IsShared).ToArray();
+            configTypes = configTypes
+                .OrderBy(x => x.Config.RecordableIndex)
+                .ThenBy(x => x.Config.SharedIndex)
+                .ThenBy(x => x.Config.UniqueIndex)
+                .ThenBy(x => x.Type.Name)
+                .ToList();
 
-            AllComponentTypes = _componentConfigTypes.Keys.ToArray();
-            AllRecordableTypes = recordableTypeIndexes.Values.ToArray();
-            AllUniqueTypes = uniqueTypeIndexes.Values.ToArray();
-            AllSharedTypes = sharedTypeIndexes.Values.ToArray();
+            _componentConfigTypes = new Dictionary<Type, ComponentConfig>();
+            _componentConfigIndexes = new Dictionary<int, ComponentConfig>();
+            var componentIndex = 0;
+            foreach (var configType in configTypes)
+            {
+                configType.Config.ComponentIndex = componentIndex++;
 
-            AllRecordableIndexes = recordableTypeIndexes.Keys.ToArray();
-            AllUniqueIndexes = uniqueTypeIndexes.Keys.ToArray();
-            AllSharedIndexes = sharedTypeIndexes.Keys.ToArray();
+                _componentConfigTypes.Add(configType.Type, configType.Config);
+                _componentConfigIndexes.Add(componentIndex, configType.Config);
+            }
 
-            AllComponentCount = _componentConfigTypes.Count;
-            RecordableComponentCount = recordableTypeIndexes.Count;
-            UniqueComponentCount = uniqueTypeIndexes.Count;
-            SharedComponentCount = sharedTypeIndexes.Count;
+            AllComponentConfigs = configTypes
+                .OrderBy(x => x.Config.ComponentIndex)
+                .Select(x => x.Config)
+                .ToArray();
+            AllRecordableConfigs = configTypes
+                .Where(x => x.Config.IsRecordable)
+                .OrderBy(x => x.Config.RecordableIndex)
+                .Select(x => x.Config)
+                .ToArray();
+            AllSharedConfigs = configTypes
+                .Where(x => x.Config.IsShared)
+                .OrderBy(x => x.Config.SharedIndex)
+                .Select(x => x.Config)
+                .ToArray();
+            AllUniqueConfigs = configTypes
+                .Where(x => x.Config.IsUnique)
+                .OrderBy(x => x.Config.UniqueIndex)
+                .Select(x => x.Config)
+                .ToArray();
+
+            AllComponentTypes = configTypes
+                .OrderBy(x => x.Config.ComponentIndex)
+                .Select(x => x.Type)
+                .ToArray();
+            AllRecordableTypes = configTypes
+                .Where(x => x.Config.IsRecordable)
+                .OrderBy(x => x.Config.RecordableIndex)
+                .Select(x => x.Type)
+                .ToArray();
+            AllSharedTypes = configTypes
+                .Where(x => x.Config.IsShared)
+                .OrderBy(x => x.Config.SharedIndex)
+                .Select(x => x.Type)
+                .ToArray();
+            AllUniqueTypes = configTypes
+                .Where(x => x.Config.IsUnique)
+                .OrderBy(x => x.Config.UniqueIndex)
+                .Select(x => x.Type)
+                .ToArray();
+
+            AllRecordableIndexes = configTypes
+                .Where(x => x.Config.IsRecordable)
+                .OrderBy(x => x.Config.RecordableIndex)
+                .Select(x => x.Config.RecordableIndex)
+                .ToArray();
+            AllSharedIndexes = configTypes
+                .Where(x => x.Config.IsShared)
+                .OrderBy(x => x.Config.SharedIndex)
+                .Select(x => x.Config.SharedIndex)
+                .ToArray();
+            AllUniqueIndexes = configTypes
+                .Where(x => x.Config.IsUnique)
+                .OrderBy(x => x.Config.UniqueIndex)
+                .Select(x => x.Config.UniqueIndex)
+                .ToArray();
+
+            AllComponentCount = AllComponentTypes.Length;
+            RecordableComponentCount = AllRecordableTypes.Length;
+            SharedComponentCount = AllSharedTypes.Length;
+            UniqueComponentCount = AllUniqueTypes.Length;
         }
 
         private bool IsBlittable(Type type)
         {
             try
             {
-                GCHandle.Alloc(FormatterServices.GetUninitializedObject(type),
+                GCHandle.Alloc(
+                    FormatterServices.GetUninitializedObject(type),
                     GCHandleType.Pinned)
                     .Free();
                 return true;
@@ -170,6 +220,12 @@ namespace EcsLte
             {
                 return false;
             }
+        }
+
+        private class ConfigType
+        {
+            public ComponentConfig Config;
+            public Type Type;
         }
     }
 }

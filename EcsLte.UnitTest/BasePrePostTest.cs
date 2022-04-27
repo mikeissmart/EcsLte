@@ -1,32 +1,21 @@
-﻿using EcsLte.Managed;
-using EcsLte.ManagedArcheType;
-using EcsLte.Native;
-using EcsLte.NativeArcheType;
-using EcsLte.NativeArcheTypeContinous;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using EcsLte;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 
 namespace EcsLte.UnitTest
 {
-    public abstract class BasePrePostTest<TEcsContextType> where TEcsContextType : IEcsContextType
+    public abstract class BasePrePostTest
     {
         public EcsContext Context { get; private set; }
 
         [TestInitialize]
         public void PreTest()
         {
-            if (typeof(TEcsContextType) == typeof(EcsContextType_Managed))
-                Context = EcsContexts.CreateEcsContext_Managed("Managed_Test");
-            else if (typeof(TEcsContextType) == typeof(EcsContextType_Managed_ArcheType))
-                Context = EcsContexts.CreateEcsContext_ArcheType_Managed("ArcheType_Managed_Test");
-            else if (typeof(TEcsContextType) == typeof(EcsContextType_Native))
-                Context = EcsContexts.CreateEcsContext_Native("Native_Test");
-            else if (typeof(TEcsContextType) == typeof(EcsContextType_Native_ArcheType))
-                Context = EcsContexts.CreateEcsContext_ArcheType_Native("ArcheType_Native_Test");
-            else if (typeof(TEcsContextType) == typeof(EcsContextType_Native_ArcheType_Continuous))
-                Context = EcsContexts.CreateEcsContext_ArcheType_Native_Continuous("ArcheType_Native_Continuous_Test_Continuous");
-            else
-                throw new InvalidOperationException();
+            Context = EcsContexts.CreateContext("UnitTest");
         }
 
         [TestCleanup]
@@ -37,20 +26,40 @@ namespace EcsLte.UnitTest
             Context = null;
         }
 
-        protected IEntityBlueprint GetBlueprint()
+        protected Entity[] TestCreateEntities<T1>(EcsContext context, int entityCount,
+            T1 component1)
+            where T1 : unmanaged, IComponent
         {
-            if (typeof(TEcsContextType) == typeof(EcsContextType_Managed))
-                return new EntityBlueprint_Managed();
-            else if (typeof(TEcsContextType) == typeof(EcsContextType_Managed_ArcheType))
-                return new EntityBlueprint_ArcheType_Managed();
-            else if (typeof(TEcsContextType) == typeof(EcsContextType_Native))
-                return new EntityBlueprint_Native();
-            else if (typeof(TEcsContextType) == typeof(EcsContextType_Native_ArcheType))
-                return new EntityBlueprint_ArcheType_Native();
-            else if (typeof(TEcsContextType) == typeof(EcsContextType_Native_ArcheType_Continuous))
-                return new EntityBlueprint_ArcheType_Native_Continuous();
-            else
-                throw new InvalidOperationException();
+            var blueprint = new EntityBlueprint()
+                .AddComponent(component1);
+            return context.CreateEntities(entityCount, blueprint);
+        }
+
+        protected Entity[] TestCreateEntities<T1, T2>(EcsContext context, int entityCount,
+            T1 component1,
+            T2 component2)
+            where T1 : unmanaged, IComponent
+            where T2 : unmanaged, IComponent
+        {
+            var blueprint = new EntityBlueprint()
+                .AddComponent(component1)
+                .AddComponent(component2);
+            return context.CreateEntities(entityCount, blueprint);
+        }
+
+        protected Entity[] TestCreateEntities<T1, T2, T3>(EcsContext context, int entityCount,
+            T1 component1,
+            T2 component2,
+            T3 component3)
+            where T1 : unmanaged, IComponent
+            where T2 : unmanaged, IComponent
+            where T3 : unmanaged, IComponent
+        {
+            var blueprint = new EntityBlueprint()
+                .AddComponent(component1)
+                .AddComponent(component2)
+                .AddComponent(component3);
+            return context.CreateEntities(entityCount, blueprint);
         }
     }
 }

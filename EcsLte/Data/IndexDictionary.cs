@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace EcsLte.Data
 {
@@ -24,9 +25,9 @@ namespace EcsLte.Data
             var indexDicType = typeof(IndexDictionary<>);
             for (var i = 0; i < sharedIndexes.Length; i++)
             {
-                var sharedType = ComponentConfigs.Instance.AllSharedTypes[i];
                 sharedIndexes[i] = (IIndexDictionary)Activator
-                    .CreateInstance(indexDicType.MakeGenericType(sharedType));
+                    .CreateInstance(indexDicType
+                        .MakeGenericType(ComponentConfigs.Instance.AllSharedTypes[i]));
             }
 
             return sharedIndexes;
@@ -63,6 +64,7 @@ namespace EcsLte.Data
 
             return false;
         }
+
         public int GetIndex(TKey key)
         {
             if (!_indexes.TryGetValue(key, out var index))
@@ -81,6 +83,12 @@ namespace EcsLte.Data
             throw new InvalidCastException("key");
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="index"></param>
+        /// <returns>true = new index for value, false = existing index for value</returns>
         public int GetIndexObj(object key)
         {
             if (key is TKey val)

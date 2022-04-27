@@ -1,15 +1,20 @@
 ﻿using EcsLte.Exceptions;
+using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace EcsLte
 {
     public class EcsContext : IEntityGet, IEntityLife, IEntityComponentGet, IEntityComponentLife
     {
-        private IComponentEntityFactory _componentEntityFactory;
-
-        internal EcsContext(string name, IComponentEntityFactory componentEntityFactory)
+        internal EcsContext(string name)
         {
-            _componentEntityFactory = componentEntityFactory;
+            ArcheTypeFactory = new ArcheTypeFactory();
+            ComponentEntityFactory = new ComponentEntityFactory();
+            EntityQueryFactory = new EntityQueryFactory();
+
+            ComponentEntityFactory.SetDependentFactories(ArcheTypeFactory);
+
             Name = name;
         }
 
@@ -17,15 +22,30 @@ namespace EcsLte
 
         public string Name { get; }
         public bool IsDestroyed { get; private set; }
-        public int EntityCount => _componentEntityFactory?.Count ?? 0;
-        public int EntityCapacity => _componentEntityFactory?.Capacity ?? 0;
+        public int EntityCount => ComponentEntityFactory?.EntityCount ?? 0;
+        public int EntityCapacity => ComponentEntityFactory?.EntityCapacity ?? 0;
 
-        public IEntityQuery EntityQuery() => _componentEntityFactory.EntityQueryCreate();
+        internal ArcheTypeFactory ArcheTypeFactory { get; private set; }
+        internal ComponentEntityFactory ComponentEntityFactory { get; private set; }
+        internal EntityQueryFactory EntityQueryFactory { get; private set; }
+
+        public EntityQuery CreateQuery()
+        {
+            if (IsDestroyed)
+                throw new EcsContextIsDestroyedException(this);
+
+            return new EntityQuery(this);
+        }
 
         internal void InternalDestroy()
         {
-            _componentEntityFactory.Dispose();
-            _componentEntityFactory = null;
+            ArcheTypeFactory.Dispose();
+            ArcheTypeFactory = null;
+            ComponentEntityFactory.Dispose();
+            ComponentEntityFactory = null;
+            EntityQueryFactory.Dispose();
+            EntityQueryFactory = null;
+
             IsDestroyed = true;
         }
 
@@ -38,7 +58,7 @@ namespace EcsLte
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            return _componentEntityFactory.HasEntity(entity);
+            return ComponentEntityFactory.HasEntity(entity);
         }
 
         public Entity[] GetEntities()
@@ -46,27 +66,27 @@ namespace EcsLte
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            return _componentEntityFactory.GetEntities();
+            return ComponentEntityFactory.GetEntities();
         }
 
         #endregion
 
         #region EntityLife
 
-        public Entity CreateEntity(IEntityBlueprint blueprint = null)
+        public Entity CreateEntity(EntityBlueprint blueprint)
         {
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            return _componentEntityFactory.CreateEntity(blueprint);
+            return ComponentEntityFactory.CreateEntity(blueprint);
         }
 
-        public Entity[] CreateEntities(int count, IEntityBlueprint blueprint = null)
+        public Entity[] CreateEntities(int count, EntityBlueprint blueprint)
         {
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            return _componentEntityFactory.CreateEntities(count, blueprint);
+            return ComponentEntityFactory.CreateEntities(count, blueprint);
         }
 
         public void DestroyEntity(Entity entity)
@@ -74,7 +94,7 @@ namespace EcsLte
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            _componentEntityFactory.DestroyEntity(entity);
+            ComponentEntityFactory.DestroyEntity(entity);
         }
 
         public void DestroyEntities(IEnumerable<Entity> entities)
@@ -82,7 +102,7 @@ namespace EcsLte
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            _componentEntityFactory.DestroyEntities(entities);
+            ComponentEntityFactory.DestroyEntities(entities);
         }
 
         #endregion
@@ -94,7 +114,7 @@ namespace EcsLte
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            return _componentEntityFactory.HasComponent<TComponent>(entity);
+            return ComponentEntityFactory.HasComponent<TComponent>(entity);
         }
 
         public TComponent GetComponent<TComponent>(Entity entity) where TComponent : unmanaged, IComponent
@@ -102,7 +122,7 @@ namespace EcsLte
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            return _componentEntityFactory.GetComponent<TComponent>(entity);
+            return ComponentEntityFactory.GetComponent<TComponent>(entity);
         }
 
         public IComponent[] GetAllComponents(Entity entity)
@@ -110,14 +130,14 @@ namespace EcsLte
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            return _componentEntityFactory.GetAllComponents(entity);
+            return ComponentEntityFactory.GetAllComponents(entity);
         }
         public bool HasUniqueComponent<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent
         {
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            return _componentEntityFactory.HasUniqueComponent<TComponentUnique>();
+            return ComponentEntityFactory.HasUniqueComponent<TComponentUnique>();
         }
 
         public TComponentUnique GetUniqueComponent<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent
@@ -125,7 +145,7 @@ namespace EcsLte
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            return _componentEntityFactory.GetUniqueComponent<TComponentUnique>();
+            return ComponentEntityFactory.GetUniqueComponent<TComponentUnique>();
         }
 
         public Entity GetUniqueEntity<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent
@@ -133,67 +153,27 @@ namespace EcsLte
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            return _componentEntityFactory.GetUniqueEntity<TComponentUnique>();
+            return ComponentEntityFactory.GetUniqueEntity<TComponentUnique>();
         }
 
         #endregion
 
         #region ComponentLife
 
-        public void AddComponent<TComponent>(Entity entity, TComponent component) where TComponent : unmanaged, IComponent
+        public void UpdateComponent<TComponent>(Entity entity, TComponent component) where TComponent : unmanaged, IComponent
         {
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            _componentEntityFactory.AddComponent(entity, component);
+            ComponentEntityFactory.UpdateComponent(entity, component);
         }
 
-        public void ReplaceComponent<TComponent>(Entity entity, TComponent newComponent) where TComponent : unmanaged, IComponent
+        public void UpdateComponent<TComponent>(EntityQuery query, TComponent component) where TComponent : unmanaged, IComponent
         {
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
 
-            _componentEntityFactory.ReplaceComponent(entity, newComponent);
-        }
-
-        public void RemoveComponent<TComponent>(Entity entity) where TComponent : unmanaged, IComponent
-        {
-            if (IsDestroyed)
-                throw new EcsContextIsDestroyedException(this);
-
-            _componentEntityFactory.RemoveComponent<TComponent>(entity);
-        }
-
-        public void RemoveAllComponents(Entity entity)
-        {
-            if (IsDestroyed)
-                throw new EcsContextIsDestroyedException(this);
-
-            _componentEntityFactory.RemoveAllComponents(entity);
-        }
-
-        public Entity AddUniqueComponent<TComponentUnique>(TComponentUnique componentUnique) where TComponentUnique : unmanaged, IUniqueComponent
-        {
-            if (IsDestroyed)
-                throw new EcsContextIsDestroyedException(this);
-
-            return _componentEntityFactory.AddUniqueComponent(componentUnique);
-        }
-
-        public Entity ReplaceUniqueComponent<TComponentUnique>(TComponentUnique newComponentUnique) where TComponentUnique : unmanaged, IUniqueComponent
-        {
-            if (IsDestroyed)
-                throw new EcsContextIsDestroyedException(this);
-
-            return _componentEntityFactory.ReplaceUniqueComponent<TComponentUnique>(newComponentUnique);
-        }
-
-        public void RemoveUniqueComponent<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent
-        {
-            if (IsDestroyed)
-                throw new EcsContextIsDestroyedException(this);
-
-            _componentEntityFactory.RemoveUniqueComponent<TComponentUnique>();
+            ComponentEntityFactory.UpdateComponent(query, component);
         }
 
         #endregion

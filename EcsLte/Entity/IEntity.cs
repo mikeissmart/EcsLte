@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace EcsLte
 {
@@ -10,8 +12,8 @@ namespace EcsLte
 
     public interface IEntityLife
     {
-        Entity CreateEntity(IEntityBlueprint blueprint = null);
-        Entity[] CreateEntities(int count, IEntityBlueprint blueprint = null);
+        Entity CreateEntity(EntityBlueprint blueprint);
+        Entity[] CreateEntities(int count, EntityBlueprint blueprint);
         void DestroyEntity(Entity entity);
         void DestroyEntities(IEnumerable<Entity> entities);
     }
@@ -21,19 +23,17 @@ namespace EcsLte
         bool HasComponent<TComponent>(Entity entity) where TComponent : unmanaged, IComponent;
         TComponent GetComponent<TComponent>(Entity entity) where TComponent : unmanaged, IComponent;
         IComponent[] GetAllComponents(Entity entity);
-        bool HasUniqueComponent<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent;
-        TComponentUnique GetUniqueComponent<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent;
-        Entity GetUniqueEntity<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent;
     }
 
     public interface IEntityComponentLife
     {
-        void AddComponent<TComponent>(Entity entity, TComponent component) where TComponent : unmanaged, IComponent;
-        void ReplaceComponent<TComponent>(Entity entity, TComponent newComponent) where TComponent : unmanaged, IComponent;
-        void RemoveComponent<TComponent>(Entity entity) where TComponent : unmanaged, IComponent;
-        void RemoveAllComponents(Entity entity);
-        Entity AddUniqueComponent<TComponentUnique>(TComponentUnique componentUnique) where TComponentUnique : unmanaged, IUniqueComponent;
-        Entity ReplaceUniqueComponent<TComponentUnique>(TComponentUnique newComponentUnique) where TComponentUnique : unmanaged, IUniqueComponent;
-        void RemoveUniqueComponent<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent;
+        void UpdateComponent<TComponent>(Entity entity, TComponent component) where TComponent : unmanaged, IComponent;
+    }
+
+    public interface IEntityComponentUniqueGet
+    {
+        bool HasUniqueComponent<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent;
+        TComponentUnique GetUniqueComponent<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent;
+        Entity GetUniqueEntity<TComponentUnique>() where TComponentUnique : unmanaged, IUniqueComponent;
     }
 }

@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("EcsLte.UnitTest")]
@@ -12,7 +13,7 @@ using System.Runtime.InteropServices;
 
 [assembly: ComVisible(false)]
 
-[assembly: Guid("01ccdd40-2655-46a3-b17e-cb5da3496ba0")]
+[assembly: Guid("96395531-e1dd-4958-a2cf-18f9c05b6750")]
 
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]

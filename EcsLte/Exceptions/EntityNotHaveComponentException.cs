@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace EcsLte.Exceptions
 {
@@ -6,7 +8,6 @@ namespace EcsLte.Exceptions
     {
         public EntityNotHaveComponentException(Entity entity, Type componentType)
             : base($"Entity '{entity}' does not have component '{componentType.Name}'.")
-        {
-        }
+        { }
     }
 }

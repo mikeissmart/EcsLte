@@ -1,27 +1,35 @@
-﻿namespace EcsLte.UnitTest.Interfaces
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace EcsLte.UnitTest
 {
     internal interface IEntityComponentLifeTest
     {
-        void AddComponent_Destroyed();
-        void AddComponent_Duplicate_Normal();
-        void AddComponent_Duplicate_Shared();
-        void AddComponent_Duplicate_Unique_Different();
-        void AddComponent_Duplicate_Unique_Same();
-        void AddComponent_Null();
-        void AddUniqueComponent_Destroyed();
-        void AddUniqueComponent_Duplicate();
-        void RemoveAllComponents_Destroyed();
-        void RemoveAllComponents_Null();
-        void RemoveComponent_Destroyed();
-        void RemoveComponent_Duplicate_Normal();
-        void RemoveComponent_Duplicate_Shared();
-        void RemoveComponent_Duplicate_Unique();
-        void RemoveComponent_Null();
-        void RemoveUniqueComponent_Destroyed();
-        void RemoveUniqueComponent_Duplicate();
-        void RemoveUniqueComponent_None();
-        void ReplaceComponent_Destroyed();
-        void ReplaceComponent_Null();
-        void ReplaceUniqueComponent_Destroyed();
+        void UpdateComponent_Destroyed();
+        void UpdateComponent_Normal();
+        void UpdateComponent_Normal_Large();
+        void UpdateComponent_Normal_Never();
+        void UpdateComponent_NormalShared();
+        void UpdateComponent_NormalShared_Large();
+        void UpdateComponent_NormalSharedUnique();
+        void UpdateComponent_NormalUnique();
+        void UpdateComponent_NormalUniqueShared();
+        void UpdateComponent_Shared();
+        void UpdateComponent_Shared_Large();
+        void UpdateComponent_Shared_Never();
+        void UpdateComponent_SharedNormal();
+        void UpdateComponent_SharedNormal_Large();
+        void UpdateComponent_SharedNormalUnique();
+        void UpdateComponent_SharedUnique();
+        void UpdateComponent_SharedUniqueNormal();
+        void UpdateComponent_Unique();
+        void UpdateComponent_Unique_Never();
+        void UpdateComponent_UniqueNormal();
+        void UpdateComponent_UniqueNormalShared();
+        void UpdateComponent_UniqueShared();
+        void UpdateComponent_UniqueSharedNormal();
     }
 }
