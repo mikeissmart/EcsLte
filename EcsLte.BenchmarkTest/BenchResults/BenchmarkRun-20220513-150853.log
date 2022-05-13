@@ -1,0 +1,1393 @@
+// Validating benchmarks:
+// ***** BenchmarkRunner: Start   *****
+// ***** Found 99 benchmark(s) in total *****
+// ***** Building 1 exe(s) in Parallel: Start   *****
+BuildScript: C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BenchmarkTest\bin\Release\fb245b89-613c-46c4-9fcd-7d55b25cf5d3.bat
+// ***** Done, took 00:00:02 (2.47 sec)   *****
+// Found 64 benchmarks:
+//   EcsContext_CreateEntity.CreateEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1]
+//   EcsContext_CreateEntity.CreateEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1]
+//   EcsContext_CreateEntity.CreateEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1]
+//   EcsContext_CreateEntity.CreateEntity_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1]
+//   EcsContext_CreateEntity.DestroyEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1]
+//   EcsContext_CreateEntity.DestroyEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1]
+//   EcsContext_CreateEntity.DestroyEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1]
+//   EcsContext_CreateEntity.DestroyEntity_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1]
+//   EcsContext_CreateEntity.CreateEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2]
+//   EcsContext_CreateEntity.CreateEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2]
+//   EcsContext_CreateEntity.CreateEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2]
+//   EcsContext_CreateEntity.CreateEntity_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2]
+//   EcsContext_CreateEntity.DestroyEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2]
+//   EcsContext_CreateEntity.DestroyEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2]
+//   EcsContext_CreateEntity.DestroyEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2]
+//   EcsContext_CreateEntity.DestroyEntity_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2]
+//   EcsContext_CreateEntity.CreateEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Shared_x1]
+//   EcsContext_CreateEntity.CreateEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Shared_x1]
+//   EcsContext_CreateEntity.CreateEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Shared_x1]
+//   EcsContext_CreateEntity.CreateEntity_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Shared_x1]
+//   EcsContext_CreateEntity.DestroyEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Shared_x1]
+//   EcsContext_CreateEntity.DestroyEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Shared_x1]
+//   EcsContext_CreateEntity.DestroyEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Shared_x1]
+//   EcsContext_CreateEntity.DestroyEntity_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Shared_x1]
+//   EcsContext_CreateEntity.CreateEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Shared_x2]
+//   EcsContext_CreateEntity.CreateEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Shared_x2]
+//   EcsContext_CreateEntity.CreateEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Shared_x2]
+//   EcsContext_CreateEntity.CreateEntity_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Shared_x2]
+//   EcsContext_CreateEntity.DestroyEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Shared_x2]
+//   EcsContext_CreateEntity.DestroyEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Shared_x2]
+//   EcsContext_CreateEntity.DestroyEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Shared_x2]
+//   EcsContext_CreateEntity.DestroyEntity_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Shared_x2]
+//   EcsContext_CreateEntity.CreateEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1_Shared_x1]
+//   EcsContext_CreateEntity.CreateEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1_Shared_x1]
+//   EcsContext_CreateEntity.CreateEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1_Shared_x1]
+//   EcsContext_CreateEntity.CreateEntity_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1_Shared_x1]
+//   EcsContext_CreateEntity.DestroyEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1_Shared_x1]
+//   EcsContext_CreateEntity.DestroyEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1_Shared_x1]
+//   EcsContext_CreateEntity.DestroyEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1_Shared_x1]
+//   EcsContext_CreateEntity.DestroyEntity_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1_Shared_x1]
+//   EcsContext_CreateEntity.CreateEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1_Shared_x2]
+//   EcsContext_CreateEntity.CreateEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1_Shared_x2]
+//   EcsContext_CreateEntity.CreateEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1_Shared_x2]
+//   EcsContext_CreateEntity.CreateEntity_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1_Shared_x2]
+//   EcsContext_CreateEntity.DestroyEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1_Shared_x2]
+//   EcsContext_CreateEntity.DestroyEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1_Shared_x2]
+//   EcsContext_CreateEntity.DestroyEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1_Shared_x2]
+//   EcsContext_CreateEntity.DestroyEntity_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1_Shared_x2]
+//   EcsContext_CreateEntity.CreateEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2_Shared_x1]
+//   EcsContext_CreateEntity.CreateEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2_Shared_x1]
+//   EcsContext_CreateEntity.CreateEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2_Shared_x1]
+//   EcsContext_CreateEntity.CreateEntity_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2_Shared_x1]
+//   EcsContext_CreateEntity.DestroyEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2_Shared_x1]
+//   EcsContext_CreateEntity.DestroyEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2_Shared_x1]
+//   EcsContext_CreateEntity.DestroyEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2_Shared_x1]
+//   EcsContext_CreateEntity.DestroyEntity_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2_Shared_x1]
+//   EcsContext_CreateEntity.CreateEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2_Shared_x2]
+//   EcsContext_CreateEntity.CreateEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2_Shared_x2]
+//   EcsContext_CreateEntity.CreateEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2_Shared_x2]
+//   EcsContext_CreateEntity.CreateEntity_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2_Shared_x2]
+//   EcsContext_CreateEntity.DestroyEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2_Shared_x2]
+//   EcsContext_CreateEntity.DestroyEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2_Shared_x2]
+//   EcsContext_CreateEntity.DestroyEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2_Shared_x2]
+//   EcsContext_CreateEntity.DestroyEntity_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2_Shared_x2]
+
+// **************************
+// Benchmark: EcsContext_CreateEntity.CreateEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BenchmarkTest\bin\Release\fb245b89-613c-46c4-9fcd-7d55b25cf5d3.exe --benchmarkName "EcsLte.BenchmarkTest.EcsContextTests.EcsContext_CreateEntity.CreateEntities(CompArr: Normal_x1)" --job "InvocationCount=1, UnrollFactor=1" --benchmarkId 0 in 
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// Runtime=.NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
+// GC=Concurrent Workstation
+// Job: Job-FTOBUC(InvocationCount=1, UnrollFactor=1)
+
+OverheadJitting  1: 1 op, 166700.00 ns, 166.7000 us/op
+WorkloadJitting  1: 1 op, 37909500.00 ns, 37.9095 ms/op
+
+OverheadWarmup   1: 1 op, 2400.00 ns, 2.4000 us/op
+OverheadWarmup   2: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadWarmup   3: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   4: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   6: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   7: 1 op, 0.00 ns, 0.0000 ns/op
+
+OverheadActual   1: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   2: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   3: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   4: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   5: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   6: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   7: 1 op, 0.00 ns, 0.0000 ns/op
+OverheadActual   8: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   9: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  10: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  11: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  12: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  13: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  14: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  15: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  16: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  17: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  18: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  19: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  20: 1 op, 100.00 ns, 100.0000 ns/op
+
+WorkloadWarmup   1: 1 op, 30906400.00 ns, 30.9064 ms/op
+WorkloadWarmup   2: 1 op, 30285600.00 ns, 30.2856 ms/op
+WorkloadWarmup   3: 1 op, 30109600.00 ns, 30.1096 ms/op
+WorkloadWarmup   4: 1 op, 30239300.00 ns, 30.2393 ms/op
+WorkloadWarmup   5: 1 op, 31504800.00 ns, 31.5048 ms/op
+WorkloadWarmup   6: 1 op, 30284200.00 ns, 30.2842 ms/op
+WorkloadWarmup   7: 1 op, 30045600.00 ns, 30.0456 ms/op
+WorkloadWarmup   8: 1 op, 30329100.00 ns, 30.3291 ms/op
+WorkloadWarmup   9: 1 op, 30419400.00 ns, 30.4194 ms/op
+WorkloadWarmup  10: 1 op, 29951200.00 ns, 29.9512 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 30668600.00 ns, 30.6686 ms/op
+WorkloadActual   2: 1 op, 30066000.00 ns, 30.0660 ms/op
+WorkloadActual   3: 1 op, 30290300.00 ns, 30.2903 ms/op
+WorkloadActual   4: 1 op, 30376800.00 ns, 30.3768 ms/op
+WorkloadActual   5: 1 op, 30140300.00 ns, 30.1403 ms/op
+WorkloadActual   6: 1 op, 30441000.00 ns, 30.4410 ms/op
+WorkloadActual   7: 1 op, 30208400.00 ns, 30.2084 ms/op
+WorkloadActual   8: 1 op, 30413600.00 ns, 30.4136 ms/op
+WorkloadActual   9: 1 op, 30270400.00 ns, 30.2704 ms/op
+WorkloadActual  10: 1 op, 30065000.00 ns, 30.0650 ms/op
+WorkloadActual  11: 1 op, 30129400.00 ns, 30.1294 ms/op
+WorkloadActual  12: 1 op, 30195200.00 ns, 30.1952 ms/op
+WorkloadActual  13: 1 op, 31050400.00 ns, 31.0504 ms/op
+WorkloadActual  14: 1 op, 31405500.00 ns, 31.4055 ms/op
+WorkloadActual  15: 1 op, 32335500.00 ns, 32.3355 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 30668500.00 ns, 30.6685 ms/op
+WorkloadResult   2: 1 op, 30065900.00 ns, 30.0659 ms/op
+WorkloadResult   3: 1 op, 30290200.00 ns, 30.2902 ms/op
+WorkloadResult   4: 1 op, 30376700.00 ns, 30.3767 ms/op
+WorkloadResult   5: 1 op, 30140200.00 ns, 30.1402 ms/op
+WorkloadResult   6: 1 op, 30440900.00 ns, 30.4409 ms/op
+WorkloadResult   7: 1 op, 30208300.00 ns, 30.2083 ms/op
+WorkloadResult   8: 1 op, 30413500.00 ns, 30.4135 ms/op
+WorkloadResult   9: 1 op, 30270300.00 ns, 30.2703 ms/op
+WorkloadResult  10: 1 op, 30064900.00 ns, 30.0649 ms/op
+WorkloadResult  11: 1 op, 30129300.00 ns, 30.1293 ms/op
+WorkloadResult  12: 1 op, 30195100.00 ns, 30.1951 ms/op
+WorkloadResult  13: 1 op, 31050300.00 ns, 31.0503 ms/op
+
+// AfterAll
+// Benchmark Process 8380 has exited with code 0.
+
+Mean = 30.332 ms, StdErr = 0.076 ms (0.25%), N = 13, StdDev = 0.275 ms
+Min = 30.065 ms, Q1 = 30.140 ms, Median = 30.270 ms, Q3 = 30.414 ms, Max = 31.050 ms
+IQR = 0.273 ms, LowerFence = 29.730 ms, UpperFence = 30.823 ms
+ConfidenceInterval = [30.002 ms; 30.662 ms] (CI 99.9%), Margin = 0.330 ms (1.09% of Mean)
+Skewness = 1.3, Kurtosis = 3.93, MValue = 2
+
+// **************************
+// Benchmark: EcsContext_CreateEntity.CreateEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BenchmarkTest\bin\Release\fb245b89-613c-46c4-9fcd-7d55b25cf5d3.exe --benchmarkName "EcsLte.BenchmarkTest.EcsContextTests.EcsContext_CreateEntity.CreateEntities_Reuse(CompArr: Normal_x1)" --job "InvocationCount=1, UnrollFactor=1" --benchmarkId 1 in 
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// Runtime=.NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
+// GC=Concurrent Workstation
+// Job: Job-FTOBUC(InvocationCount=1, UnrollFactor=1)
+
+OverheadJitting  1: 1 op, 139200.00 ns, 139.2000 us/op
+WorkloadJitting  1: 1 op, 40996600.00 ns, 40.9966 ms/op
+
+OverheadWarmup   1: 1 op, 2200.00 ns, 2.2000 us/op
+OverheadWarmup   2: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadWarmup   3: 1 op, 300.00 ns, 300.0000 ns/op
+OverheadWarmup   4: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   6: 1 op, 100.00 ns, 100.0000 ns/op
+
+OverheadActual   1: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   2: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   3: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   4: 1 op, 300.00 ns, 300.0000 ns/op
+OverheadActual   5: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   6: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   7: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   8: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   9: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  10: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  11: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  12: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  13: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  14: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  15: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  16: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  17: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  18: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  19: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  20: 1 op, 100.00 ns, 100.0000 ns/op
+
+WorkloadWarmup   1: 1 op, 29978600.00 ns, 29.9786 ms/op
+WorkloadWarmup   2: 1 op, 29023600.00 ns, 29.0236 ms/op
+WorkloadWarmup   3: 1 op, 27856100.00 ns, 27.8561 ms/op
+WorkloadWarmup   4: 1 op, 29029800.00 ns, 29.0298 ms/op
+WorkloadWarmup   5: 1 op, 28546300.00 ns, 28.5463 ms/op
+WorkloadWarmup   6: 1 op, 29039900.00 ns, 29.0399 ms/op
+WorkloadWarmup   7: 1 op, 28293200.00 ns, 28.2932 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 28991900.00 ns, 28.9919 ms/op
+WorkloadActual   2: 1 op, 28134900.00 ns, 28.1349 ms/op
+WorkloadActual   3: 1 op, 29363800.00 ns, 29.3638 ms/op
+WorkloadActual   4: 1 op, 28012300.00 ns, 28.0123 ms/op
+WorkloadActual   5: 1 op, 29001800.00 ns, 29.0018 ms/op
+WorkloadActual   6: 1 op, 28429500.00 ns, 28.4295 ms/op
+WorkloadActual   7: 1 op, 29473200.00 ns, 29.4732 ms/op
+WorkloadActual   8: 1 op, 28303600.00 ns, 28.3036 ms/op
+WorkloadActual   9: 1 op, 29062500.00 ns, 29.0625 ms/op
+WorkloadActual  10: 1 op, 28196500.00 ns, 28.1965 ms/op
+WorkloadActual  11: 1 op, 29353500.00 ns, 29.3535 ms/op
+WorkloadActual  12: 1 op, 28231800.00 ns, 28.2318 ms/op
+WorkloadActual  13: 1 op, 28917700.00 ns, 28.9177 ms/op
+WorkloadActual  14: 1 op, 29908300.00 ns, 29.9083 ms/op
+WorkloadActual  15: 1 op, 28764700.00 ns, 28.7647 ms/op
+WorkloadActual  16: 1 op, 27903800.00 ns, 27.9038 ms/op
+WorkloadActual  17: 1 op, 29095900.00 ns, 29.0959 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 28991800.00 ns, 28.9918 ms/op
+WorkloadResult   2: 1 op, 28134800.00 ns, 28.1348 ms/op
+WorkloadResult   3: 1 op, 29363700.00 ns, 29.3637 ms/op
+WorkloadResult   4: 1 op, 28012200.00 ns, 28.0122 ms/op
+WorkloadResult   5: 1 op, 29001700.00 ns, 29.0017 ms/op
+WorkloadResult   6: 1 op, 28429400.00 ns, 28.4294 ms/op
+WorkloadResult   7: 1 op, 29473100.00 ns, 29.4731 ms/op
+WorkloadResult   8: 1 op, 28303500.00 ns, 28.3035 ms/op
+WorkloadResult   9: 1 op, 29062400.00 ns, 29.0624 ms/op
+WorkloadResult  10: 1 op, 28196400.00 ns, 28.1964 ms/op
+WorkloadResult  11: 1 op, 29353400.00 ns, 29.3534 ms/op
+WorkloadResult  12: 1 op, 28231700.00 ns, 28.2317 ms/op
+WorkloadResult  13: 1 op, 28917600.00 ns, 28.9176 ms/op
+WorkloadResult  14: 1 op, 29908200.00 ns, 29.9082 ms/op
+WorkloadResult  15: 1 op, 28764600.00 ns, 28.7646 ms/op
+WorkloadResult  16: 1 op, 27903700.00 ns, 27.9037 ms/op
+WorkloadResult  17: 1 op, 29095800.00 ns, 29.0958 ms/op
+
+// AfterAll
+// Benchmark Process 11444 has exited with code 0.
+
+Mean = 28.773 ms, StdErr = 0.142 ms (0.49%), N = 17, StdDev = 0.585 ms
+Min = 27.904 ms, Q1 = 28.232 ms, Median = 28.918 ms, Q3 = 29.096 ms, Max = 29.908 ms
+IQR = 0.864 ms, LowerFence = 26.936 ms, UpperFence = 30.392 ms
+ConfidenceInterval = [28.203 ms; 29.343 ms] (CI 99.9%), Margin = 0.570 ms (1.98% of Mean)
+Skewness = 0.13, Kurtosis = 1.75, MValue = 2
+
+// **************************
+// Benchmark: EcsContext_CreateEntity.CreateEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BenchmarkTest\bin\Release\fb245b89-613c-46c4-9fcd-7d55b25cf5d3.exe --benchmarkName "EcsLte.BenchmarkTest.EcsContextTests.EcsContext_CreateEntity.CreateEntity(CompArr: Normal_x1)" --job "InvocationCount=1, UnrollFactor=1" --benchmarkId 2 in 
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// Runtime=.NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
+// GC=Concurrent Workstation
+// Job: Job-FTOBUC(InvocationCount=1, UnrollFactor=1)
+
+OverheadJitting  1: 1 op, 155800.00 ns, 155.8000 us/op
+WorkloadJitting  1: 1 op, 90092300.00 ns, 90.0923 ms/op
+
+OverheadWarmup   1: 1 op, 2400.00 ns, 2.4000 us/op
+OverheadWarmup   2: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadWarmup   3: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadWarmup   4: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   6: 1 op, 100.00 ns, 100.0000 ns/op
+
+OverheadActual   1: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   2: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   3: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   4: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   6: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   7: 1 op, 0.00 ns, 0.0000 ns/op
+OverheadActual   8: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   9: 1 op, 0.00 ns, 0.0000 ns/op
+OverheadActual  10: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  11: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  12: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  13: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  14: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  15: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  16: 1 op, 0.00 ns, 0.0000 ns/op
+OverheadActual  17: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  18: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  19: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  20: 1 op, 100.00 ns, 100.0000 ns/op
+
+WorkloadWarmup   1: 1 op, 79866900.00 ns, 79.8669 ms/op
+WorkloadWarmup   2: 1 op, 79801700.00 ns, 79.8017 ms/op
+WorkloadWarmup   3: 1 op, 81480000.00 ns, 81.4800 ms/op
+WorkloadWarmup   4: 1 op, 80727300.00 ns, 80.7273 ms/op
+WorkloadWarmup   5: 1 op, 79178000.00 ns, 79.1780 ms/op
+WorkloadWarmup   6: 1 op, 84751100.00 ns, 84.7511 ms/op
+WorkloadWarmup   7: 1 op, 86018100.00 ns, 86.0181 ms/op
+WorkloadWarmup   8: 1 op, 78804800.00 ns, 78.8048 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 77668700.00 ns, 77.6687 ms/op
+WorkloadActual   2: 1 op, 77593500.00 ns, 77.5935 ms/op
+WorkloadActual   3: 1 op, 77395700.00 ns, 77.3957 ms/op
+WorkloadActual   4: 1 op, 78096500.00 ns, 78.0965 ms/op
+WorkloadActual   5: 1 op, 77615900.00 ns, 77.6159 ms/op
+WorkloadActual   6: 1 op, 78112400.00 ns, 78.1124 ms/op
+WorkloadActual   7: 1 op, 79722200.00 ns, 79.7222 ms/op
+WorkloadActual   8: 1 op, 82062000.00 ns, 82.0620 ms/op
+WorkloadActual   9: 1 op, 79496300.00 ns, 79.4963 ms/op
+WorkloadActual  10: 1 op, 78905800.00 ns, 78.9058 ms/op
+WorkloadActual  11: 1 op, 78142500.00 ns, 78.1425 ms/op
+WorkloadActual  12: 1 op, 82578600.00 ns, 82.5786 ms/op
+WorkloadActual  13: 1 op, 77707100.00 ns, 77.7071 ms/op
+WorkloadActual  14: 1 op, 78166600.00 ns, 78.1666 ms/op
+WorkloadActual  15: 1 op, 79856300.00 ns, 79.8563 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 77668600.00 ns, 77.6686 ms/op
+WorkloadResult   2: 1 op, 77593400.00 ns, 77.5934 ms/op
+WorkloadResult   3: 1 op, 77395600.00 ns, 77.3956 ms/op
+WorkloadResult   4: 1 op, 78096400.00 ns, 78.0964 ms/op
+WorkloadResult   5: 1 op, 77615800.00 ns, 77.6158 ms/op
+WorkloadResult   6: 1 op, 78112300.00 ns, 78.1123 ms/op
+WorkloadResult   7: 1 op, 79722100.00 ns, 79.7221 ms/op
+WorkloadResult   8: 1 op, 82061900.00 ns, 82.0619 ms/op
+WorkloadResult   9: 1 op, 79496200.00 ns, 79.4962 ms/op
+WorkloadResult  10: 1 op, 78905700.00 ns, 78.9057 ms/op
+WorkloadResult  11: 1 op, 78142400.00 ns, 78.1424 ms/op
+WorkloadResult  12: 1 op, 77707000.00 ns, 77.7070 ms/op
+WorkloadResult  13: 1 op, 78166500.00 ns, 78.1665 ms/op
+WorkloadResult  14: 1 op, 79856200.00 ns, 79.8562 ms/op
+
+// AfterAll
+// Benchmark Process 29724 has exited with code 0.
+
+Mean = 78.610 ms, StdErr = 0.345 ms (0.44%), N = 14, StdDev = 1.292 ms
+Min = 77.396 ms, Q1 = 77.678 ms, Median = 78.127 ms, Q3 = 79.349 ms, Max = 82.062 ms
+IQR = 1.670 ms, LowerFence = 75.173 ms, UpperFence = 81.854 ms
+ConfidenceInterval = [77.152 ms; 80.068 ms] (CI 99.9%), Margin = 1.458 ms (1.85% of Mean)
+Skewness = 1.3, Kurtosis = 3.91, MValue = 2
+
+// **************************
+// Benchmark: EcsContext_CreateEntity.CreateEntity_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BenchmarkTest\bin\Release\fb245b89-613c-46c4-9fcd-7d55b25cf5d3.exe --benchmarkName "EcsLte.BenchmarkTest.EcsContextTests.EcsContext_CreateEntity.CreateEntity_Reuse(CompArr: Normal_x1)" --job "InvocationCount=1, UnrollFactor=1" --benchmarkId 3 in 
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// Runtime=.NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
+// GC=Concurrent Workstation
+// Job: Job-FTOBUC(InvocationCount=1, UnrollFactor=1)
+
+OverheadJitting  1: 1 op, 136900.00 ns, 136.9000 us/op
+WorkloadJitting  1: 1 op, 89778600.00 ns, 89.7786 ms/op
+
+OverheadWarmup   1: 1 op, 2200.00 ns, 2.2000 us/op
+OverheadWarmup   2: 1 op, 300.00 ns, 300.0000 ns/op
+OverheadWarmup   3: 1 op, 300.00 ns, 300.0000 ns/op
+OverheadWarmup   4: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadWarmup   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   6: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadWarmup   7: 1 op, 100.00 ns, 100.0000 ns/op
+
+OverheadActual   1: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   2: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   3: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   4: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   5: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   6: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   7: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   8: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   9: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  10: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  11: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  12: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  13: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  14: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  15: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  16: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  17: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  18: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  19: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  20: 1 op, 100.00 ns, 100.0000 ns/op
+
+
+System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation. ---> System.ArgumentOutOfRangeException: Index was out of range. Must be non-negative and less than the size of the collection.
+Parameter name: index
+   at System.ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument argument, ExceptionResource resource)
+   at EcsLte.ArcheTypeManager.GetArcheTypeDataFromIndex(ArcheTypeIndex archeTypeIndex)
+   at EcsLte.ArcheTypeManager.GetArcheTypeDataFromBlueprint(EntityBlueprint blueprint)
+   at EcsLte.EntityManager.CreateEntity(EntityBlueprint blueprint)
+   at EcsLte.BenchmarkTest.EcsContextTests.EcsContext_CreateEntity.CreateEntity_Reuse() in C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BenchmarkTest\EcsContextTests\EcsContext_CreateEntity.cs:line 80
+   at BenchmarkDotNet.Autogenerated.Runnable_3.WorkloadActionUnroll(Int64 invokeCount)
+   at BenchmarkDotNet.Engines.Engine.RunIteration(IterationData data)
+   at BenchmarkDotNet.Engines.EngineStage.RunIteration(IterationMode mode, IterationStage stage, Int32 index, Int64 invokeCount, Int32 unrollFactor)
+   at BenchmarkDotNet.Engines.EngineStage.Run(IStoppingCriteria criteria, Int64 invokeCount, IterationMode mode, IterationStage stage, Int32 unrollFactor)
+   at BenchmarkDotNet.Engines.EngineWarmupStage.Run(Int64 invokeCount, IterationMode iterationMode, Int32 unrollFactor, RunStrategy runStrategy)
+   at BenchmarkDotNet.Engines.Engine.Run()
+   at BenchmarkDotNet.Autogenerated.Runnable_3.Run(IHost host, String benchmarkName)
+   --- End of inner exception stack trace ---
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Object[] arguments, Signature sig, Boolean constructor)
+   at System.Reflection.RuntimeMethodInfo.UnsafeInvokeInternal(Object obj, Object[] parameters, Object[] arguments)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at BenchmarkDotNet.Autogenerated.UniqueProgramName.AfterAssemblyLoadingAttached(String[] args)
+// AfterAll
+// Benchmark Process 21512 has exited with code -1.
+
+
+// **************************
+// Benchmark: EcsContext_CreateEntity.DestroyEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BenchmarkTest\bin\Release\fb245b89-613c-46c4-9fcd-7d55b25cf5d3.exe --benchmarkName "EcsLte.BenchmarkTest.EcsContextTests.EcsContext_CreateEntity.DestroyEntities(CompArr: Normal_x1)" --job "InvocationCount=1, UnrollFactor=1" --benchmarkId 4 in 
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// Runtime=.NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
+// GC=Concurrent Workstation
+// Job: Job-FTOBUC(InvocationCount=1, UnrollFactor=1)
+
+OverheadJitting  1: 1 op, 139800.00 ns, 139.8000 us/op
+WorkloadJitting  1: 1 op, 40285300.00 ns, 40.2853 ms/op
+
+OverheadWarmup   1: 1 op, 2500.00 ns, 2.5000 us/op
+OverheadWarmup   2: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadWarmup   3: 1 op, 400.00 ns, 400.0000 ns/op
+OverheadWarmup   4: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadWarmup   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   6: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   7: 1 op, 200.00 ns, 200.0000 ns/op
+
+OverheadActual   1: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   2: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   3: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   4: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   6: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   7: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   8: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   9: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  10: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  11: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  12: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  13: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  14: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  15: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  16: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  17: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  18: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  19: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  20: 1 op, 100.00 ns, 100.0000 ns/op
+
+WorkloadWarmup   1: 1 op, 37592300.00 ns, 37.5923 ms/op
+WorkloadWarmup   2: 1 op, 39286400.00 ns, 39.2864 ms/op
+WorkloadWarmup   3: 1 op, 37702800.00 ns, 37.7028 ms/op
+WorkloadWarmup   4: 1 op, 37699500.00 ns, 37.6995 ms/op
+WorkloadWarmup   5: 1 op, 37442700.00 ns, 37.4427 ms/op
+WorkloadWarmup   6: 1 op, 37898800.00 ns, 37.8988 ms/op
+WorkloadWarmup   7: 1 op, 37915800.00 ns, 37.9158 ms/op
+WorkloadWarmup   8: 1 op, 37694800.00 ns, 37.6948 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 38021200.00 ns, 38.0212 ms/op
+WorkloadActual   2: 1 op, 37916400.00 ns, 37.9164 ms/op
+WorkloadActual   3: 1 op, 37593600.00 ns, 37.5936 ms/op
+WorkloadActual   4: 1 op, 37597500.00 ns, 37.5975 ms/op
+WorkloadActual   5: 1 op, 37727100.00 ns, 37.7271 ms/op
+WorkloadActual   6: 1 op, 37558700.00 ns, 37.5587 ms/op
+WorkloadActual   7: 1 op, 37384000.00 ns, 37.3840 ms/op
+WorkloadActual   8: 1 op, 38322100.00 ns, 38.3221 ms/op
+WorkloadActual   9: 1 op, 40381200.00 ns, 40.3812 ms/op
+WorkloadActual  10: 1 op, 37728600.00 ns, 37.7286 ms/op
+WorkloadActual  11: 1 op, 37562400.00 ns, 37.5624 ms/op
+WorkloadActual  12: 1 op, 37464900.00 ns, 37.4649 ms/op
+WorkloadActual  13: 1 op, 37654800.00 ns, 37.6548 ms/op
+WorkloadActual  14: 1 op, 37681700.00 ns, 37.6817 ms/op
+WorkloadActual  15: 1 op, 37780600.00 ns, 37.7806 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 38021100.00 ns, 38.0211 ms/op
+WorkloadResult   2: 1 op, 37916300.00 ns, 37.9163 ms/op
+WorkloadResult   3: 1 op, 37593500.00 ns, 37.5935 ms/op
+WorkloadResult   4: 1 op, 37597400.00 ns, 37.5974 ms/op
+WorkloadResult   5: 1 op, 37727000.00 ns, 37.7270 ms/op
+WorkloadResult   6: 1 op, 37558600.00 ns, 37.5586 ms/op
+WorkloadResult   7: 1 op, 37383900.00 ns, 37.3839 ms/op
+WorkloadResult   8: 1 op, 37728500.00 ns, 37.7285 ms/op
+WorkloadResult   9: 1 op, 37562300.00 ns, 37.5623 ms/op
+WorkloadResult  10: 1 op, 37464800.00 ns, 37.4648 ms/op
+WorkloadResult  11: 1 op, 37654700.00 ns, 37.6547 ms/op
+WorkloadResult  12: 1 op, 37681600.00 ns, 37.6816 ms/op
+WorkloadResult  13: 1 op, 37780500.00 ns, 37.7805 ms/op
+
+// AfterAll
+// Benchmark Process 29208 has exited with code 0.
+
+Mean = 37.667 ms, StdErr = 0.048 ms (0.13%), N = 13, StdDev = 0.174 ms
+Min = 37.384 ms, Q1 = 37.562 ms, Median = 37.655 ms, Q3 = 37.729 ms, Max = 38.021 ms
+IQR = 0.166 ms, LowerFence = 37.313 ms, UpperFence = 37.978 ms
+ConfidenceInterval = [37.459 ms; 37.875 ms] (CI 99.9%), Margin = 0.208 ms (0.55% of Mean)
+Skewness = 0.41, Kurtosis = 2.38, MValue = 2
+
+// **************************
+// Benchmark: EcsContext_CreateEntity.DestroyEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BenchmarkTest\bin\Release\fb245b89-613c-46c4-9fcd-7d55b25cf5d3.exe --benchmarkName "EcsLte.BenchmarkTest.EcsContextTests.EcsContext_CreateEntity.DestroyEntities_Reuse(CompArr: Normal_x1)" --job "InvocationCount=1, UnrollFactor=1" --benchmarkId 5 in 
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// Runtime=.NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
+// GC=Concurrent Workstation
+// Job: Job-FTOBUC(InvocationCount=1, UnrollFactor=1)
+
+OverheadJitting  1: 1 op, 143100.00 ns, 143.1000 us/op
+WorkloadJitting  1: 1 op, 41734200.00 ns, 41.7342 ms/op
+
+OverheadWarmup   1: 1 op, 2300.00 ns, 2.3000 us/op
+OverheadWarmup   2: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   3: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   4: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   6: 1 op, 200.00 ns, 200.0000 ns/op
+
+OverheadActual   1: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   2: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   3: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   4: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   5: 1 op, 0.00 ns, 0.0000 ns/op
+OverheadActual   6: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   7: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   8: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   9: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  10: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  11: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  12: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  13: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  14: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  15: 1 op, 300.00 ns, 300.0000 ns/op
+OverheadActual  16: 1 op, 300.00 ns, 300.0000 ns/op
+OverheadActual  17: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  18: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  19: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  20: 1 op, 100.00 ns, 100.0000 ns/op
+
+WorkloadWarmup   1: 1 op, 33696400.00 ns, 33.6964 ms/op
+WorkloadWarmup   2: 1 op, 33676900.00 ns, 33.6769 ms/op
+WorkloadWarmup   3: 1 op, 33673000.00 ns, 33.6730 ms/op
+WorkloadWarmup   4: 1 op, 33698800.00 ns, 33.6988 ms/op
+WorkloadWarmup   5: 1 op, 33876600.00 ns, 33.8766 ms/op
+WorkloadWarmup   6: 1 op, 33695200.00 ns, 33.6952 ms/op
+WorkloadWarmup   7: 1 op, 33965900.00 ns, 33.9659 ms/op
+WorkloadWarmup   8: 1 op, 33525500.00 ns, 33.5255 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 33701800.00 ns, 33.7018 ms/op
+WorkloadActual   2: 1 op, 33489700.00 ns, 33.4897 ms/op
+WorkloadActual   3: 1 op, 33734800.00 ns, 33.7348 ms/op
+WorkloadActual   4: 1 op, 33949100.00 ns, 33.9491 ms/op
+WorkloadActual   5: 1 op, 33766200.00 ns, 33.7662 ms/op
+WorkloadActual   6: 1 op, 33719500.00 ns, 33.7195 ms/op
+WorkloadActual   7: 1 op, 33922300.00 ns, 33.9223 ms/op
+WorkloadActual   8: 1 op, 34150600.00 ns, 34.1506 ms/op
+WorkloadActual   9: 1 op, 33701900.00 ns, 33.7019 ms/op
+WorkloadActual  10: 1 op, 33756000.00 ns, 33.7560 ms/op
+WorkloadActual  11: 1 op, 33675000.00 ns, 33.6750 ms/op
+WorkloadActual  12: 1 op, 33746800.00 ns, 33.7468 ms/op
+WorkloadActual  13: 1 op, 33742800.00 ns, 33.7428 ms/op
+WorkloadActual  14: 1 op, 33554000.00 ns, 33.5540 ms/op
+WorkloadActual  15: 1 op, 33894300.00 ns, 33.8943 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 33701700.00 ns, 33.7017 ms/op
+WorkloadResult   2: 1 op, 33489600.00 ns, 33.4896 ms/op
+WorkloadResult   3: 1 op, 33734700.00 ns, 33.7347 ms/op
+WorkloadResult   4: 1 op, 33949000.00 ns, 33.9490 ms/op
+WorkloadResult   5: 1 op, 33766100.00 ns, 33.7661 ms/op
+WorkloadResult   6: 1 op, 33719400.00 ns, 33.7194 ms/op
+WorkloadResult   7: 1 op, 33922200.00 ns, 33.9222 ms/op
+WorkloadResult   8: 1 op, 33701800.00 ns, 33.7018 ms/op
+WorkloadResult   9: 1 op, 33755900.00 ns, 33.7559 ms/op
+WorkloadResult  10: 1 op, 33674900.00 ns, 33.6749 ms/op
+WorkloadResult  11: 1 op, 33746700.00 ns, 33.7467 ms/op
+WorkloadResult  12: 1 op, 33742700.00 ns, 33.7427 ms/op
+WorkloadResult  13: 1 op, 33553900.00 ns, 33.5539 ms/op
+WorkloadResult  14: 1 op, 33894200.00 ns, 33.8942 ms/op
+
+// AfterAll
+// Benchmark Process 6472 has exited with code 0.
+
+Mean = 33.739 ms, StdErr = 0.034 ms (0.10%), N = 14, StdDev = 0.126 ms
+Min = 33.490 ms, Q1 = 33.702 ms, Median = 33.739 ms, Q3 = 33.764 ms, Max = 33.949 ms
+IQR = 0.062 ms, LowerFence = 33.609 ms, UpperFence = 33.856 ms
+ConfidenceInterval = [33.597 ms; 33.882 ms] (CI 99.9%), Margin = 0.142 ms (0.42% of Mean)
+Skewness = -0.12, Kurtosis = 2.47, MValue = 2
+
+// **************************
+// Benchmark: EcsContext_CreateEntity.DestroyEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BenchmarkTest\bin\Release\fb245b89-613c-46c4-9fcd-7d55b25cf5d3.exe --benchmarkName "EcsLte.BenchmarkTest.EcsContextTests.EcsContext_CreateEntity.DestroyEntity(CompArr: Normal_x1)" --job "InvocationCount=1, UnrollFactor=1" --benchmarkId 6 in 
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// Runtime=.NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
+// GC=Concurrent Workstation
+// Job: Job-FTOBUC(InvocationCount=1, UnrollFactor=1)
+
+OverheadJitting  1: 1 op, 144700.00 ns, 144.7000 us/op
+WorkloadJitting  1: 1 op, 44415600.00 ns, 44.4156 ms/op
+
+OverheadWarmup   1: 1 op, 5400.00 ns, 5.4000 us/op
+OverheadWarmup   2: 1 op, 300.00 ns, 300.0000 ns/op
+OverheadWarmup   3: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   4: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadWarmup   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   6: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   7: 1 op, 100.00 ns, 100.0000 ns/op
+
+OverheadActual   1: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   2: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   3: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   4: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   5: 1 op, 300.00 ns, 300.0000 ns/op
+OverheadActual   6: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   7: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   8: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   9: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  10: 1 op, 300.00 ns, 300.0000 ns/op
+OverheadActual  11: 1 op, 300.00 ns, 300.0000 ns/op
+OverheadActual  12: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  13: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  14: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  15: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  16: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  17: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  18: 1 op, 300.00 ns, 300.0000 ns/op
+OverheadActual  19: 1 op, 300.00 ns, 300.0000 ns/op
+OverheadActual  20: 1 op, 100.00 ns, 100.0000 ns/op
+
+WorkloadWarmup   1: 1 op, 43755400.00 ns, 43.7554 ms/op
+WorkloadWarmup   2: 1 op, 42453200.00 ns, 42.4532 ms/op
+WorkloadWarmup   3: 1 op, 41796000.00 ns, 41.7960 ms/op
+WorkloadWarmup   4: 1 op, 42027400.00 ns, 42.0274 ms/op
+WorkloadWarmup   5: 1 op, 41985000.00 ns, 41.9850 ms/op
+WorkloadWarmup   6: 1 op, 43146100.00 ns, 43.1461 ms/op
+WorkloadWarmup   7: 1 op, 43535600.00 ns, 43.5356 ms/op
+WorkloadWarmup   8: 1 op, 43491500.00 ns, 43.4915 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 42022000.00 ns, 42.0220 ms/op
+WorkloadActual   2: 1 op, 42574400.00 ns, 42.5744 ms/op
+WorkloadActual   3: 1 op, 43421300.00 ns, 43.4213 ms/op
+WorkloadActual   4: 1 op, 44874500.00 ns, 44.8745 ms/op
+WorkloadActual   5: 1 op, 43896200.00 ns, 43.8962 ms/op
+WorkloadActual   6: 1 op, 42917900.00 ns, 42.9179 ms/op
+WorkloadActual   7: 1 op, 43286800.00 ns, 43.2868 ms/op
+WorkloadActual   8: 1 op, 44123800.00 ns, 44.1238 ms/op
+WorkloadActual   9: 1 op, 43955800.00 ns, 43.9558 ms/op
+WorkloadActual  10: 1 op, 42332500.00 ns, 42.3325 ms/op
+WorkloadActual  11: 1 op, 42016800.00 ns, 42.0168 ms/op
+WorkloadActual  12: 1 op, 41749700.00 ns, 41.7497 ms/op
+WorkloadActual  13: 1 op, 41830700.00 ns, 41.8307 ms/op
+WorkloadActual  14: 1 op, 42986100.00 ns, 42.9861 ms/op
+WorkloadActual  15: 1 op, 43805300.00 ns, 43.8053 ms/op
+WorkloadActual  16: 1 op, 43207100.00 ns, 43.2071 ms/op
+WorkloadActual  17: 1 op, 51388000.00 ns, 51.3880 ms/op
+WorkloadActual  18: 1 op, 43861700.00 ns, 43.8617 ms/op
+WorkloadActual  19: 1 op, 42754500.00 ns, 42.7545 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 42021800.00 ns, 42.0218 ms/op
+WorkloadResult   2: 1 op, 42574200.00 ns, 42.5742 ms/op
+WorkloadResult   3: 1 op, 43421100.00 ns, 43.4211 ms/op
+WorkloadResult   4: 1 op, 44874300.00 ns, 44.8743 ms/op
+WorkloadResult   5: 1 op, 43896000.00 ns, 43.8960 ms/op
+WorkloadResult   6: 1 op, 42917700.00 ns, 42.9177 ms/op
+WorkloadResult   7: 1 op, 43286600.00 ns, 43.2866 ms/op
+WorkloadResult   8: 1 op, 44123600.00 ns, 44.1236 ms/op
+WorkloadResult   9: 1 op, 43955600.00 ns, 43.9556 ms/op
+WorkloadResult  10: 1 op, 42332300.00 ns, 42.3323 ms/op
+WorkloadResult  11: 1 op, 42016600.00 ns, 42.0166 ms/op
+WorkloadResult  12: 1 op, 41749500.00 ns, 41.7495 ms/op
+WorkloadResult  13: 1 op, 41830500.00 ns, 41.8305 ms/op
+WorkloadResult  14: 1 op, 42985900.00 ns, 42.9859 ms/op
+WorkloadResult  15: 1 op, 43805100.00 ns, 43.8051 ms/op
+WorkloadResult  16: 1 op, 43206900.00 ns, 43.2069 ms/op
+WorkloadResult  17: 1 op, 43861500.00 ns, 43.8615 ms/op
+WorkloadResult  18: 1 op, 42754300.00 ns, 42.7543 ms/op
+
+// AfterAll
+// Benchmark Process 11200 has exited with code 0.
+
+Mean = 43.090 ms, StdErr = 0.211 ms (0.49%), N = 18, StdDev = 0.894 ms
+Min = 41.750 ms, Q1 = 42.393 ms, Median = 43.096 ms, Q3 = 43.847 ms, Max = 44.874 ms
+IQR = 1.455 ms, LowerFence = 40.211 ms, UpperFence = 46.029 ms
+ConfidenceInterval = [42.254 ms; 43.925 ms] (CI 99.9%), Margin = 0.836 ms (1.94% of Mean)
+Skewness = 0.11, Kurtosis = 1.89, MValue = 2
+
+// **************************
+// Benchmark: EcsContext_CreateEntity.DestroyEntity_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x1]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BenchmarkTest\bin\Release\fb245b89-613c-46c4-9fcd-7d55b25cf5d3.exe --benchmarkName "EcsLte.BenchmarkTest.EcsContextTests.EcsContext_CreateEntity.DestroyEntity_Reuse(CompArr: Normal_x1)" --job "InvocationCount=1, UnrollFactor=1" --benchmarkId 7 in 
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// Runtime=.NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
+// GC=Concurrent Workstation
+// Job: Job-FTOBUC(InvocationCount=1, UnrollFactor=1)
+
+OverheadJitting  1: 1 op, 143700.00 ns, 143.7000 us/op
+WorkloadJitting  1: 1 op, 43432200.00 ns, 43.4322 ms/op
+
+OverheadWarmup   1: 1 op, 2100.00 ns, 2.1000 us/op
+OverheadWarmup   2: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadWarmup   3: 1 op, 300.00 ns, 300.0000 ns/op
+OverheadWarmup   4: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   5: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadWarmup   6: 1 op, 100.00 ns, 100.0000 ns/op
+
+OverheadActual   1: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   2: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   3: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   4: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   6: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   7: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   8: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   9: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  10: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  11: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  12: 1 op, 0.00 ns, 0.0000 ns/op
+OverheadActual  13: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  14: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  15: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  16: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  17: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  18: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  19: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  20: 1 op, 100.00 ns, 100.0000 ns/op
+
+WorkloadWarmup   1: 1 op, 38871600.00 ns, 38.8716 ms/op
+WorkloadWarmup   2: 1 op, 39288000.00 ns, 39.2880 ms/op
+WorkloadWarmup   3: 1 op, 39584900.00 ns, 39.5849 ms/op
+WorkloadWarmup   4: 1 op, 39253900.00 ns, 39.2539 ms/op
+WorkloadWarmup   5: 1 op, 38261100.00 ns, 38.2611 ms/op
+WorkloadWarmup   6: 1 op, 38020200.00 ns, 38.0202 ms/op
+WorkloadWarmup   7: 1 op, 38114900.00 ns, 38.1149 ms/op
+WorkloadWarmup   8: 1 op, 38180600.00 ns, 38.1806 ms/op
+WorkloadWarmup   9: 1 op, 38887500.00 ns, 38.8875 ms/op
+WorkloadWarmup  10: 1 op, 39120900.00 ns, 39.1209 ms/op
+WorkloadWarmup  11: 1 op, 39124300.00 ns, 39.1243 ms/op
+WorkloadWarmup  12: 1 op, 38179500.00 ns, 38.1795 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 37943400.00 ns, 37.9434 ms/op
+WorkloadActual   2: 1 op, 38437000.00 ns, 38.4370 ms/op
+WorkloadActual   3: 1 op, 38717000.00 ns, 38.7170 ms/op
+WorkloadActual   4: 1 op, 38981300.00 ns, 38.9813 ms/op
+WorkloadActual   5: 1 op, 39256300.00 ns, 39.2563 ms/op
+WorkloadActual   6: 1 op, 40265000.00 ns, 40.2650 ms/op
+WorkloadActual   7: 1 op, 39415000.00 ns, 39.4150 ms/op
+WorkloadActual   8: 1 op, 38521400.00 ns, 38.5214 ms/op
+WorkloadActual   9: 1 op, 38189800.00 ns, 38.1898 ms/op
+WorkloadActual  10: 1 op, 38014000.00 ns, 38.0140 ms/op
+WorkloadActual  11: 1 op, 38279400.00 ns, 38.2794 ms/op
+WorkloadActual  12: 1 op, 38157600.00 ns, 38.1576 ms/op
+WorkloadActual  13: 1 op, 38177900.00 ns, 38.1779 ms/op
+WorkloadActual  14: 1 op, 38821500.00 ns, 38.8215 ms/op
+WorkloadActual  15: 1 op, 38951900.00 ns, 38.9519 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 37943300.00 ns, 37.9433 ms/op
+WorkloadResult   2: 1 op, 38436900.00 ns, 38.4369 ms/op
+WorkloadResult   3: 1 op, 38716900.00 ns, 38.7169 ms/op
+WorkloadResult   4: 1 op, 38981200.00 ns, 38.9812 ms/op
+WorkloadResult   5: 1 op, 39256200.00 ns, 39.2562 ms/op
+WorkloadResult   6: 1 op, 39414900.00 ns, 39.4149 ms/op
+WorkloadResult   7: 1 op, 38521300.00 ns, 38.5213 ms/op
+WorkloadResult   8: 1 op, 38189700.00 ns, 38.1897 ms/op
+WorkloadResult   9: 1 op, 38013900.00 ns, 38.0139 ms/op
+WorkloadResult  10: 1 op, 38279300.00 ns, 38.2793 ms/op
+WorkloadResult  11: 1 op, 38157500.00 ns, 38.1575 ms/op
+WorkloadResult  12: 1 op, 38177800.00 ns, 38.1778 ms/op
+WorkloadResult  13: 1 op, 38821400.00 ns, 38.8214 ms/op
+WorkloadResult  14: 1 op, 38951800.00 ns, 38.9518 ms/op
+
+// AfterAll
+// Benchmark Process 14716 has exited with code 0.
+
+Mean = 38.562 ms, StdErr = 0.125 ms (0.33%), N = 14, StdDev = 0.469 ms
+Min = 37.943 ms, Q1 = 38.181 ms, Median = 38.479 ms, Q3 = 38.919 ms, Max = 39.415 ms
+IQR = 0.738 ms, LowerFence = 37.073 ms, UpperFence = 40.027 ms
+ConfidenceInterval = [38.033 ms; 39.091 ms] (CI 99.9%), Margin = 0.529 ms (1.37% of Mean)
+Skewness = 0.35, Kurtosis = 1.67, MValue = 2
+
+// **************************
+// Benchmark: EcsContext_CreateEntity.CreateEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BenchmarkTest\bin\Release\fb245b89-613c-46c4-9fcd-7d55b25cf5d3.exe --benchmarkName "EcsLte.BenchmarkTest.EcsContextTests.EcsContext_CreateEntity.CreateEntities(CompArr: Normal_x2)" --job "InvocationCount=1, UnrollFactor=1" --benchmarkId 8 in 
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// Runtime=.NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
+// GC=Concurrent Workstation
+// Job: Job-FTOBUC(InvocationCount=1, UnrollFactor=1)
+
+OverheadJitting  1: 1 op, 141500.00 ns, 141.5000 us/op
+WorkloadJitting  1: 1 op, 42316800.00 ns, 42.3168 ms/op
+
+OverheadWarmup   1: 1 op, 2300.00 ns, 2.3000 us/op
+OverheadWarmup   2: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadWarmup   3: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   4: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadWarmup   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   6: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   7: 1 op, 200.00 ns, 200.0000 ns/op
+
+OverheadActual   1: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   2: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   3: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   4: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   6: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   7: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   8: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   9: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  10: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  11: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  12: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  13: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  14: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  15: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  16: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  17: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  18: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  19: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  20: 1 op, 0.00 ns, 0.0000 ns/op
+
+WorkloadWarmup   1: 1 op, 31375200.00 ns, 31.3752 ms/op
+WorkloadWarmup   2: 1 op, 31080800.00 ns, 31.0808 ms/op
+WorkloadWarmup   3: 1 op, 31192000.00 ns, 31.1920 ms/op
+WorkloadWarmup   4: 1 op, 31109900.00 ns, 31.1099 ms/op
+WorkloadWarmup   5: 1 op, 31061800.00 ns, 31.0618 ms/op
+WorkloadWarmup   6: 1 op, 31388500.00 ns, 31.3885 ms/op
+WorkloadWarmup   7: 1 op, 31198700.00 ns, 31.1987 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 31035200.00 ns, 31.0352 ms/op
+WorkloadActual   2: 1 op, 31318600.00 ns, 31.3186 ms/op
+WorkloadActual   3: 1 op, 31277700.00 ns, 31.2777 ms/op
+WorkloadActual   4: 1 op, 31661200.00 ns, 31.6612 ms/op
+WorkloadActual   5: 1 op, 30982000.00 ns, 30.9820 ms/op
+WorkloadActual   6: 1 op, 31379600.00 ns, 31.3796 ms/op
+WorkloadActual   7: 1 op, 31282900.00 ns, 31.2829 ms/op
+WorkloadActual   8: 1 op, 31158800.00 ns, 31.1588 ms/op
+WorkloadActual   9: 1 op, 31120600.00 ns, 31.1206 ms/op
+WorkloadActual  10: 1 op, 31109100.00 ns, 31.1091 ms/op
+WorkloadActual  11: 1 op, 31357700.00 ns, 31.3577 ms/op
+WorkloadActual  12: 1 op, 31091700.00 ns, 31.0917 ms/op
+WorkloadActual  13: 1 op, 31583600.00 ns, 31.5836 ms/op
+WorkloadActual  14: 1 op, 31157100.00 ns, 31.1571 ms/op
+WorkloadActual  15: 1 op, 30992500.00 ns, 30.9925 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 31035100.00 ns, 31.0351 ms/op
+WorkloadResult   2: 1 op, 31318500.00 ns, 31.3185 ms/op
+WorkloadResult   3: 1 op, 31277600.00 ns, 31.2776 ms/op
+WorkloadResult   4: 1 op, 31661100.00 ns, 31.6611 ms/op
+WorkloadResult   5: 1 op, 30981900.00 ns, 30.9819 ms/op
+WorkloadResult   6: 1 op, 31379500.00 ns, 31.3795 ms/op
+WorkloadResult   7: 1 op, 31282800.00 ns, 31.2828 ms/op
+WorkloadResult   8: 1 op, 31158700.00 ns, 31.1587 ms/op
+WorkloadResult   9: 1 op, 31120500.00 ns, 31.1205 ms/op
+WorkloadResult  10: 1 op, 31109000.00 ns, 31.1090 ms/op
+WorkloadResult  11: 1 op, 31357600.00 ns, 31.3576 ms/op
+WorkloadResult  12: 1 op, 31091600.00 ns, 31.0916 ms/op
+WorkloadResult  13: 1 op, 31583500.00 ns, 31.5835 ms/op
+WorkloadResult  14: 1 op, 31157000.00 ns, 31.1570 ms/op
+WorkloadResult  15: 1 op, 30992400.00 ns, 30.9924 ms/op
+
+// AfterAll
+// Benchmark Process 11132 has exited with code 0.
+
+Mean = 31.234 ms, StdErr = 0.052 ms (0.17%), N = 15, StdDev = 0.203 ms
+Min = 30.982 ms, Q1 = 31.100 ms, Median = 31.159 ms, Q3 = 31.338 ms, Max = 31.661 ms
+IQR = 0.238 ms, LowerFence = 30.744 ms, UpperFence = 31.695 ms
+ConfidenceInterval = [31.017 ms; 31.450 ms] (CI 99.9%), Margin = 0.217 ms (0.69% of Mean)
+Skewness = 0.65, Kurtosis = 2.33, MValue = 2
+
+// **************************
+// Benchmark: EcsContext_CreateEntity.CreateEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BenchmarkTest\bin\Release\fb245b89-613c-46c4-9fcd-7d55b25cf5d3.exe --benchmarkName "EcsLte.BenchmarkTest.EcsContextTests.EcsContext_CreateEntity.CreateEntities_Reuse(CompArr: Normal_x2)" --job "InvocationCount=1, UnrollFactor=1" --benchmarkId 9 in 
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// Runtime=.NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
+// GC=Concurrent Workstation
+// Job: Job-FTOBUC(InvocationCount=1, UnrollFactor=1)
+
+OverheadJitting  1: 1 op, 139700.00 ns, 139.7000 us/op
+WorkloadJitting  1: 1 op, 42463200.00 ns, 42.4632 ms/op
+
+OverheadWarmup   1: 1 op, 2300.00 ns, 2.3000 us/op
+OverheadWarmup   2: 1 op, 400.00 ns, 400.0000 ns/op
+OverheadWarmup   3: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   4: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   6: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   7: 1 op, 100.00 ns, 100.0000 ns/op
+
+OverheadActual   1: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   2: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   3: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   4: 1 op, 400.00 ns, 400.0000 ns/op
+OverheadActual   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   6: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   7: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   8: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   9: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  10: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  11: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  12: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  13: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  14: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  15: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  16: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  17: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  18: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  19: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  20: 1 op, 200.00 ns, 200.0000 ns/op
+
+WorkloadWarmup   1: 1 op, 31445200.00 ns, 31.4452 ms/op
+WorkloadWarmup   2: 1 op, 30560000.00 ns, 30.5600 ms/op
+WorkloadWarmup   3: 1 op, 29263100.00 ns, 29.2631 ms/op
+WorkloadWarmup   4: 1 op, 29865800.00 ns, 29.8658 ms/op
+WorkloadWarmup   5: 1 op, 28971300.00 ns, 28.9713 ms/op
+WorkloadWarmup   6: 1 op, 31089000.00 ns, 31.0890 ms/op
+WorkloadWarmup   7: 1 op, 28914600.00 ns, 28.9146 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 24909500.00 ns, 24.9095 ms/op
+WorkloadActual   2: 1 op, 24348100.00 ns, 24.3481 ms/op
+WorkloadActual   3: 1 op, 24718000.00 ns, 24.7180 ms/op
+WorkloadActual   4: 1 op, 23863900.00 ns, 23.8639 ms/op
+WorkloadActual   5: 1 op, 24869100.00 ns, 24.8691 ms/op
+WorkloadActual   6: 1 op, 23868600.00 ns, 23.8686 ms/op
+WorkloadActual   7: 1 op, 24822900.00 ns, 24.8229 ms/op
+WorkloadActual   8: 1 op, 23679500.00 ns, 23.6795 ms/op
+WorkloadActual   9: 1 op, 24650200.00 ns, 24.6502 ms/op
+WorkloadActual  10: 1 op, 23882900.00 ns, 23.8829 ms/op
+WorkloadActual  11: 1 op, 25142500.00 ns, 25.1425 ms/op
+WorkloadActual  12: 1 op, 23787300.00 ns, 23.7873 ms/op
+WorkloadActual  13: 1 op, 24593000.00 ns, 24.5930 ms/op
+WorkloadActual  14: 1 op, 23784200.00 ns, 23.7842 ms/op
+WorkloadActual  15: 1 op, 25094900.00 ns, 25.0949 ms/op
+WorkloadActual  16: 1 op, 23896100.00 ns, 23.8961 ms/op
+WorkloadActual  17: 1 op, 24717400.00 ns, 24.7174 ms/op
+WorkloadActual  18: 1 op, 23857600.00 ns, 23.8576 ms/op
+WorkloadActual  19: 1 op, 24737000.00 ns, 24.7370 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 24909400.00 ns, 24.9094 ms/op
+WorkloadResult   2: 1 op, 24348000.00 ns, 24.3480 ms/op
+WorkloadResult   3: 1 op, 24717900.00 ns, 24.7179 ms/op
+WorkloadResult   4: 1 op, 23863800.00 ns, 23.8638 ms/op
+WorkloadResult   5: 1 op, 24869000.00 ns, 24.8690 ms/op
+WorkloadResult   6: 1 op, 23868500.00 ns, 23.8685 ms/op
+WorkloadResult   7: 1 op, 24822800.00 ns, 24.8228 ms/op
+WorkloadResult   8: 1 op, 23679400.00 ns, 23.6794 ms/op
+WorkloadResult   9: 1 op, 24650100.00 ns, 24.6501 ms/op
+WorkloadResult  10: 1 op, 23882800.00 ns, 23.8828 ms/op
+WorkloadResult  11: 1 op, 25142400.00 ns, 25.1424 ms/op
+WorkloadResult  12: 1 op, 23787200.00 ns, 23.7872 ms/op
+WorkloadResult  13: 1 op, 24592900.00 ns, 24.5929 ms/op
+WorkloadResult  14: 1 op, 23784100.00 ns, 23.7841 ms/op
+WorkloadResult  15: 1 op, 25094800.00 ns, 25.0948 ms/op
+WorkloadResult  16: 1 op, 23896000.00 ns, 23.8960 ms/op
+WorkloadResult  17: 1 op, 24717300.00 ns, 24.7173 ms/op
+WorkloadResult  18: 1 op, 23857500.00 ns, 23.8575 ms/op
+WorkloadResult  19: 1 op, 24736900.00 ns, 24.7369 ms/op
+
+// AfterAll
+// Benchmark Process 26636 has exited with code 0.
+
+Mean = 24.380 ms, StdErr = 0.118 ms (0.48%), N = 19, StdDev = 0.514 ms
+Min = 23.679 ms, Q1 = 23.866 ms, Median = 24.593 ms, Q3 = 24.780 ms, Max = 25.142 ms
+IQR = 0.914 ms, LowerFence = 22.496 ms, UpperFence = 26.150 ms
+ConfidenceInterval = [23.917 ms; 24.843 ms] (CI 99.9%), Margin = 0.463 ms (1.90% of Mean)
+Skewness = -0.04, Kurtosis = 1.24, MValue = 3.33
+
+// **************************
+// Benchmark: EcsContext_CreateEntity.CreateEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BenchmarkTest\bin\Release\fb245b89-613c-46c4-9fcd-7d55b25cf5d3.exe --benchmarkName "EcsLte.BenchmarkTest.EcsContextTests.EcsContext_CreateEntity.CreateEntity(CompArr: Normal_x2)" --job "InvocationCount=1, UnrollFactor=1" --benchmarkId 10 in 
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// Runtime=.NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
+// GC=Concurrent Workstation
+// Job: Job-FTOBUC(InvocationCount=1, UnrollFactor=1)
+
+OverheadJitting  1: 1 op, 139800.00 ns, 139.8000 us/op
+WorkloadJitting  1: 1 op, 102636400.00 ns, 102.6364 ms/op
+
+OverheadWarmup   1: 1 op, 2300.00 ns, 2.3000 us/op
+OverheadWarmup   2: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   3: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   4: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   6: 1 op, 100.00 ns, 100.0000 ns/op
+
+OverheadActual   1: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   2: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   3: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   4: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   6: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   7: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   8: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   9: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  10: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  11: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  12: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  13: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  14: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  15: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  16: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  17: 1 op, 100.00 ns, 100.0000 ns/op
+
+WorkloadWarmup   1: 1 op, 90137000.00 ns, 90.1370 ms/op
+WorkloadWarmup   2: 1 op, 89543900.00 ns, 89.5439 ms/op
+WorkloadWarmup   3: 1 op, 89817400.00 ns, 89.8174 ms/op
+WorkloadWarmup   4: 1 op, 90880500.00 ns, 90.8805 ms/op
+WorkloadWarmup   5: 1 op, 93245000.00 ns, 93.2450 ms/op
+WorkloadWarmup   6: 1 op, 90088500.00 ns, 90.0885 ms/op
+WorkloadWarmup   7: 1 op, 88991900.00 ns, 88.9919 ms/op
+WorkloadWarmup   8: 1 op, 89602000.00 ns, 89.6020 ms/op
+WorkloadWarmup   9: 1 op, 89161300.00 ns, 89.1613 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 89910100.00 ns, 89.9101 ms/op
+WorkloadActual   2: 1 op, 88947800.00 ns, 88.9478 ms/op
+WorkloadActual   3: 1 op, 89564600.00 ns, 89.5646 ms/op
+WorkloadActual   4: 1 op, 88647900.00 ns, 88.6479 ms/op
+WorkloadActual   5: 1 op, 98629800.00 ns, 98.6298 ms/op
+WorkloadActual   6: 1 op, 95635100.00 ns, 95.6351 ms/op
+WorkloadActual   7: 1 op, 97864700.00 ns, 97.8647 ms/op
+WorkloadActual   8: 1 op, 89383600.00 ns, 89.3836 ms/op
+WorkloadActual   9: 1 op, 89894100.00 ns, 89.8941 ms/op
+WorkloadActual  10: 1 op, 90317800.00 ns, 90.3178 ms/op
+WorkloadActual  11: 1 op, 89692600.00 ns, 89.6926 ms/op
+WorkloadActual  12: 1 op, 89919100.00 ns, 89.9191 ms/op
+WorkloadActual  13: 1 op, 90773000.00 ns, 90.7730 ms/op
+WorkloadActual  14: 1 op, 89075200.00 ns, 89.0752 ms/op
+WorkloadActual  15: 1 op, 90104400.00 ns, 90.1044 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 89910000.00 ns, 89.9100 ms/op
+WorkloadResult   2: 1 op, 88947700.00 ns, 88.9477 ms/op
+WorkloadResult   3: 1 op, 89564500.00 ns, 89.5645 ms/op
+WorkloadResult   4: 1 op, 88647800.00 ns, 88.6478 ms/op
+WorkloadResult   5: 1 op, 89383500.00 ns, 89.3835 ms/op
+WorkloadResult   6: 1 op, 89894000.00 ns, 89.8940 ms/op
+WorkloadResult   7: 1 op, 90317700.00 ns, 90.3177 ms/op
+WorkloadResult   8: 1 op, 89692500.00 ns, 89.6925 ms/op
+WorkloadResult   9: 1 op, 89919000.00 ns, 89.9190 ms/op
+WorkloadResult  10: 1 op, 90772900.00 ns, 90.7729 ms/op
+WorkloadResult  11: 1 op, 89075100.00 ns, 89.0751 ms/op
+WorkloadResult  12: 1 op, 90104300.00 ns, 90.1043 ms/op
+
+// AfterAll
+// Benchmark Process 23156 has exited with code 0.
+
+Mean = 89.686 ms, StdErr = 0.174 ms (0.19%), N = 12, StdDev = 0.603 ms
+Min = 88.648 ms, Q1 = 89.306 ms, Median = 89.793 ms, Q3 = 89.965 ms, Max = 90.773 ms
+IQR = 0.659 ms, LowerFence = 88.318 ms, UpperFence = 90.954 ms
+ConfidenceInterval = [88.913 ms; 90.459 ms] (CI 99.9%), Margin = 0.773 ms (0.86% of Mean)
+Skewness = -0.05, Kurtosis = 2.01, MValue = 2
+
+// **************************
+// Benchmark: EcsContext_CreateEntity.CreateEntity_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BenchmarkTest\bin\Release\fb245b89-613c-46c4-9fcd-7d55b25cf5d3.exe --benchmarkName "EcsLte.BenchmarkTest.EcsContextTests.EcsContext_CreateEntity.CreateEntity_Reuse(CompArr: Normal_x2)" --job "InvocationCount=1, UnrollFactor=1" --benchmarkId 11 in 
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// Runtime=.NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
+// GC=Concurrent Workstation
+// Job: Job-FTOBUC(InvocationCount=1, UnrollFactor=1)
+
+OverheadJitting  1: 1 op, 145100.00 ns, 145.1000 us/op
+WorkloadJitting  1: 1 op, 99502900.00 ns, 99.5029 ms/op
+
+OverheadWarmup   1: 1 op, 2400.00 ns, 2.4000 us/op
+OverheadWarmup   2: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   3: 1 op, 300.00 ns, 300.0000 ns/op
+OverheadWarmup   4: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadWarmup   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   6: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   7: 1 op, 200.00 ns, 200.0000 ns/op
+
+OverheadActual   1: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   2: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   3: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   4: 1 op, 300.00 ns, 300.0000 ns/op
+OverheadActual   5: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   6: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   7: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   8: 1 op, 300.00 ns, 300.0000 ns/op
+OverheadActual   9: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  10: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  11: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  12: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  13: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  14: 1 op, 300.00 ns, 300.0000 ns/op
+OverheadActual  15: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  16: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  17: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  18: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  19: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  20: 1 op, 100.00 ns, 100.0000 ns/op
+
+
+System.Reflection.TargetInvocationException: Exception has been thrown by the target of an invocation. ---> System.ArgumentOutOfRangeException: Index was out of range. Must be non-negative and less than the size of the collection.
+Parameter name: index
+   at System.ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument argument, ExceptionResource resource)
+   at EcsLte.ArcheTypeManager.GetArcheTypeDataFromIndex(ArcheTypeIndex archeTypeIndex)
+   at EcsLte.ArcheTypeManager.GetArcheTypeDataFromBlueprint(EntityBlueprint blueprint)
+   at EcsLte.EntityManager.CreateEntity(EntityBlueprint blueprint)
+   at EcsLte.BenchmarkTest.EcsContextTests.EcsContext_CreateEntity.CreateEntity_Reuse() in C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BenchmarkTest\EcsContextTests\EcsContext_CreateEntity.cs:line 80
+   at BenchmarkDotNet.Autogenerated.Runnable_11.WorkloadActionUnroll(Int64 invokeCount)
+   at BenchmarkDotNet.Engines.Engine.RunIteration(IterationData data)
+   at BenchmarkDotNet.Engines.EngineStage.RunIteration(IterationMode mode, IterationStage stage, Int32 index, Int64 invokeCount, Int32 unrollFactor)
+   at BenchmarkDotNet.Engines.EngineStage.Run(IStoppingCriteria criteria, Int64 invokeCount, IterationMode mode, IterationStage stage, Int32 unrollFactor)
+   at BenchmarkDotNet.Engines.EngineWarmupStage.Run(Int64 invokeCount, IterationMode iterationMode, Int32 unrollFactor, RunStrategy runStrategy)
+   at BenchmarkDotNet.Engines.Engine.Run()
+   at BenchmarkDotNet.Autogenerated.Runnable_11.Run(IHost host, String benchmarkName)
+   --- End of inner exception stack trace ---
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Object[] arguments, Signature sig, Boolean constructor)
+   at System.Reflection.RuntimeMethodInfo.UnsafeInvokeInternal(Object obj, Object[] parameters, Object[] arguments)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at BenchmarkDotNet.Autogenerated.UniqueProgramName.AfterAssemblyLoadingAttached(String[] args)
+// AfterAll
+// Benchmark Process 19380 has exited with code -1.
+
+
+// **************************
+// Benchmark: EcsContext_CreateEntity.DestroyEntities: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BenchmarkTest\bin\Release\fb245b89-613c-46c4-9fcd-7d55b25cf5d3.exe --benchmarkName "EcsLte.BenchmarkTest.EcsContextTests.EcsContext_CreateEntity.DestroyEntities(CompArr: Normal_x2)" --job "InvocationCount=1, UnrollFactor=1" --benchmarkId 12 in 
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// Runtime=.NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
+// GC=Concurrent Workstation
+// Job: Job-FTOBUC(InvocationCount=1, UnrollFactor=1)
+
+OverheadJitting  1: 1 op, 142100.00 ns, 142.1000 us/op
+WorkloadJitting  1: 1 op, 43897400.00 ns, 43.8974 ms/op
+
+OverheadWarmup   1: 1 op, 2300.00 ns, 2.3000 us/op
+OverheadWarmup   2: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   3: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadWarmup   4: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   6: 1 op, 100.00 ns, 100.0000 ns/op
+
+OverheadActual   1: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   2: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   3: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   4: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   6: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   7: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   8: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   9: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  10: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  11: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  12: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  13: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  14: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  15: 1 op, 100.00 ns, 100.0000 ns/op
+
+WorkloadWarmup   1: 1 op, 40421300.00 ns, 40.4213 ms/op
+WorkloadWarmup   2: 1 op, 39907300.00 ns, 39.9073 ms/op
+WorkloadWarmup   3: 1 op, 39723500.00 ns, 39.7235 ms/op
+WorkloadWarmup   4: 1 op, 39779900.00 ns, 39.7799 ms/op
+WorkloadWarmup   5: 1 op, 40072100.00 ns, 40.0721 ms/op
+WorkloadWarmup   6: 1 op, 40695000.00 ns, 40.6950 ms/op
+WorkloadWarmup   7: 1 op, 39726300.00 ns, 39.7263 ms/op
+WorkloadWarmup   8: 1 op, 40117800.00 ns, 40.1178 ms/op
+WorkloadWarmup   9: 1 op, 39984100.00 ns, 39.9841 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 39738300.00 ns, 39.7383 ms/op
+WorkloadActual   2: 1 op, 39931700.00 ns, 39.9317 ms/op
+WorkloadActual   3: 1 op, 39893400.00 ns, 39.8934 ms/op
+WorkloadActual   4: 1 op, 41258400.00 ns, 41.2584 ms/op
+WorkloadActual   5: 1 op, 40699400.00 ns, 40.6994 ms/op
+WorkloadActual   6: 1 op, 39989300.00 ns, 39.9893 ms/op
+WorkloadActual   7: 1 op, 40092200.00 ns, 40.0922 ms/op
+WorkloadActual   8: 1 op, 39468000.00 ns, 39.4680 ms/op
+WorkloadActual   9: 1 op, 39472900.00 ns, 39.4729 ms/op
+WorkloadActual  10: 1 op, 39767000.00 ns, 39.7670 ms/op
+WorkloadActual  11: 1 op, 39543500.00 ns, 39.5435 ms/op
+WorkloadActual  12: 1 op, 39771000.00 ns, 39.7710 ms/op
+WorkloadActual  13: 1 op, 39670700.00 ns, 39.6707 ms/op
+WorkloadActual  14: 1 op, 39757200.00 ns, 39.7572 ms/op
+WorkloadActual  15: 1 op, 39837200.00 ns, 39.8372 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 39738200.00 ns, 39.7382 ms/op
+WorkloadResult   2: 1 op, 39931600.00 ns, 39.9316 ms/op
+WorkloadResult   3: 1 op, 39893300.00 ns, 39.8933 ms/op
+WorkloadResult   4: 1 op, 39989200.00 ns, 39.9892 ms/op
+WorkloadResult   5: 1 op, 40092100.00 ns, 40.0921 ms/op
+WorkloadResult   6: 1 op, 39467900.00 ns, 39.4679 ms/op
+WorkloadResult   7: 1 op, 39472800.00 ns, 39.4728 ms/op
+WorkloadResult   8: 1 op, 39766900.00 ns, 39.7669 ms/op
+WorkloadResult   9: 1 op, 39543400.00 ns, 39.5434 ms/op
+WorkloadResult  10: 1 op, 39770900.00 ns, 39.7709 ms/op
+WorkloadResult  11: 1 op, 39670600.00 ns, 39.6706 ms/op
+WorkloadResult  12: 1 op, 39757100.00 ns, 39.7571 ms/op
+WorkloadResult  13: 1 op, 39837100.00 ns, 39.8371 ms/op
+
+// AfterAll
+// Benchmark Process 20312 has exited with code 0.
+
+Mean = 39.764 ms, StdErr = 0.053 ms (0.13%), N = 13, StdDev = 0.191 ms
+Min = 39.468 ms, Q1 = 39.671 ms, Median = 39.767 ms, Q3 = 39.893 ms, Max = 40.092 ms
+IQR = 0.223 ms, LowerFence = 39.337 ms, UpperFence = 40.227 ms
+ConfidenceInterval = [39.535 ms; 39.993 ms] (CI 99.9%), Margin = 0.229 ms (0.58% of Mean)
+Skewness = -0.09, Kurtosis = 1.87, MValue = 2
+
+// **************************
+// Benchmark: EcsContext_CreateEntity.DestroyEntities_Reuse: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BenchmarkTest\bin\Release\fb245b89-613c-46c4-9fcd-7d55b25cf5d3.exe --benchmarkName "EcsLte.BenchmarkTest.EcsContextTests.EcsContext_CreateEntity.DestroyEntities_Reuse(CompArr: Normal_x2)" --job "InvocationCount=1, UnrollFactor=1" --benchmarkId 13 in 
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// Runtime=.NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
+// GC=Concurrent Workstation
+// Job: Job-FTOBUC(InvocationCount=1, UnrollFactor=1)
+
+OverheadJitting  1: 1 op, 143100.00 ns, 143.1000 us/op
+WorkloadJitting  1: 1 op, 42600400.00 ns, 42.6004 ms/op
+
+OverheadWarmup   1: 1 op, 2600.00 ns, 2.6000 us/op
+OverheadWarmup   2: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadWarmup   3: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadWarmup   4: 1 op, 0.00 ns, 0.0000 ns/op
+OverheadWarmup   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   6: 1 op, 100.00 ns, 100.0000 ns/op
+
+OverheadActual   1: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   2: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   3: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   4: 1 op, 300.00 ns, 300.0000 ns/op
+OverheadActual   5: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   6: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   7: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   8: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   9: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  10: 1 op, 300.00 ns, 300.0000 ns/op
+OverheadActual  11: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  12: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  13: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  14: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  15: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  16: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  17: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  18: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  19: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  20: 1 op, 200.00 ns, 200.0000 ns/op
+
+WorkloadWarmup   1: 1 op, 35903800.00 ns, 35.9038 ms/op
+WorkloadWarmup   2: 1 op, 36018900.00 ns, 36.0189 ms/op
+WorkloadWarmup   3: 1 op, 35812500.00 ns, 35.8125 ms/op
+WorkloadWarmup   4: 1 op, 35815700.00 ns, 35.8157 ms/op
+WorkloadWarmup   5: 1 op, 36230800.00 ns, 36.2308 ms/op
+WorkloadWarmup   6: 1 op, 35758900.00 ns, 35.7589 ms/op
+
+// BeforeActualRun
+WorkloadActual   1: 1 op, 35554400.00 ns, 35.5544 ms/op
+WorkloadActual   2: 1 op, 35566100.00 ns, 35.5661 ms/op
+WorkloadActual   3: 1 op, 35530300.00 ns, 35.5303 ms/op
+WorkloadActual   4: 1 op, 36028600.00 ns, 36.0286 ms/op
+WorkloadActual   5: 1 op, 35851000.00 ns, 35.8510 ms/op
+WorkloadActual   6: 1 op, 35724400.00 ns, 35.7244 ms/op
+WorkloadActual   7: 1 op, 35686100.00 ns, 35.6861 ms/op
+WorkloadActual   8: 1 op, 35654400.00 ns, 35.6544 ms/op
+WorkloadActual   9: 1 op, 35772000.00 ns, 35.7720 ms/op
+WorkloadActual  10: 1 op, 35526800.00 ns, 35.5268 ms/op
+WorkloadActual  11: 1 op, 35655100.00 ns, 35.6551 ms/op
+WorkloadActual  12: 1 op, 35557100.00 ns, 35.5571 ms/op
+WorkloadActual  13: 1 op, 35719000.00 ns, 35.7190 ms/op
+WorkloadActual  14: 1 op, 35688300.00 ns, 35.6883 ms/op
+WorkloadActual  15: 1 op, 35668300.00 ns, 35.6683 ms/op
+
+// AfterActualRun
+WorkloadResult   1: 1 op, 35554200.00 ns, 35.5542 ms/op
+WorkloadResult   2: 1 op, 35565900.00 ns, 35.5659 ms/op
+WorkloadResult   3: 1 op, 35530100.00 ns, 35.5301 ms/op
+WorkloadResult   4: 1 op, 35850800.00 ns, 35.8508 ms/op
+WorkloadResult   5: 1 op, 35724200.00 ns, 35.7242 ms/op
+WorkloadResult   6: 1 op, 35685900.00 ns, 35.6859 ms/op
+WorkloadResult   7: 1 op, 35654200.00 ns, 35.6542 ms/op
+WorkloadResult   8: 1 op, 35771800.00 ns, 35.7718 ms/op
+WorkloadResult   9: 1 op, 35526600.00 ns, 35.5266 ms/op
+WorkloadResult  10: 1 op, 35654900.00 ns, 35.6549 ms/op
+WorkloadResult  11: 1 op, 35556900.00 ns, 35.5569 ms/op
+WorkloadResult  12: 1 op, 35718800.00 ns, 35.7188 ms/op
+WorkloadResult  13: 1 op, 35688100.00 ns, 35.6881 ms/op
+WorkloadResult  14: 1 op, 35668100.00 ns, 35.6681 ms/op
+
+// AfterAll
+// Benchmark Process 14304 has exited with code 0.
+
+Mean = 35.654 ms, StdErr = 0.026 ms (0.07%), N = 14, StdDev = 0.097 ms
+Min = 35.527 ms, Q1 = 35.559 ms, Median = 35.662 ms, Q3 = 35.711 ms, Max = 35.851 ms
+IQR = 0.152 ms, LowerFence = 35.331 ms, UpperFence = 35.939 ms
+ConfidenceInterval = [35.544 ms; 35.763 ms] (CI 99.9%), Margin = 0.110 ms (0.31% of Mean)
+Skewness = 0.27, Kurtosis = 1.99, MValue = 2
+
+// **************************
+// Benchmark: EcsContext_CreateEntity.DestroyEntity: Job-FTOBUC(InvocationCount=1, UnrollFactor=1) [CompArr=Normal_x2]
+// *** Execute ***
+// Launch: 1 / 1
+// Execute: C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.BenchmarkTest\bin\Release\fb245b89-613c-46c4-9fcd-7d55b25cf5d3.exe --benchmarkName "EcsLte.BenchmarkTest.EcsContextTests.EcsContext_CreateEntity.DestroyEntity(CompArr: Normal_x2)" --job "InvocationCount=1, UnrollFactor=1" --benchmarkId 14 in 
+// BeforeAnythingElse
+
+// Benchmark Process Environment Information:
+// Runtime=.NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
+// GC=Concurrent Workstation
+// Job: Job-FTOBUC(InvocationCount=1, UnrollFactor=1)
+
+OverheadJitting  1: 1 op, 145600.00 ns, 145.6000 us/op
+WorkloadJitting  1: 1 op, 46268800.00 ns, 46.2688 ms/op
+
+OverheadWarmup   1: 1 op, 2500.00 ns, 2.5000 us/op
+OverheadWarmup   2: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   3: 1 op, 400.00 ns, 400.0000 ns/op
+OverheadWarmup   4: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadWarmup   5: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadWarmup   6: 1 op, 100.00 ns, 100.0000 ns/op
+
+OverheadActual   1: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   2: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   3: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   4: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual   5: 1 op, 0.00 ns, 0.0000 ns/op
+OverheadActual   6: 1 op, 0.00 ns, 0.0000 ns/op
+OverheadActual   7: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   8: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual   9: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  10: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  11: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  12: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  13: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  14: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  15: 1 op, 200.00 ns, 200.0000 ns/op
+OverheadActual  16: 1 op, 100.00 ns, 100.0000 ns/op
+OverheadActual  17:

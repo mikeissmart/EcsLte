@@ -3,7 +3,8 @@ using System;
 
 namespace EcsLte.BenchmarkTest.EcsContextTests
 {
-    public class EcsContext_UpdateComponent
+    // Tests to quick
+    /*public class EcsContext_UpdateComponent
     {
         private EcsContext _context;
         private Entity[] _entities;
@@ -213,5 +214,5 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
                     throw new InvalidOperationException();
             }
         }
-    }
+    }*/
 }

@@ -62,7 +62,7 @@ namespace EcsLte
             {
                 blueprint.ArcheTypeIndex = new ArcheTypeIndex
                 {
-                    ComponentConfigLength = archeType.ComponentConfigLength,
+                    ComponentConfigLength = archeTypeData->ArcheType.ComponentConfigLength,
                     Index = index
                 };
             }
@@ -99,7 +99,7 @@ namespace EcsLte
             {
                 entityArcheType.ArcheTypeIndex = new ArcheTypeIndex
                 {
-                    ComponentConfigLength = archeType.ComponentConfigLength,
+                    ComponentConfigLength = archeTypeData->ArcheType.ComponentConfigLength,
                     Index = index
                 };
             }
@@ -132,10 +132,18 @@ namespace EcsLte
             return archeTypeData;
         }
 
-        internal ArcheTypeData* GetArcheTypeDataFromIndex(ArcheTypeIndex archeTypeIndex) => (ArcheTypeData*)_archeTypeDatas
+        internal ArcheTypeData* GetArcheTypeDataFromIndex(ArcheTypeIndex archeTypeIndex)
+        {
+            var a = _archeTypeDatas[archeTypeIndex.ComponentConfigLength];
+            if (archeTypeIndex.Index < 0 || archeTypeIndex.Index >= a.Count)
+                ;
+            var b = a[archeTypeIndex.Index];
+
+            return (ArcheTypeData*)_archeTypeDatas
                 [archeTypeIndex.ComponentConfigLength]
                 [archeTypeIndex.Index]
                 .Ptr;
+        }
 
         internal unsafe void UpdateArcheTypeDatas(EntityQueryData queryData)
         {

@@ -13,7 +13,7 @@ namespace EcsLte.BenchmarkTest
             var config = ManualConfig.Create(new DebugInProcessConfig());
 #else
 			var config = ManualConfig.Create(DefaultConfig.Instance);
-			config.ArtifactsPath = "../../TestResults";
+			config.ArtifactsPath = "../../BenchResults";
 #endif
             config = config.WithOptions(ConfigOptions.JoinSummary)
                 .StopOnFirstError(true)
