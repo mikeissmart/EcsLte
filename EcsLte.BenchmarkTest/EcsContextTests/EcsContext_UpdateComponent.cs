@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Order;
+﻿using BenchmarkDotNet.Attributes;
+using System;
 
 namespace EcsLte.BenchmarkTest.EcsContextTests
 {
@@ -25,10 +20,10 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         [GlobalSetup]
         public void GlobalSetup()
         {
-            _context = EcsContexts.CreateContext("Test");
+            _context = EcsContext.CreateContext("Test");
             _entities = new Entity[BenchmarkTestConsts.LargeCount];
             _blueprint = EcsContextSetupCleanup.CreateBlueprint(CompArr);
-            _entityQuery = _context.CreateQuery()
+            _entityQuery = _context.QueryManager.CreateQuery()
                 .WhereAllOf<TestComponent1, TestComponent2, TestSharedComponent1, TestSharedComponent2>();
 
             _updateComponent1 = EcsContextSetupCleanup.Component1;
@@ -46,20 +41,17 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         public void GlobalCleanup()
         {
             if (!_context.IsDestroyed)
-                EcsContexts.DestroyContext(_context);
+                EcsContext.DestroyContext(_context);
         }
 
         [IterationSetup]
-        public void IterationSetup()
-        {
-            _entities = _context.CreateEntities(_entities.Length, _blueprint);
-        }
+        public void IterationSetup() => _entities = _context.EntityManager.CreateEntities(_entities.Length, _blueprint);
 
         [IterationCleanup]
-        public void IterationCleanup() => _context.DestroyEntities(_entities);
+        public void IterationCleanup() => _context.EntityManager.DestroyEntities(_entities);
 
         [Benchmark]
-        public void UpdateComponent()
+        public void UpdateComponent_Entity()
         {
             switch (CompArr)
             {
@@ -67,67 +59,111 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
                     for (var i = 0; i < _entities.Length; i++)
                     {
                         var entity = _entities[i];
-                        _context.UpdateComponent(entity, _updateComponent1);
+                        _context.EntityManager.UpdateComponent(entity, _updateComponent1);
                     }
                     break;
                 case ComponentArrangement.Normal_x2:
                     for (var i = 0; i < _entities.Length; i++)
                     {
                         var entity = _entities[i];
-                        _context.UpdateComponent(entity, _updateComponent1);
-                        _context.UpdateComponent(entity, _updateComponent2);
+                        _context.EntityManager.UpdateComponent(entity, _updateComponent1);
+                        _context.EntityManager.UpdateComponent(entity, _updateComponent2);
                     }
                     break;
                 case ComponentArrangement.Shared_x1:
                     for (var i = 0; i < _entities.Length; i++)
                     {
                         var entity = _entities[i];
-                        _context.UpdateComponent(entity, _updateSharedComponent1);
+                        _context.EntityManager.UpdateComponent(entity, _updateSharedComponent1);
                     }
                     break;
                 case ComponentArrangement.Shared_x2:
                     for (var i = 0; i < _entities.Length; i++)
                     {
                         var entity = _entities[i];
-                        _context.UpdateComponent(entity, _updateSharedComponent1);
-                        _context.UpdateComponent(entity, _updateSharedComponent2);
+                        _context.EntityManager.UpdateComponent(entity, _updateSharedComponent1);
+                        _context.EntityManager.UpdateComponent(entity, _updateSharedComponent2);
                     }
                     break;
                 case ComponentArrangement.Normal_x1_Shared_x1:
                     for (var i = 0; i < _entities.Length; i++)
                     {
                         var entity = _entities[i];
-                        _context.UpdateComponent(entity, _updateComponent1);
-                        _context.UpdateComponent(entity, _updateSharedComponent1);
+                        _context.EntityManager.UpdateComponent(entity, _updateComponent1);
+                        _context.EntityManager.UpdateComponent(entity, _updateSharedComponent1);
                     }
                     break;
                 case ComponentArrangement.Normal_x1_Shared_x2:
                     for (var i = 0; i < _entities.Length; i++)
                     {
                         var entity = _entities[i];
-                        _context.UpdateComponent(entity, _updateComponent1);
-                        _context.UpdateComponent(entity, _updateSharedComponent1);
-                        _context.UpdateComponent(entity, _updateSharedComponent2);
+                        _context.EntityManager.UpdateComponent(entity, _updateComponent1);
+                        _context.EntityManager.UpdateComponent(entity, _updateSharedComponent1);
+                        _context.EntityManager.UpdateComponent(entity, _updateSharedComponent2);
                     }
                     break;
                 case ComponentArrangement.Normal_x2_Shared_x1:
                     for (var i = 0; i < _entities.Length; i++)
                     {
                         var entity = _entities[i];
-                        _context.UpdateComponent(entity, _updateComponent1);
-                        _context.UpdateComponent(entity, _updateComponent2);
-                        _context.UpdateComponent(entity, _updateSharedComponent1);
+                        _context.EntityManager.UpdateComponent(entity, _updateComponent1);
+                        _context.EntityManager.UpdateComponent(entity, _updateComponent2);
+                        _context.EntityManager.UpdateComponent(entity, _updateSharedComponent1);
                     }
                     break;
                 case ComponentArrangement.Normal_x2_Shared_x2:
                     for (var i = 0; i < _entities.Length; i++)
                     {
                         var entity = _entities[i];
-                        _context.UpdateComponent(entity, _updateComponent1);
-                        _context.UpdateComponent(entity, _updateComponent2);
-                        _context.UpdateComponent(entity, _updateSharedComponent1);
-                        _context.UpdateComponent(entity, _updateSharedComponent2);
+                        _context.EntityManager.UpdateComponent(entity, _updateComponent1);
+                        _context.EntityManager.UpdateComponent(entity, _updateComponent2);
+                        _context.EntityManager.UpdateComponent(entity, _updateSharedComponent1);
+                        _context.EntityManager.UpdateComponent(entity, _updateSharedComponent2);
                     }
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
+        }
+
+        [Benchmark]
+        public void UpdateComponent_Entities()
+        {
+            switch (CompArr)
+            {
+                case ComponentArrangement.Normal_x1:
+                    _context.EntityManager.UpdateComponent(_entities, _updateComponent1);
+                    break;
+                case ComponentArrangement.Normal_x2:
+                    _context.EntityManager.UpdateComponent(_entities, _updateComponent1);
+                    _context.EntityManager.UpdateComponent(_entities, _updateComponent2);
+                    break;
+                case ComponentArrangement.Shared_x1:
+                    _context.EntityManager.UpdateComponent(_entities, _updateSharedComponent1);
+                    break;
+                case ComponentArrangement.Shared_x2:
+                    _context.EntityManager.UpdateComponent(_entities, _updateSharedComponent1);
+                    _context.EntityManager.UpdateComponent(_entities, _updateSharedComponent2);
+                    break;
+                case ComponentArrangement.Normal_x1_Shared_x1:
+                    _context.EntityManager.UpdateComponent(_entities, _updateComponent1);
+                    _context.EntityManager.UpdateComponent(_entities, _updateSharedComponent1);
+                    break;
+                case ComponentArrangement.Normal_x1_Shared_x2:
+                    _context.EntityManager.UpdateComponent(_entities, _updateComponent1);
+                    _context.EntityManager.UpdateComponent(_entities, _updateSharedComponent1);
+                    _context.EntityManager.UpdateComponent(_entities, _updateSharedComponent2);
+                    break;
+                case ComponentArrangement.Normal_x2_Shared_x1:
+                    _context.EntityManager.UpdateComponent(_entities, _updateComponent1);
+                    _context.EntityManager.UpdateComponent(_entities, _updateComponent2);
+                    _context.EntityManager.UpdateComponent(_entities, _updateSharedComponent1);
+                    break;
+                case ComponentArrangement.Normal_x2_Shared_x2:
+                    _context.EntityManager.UpdateComponent(_entities, _updateComponent1);
+                    _context.EntityManager.UpdateComponent(_entities, _updateComponent2);
+                    _context.EntityManager.UpdateComponent(_entities, _updateSharedComponent1);
+                    _context.EntityManager.UpdateComponent(_entities, _updateSharedComponent2);
                     break;
                 default:
                     throw new InvalidOperationException();
@@ -140,38 +176,38 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             switch (CompArr)
             {
                 case ComponentArrangement.Normal_x1:
-                    _context.UpdateComponent(_entityQuery, _updateComponent1);
+                    _context.EntityManager.UpdateComponent(_entityQuery, _updateComponent1);
                     break;
                 case ComponentArrangement.Normal_x2:
-                    _context.UpdateComponent(_entityQuery, _updateComponent1);
-                    _context.UpdateComponent(_entityQuery, _updateComponent2);
+                    _context.EntityManager.UpdateComponent(_entityQuery, _updateComponent1);
+                    _context.EntityManager.UpdateComponent(_entityQuery, _updateComponent2);
                     break;
                 case ComponentArrangement.Shared_x1:
-                    _context.UpdateComponent(_entityQuery, _updateSharedComponent1);
+                    _context.EntityManager.UpdateComponent(_entityQuery, _updateSharedComponent1);
                     break;
                 case ComponentArrangement.Shared_x2:
-                    _context.UpdateComponent(_entityQuery, _updateSharedComponent1);
-                    _context.UpdateComponent(_entityQuery, _updateSharedComponent2);
+                    _context.EntityManager.UpdateComponent(_entityQuery, _updateSharedComponent1);
+                    _context.EntityManager.UpdateComponent(_entityQuery, _updateSharedComponent2);
                     break;
                 case ComponentArrangement.Normal_x1_Shared_x1:
-                    _context.UpdateComponent(_entityQuery, _updateComponent1);
-                    _context.UpdateComponent(_entityQuery, _updateSharedComponent1);
+                    _context.EntityManager.UpdateComponent(_entityQuery, _updateComponent1);
+                    _context.EntityManager.UpdateComponent(_entityQuery, _updateSharedComponent1);
                     break;
                 case ComponentArrangement.Normal_x1_Shared_x2:
-                    _context.UpdateComponent(_entityQuery, _updateComponent1);
-                    _context.UpdateComponent(_entityQuery, _updateSharedComponent1);
-                    _context.UpdateComponent(_entityQuery, _updateSharedComponent2);
+                    _context.EntityManager.UpdateComponent(_entityQuery, _updateComponent1);
+                    _context.EntityManager.UpdateComponent(_entityQuery, _updateSharedComponent1);
+                    _context.EntityManager.UpdateComponent(_entityQuery, _updateSharedComponent2);
                     break;
                 case ComponentArrangement.Normal_x2_Shared_x1:
-                    _context.UpdateComponent(_entityQuery, _updateComponent1);
-                    _context.UpdateComponent(_entityQuery, _updateComponent2);
-                    _context.UpdateComponent(_entityQuery, _updateSharedComponent1);
+                    _context.EntityManager.UpdateComponent(_entityQuery, _updateComponent1);
+                    _context.EntityManager.UpdateComponent(_entityQuery, _updateComponent2);
+                    _context.EntityManager.UpdateComponent(_entityQuery, _updateSharedComponent1);
                     break;
                 case ComponentArrangement.Normal_x2_Shared_x2:
-                    _context.UpdateComponent(_entityQuery, _updateComponent1);
-                    _context.UpdateComponent(_entityQuery, _updateComponent2);
-                    _context.UpdateComponent(_entityQuery, _updateSharedComponent1);
-                    _context.UpdateComponent(_entityQuery, _updateSharedComponent2);
+                    _context.EntityManager.UpdateComponent(_entityQuery, _updateComponent1);
+                    _context.EntityManager.UpdateComponent(_entityQuery, _updateComponent2);
+                    _context.EntityManager.UpdateComponent(_entityQuery, _updateSharedComponent1);
+                    _context.EntityManager.UpdateComponent(_entityQuery, _updateSharedComponent2);
                     break;
                 default:
                     throw new InvalidOperationException();

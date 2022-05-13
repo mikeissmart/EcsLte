@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
+using System;
 
 namespace EcsLte.BenchmarkTest.EntityQueryTests
 {
@@ -19,12 +15,12 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
         [GlobalSetup]
         public void GlobalSetup()
         {
-            if (EcsContexts.HasContext("Test"))
-                EcsContexts.DestroyContext(EcsContexts.GetContext("Test"));
-            _context = EcsContexts.CreateContext("Test");
-            _entities = _context.CreateEntities(BenchmarkTestConsts.LargeCount,
+            if (EcsContext.HasContext("Test"))
+                EcsContext.DestroyContext(EcsContext.GetContext("Test"));
+            _context = EcsContext.CreateContext("Test");
+            _entities = _context.EntityManager.CreateEntities(BenchmarkTestConsts.LargeCount,
                 EcsContextSetupCleanup.CreateBlueprint(ComponentArrangement.Normal_x2_Shared_x2));
-            _entityQuery = _context.CreateQuery()
+            _entityQuery = _context.QueryManager.CreateQuery()
                 .WhereAllOf<TestComponent1, TestComponent2, TestSharedComponent1, TestSharedComponent2>();
         }
 
@@ -32,7 +28,7 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
         public void GlobalCleanup()
         {
             if (!_context.IsDestroyed)
-                EcsContexts.DestroyContext(_context);
+                EcsContext.DestroyContext(_context);
         }
 
         [Benchmark]

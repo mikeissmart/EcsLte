@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte.Data
 {
@@ -21,7 +20,7 @@ namespace EcsLte.Data
     {
         public static IIndexDictionary[] CreateSharedComponentIndexDictionaries()
         {
-            var sharedIndexes = new IIndexDictionary[ComponentConfigs.Instance.SharedComponentCount];
+            var sharedIndexes = new IIndexDictionary[ComponentConfigs.Instance.AllSharedComponentCount];
             var indexDicType = typeof(IndexDictionary<>);
             for (var i = 0; i < sharedIndexes.Length; i++)
             {

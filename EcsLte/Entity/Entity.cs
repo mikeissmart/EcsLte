@@ -1,7 +1,5 @@
 ﻿using EcsLte.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte
 {
@@ -25,13 +23,10 @@ namespace EcsLte
 
         public override string ToString() => $"({Id}, {Version})";
 
-        public override int GetHashCode()
-        {
-            return HashCodeHelper.StartHashCode()
+        public override int GetHashCode() => HashCodeHelper.StartHashCode()
                 .AppendHashCode(Id)
                 .AppendHashCode(Version)
                 .HashCode;
-        }
         public int CompareTo(Entity other)
         {
             var compare = Version.CompareTo(other.Version);

@@ -15,7 +15,12 @@
       "ProjectGuid": "96395531-e1dd-4958-a2cf-18f9c05b6750",
       "DisplayName": "EcsLte.UnitTest",
       "ColorIndex": 2
+    },
+    "a893b42a-006a-486a-b9b8-37dbe13c9ce7": {
+      "ProjectGuid": "a893b42a-006a-486a-b9b8-37dbe13c9ce7",
+      "DisplayName": "EcsLte.BenchmarkTest",
+      "ColorIndex": 3
     }
   },
-  "NextColorIndex": 3
+  "NextColorIndex": 4
 }

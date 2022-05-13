@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EcsLte.Utilities
+﻿namespace EcsLte.Utilities
 {
     internal struct HashCodeHelper
     {

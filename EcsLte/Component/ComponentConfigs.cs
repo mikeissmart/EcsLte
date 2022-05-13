@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
-using System.Text;
 
 namespace EcsLte
 {
@@ -41,9 +40,9 @@ namespace EcsLte
         internal int[] AllUniqueIndexes { get; private set; }
 
         internal int AllComponentCount { get; private set; }
-        internal int RecordableComponentCount { get; private set; }
-        internal int SharedComponentCount { get; private set; }
-        internal int UniqueComponentCount { get; private set; }
+        internal int AllRecordableComponentCount { get; private set; }
+        internal int AllSharedComponentCount { get; private set; }
+        internal int AllUniqueComponentCount { get; private set; }
 
         internal ComponentConfig GetConfig(Type componentType)
             => _componentConfigTypes[componentType];
@@ -108,7 +107,9 @@ namespace EcsLte
                     config.UnmanagedSizeInBytes = Marshal.SizeOf(type);
                 }
                 else if (config.IsRecordable)
+                {
                     recordableNonBlittableErrorTypes.Add(type);
+                }
 
                 configTypes.Add(new ConfigType
                 {
@@ -201,9 +202,9 @@ namespace EcsLte
                 .ToArray();
 
             AllComponentCount = AllComponentTypes.Length;
-            RecordableComponentCount = AllRecordableTypes.Length;
-            SharedComponentCount = AllSharedTypes.Length;
-            UniqueComponentCount = AllUniqueTypes.Length;
+            AllRecordableComponentCount = AllRecordableTypes.Length;
+            AllSharedComponentCount = AllSharedTypes.Length;
+            AllUniqueComponentCount = AllUniqueTypes.Length;
         }
 
         private bool IsBlittable(Type type)

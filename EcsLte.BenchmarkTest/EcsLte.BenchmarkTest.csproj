@@ -256,7 +256,7 @@
     <Compile Include="ComponentArrangement.cs" />
     <Compile Include="Components.cs" />
     <Compile Include="EcsContextSetupCleanup.cs" />
-    <Compile Include="EcsContextTests\EcsContext_New.cs" />
+    <Compile Include="EcsContextTests\EcsContext_CreateEntity.cs" />
     <Compile Include="EcsContextTests\EcsContext_UpdateComponent.cs" />
     <Compile Include="EntityQueryTests\EntityQuery_ForEach.cs" />
     <Compile Include="Program.cs" />

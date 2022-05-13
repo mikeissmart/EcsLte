@@ -1,18 +1,16 @@
-﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Configs;
+﻿using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Running;
 using System;
-using System.Threading;
 
 namespace EcsLte.BenchmarkTest
 {
     internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
 #if DEBUG
-            var config = new DebugInProcessConfig();
+            var config = ManualConfig.Create(new DebugInProcessConfig());
 #else
 			var config = ManualConfig.Create(DefaultConfig.Instance);
 			config.ArtifactsPath = "../../TestResults";

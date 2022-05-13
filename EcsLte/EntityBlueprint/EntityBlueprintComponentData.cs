@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte
 {
-    internal interface IEntityBlueprintComponentData
+    internal interface IEntityBlueprintComponentData : IComparable<IEntityBlueprintComponentData>
     {
         ComponentConfig Config { get; }
         IComponent Component { get; }
@@ -12,7 +10,7 @@ namespace EcsLte
         unsafe void CopyComponentData(byte* componentPtr);
     }
 
-    internal class EntityBlueprintComponentData<TComponent> : IEntityBlueprintComponentData
+    internal class EntityBlueprintComponentData<TComponent> : IEntityBlueprintComponentData, IComparable<IEntityBlueprintComponentData>
         where TComponent : unmanaged, IComponent
     {
         private readonly TComponent _component;
@@ -28,5 +26,7 @@ namespace EcsLte
 
         public unsafe void CopyComponentData(byte* componentPtr)
             => *(TComponent*)componentPtr = _component;
+
+        public int CompareTo(IEntityBlueprintComponentData other) => Config.CompareTo(other.Config);
     }
 }

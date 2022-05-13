@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace EcsLte.Utilities
 {
@@ -49,7 +47,7 @@ namespace EcsLte.Utilities
         }
 
 
-        internal static unsafe void Free(void* ptr) 
+        internal static unsafe void Free(void* ptr)
            => Marshal.FreeHGlobal((IntPtr)ptr);
 
         internal static unsafe void Copy(void* sourcePtr, void* destinationPtr, int sizeInBytes)

@@ -1,11 +1,6 @@
-﻿using EcsLte.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EcsLte
+﻿namespace EcsLte
 {
-    public static class EcsContexts
+    /*public static class EcsContexts
     {
         private static readonly Dictionary<string, EcsContext> _ecsContexts =
             new Dictionary<string, EcsContext>();
@@ -44,5 +39,5 @@ namespace EcsLte
 
             _ecsContexts.Remove(context.Name);
         }
-    }
+    }*/
 }

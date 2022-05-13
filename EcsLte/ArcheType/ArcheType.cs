@@ -1,7 +1,5 @@
 ﻿using EcsLte.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte
 {

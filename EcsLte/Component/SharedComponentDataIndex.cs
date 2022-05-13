@@ -1,11 +1,9 @@
 ﻿using EcsLte.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte
 {
-    internal struct SharedComponentDataIndex : IEquatable<SharedComponentDataIndex>, IComparable<SharedComponentDataIndex>
+    public struct SharedComponentDataIndex : IEquatable<SharedComponentDataIndex>, IComparable<SharedComponentDataIndex>
     {
         internal int SharedIndex { get; set; }
         internal int SharedDataIndex { get; set; }
@@ -22,13 +20,10 @@ namespace EcsLte
         public override bool Equals(object other)
             => other is SharedComponentDataIndex obj && this == obj;
 
-        public override int GetHashCode()
-        {
-            return HashCodeHelper.StartHashCode()
+        public override int GetHashCode() => HashCodeHelper.StartHashCode()
                 .AppendHashCode(SharedIndex)
                 .AppendHashCode(SharedDataIndex)
                 .HashCode;
-        }
 
         public int CompareTo(SharedComponentDataIndex other)
         {

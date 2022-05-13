@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte
 {
-    internal struct ComponentConfig : IEquatable<ComponentConfig>, IComparable<ComponentConfig>
+    public struct ComponentConfig : IEquatable<ComponentConfig>, IComparable<ComponentConfig>
     {
         internal int ComponentIndex { get; set; }
         internal int RecordableIndex { get; set; }

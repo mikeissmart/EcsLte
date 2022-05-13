@@ -2,18 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace EcsLte
 {
     internal unsafe struct ArcheTypeData
     {
         private ComponentConfigOffset* _configOffsets;
-        // TODO benchmark TransferAllEntities vs for loop UpdateComponentNoCheck 
-        //  if its too slow might think about changing buffer layout
-        //  May want to change layout to this when recordable is implemented
-        //  Changing to this layout may speed up transfering but will slow down CreatingEntities
-        //      [Entity1,Entity2],[Component1,Component1],[Component2,Component2]
         /// <summary>
         /// [Entity1,Entity2],[Component1,Component2,Component1,Component2]
         /// </summary>
@@ -91,7 +85,7 @@ namespace EcsLte
                 if (prevConfigOffset.Config.UnmanagedSizeInBytes != 0 &&
                     nextArcheTypeData->GetComponentOffset(prevArcheTypeData->ArcheType.ComponentConfigs[configIndex], out var nextConfigOffset))
                 {
-                    for (int entityIndex = 0; entityIndex < prevArcheTypeData->EntityCount; entityIndex++,
+                    for (var entityIndex = 0; entityIndex < prevArcheTypeData->EntityCount; entityIndex++,
                         prevConfigOffset.OffsetInBytes += prevArcheTypeData->ComponentsSizeInBytes,
                         nextConfigOffset.OffsetInBytes += nextArcheTypeData->ComponentsSizeInBytes)
                     {
@@ -181,6 +175,8 @@ namespace EcsLte
             return new EntityData();
         }
 
+        internal void ClearAllEntities() => EntityCount = 0;
+
         internal byte* GetComponentPtr(EntityData entityData, ComponentConfig config)
         {
             GetComponentOffset(config, out var configOffset);
@@ -204,13 +200,27 @@ namespace EcsLte
         {
             var components = new IComponent[ArcheType.ComponentConfigLength];
 
+            var buffer = _dataBuffer + CalculateComponentsOffset(entityData.EntityIndex);
             for (var i = 0; i < ArcheType.ComponentConfigLength; i++)
             {
                 var configOffset = _configOffsets[i];
                 components[i] = (IComponent)Marshal.PtrToStructure(
-                    (IntPtr)(_dataBuffer + CalculateComponentsOffset(entityData.EntityIndex) + configOffset.OffsetInBytes),
+                    (IntPtr)(buffer + configOffset.OffsetInBytes),
                     ComponentConfigs.Instance.AllComponentTypes[configOffset.Config.ComponentIndex]);
             }
+
+            return components;
+        }
+
+        internal TComponent[] GetAllComponentTypes<TComponent>(ComponentConfig config) where TComponent : unmanaged
+        {
+            var components = new TComponent[EntityCount];
+            GetComponentOffset(config, out var componentConfigOffset);
+
+            var componentOffsetInBytes = componentConfigOffset.OffsetInBytes;
+            var buffer = CalculateComponentsOffset(0);
+            for (var i = 0; i <= EntityCount; i++, componentOffsetInBytes += ComponentsSizeInBytes)
+                components[i] = *(TComponent*)(buffer + componentOffsetInBytes);
 
             return components;
         }
@@ -223,6 +233,11 @@ namespace EcsLte
                 _dataBuffer + CalculateComponentsOffset(entityData.EntityIndex) + configOffset.OffsetInBytes,
                 config.UnmanagedSizeInBytes);
         }
+
+        internal void SetComponent(EntityData entityData, void* component, ComponentConfigOffset configOffset) => MemoryHelper.Copy(
+                component,
+                _dataBuffer + CalculateComponentsOffset(entityData.EntityIndex) + configOffset.OffsetInBytes,
+                configOffset.Config.UnmanagedSizeInBytes);
 
         internal void SetAllComponents(void* component, ComponentConfig config)
         {

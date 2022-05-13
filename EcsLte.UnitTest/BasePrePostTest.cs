@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using EcsLte;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace EcsLte.UnitTest
 {
@@ -13,16 +7,13 @@ namespace EcsLte.UnitTest
         public EcsContext Context { get; private set; }
 
         [TestInitialize]
-        public void PreTest()
-        {
-            Context = EcsContexts.CreateContext("UnitTest");
-        }
+        public void PreTest() => Context = EcsContext.CreateContext("UnitTest");
 
         [TestCleanup]
         public void PostTest()
         {
             if (!Context.IsDestroyed)
-                EcsContexts.DestroyContext(Context);
+                EcsContext.DestroyContext(Context);
             Context = null;
         }
 
@@ -32,7 +23,7 @@ namespace EcsLte.UnitTest
         {
             var blueprint = new EntityBlueprint()
                 .AddComponent(component1);
-            return context.CreateEntities(entityCount, blueprint);
+            return context.EntityManager.CreateEntities(entityCount, blueprint);
         }
 
         protected Entity[] TestCreateEntities<T1, T2>(EcsContext context, int entityCount,
@@ -44,7 +35,7 @@ namespace EcsLte.UnitTest
             var blueprint = new EntityBlueprint()
                 .AddComponent(component1)
                 .AddComponent(component2);
-            return context.CreateEntities(entityCount, blueprint);
+            return context.EntityManager.CreateEntities(entityCount, blueprint);
         }
 
         protected Entity[] TestCreateEntities<T1, T2, T3>(EcsContext context, int entityCount,
@@ -59,7 +50,7 @@ namespace EcsLte.UnitTest
                 .AddComponent(component1)
                 .AddComponent(component2)
                 .AddComponent(component3);
-            return context.CreateEntities(entityCount, blueprint);
+            return context.EntityManager.CreateEntities(entityCount, blueprint);
         }
     }
 }

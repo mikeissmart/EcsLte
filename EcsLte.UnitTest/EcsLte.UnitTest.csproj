@@ -51,22 +51,20 @@
   <ItemGroup>
     <Compile Include="BasePrePostTest.cs" />
     <Compile Include="Components.cs" />
-    <Compile Include="EcsContextsTests\EcsContexts_EcsContextLife.cs" />
-    <Compile Include="EcsContextTests\EcsContest_EntityComponentUniqueGetTest.cs" />
-    <Compile Include="EcsContextTests\EcsContext_EntityComponentGetTest.cs" />
-    <Compile Include="EcsContextTests\EcsContext_EntityComponentLifeTest.cs" />
-    <Compile Include="EcsContextTests\EcsContext_EntityGetTest.cs" />
-    <Compile Include="EcsContextTests\EcsContext_EntityLifeTest.cs" />
-    <Compile Include="EntityBlueprintTests\EntityBlueprint_ComponentTest.cs" />
-    <Compile Include="EntityQueryTests\EntityQuery_Foreach.cs" />
-    <Compile Include="EntityQueryTests\EntityQuery_FunctionTest.cs" />
-    <Compile Include="EntityQueryTests\EntityQuery_WhereOfTest.cs" />
-    <Compile Include="Interfaces\IEntityComponentGetTest.cs" />
-    <Compile Include="Interfaces\IEntityComponentLifeTest.cs" />
-    <Compile Include="Interfaces\IEntityComponentUniqueGetTest.cs" />
-    <Compile Include="Interfaces\IEntityGetTest.cs" />
-    <Compile Include="Interfaces\IEntityLifeTest.cs" />
+    <Compile Include="EcsContextsTests\EcsContextTest.cs" />
+    <Compile Include="EntityArcheTypeTests\EntityArcheTypeTest.cs" />
+    <Compile Include="EntityQueryTests\EntityQueryTest_FilterBy.cs" />
+    <Compile Include="EntityQueryTests\EntityQueryTest_ForEach.cs" />
+    <Compile Include="EntityQueryTests\EntityQueryTest_WhereOf.cs" />
+    <Compile Include="ManagerTests\ArcheTypeManagerTest.cs" />
+    <Compile Include="ManagerTests\EntityCommandManagerTest.cs" />
+    <Compile Include="ManagerTests\EntityManagerTest.cs" />
+    <Compile Include="ManagerTests\SystemManagerTest.cs" />
+    <Compile Include="EntityBlueprintTests\EntityBlueprintTest.cs" />
+    <Compile Include="EntityCommandQueueTests\EntityCommandQueueTest.cs" />
+    <Compile Include="EntityQueryTests\EntityQueryTest_Entity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Systems.cs" />
     <Compile Include="UnitTestConsts.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -2,18 +2,17 @@
 using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte
 {
     internal class EntityQueryData : IEquatable<EntityQueryData>
     {
-        private int _hashCode;
+        private readonly int _hashCode;
 
         internal ComponentConfig[] AllComponentConfigs { get; set; } = new ComponentConfig[0];
         internal ComponentConfig[] AnyComponentConfigs { get; set; } = new ComponentConfig[0];
         internal ComponentConfig[] NoneComponentConfigs { get; set; } = new ComponentConfig[0];
-        internal int ConfigCount { get => AllComponentConfigs.Length + AnyComponentConfigs.Length + NoneComponentConfigs.Length; }
+        internal int ConfigCount => AllComponentConfigs.Length + AnyComponentConfigs.Length + NoneComponentConfigs.Length;
         internal IEntityQueryFilterComponent[] FilterComponents { get; set; } = new IEntityQueryFilterComponent[0];
         internal EcsContext Context { get; set; }
         /// <summary>
@@ -51,7 +50,7 @@ namespace EcsLte
 
         private unsafe bool IsFilteredAnyComponentConfigs(ArcheType archeType)
         {
-            for (int i = 0; i < AnyComponentConfigs.Length; i++)
+            for (var i = 0; i < AnyComponentConfigs.Length; i++)
             {
                 for (var j = 0; j < archeType.ComponentConfigLength; j++)
                 {
@@ -65,7 +64,7 @@ namespace EcsLte
 
         private unsafe bool IsFilteredNoneComponentConfigs(ArcheType archeType)
         {
-            for (int i = 0; i < NoneComponentConfigs.Length; i++)
+            for (var i = 0; i < NoneComponentConfigs.Length; i++)
             {
                 for (var j = 0; j < archeType.ComponentConfigLength; j++)
                 {
@@ -85,7 +84,9 @@ namespace EcsLte
                 lhs.AnyComponentConfigs.Length != rhs.AnyComponentConfigs.Length ||
                 lhs.NoneComponentConfigs.Length != rhs.NoneComponentConfigs.Length ||
                 lhs.FilterComponents.Length != rhs.FilterComponents.Length)
+            {
                 return false;
+            }
 
             for (var i = 0; i < lhs.AllComponentConfigs.Length; i++)
             {
