@@ -20,7 +20,7 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
             _context = EcsContext.CreateContext("Test");
             _entities = _context.EntityManager.CreateEntities(BenchmarkTestConsts.LargeCount,
                 EcsContextSetupCleanup.CreateBlueprint(ComponentArrangement.Normal_x2_Shared_x2));
-            _entityQuery = _context.QueryManager.CreateQuery()
+            _entityQuery = new EntityQuery()
                 .WhereAllOf<TestComponent1, TestComponent2, TestSharedComponent1, TestSharedComponent2>();
         }
 
@@ -37,7 +37,7 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
             switch (ReadWrite)
             {
                 case ReadWriteType.R0W0:
-                    _entityQuery.ForEach(false,
+                    _entityQuery.ForEach(_context, false,
                         (int index, Entity entity) =>
                         {
 
@@ -47,14 +47,14 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
                 #region Read 0
 
                 case ReadWriteType.R0W1_Normal:
-                    _entityQuery.ForEach(false,
+                    _entityQuery.ForEach(_context, false,
                         (int index, Entity entity, ref TestComponent1 component1) =>
                         {
                             component1.Prop++;
                         });
                     break;
                 case ReadWriteType.R0W2_Normal:
-                    _entityQuery.ForEach(false,
+                    _entityQuery.ForEach(_context, false,
                         (int index, Entity entity, ref TestComponent1 component1, ref TestComponent2 component2) =>
                         {
                             component1.Prop++;
@@ -62,14 +62,14 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
                         });
                     break;
                 case ReadWriteType.R0W1_Shared:
-                    _entityQuery.ForEach(false,
+                    _entityQuery.ForEach(_context, false,
                         (int index, Entity entity, ref TestComponent1 component1) =>
                         {
                             component1.Prop++;
                         });
                     break;
                 case ReadWriteType.R0W2_Shared:
-                    _entityQuery.ForEach(false,
+                    _entityQuery.ForEach(_context, false,
                         (int index, Entity entity, ref TestSharedComponent1 component1, ref TestSharedComponent2 component2) =>
                         {
                             component1.Prop++;
@@ -82,14 +82,14 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
                 #region Read 1
 
                 case ReadWriteType.R1W0_Normal:
-                    _entityQuery.ForEach(false,
+                    _entityQuery.ForEach(_context, false,
                         (int index, Entity entity, in TestComponent1 component1) =>
                         {
                             var prop = component1.Prop + 1;
                         });
                     break;
                 case ReadWriteType.R1W1_Normal:
-                    _entityQuery.ForEach(false,
+                    _entityQuery.ForEach(_context, false,
                         (int index, Entity entity, ref TestComponent1 component1, in TestComponent2 component2) =>
                         {
                             component1.Prop++;
@@ -97,14 +97,14 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
                         });
                     break;
                 case ReadWriteType.R1W0_Shared:
-                    _entityQuery.ForEach(false,
+                    _entityQuery.ForEach(_context, false,
                         (int index, Entity entity, in TestComponent1 component1) =>
                         {
                             var prop = component1.Prop + 1;
                         });
                     break;
                 case ReadWriteType.R1W1_Shared:
-                    _entityQuery.ForEach(false,
+                    _entityQuery.ForEach(_context, false,
                         (int index, Entity entity, ref TestSharedComponent1 component1, in TestSharedComponent2 component2) =>
                         {
                             component1.Prop++;
@@ -117,7 +117,7 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
                 #region Read 2
 
                 case ReadWriteType.R2W0_Normal:
-                    _entityQuery.ForEach(false,
+                    _entityQuery.ForEach(_context, false,
                         (int index, Entity entity, in TestComponent1 component1, in TestComponent2 component2) =>
                         {
                             var prop1 = component1.Prop + 1;
@@ -125,7 +125,7 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
                         });
                     break;
                 case ReadWriteType.R2W0_Shared:
-                    _entityQuery.ForEach(false,
+                    _entityQuery.ForEach(_context, false,
                         (int index, Entity entity, in TestSharedComponent1 component1, in TestSharedComponent2 component2) =>
                         {
                             var prop1 = component1.Prop + 1;

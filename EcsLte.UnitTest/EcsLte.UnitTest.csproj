@@ -53,10 +53,11 @@
     <Compile Include="Components.cs" />
     <Compile Include="EcsContextsTests\EcsContextTest.cs" />
     <Compile Include="EntityArcheTypeTests\EntityArcheTypeTest.cs" />
+    <Compile Include="EntityQueryTests\EntityQueryTest.cs" />
     <Compile Include="EntityQueryTests\EntityQueryTest_FilterBy.cs" />
-    <Compile Include="EntityQueryTests\EntityQueryTest_ForEach.cs" />
+    <Compile Include="EntityQueryTests\EntityQueryTest_ForEach_MultiThread.cs" />
+    <Compile Include="EntityQueryTests\EntityQueryTest_ForEach_SingleThread.cs" />
     <Compile Include="EntityQueryTests\EntityQueryTest_WhereOf.cs" />
-    <Compile Include="ManagerTests\ArcheTypeManagerTest.cs" />
     <Compile Include="ManagerTests\EntityCommandManagerTest.cs" />
     <Compile Include="ManagerTests\EntityManagerTest.cs" />
     <Compile Include="ManagerTests\SystemManagerTest.cs" />

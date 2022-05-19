@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace EcsLte.UnitTest.EntityQueryTests
 {
     [TestClass]
-    public class EntityQueryTest_ForEach : BasePrePostTest
+    public class EntityQueryTest_ForEach_SingleThread : BasePrePostTest
     {
         private TestComponent1 _component1 = new TestComponent1 { Prop = 1 };
         private TestComponent2 _component2 = new TestComponent2 { Prop = 2 };
@@ -16,13 +16,18 @@ namespace EcsLte.UnitTest.EntityQueryTests
         private TestComponent8 _component8 = new TestComponent8 { Prop = 8 };
         private readonly int _refChangeAmount = 10;
 
+        private struct abc
+        {
+            public string a { get; set; }
+        }
+
         [TestMethod]
         public void ForEach_Duplicate()
         {
             var query = CreateQuery_x8();
 
             Assert.ThrowsException<EntityQueryDuplicateComponentException>(() =>
-                query.ForEach(false,
+                query.ForEach(Context, false,
                     (int index, Entity entity, in TestComponent1 component1, in TestComponent1 component2) =>
                     {
 
@@ -38,7 +43,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new int[entities.Length];
-            query.ForEach(false, (int index, Entity entity) =>
+            query.ForEach(Context, false, (int index, Entity entity) =>
             {
                 isOk[index] += 1;
             });
@@ -56,7 +61,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var entities = CreateEntities_x8();
             var query = CreateQuery_x8();
 
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 in TestComponent1 component1) =>
             {
                 Assert.IsTrue(component1.Prop == _component1.Prop,
@@ -70,7 +75,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var entities = CreateEntities_x8();
             var query = CreateQuery_x8();
 
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2) =>
             {
@@ -87,7 +92,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var entities = CreateEntities_x8();
             var query = CreateQuery_x8();
 
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestComponent3 component3) =>
@@ -107,7 +112,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var entities = CreateEntities_x8();
             var query = CreateQuery_x8();
 
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestComponent3 component3,
@@ -130,7 +135,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var entities = CreateEntities_x8();
             var query = CreateQuery_x8();
 
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestComponent3 component3,
@@ -156,7 +161,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var entities = CreateEntities_x8();
             var query = CreateQuery_x8();
 
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestComponent3 component3,
@@ -185,7 +190,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var entities = CreateEntities_x8();
             var query = CreateQuery_x8();
 
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestComponent3 component3,
@@ -217,7 +222,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var entities = CreateEntities_x8();
             var query = CreateQuery_x8();
 
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestComponent3 component3,
@@ -256,7 +261,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var entities = CreateEntities_x8();
             var query = CreateQuery_x8();
 
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1) =>
             {
                 component1.Prop += _refChangeAmount;
@@ -277,7 +282,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2) =>
             {
@@ -302,7 +307,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestComponent3 component3) =>
@@ -330,7 +335,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestComponent3 component3,
@@ -361,7 +366,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestComponent3 component3,
@@ -395,7 +400,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestComponent3 component3,
@@ -432,7 +437,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestComponent3 component3,
@@ -472,7 +477,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestComponent3 component3,
@@ -518,7 +523,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var entities = CreateEntities_x8();
             var query = CreateQuery_x8();
 
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2) =>
             {
@@ -543,7 +548,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 in TestComponent3 component3) =>
@@ -572,7 +577,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 in TestComponent3 component3,
@@ -604,7 +609,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 in TestComponent3 component3,
@@ -639,7 +644,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 in TestComponent3 component3,
@@ -677,7 +682,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 in TestComponent3 component3,
@@ -718,7 +723,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 in TestComponent3 component3,
@@ -765,7 +770,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var entities = CreateEntities_x8();
             var query = CreateQuery_x8();
 
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3) =>
@@ -794,7 +799,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -827,7 +832,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -863,7 +868,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -902,7 +907,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -944,7 +949,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -992,7 +997,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var entities = CreateEntities_x8();
             var query = CreateQuery_x8();
 
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -1025,7 +1030,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -1062,7 +1067,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -1102,7 +1107,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -1145,7 +1150,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -1194,7 +1199,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var entities = CreateEntities_x8();
             var query = CreateQuery_x8();
 
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -1231,7 +1236,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -1272,7 +1277,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -1316,7 +1321,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -1366,7 +1371,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var entities = CreateEntities_x8();
             var query = CreateQuery_x8();
 
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -1407,7 +1412,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -1452,7 +1457,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -1503,7 +1508,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var entities = CreateEntities_x8();
             var query = CreateQuery_x8();
 
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -1548,7 +1553,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var query = CreateQuery_x8();
 
             var isOk = new bool[entities.Length];
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -1600,7 +1605,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var entities = CreateEntities_x8();
             var query = CreateQuery_x8();
 
-            query.ForEach(false, (int index, Entity entity,
+            query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestComponent3 component3,
@@ -1654,7 +1659,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                 .AddComponent(_component7)
                 .AddComponent(_component8));
 
-        private EntityQuery CreateQuery_x8() => Context.QueryManager.CreateQuery()
+        private EntityQuery CreateQuery_x8() => new EntityQuery()
                 .WhereAllOf<TestComponent1, TestComponent2, TestComponent3, TestComponent4>()
                 .WhereAllOf<TestComponent5, TestComponent6, TestComponent7, TestComponent8>();
     }

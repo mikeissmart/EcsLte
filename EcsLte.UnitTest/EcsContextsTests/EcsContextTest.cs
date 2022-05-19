@@ -1,5 +1,6 @@
 ﻿using EcsLte.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 
 namespace EcsLte.UnitTest.EcsContextTests
 {
@@ -35,6 +36,21 @@ namespace EcsLte.UnitTest.EcsContextTests
         }
 
         [TestMethod]
+        public void Create_Duplicate()
+        {
+            var context = EcsContext.CreateContext("TestCreate");
+
+            Assert.ThrowsException<EcsContextNameAlreadyExistException>(()
+                => EcsContext.CreateContext("TestCreate"));
+
+            EcsContext.DestroyContext(context);
+        }
+
+        [TestMethod]
+        public void Create_null() => Assert.ThrowsException<ArgumentNullException>(()
+                                       => EcsContext.CreateContext(null));
+
+        [TestMethod]
         public void CreateMultiple()
         {
             var context1 = EcsContext.CreateContext("TestCreateMultiple1");
@@ -61,7 +77,11 @@ namespace EcsLte.UnitTest.EcsContextTests
         }
 
         [TestMethod]
-        public void DestroyAfterDestroy()
+        public void Destroy_Null() => Assert.ThrowsException<ArgumentNullException>(()
+                                        => EcsContext.DestroyContext(null));
+
+        [TestMethod]
+        public void Destroy_Duplicate()
         {
             var context = EcsContext.CreateContext("TestDestroyAfterDestroy");
             EcsContext.DestroyContext(context);

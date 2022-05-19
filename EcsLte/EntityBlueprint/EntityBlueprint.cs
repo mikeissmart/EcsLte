@@ -7,35 +7,52 @@ namespace EcsLte
 {
     public class EntityBlueprint
     {
-        private EntityArcheType _prevEntityArcheType;
+        private EntityArcheType _archeType;
 
-        internal IEntityBlueprintComponentData[] AllBlueprintComponents { get; private set; }
-        internal IEntityBlueprintComponentData[] SharedBlueprintComponents { get; private set; }
-        internal IEntityBlueprintComponentData[] UniqueBlueprintComponents { get; private set; }
-        internal EcsContext Context { get; set; }
-        internal ArcheTypeIndex? ArcheTypeIndex { get; set; }
+        public IComponent[] Components { get; private set; }
+        internal IComponentData[] AllBlueprintComponents { get; private set; }
+        internal IComponentData[] SharedBlueprintComponents { get; private set; }
+        internal IComponentData[] UniqueBlueprintComponents { get; private set; }
 
-        public EntityBlueprint() { }
-
-        private EntityBlueprint(EcsContext context,
-            ArcheTypeIndex? archeTypeIndex,
-            IEntityBlueprintComponentData[] components)
+        public EntityBlueprint()
         {
-            if (components != null)
-            {
-                SharedBlueprintComponents = components
-                    .Where(x => x.Config.IsShared)
-                    .ToArray();
-                UniqueBlueprintComponents = components
-                    .Where(x => x.Config.IsUnique)
-                    .ToArray();
-            }
-            Context = context;
-            ArcheTypeIndex = archeTypeIndex;
-            AllBlueprintComponents = components;
+            Components = new IComponent[0];
+            AllBlueprintComponents = new IComponentData[0];
+            SharedBlueprintComponents = new IComponentData[0];
+            UniqueBlueprintComponents = new IComponentData[0];
         }
 
-        public bool HasComponent<TComponent>() where TComponent : unmanaged, IComponent
+        private EntityBlueprint(IComponentData[] allBlueprintComponents)
+        {
+            Components = allBlueprintComponents
+                .Select(x => x.Component)
+                .ToArray();
+            AllBlueprintComponents = allBlueprintComponents;
+            SharedBlueprintComponents = allBlueprintComponents
+                .Where(x => x.Config.IsShared)
+                .ToArray();
+            UniqueBlueprintComponents = allBlueprintComponents
+                .Where(x => x.Config.IsUnique)
+                .ToArray();
+        }
+
+        private EntityBlueprint(EntityArcheType archeType,
+            IComponentData[] allBlueprintComponents)
+        {
+            _archeType = archeType;
+            Components = allBlueprintComponents
+                .Select(x => x.Component)
+                .ToArray();
+            AllBlueprintComponents = allBlueprintComponents;
+            SharedBlueprintComponents = allBlueprintComponents
+                .Where(x => x.Config.IsShared)
+                .ToArray();
+            UniqueBlueprintComponents = allBlueprintComponents
+                .Where(x => x.Config.IsUnique)
+                .ToArray();
+        }
+
+        public bool HasComponent<TComponent>() where TComponent : IComponent
             => IndexOfBlueprintComponent(ComponentConfig<TComponent>.Config) != -1;
 
         public TComponent GetComponent<TComponent>() where TComponent : unmanaged, IComponent
@@ -49,16 +66,11 @@ namespace EcsLte
 
         public EntityBlueprint AddComponent<TComponent>(TComponent component) where TComponent : unmanaged, IComponent
         {
-            var config = ComponentConfig<TComponent>.Config;
-            var index = IndexOfBlueprintComponent(config);
+            var index = IndexOfBlueprintComponent(ComponentConfig<TComponent>.Config);
             if (index != -1)
                 throw new EntityBlueprintAlreadyHasComponentException(typeof(TComponent));
-            var blueprintComponent = new EntityBlueprintComponentData<TComponent>(component, config);
 
-            return new EntityBlueprint(
-                Context,
-                null,
-                Helper.CopyInsertSort(AllBlueprintComponents, blueprintComponent));
+            return new EntityBlueprint(Helper.CopyInsertSort(AllBlueprintComponents, new ComponentData<TComponent>(component)));
         }
 
         public EntityBlueprint RemoveComponent<TComponent>() where TComponent : unmanaged, IComponent
@@ -68,44 +80,38 @@ namespace EcsLte
             if (index == -1)
                 throw new EntityBlueprintNotHaveComponentException(typeof(TComponent));
             if (AllBlueprintComponents.Length == 1)
-                return new EntityBlueprint(Context, null, null);
+                return new EntityBlueprint();
 
-            return new EntityBlueprint(Context, null, AllBlueprintComponents
-                .Where(x => x.Config != config)
-                .ToArray());
+            return new EntityBlueprint(AllBlueprintComponents
+                    .Where(x => x.Config != config)
+                    .ToArray());
         }
 
         public EntityBlueprint UpdateComponent<TComponent>(TComponent component) where TComponent : unmanaged, IComponent
         {
             var config = ComponentConfig<TComponent>.Config;
             var index = IndexOfBlueprintComponent(config);
-            var blueprintComponent = new EntityBlueprintComponentData<TComponent>(component, config);
+            if (index == -1)
+                return AddComponent(component);
 
-            return new EntityBlueprint(
-                Context,
-                index != -1 && !config.IsShared
-                    ? ArcheTypeIndex
-                    : null,
-                index == -1
-                    ? Helper.CopyInsertSort(AllBlueprintComponents, blueprintComponent)
-                    : CopyReplace(AllBlueprintComponents, index, blueprintComponent));
+            var componentData = new ComponentData<TComponent>(component);
+
+            var componentDatas = new IComponentData[AllBlueprintComponents.Length];
+            Array.Copy(AllBlueprintComponents, componentDatas, componentDatas.Length);
+            componentDatas[index] = componentData;
+
+            if (config.IsShared)
+                return new EntityBlueprint(componentDatas);
+            else
+                return new EntityBlueprint(_archeType, componentDatas);
         }
 
-        public EntityArcheType GetEntityArcheType(EcsContext context)
+        public EntityArcheType GetEntityArcheType()
         {
-            if (context == null)
-                throw new ArgumentNullException(nameof(context));
-            if (context.IsDestroyed)
-                throw new EcsContextIsDestroyedException(context);
+            if (_archeType == null)
+                _archeType = new EntityArcheType(AllBlueprintComponents, SharedBlueprintComponents);
 
-            if (_prevEntityArcheType == null || _prevEntityArcheType.Context != context)
-            {
-                if (AllBlueprintComponents == null)
-                    throw new ArgumentNullException(nameof(AllBlueprintComponents));
-                _prevEntityArcheType = new EntityArcheType(context, this);
-            }
-
-            return _prevEntityArcheType;
+            return _archeType;
         }
 
         private int IndexOfBlueprintComponent(ComponentConfig config)
@@ -121,58 +127,6 @@ namespace EcsLte
             }
 
             return -1;
-        }
-
-        /* TODO remove
-        private static IEntityBlueprintComponentData[] CopyInsertSort(IEntityBlueprintComponentData[] source, IEntityBlueprintComponentData insert)
-        {
-            IEntityBlueprintComponentData[] destination;
-            if (source != null)
-            {
-                destination = new IEntityBlueprintComponentData[source.Length + 1];
-                var index = source.Length - 1;
-                for (; index >= 0; index--)
-                {
-                    if (source[index].Config.ComponentIndex < insert.Config.ComponentIndex)
-                        break;
-                }
-
-                // Copy before insert
-                if (index >= 0)
-                    Array.Copy(source, 0, destination, 0, index + 1);
-
-                // insert
-                destination[index + 1] = insert;
-
-                // Copy after insert
-                if (source.Length - 1 != index)
-                    Array.Copy(source, index + 1, destination, index + 2, source.Length - (index + 1));
-            }
-            else
-            {
-                destination = new IEntityBlueprintComponentData[1];
-                destination[0] = insert;
-            }
-
-            return destination;
-        }*/
-
-        private static IEntityBlueprintComponentData[] CopyReplace(IEntityBlueprintComponentData[] source, int index, IEntityBlueprintComponentData insert)
-        {
-            IEntityBlueprintComponentData[] destination;
-            if (source != null)
-            {
-                destination = new IEntityBlueprintComponentData[source.Length];
-                Array.Copy(source, destination, source.Length);
-                destination[index] = insert;
-            }
-            else
-            {
-                destination = new IEntityBlueprintComponentData[1];
-                destination[0] = insert;
-            }
-
-            return destination;
         }
     }
 }

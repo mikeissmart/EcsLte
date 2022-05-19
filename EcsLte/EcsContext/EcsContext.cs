@@ -8,6 +8,7 @@ namespace EcsLte
     {
         private static readonly Dictionary<string, EcsContext> _ecsContexts =
             new Dictionary<string, EcsContext>();
+        private static readonly object _lockObj = new object();
 
         internal EcsContext(string name)
         {
@@ -25,11 +26,11 @@ namespace EcsLte
         public string Name { get; }
         public bool IsDestroyed { get; private set; }
 
-        public ArcheTypeManager ArcheTypeManager { get; private set; }
         public EntityManager EntityManager { get; private set; }
-        public EntityQueryManager QueryManager { get; private set; }
         public EntityCommandManager CommandManager { get; private set; }
         public SystemManager SystemManager { get; private set; }
+        internal EntityQueryManager QueryManager { get; private set; }
+        internal ArcheTypeManager ArcheTypeManager { get; private set; }
 
         public static bool HasContext(string name)
             => _ecsContexts.ContainsKey(name);
@@ -44,12 +45,18 @@ namespace EcsLte
 
         public static EcsContext CreateContext(string name)
         {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
             if (HasContext(name))
                 throw new EcsContextNameAlreadyExistException(name);
 
-            var context = new EcsContext(name);
-            _ecsContexts.Add(name, context);
-            return context;
+            lock (_lockObj)
+            {
+                var context = new EcsContext(name);
+                _ecsContexts.Add(name, context);
+
+                return context;
+            }
         }
 
         public static void DestroyContext(EcsContext context)
@@ -59,9 +66,11 @@ namespace EcsLte
             if (context.IsDestroyed)
                 throw new EcsContextIsDestroyedException(context);
 
-            context.InternalDestroy();
-
-            _ecsContexts.Remove(context.Name);
+            lock (_lockObj)
+            {
+                context.InternalDestroy();
+                _ecsContexts.Remove(context.Name);
+            }
         }
 
         internal void InternalDestroy()

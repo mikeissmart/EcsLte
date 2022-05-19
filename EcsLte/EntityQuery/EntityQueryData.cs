@@ -1,5 +1,4 @@
-﻿using EcsLte.Data;
-using EcsLte.Utilities;
+﻿using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
 
@@ -7,20 +6,79 @@ namespace EcsLte
 {
     internal class EntityQueryData : IEquatable<EntityQueryData>
     {
-        private readonly int _hashCode;
+        private int _hashCode;
+        private Type[] _allComponentTypes;
+        private Type[] _anyComponentTypes;
+        private Type[] _noneComponentTypes;
+        private ISharedComponent[] _filterComponents;
 
-        internal ComponentConfig[] AllComponentConfigs { get; set; } = new ComponentConfig[0];
-        internal ComponentConfig[] AnyComponentConfigs { get; set; } = new ComponentConfig[0];
-        internal ComponentConfig[] NoneComponentConfigs { get; set; } = new ComponentConfig[0];
+        internal Type[] AllComponentTypes
+        {
+            get
+            {
+                if (_allComponentTypes == null)
+                    _allComponentTypes = GetComponentConfigTypes(AllComponentConfigs);
+                return _allComponentTypes;
+            }
+        }
+        internal Type[] AnyComponentTypes
+        {
+            get
+            {
+                if (_anyComponentTypes == null)
+                    _anyComponentTypes = GetComponentConfigTypes(AnyComponentConfigs);
+                return _anyComponentTypes;
+            }
+        }
+        internal Type[] NoneComponentTypes
+        {
+            get
+            {
+                if (_noneComponentTypes == null)
+                    _noneComponentTypes = GetComponentConfigTypes(NoneComponentConfigs);
+                return _noneComponentTypes;
+            }
+        }
+        internal ISharedComponent[] FilterComponents
+        {
+            get
+            {
+                if (_filterComponents == null)
+                {
+                    _filterComponents = new ISharedComponent[FilterComponentDatas.Length];
+                    for (var i = 0; i < FilterComponentDatas.Length; i++)
+                        _filterComponents[i] = (ISharedComponent)FilterComponentDatas[i].Component;
+                }
+                return _filterComponents;
+            }
+        }
         internal int ConfigCount => AllComponentConfigs.Length + AnyComponentConfigs.Length + NoneComponentConfigs.Length;
-        internal IEntityQueryFilterComponent[] FilterComponents { get; set; } = new IEntityQueryFilterComponent[0];
-        internal EcsContext Context { get; set; }
-        /// <summary>
-        /// ArcheTypeData*
-        /// </summary>
-        internal List<PtrWrapper> ArcheTypeDatas { get; private set; } = new List<PtrWrapper>();
-        internal int? ArcheTypeChangeVersion { get; set; }
-        internal int? EntityQueryDataIndex { get; set; }
+        internal ComponentConfig[] AllComponentConfigs { get; private set; }
+        internal ComponentConfig[] AnyComponentConfigs { get; private set; }
+        internal ComponentConfig[] NoneComponentConfigs { get; private set; }
+        internal IComponentData[] FilterComponentDatas { get; private set; }
+        internal Dictionary<EcsContext, EntityQueryEcsContextData> ContextQueryData { get; private set; }
+
+        internal EntityQueryData()
+        {
+            AllComponentConfigs = new ComponentConfig[0];
+            AnyComponentConfigs = new ComponentConfig[0];
+            NoneComponentConfigs = new ComponentConfig[0];
+            FilterComponentDatas = new IComponentData[0];
+            ContextQueryData = new Dictionary<EcsContext, EntityQueryEcsContextData>();
+        }
+
+        internal EntityQueryData(ComponentConfig[] allComponentConfigs,
+           ComponentConfig[] anyComponentConfigs,
+           ComponentConfig[] noneComponentConfigs,
+           IComponentData[] filterComponentDatas)
+        {
+            AllComponentConfigs = allComponentConfigs;
+            AnyComponentConfigs = anyComponentConfigs;
+            NoneComponentConfigs = noneComponentConfigs;
+            FilterComponentDatas = filterComponentDatas;
+            ContextQueryData = new Dictionary<EcsContext, EntityQueryEcsContextData>();
+        }
 
         internal bool IsFiltered(ArcheType archeType)
             => IsFilteredAllComponentConfigs(archeType) &&
@@ -80,10 +138,15 @@ namespace EcsLte
 
         public static bool operator ==(EntityQueryData lhs, EntityQueryData rhs)
         {
+            if (ReferenceEquals(lhs, null) && ReferenceEquals(rhs, null))
+                return true;
+            if (ReferenceEquals(lhs, null) || ReferenceEquals(rhs, null))
+                return false;
+
             if (lhs.AllComponentConfigs.Length != rhs.AllComponentConfigs.Length ||
                 lhs.AnyComponentConfigs.Length != rhs.AnyComponentConfigs.Length ||
                 lhs.NoneComponentConfigs.Length != rhs.NoneComponentConfigs.Length ||
-                lhs.FilterComponents.Length != rhs.FilterComponents.Length)
+                lhs.FilterComponentDatas.Length != rhs.FilterComponentDatas.Length)
             {
                 return false;
             }
@@ -93,19 +156,19 @@ namespace EcsLte
                 if (lhs.AllComponentConfigs[i] != rhs.AllComponentConfigs[i])
                     return false;
             }
-            for (var i = 0; i < lhs.AllComponentConfigs.Length; i++)
+            for (var i = 0; i < lhs.AnyComponentConfigs.Length; i++)
             {
                 if (lhs.AnyComponentConfigs[i] != rhs.AnyComponentConfigs[i])
                     return false;
             }
-            for (var i = 0; i < lhs.AllComponentConfigs.Length; i++)
+            for (var i = 0; i < lhs.NoneComponentConfigs.Length; i++)
             {
                 if (lhs.NoneComponentConfigs[i] != rhs.NoneComponentConfigs[i])
                     return false;
             }
-            for (var i = 0; i < lhs.AllComponentConfigs.Length; i++)
+            for (var i = 0; i < lhs.FilterComponentDatas.Length; i++)
             {
-                if (lhs.FilterComponents[i].Config != rhs.FilterComponents[i].Config)
+                if (lhs.FilterComponentDatas[i].Config != rhs.FilterComponentDatas[i].Config)
                     return false;
             }
 
@@ -120,22 +183,33 @@ namespace EcsLte
         {
             if (_hashCode == 0)
             {
-                var hashCode = HashCodeHelper.StartHashCode()
+                var hasCode = HashCodeHelper.StartHashCode()
                     .AppendHashCode(AllComponentConfigs.Length)
                     .AppendHashCode(AnyComponentConfigs.Length)
                     .AppendHashCode(NoneComponentConfigs.Length)
-                    .AppendHashCode(FilterComponents.Length);
+                    .AppendHashCode(FilterComponentDatas.Length);
                 foreach (var config in AllComponentConfigs)
-                    hashCode = hashCode.AppendHashCode(config);
+                    hasCode = hasCode.AppendHashCode(config);
                 foreach (var config in AnyComponentConfigs)
-                    hashCode = hashCode.AppendHashCode(config);
+                    hasCode = hasCode.AppendHashCode(config);
                 foreach (var config in NoneComponentConfigs)
-                    hashCode = hashCode.AppendHashCode(config);
-                foreach (var sharedComponent in FilterComponents)
-                    hashCode = hashCode.AppendHashCode(sharedComponent.Config);
+                    hasCode = hasCode.AppendHashCode(config);
+                foreach (var sharedComponent in FilterComponentDatas)
+                    hasCode = hasCode.AppendHashCode(sharedComponent.Config);
+
+                _hashCode = hasCode.HashCode;
             }
 
             return _hashCode;
+        }
+
+        private static Type[] GetComponentConfigTypes(ComponentConfig[] configs)
+        {
+            var types = new Type[configs.Length];
+            for (var i = 0; i < configs.Length; i++)
+                types[i] = ComponentConfigs.Instance.AllComponentTypes[configs[i].ComponentIndex];
+
+            return types;
         }
     }
 }

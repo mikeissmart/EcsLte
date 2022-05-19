@@ -191,29 +191,17 @@ namespace EcsLte.UnitTest.EntityBlueprintTests
         public void GetEntityArcheType()
         {
             var sharedComponent = new TestSharedComponent1 { Prop = 1 };
-            var entityArcheType = Context.ArcheTypeManager.CreateEntityArcheType()
-                .AddComponent<TestComponent1>()
+            var entityArcheType = new EntityArcheType()
+                .AddComponentType<TestComponent1>()
                 .AddSharedComponent(sharedComponent);
             var blueprint = new EntityBlueprint()
                 .AddComponent(new TestComponent1())
                 .AddComponent(sharedComponent);
 
-            var blueprintArcheType = blueprint.GetEntityArcheType(Context);
+            var blueprintArcheType = blueprint.GetEntityArcheType();
 
+            Assert.IsTrue(blueprintArcheType != null);
             Assert.IsTrue(entityArcheType == blueprintArcheType);
-        }
-
-        [TestMethod]
-        public void GetEntityArcheType_Destroyed()
-        {
-            var sharedComponent = new TestSharedComponent1 { Prop = 1 };
-            var blueprint = new EntityBlueprint()
-                .AddComponent(new TestComponent1())
-                .AddComponent(sharedComponent);
-            EcsContext.DestroyContext(Context);
-
-            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                blueprint.GetEntityArcheType(Context));
         }
     }
 }

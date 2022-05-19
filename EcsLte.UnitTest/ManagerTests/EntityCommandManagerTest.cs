@@ -47,6 +47,7 @@ namespace EcsLte.UnitTest.ManagerTests
             var queue = Context.CommandManager.CreateCommandQueue("Test");
 
             Assert.IsTrue(queue.Name == "Test");
+            Assert.IsTrue(queue.Context == Context);
         }
 
         [TestMethod]

@@ -3,7 +3,7 @@ using System;
 
 namespace EcsLte
 {
-    public struct SharedComponentDataIndex : IEquatable<SharedComponentDataIndex>, IComparable<SharedComponentDataIndex>
+    internal struct SharedComponentDataIndex : IEquatable<SharedComponentDataIndex>, IComparable<SharedComponentDataIndex>
     {
         internal int SharedIndex { get; set; }
         internal int SharedDataIndex { get; set; }

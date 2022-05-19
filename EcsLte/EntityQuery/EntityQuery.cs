@@ -3,61 +3,39 @@ using EcsLte.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EcsLte
 {
-    public class EntityQuery
+    public class EntityQuery : IEquatable<EntityQuery>
     {
-        internal EntityQueryData QueryData { get; set; } = new EntityQueryData();
+        private static readonly int _threadCount = (int)(Environment.ProcessorCount * 0.75);
 
-        internal EntityQuery(EcsContext context) => QueryData.Context = context;
+        public Type[] AllComponentTypes => QueryData.AllComponentTypes;
+        public Type[] AnyComponentTypes => QueryData.AnyComponentTypes;
+        public Type[] NoneComponentTypes => QueryData.NoneComponentTypes;
+        public ISharedComponent[] FilterComponents => QueryData.FilterComponents;
+        internal EntityQueryData QueryData { get; set; }
 
-        public unsafe bool HasEntity(Entity entity)
+        public EntityQuery() => QueryData = new EntityQueryData();
+
+        public static bool operator !=(EntityQuery lhs, EntityQuery rhs) => !(lhs == rhs);
+
+        public static bool operator ==(EntityQuery lhs, EntityQuery rhs)
         {
-            CheckQueryData();
+            if (ReferenceEquals(lhs, null) && ReferenceEquals(rhs, null))
+                return true;
+            if (ReferenceEquals(lhs, null) || ReferenceEquals(rhs, null))
+                return false;
 
-            if (QueryData.Context.EntityManager.HasEntity(entity))
-            {
-                var entityData = QueryData.Context.EntityManager.EntityData[entity.Id];
-                foreach (var archTypeData in QueryData.ArcheTypeDatas)
-                {
-                    if (archTypeData.Ptr == entityData.ArcheTypeData)
-                        return true;
-                }
-            }
-
-            return false;
+            return lhs.QueryData == rhs.QueryData;
         }
 
-        public unsafe Entity[] GetEntities()
-        {
-            CheckQueryData();
+        public bool Equals(EntityQuery other) => this == other;
 
-            var entitiesCount = 0;
-            foreach (var archeTypeDataPtr in QueryData.ArcheTypeDatas)
-                entitiesCount += ((ArcheTypeData*)archeTypeDataPtr.Ptr)->EntityCount;
+        public override bool Equals(object other) => other is EntityQuery obj && this == obj;
 
-            var entities = new Entity[entitiesCount];
-            var entitiesOffset = 0;
-            foreach (var archeTypeDataPtr in QueryData.ArcheTypeDatas)
-            {
-                var archeTypeData = (ArcheTypeData*)archeTypeDataPtr.Ptr;
-                archeTypeData->CopyEntities(ref entities, entitiesOffset);
-                entitiesOffset += archeTypeData->EntityCount;
-            }
-
-            return entities;
-        }
-
-        internal void CheckQueryData()
-        {
-            if (QueryData.Context.IsDestroyed)
-                throw new EcsContextIsDestroyedException(QueryData.Context);
-            if (QueryData.EntityQueryDataIndex == null)
-                QueryData = QueryData.Context.QueryManager.IndexQueryData(QueryData);
-            if (QueryData.ArcheTypeChangeVersion != QueryData.Context.ArcheTypeManager.ChangeVersion)
-                QueryData.Context.ArcheTypeManager.UpdateArcheTypeDatas(QueryData);
-        }
+        public override int GetHashCode() => QueryData.GetHashCode();
 
         #region WhereOfs Filters
 
@@ -232,14 +210,14 @@ namespace EcsLte
         #region FilterBys
 
         public bool HasFilterBy<TSharedComponent>()
-            where TSharedComponent : ISharedComponent
+            where TSharedComponent : unmanaged, ISharedComponent
         {
             var config = ComponentConfig<TSharedComponent>.Config;
-            return QueryData.FilterComponents.Any(x => x.Config == config);
+            return QueryData.FilterComponentDatas.Any(x => x.Config == config);
         }
 
         public TSharedComponent GetFilterBy<TSharedComponent>()
-            where TSharedComponent : ISharedComponent
+            where TSharedComponent : unmanaged, ISharedComponent
         {
             if (!HasFilterBy<TSharedComponent>())
             {
@@ -248,26 +226,26 @@ namespace EcsLte
             }
 
             var config = ComponentConfig<TSharedComponent>.Config;
-            return (TSharedComponent)QueryData.FilterComponents.First(x => x.Config == config).Component;
+            return (TSharedComponent)QueryData.FilterComponentDatas.First(x => x.Config == config).Component;
         }
 
         public EntityQuery FilterBy<T1>(
             T1 component1)
-            where T1 : ISharedComponent
+            where T1 : unmanaged, ISharedComponent
             => new EntityQuery(this,
-                new EntityQueryFilterComponent<T1>(component1),
+                new SharedComponentData<T1>(component1),
                 false);
 
         public EntityQuery FilterBy<T1, T2>(
             T1 component1,
             T2 component2)
-            where T1 : ISharedComponent
-            where T2 : ISharedComponent
+            where T1 : unmanaged, ISharedComponent
+            where T2 : unmanaged, ISharedComponent
             => new EntityQuery(this,
-                new IEntityQueryFilterComponent[]
+                new IComponentData[]
                 {
-                    new EntityQueryFilterComponent<T1>(component1),
-                    new EntityQueryFilterComponent<T2>(component2)
+                    new SharedComponentData<T1>(component1),
+                    new SharedComponentData<T2>(component2)
                 },
                 false);
 
@@ -275,15 +253,15 @@ namespace EcsLte
             T1 component1,
             T2 component2,
             T3 component3)
-            where T1 : ISharedComponent
-            where T2 : ISharedComponent
-            where T3 : ISharedComponent
+            where T1 : unmanaged, ISharedComponent
+            where T2 : unmanaged, ISharedComponent
+            where T3 : unmanaged, ISharedComponent
             => new EntityQuery(this,
-                new IEntityQueryFilterComponent[]
+                new IComponentData[]
                 {
-                    new EntityQueryFilterComponent<T1>(component1),
-                    new EntityQueryFilterComponent<T2>(component2),
-                    new EntityQueryFilterComponent<T3>(component3)
+                    new SharedComponentData<T1>(component1),
+                    new SharedComponentData<T2>(component2),
+                    new SharedComponentData<T3>(component3)
                 },
                 false);
 
@@ -292,37 +270,37 @@ namespace EcsLte
             T2 component2,
             T3 component3,
             T4 component4)
-            where T1 : ISharedComponent
-            where T2 : ISharedComponent
-            where T3 : ISharedComponent
-            where T4 : ISharedComponent
+            where T1 : unmanaged, ISharedComponent
+            where T2 : unmanaged, ISharedComponent
+            where T3 : unmanaged, ISharedComponent
+            where T4 : unmanaged, ISharedComponent
             => new EntityQuery(this,
-                new IEntityQueryFilterComponent[]
+                new IComponentData[]
                 {
-                    new EntityQueryFilterComponent<T1>(component1),
-                    new EntityQueryFilterComponent<T2>(component2),
-                    new EntityQueryFilterComponent<T3>(component3),
-                    new EntityQueryFilterComponent<T4>(component4)
+                    new SharedComponentData<T1>(component1),
+                    new SharedComponentData<T2>(component2),
+                    new SharedComponentData<T3>(component3),
+                    new SharedComponentData<T4>(component4)
                 },
                 false);
 
         public EntityQuery FilterByReplace<T1>(
             T1 component1)
-            where T1 : ISharedComponent
+            where T1 : unmanaged, ISharedComponent
             => new EntityQuery(this,
-                new EntityQueryFilterComponent<T1>(component1),
+                new SharedComponentData<T1>(component1),
                 true);
 
         public EntityQuery FilterByReplace<T1, T2>(
             T1 component1,
             T2 component2)
-            where T1 : ISharedComponent
-            where T2 : ISharedComponent
+            where T1 : unmanaged, ISharedComponent
+            where T2 : unmanaged, ISharedComponent
             => new EntityQuery(this,
-                new IEntityQueryFilterComponent[]
+                new IComponentData[]
                 {
-                    new EntityQueryFilterComponent<T1>(component1),
-                    new EntityQueryFilterComponent<T2>(component2)
+                    new SharedComponentData<T1>(component1),
+                    new SharedComponentData<T2>(component2)
                 },
                 true);
 
@@ -330,15 +308,15 @@ namespace EcsLte
             T1 component1,
             T2 component2,
             T3 component3)
-            where T1 : ISharedComponent
-            where T2 : ISharedComponent
-            where T3 : ISharedComponent
+            where T1 : unmanaged, ISharedComponent
+            where T2 : unmanaged, ISharedComponent
+            where T3 : unmanaged, ISharedComponent
             => new EntityQuery(this,
-                new IEntityQueryFilterComponent[]
+                new IComponentData[]
                 {
-                    new EntityQueryFilterComponent<T1>(component1),
-                    new EntityQueryFilterComponent<T2>(component2),
-                    new EntityQueryFilterComponent<T3>(component3)
+                    new SharedComponentData<T1>(component1),
+                    new SharedComponentData<T2>(component2),
+                    new SharedComponentData<T3>(component3)
                 },
                 true);
 
@@ -347,17 +325,17 @@ namespace EcsLte
             T2 component2,
             T3 component3,
             T4 component4)
-            where T1 : ISharedComponent
-            where T2 : ISharedComponent
-            where T3 : ISharedComponent
-            where T4 : ISharedComponent
+            where T1 : unmanaged, ISharedComponent
+            where T2 : unmanaged, ISharedComponent
+            where T3 : unmanaged, ISharedComponent
+            where T4 : unmanaged, ISharedComponent
             => new EntityQuery(this,
-                new IEntityQueryFilterComponent[]
+                new IComponentData[]
                 {
-                    new EntityQueryFilterComponent<T1>(component1),
-                    new EntityQueryFilterComponent<T2>(component2),
-                    new EntityQueryFilterComponent<T3>(component3),
-                    new EntityQueryFilterComponent<T4>(component4)
+                    new SharedComponentData<T1>(component1),
+                    new SharedComponentData<T2>(component2),
+                    new SharedComponentData<T3>(component3),
+                    new SharedComponentData<T4>(component4)
                 },
                 true);
 
@@ -366,91 +344,69 @@ namespace EcsLte
         #region Privates
 
         private EntityQuery(EntityQuery query, QueryCategory category, ComponentConfig config)
-            : this(query.QueryData.Context)
         {
             CheckDistinctConfig(query.QueryData.AllComponentConfigs, config);
             CheckDistinctConfig(query.QueryData.AnyComponentConfigs, config);
             CheckDistinctConfig(query.QueryData.NoneComponentConfigs, config);
 
-            switch (category)
-            {
-                case QueryCategory.All:
-                    QueryData.AllComponentConfigs = AddOrReplaceConfig(query.QueryData.AllComponentConfigs, config, false);
-                    QueryData.AnyComponentConfigs = query.QueryData.AnyComponentConfigs;
-                    QueryData.NoneComponentConfigs = query.QueryData.NoneComponentConfigs;
-                    break;
-                case QueryCategory.Any:
-                    QueryData.AllComponentConfigs = query.QueryData.AllComponentConfigs;
-                    QueryData.AnyComponentConfigs = AddOrReplaceConfig(query.QueryData.AnyComponentConfigs, config, false);
-                    QueryData.NoneComponentConfigs = query.QueryData.NoneComponentConfigs;
-                    break;
-                case QueryCategory.None:
-                    QueryData.AllComponentConfigs = query.QueryData.AllComponentConfigs;
-                    QueryData.AnyComponentConfigs = query.QueryData.AnyComponentConfigs;
-                    QueryData.NoneComponentConfigs = AddOrReplaceConfig(query.QueryData.NoneComponentConfigs, config, false);
-                    break;
-            }
-
-            QueryData.FilterComponents = query.QueryData.FilterComponents;
+            QueryData = new EntityQueryData(
+                category == QueryCategory.All
+                    ? AddOrReplaceConfig(query.QueryData.AllComponentConfigs, config, false)
+                    : query.QueryData.AllComponentConfigs,
+                category == QueryCategory.Any
+                    ? AddOrReplaceConfig(query.QueryData.AnyComponentConfigs, config, false)
+                    : query.QueryData.AnyComponentConfigs,
+                category == QueryCategory.None
+                    ? AddOrReplaceConfig(query.QueryData.NoneComponentConfigs, config, false)
+                    : query.QueryData.NoneComponentConfigs,
+                query.QueryData.FilterComponentDatas);
         }
 
         private EntityQuery(EntityQuery query, QueryCategory category, ComponentConfig[] configs)
-            : this(query.QueryData.Context)
         {
             CheckDuplicateConfigs(configs);
             CheckDistinctConfigs(query.QueryData.AllComponentConfigs, configs);
             CheckDistinctConfigs(query.QueryData.AnyComponentConfigs, configs);
             CheckDistinctConfigs(query.QueryData.NoneComponentConfigs, configs);
 
-            switch (category)
-            {
-                case QueryCategory.All:
-                    QueryData.AllComponentConfigs = AddOrReplaceConfigs(query.QueryData.AllComponentConfigs, configs, false);
-                    QueryData.AnyComponentConfigs = query.QueryData.AnyComponentConfigs;
-                    QueryData.NoneComponentConfigs = query.QueryData.NoneComponentConfigs;
-                    break;
-                case QueryCategory.Any:
-                    QueryData.AllComponentConfigs = query.QueryData.AllComponentConfigs;
-                    QueryData.AnyComponentConfigs = AddOrReplaceConfigs(query.QueryData.AnyComponentConfigs, configs, false);
-                    QueryData.NoneComponentConfigs = query.QueryData.NoneComponentConfigs;
-                    break;
-                case QueryCategory.None:
-                    QueryData.AllComponentConfigs = query.QueryData.AllComponentConfigs;
-                    QueryData.AnyComponentConfigs = query.QueryData.AnyComponentConfigs;
-                    QueryData.NoneComponentConfigs = AddOrReplaceConfigs(query.QueryData.NoneComponentConfigs, configs, false);
-                    break;
-            }
-
-            QueryData.FilterComponents = query.QueryData.FilterComponents;
+            QueryData = new EntityQueryData(
+                category == QueryCategory.All
+                    ? AddOrReplaceConfigs(query.QueryData.AllComponentConfigs, configs, false)
+                    : query.QueryData.AllComponentConfigs,
+                category == QueryCategory.Any
+                    ? AddOrReplaceConfigs(query.QueryData.AnyComponentConfigs, configs, false)
+                    : query.QueryData.AnyComponentConfigs,
+                category == QueryCategory.None
+                    ? AddOrReplaceConfigs(query.QueryData.NoneComponentConfigs, configs, false)
+                    : query.QueryData.NoneComponentConfigs,
+                query.QueryData.FilterComponentDatas);
         }
 
-        private EntityQuery(EntityQuery query, IEntityQueryFilterComponent filterComponent, bool replace)
-            : this(query.QueryData.Context)
+        private EntityQuery(EntityQuery query, IComponentData filterComponent, bool replace)
         {
             CheckDistinctConfig(query.QueryData.AnyComponentConfigs, filterComponent.Config);
             CheckDistinctConfig(query.QueryData.NoneComponentConfigs, filterComponent.Config);
 
-            QueryData.AllComponentConfigs = AddOrReplaceConfig(query.QueryData.AllComponentConfigs, filterComponent.Config, true);
-            QueryData.AnyComponentConfigs = query.QueryData.AnyComponentConfigs;
-            QueryData.NoneComponentConfigs = query.QueryData.NoneComponentConfigs;
-
-            QueryData.FilterComponents = AddOrReplaceFilterComponent(query.QueryData.FilterComponents, filterComponent, replace);
+            QueryData = new EntityQueryData(
+                AddOrReplaceConfig(query.QueryData.AllComponentConfigs, filterComponent.Config, true),
+                query.QueryData.AnyComponentConfigs,
+                query.QueryData.NoneComponentConfigs,
+                AddOrReplaceFilterComponent(query.QueryData.FilterComponentDatas, filterComponent, replace));
         }
 
-        private EntityQuery(EntityQuery query, IEntityQueryFilterComponent[] filterComponents, bool replace)
-            : this(query.QueryData.Context)
+        private EntityQuery(EntityQuery query, IComponentData[] filterComponents, bool replace)
         {
             var configs = filterComponents.Select(x => x.Config).ToArray();
 
             CheckDuplicateConfigs(configs);
-            CheckDistinctConfigs(QueryData.AnyComponentConfigs, configs);
-            CheckDistinctConfigs(QueryData.NoneComponentConfigs, configs);
+            CheckDistinctConfigs(query.QueryData.AnyComponentConfigs, configs);
+            CheckDistinctConfigs(query.QueryData.NoneComponentConfigs, configs);
 
-            QueryData.AllComponentConfigs = AddOrReplaceConfigs(query.QueryData.AllComponentConfigs, configs, true);
-            QueryData.AnyComponentConfigs = query.QueryData.AnyComponentConfigs;
-            QueryData.NoneComponentConfigs = query.QueryData.NoneComponentConfigs;
-
-            QueryData.FilterComponents = AddOrReplaceFilterComponents(query.QueryData.FilterComponents, filterComponents, replace);
+            QueryData = new EntityQueryData(
+                AddOrReplaceConfigs(query.QueryData.AllComponentConfigs, configs, true),
+                query.QueryData.AnyComponentConfigs,
+                query.QueryData.NoneComponentConfigs,
+                AddOrReplaceFilterComponents(query.QueryData.FilterComponentDatas, filterComponents, replace));
         }
 
         private static void CheckDuplicateConfigs(ComponentConfig[] configs)
@@ -535,9 +491,9 @@ namespace EcsLte
             return destConfigs.ToArray();
         }
 
-        private static IEntityQueryFilterComponent[] AddOrReplaceFilterComponent(IEntityQueryFilterComponent[] sourceFilterComponents, IEntityQueryFilterComponent filterComponent, bool replace)
+        private static IComponentData[] AddOrReplaceFilterComponent(IComponentData[] sourceFilterComponents, IComponentData filterComponent, bool replace)
         {
-            IEntityQueryFilterComponent[] destFilterComponents;
+            IComponentData[] destFilterComponents;
             var hasFilterComponent = sourceFilterComponents.Any(x => x.Config == filterComponent.Config);
             if (hasFilterComponent && !replace)
             {
@@ -546,7 +502,7 @@ namespace EcsLte
             }
             else if (hasFilterComponent)
             {
-                destFilterComponents = new IEntityQueryFilterComponent[sourceFilterComponents.Length];
+                destFilterComponents = new IComponentData[sourceFilterComponents.Length];
                 Array.Copy(sourceFilterComponents, destFilterComponents, sourceFilterComponents.Length);
                 var index = sourceFilterComponents
                     .Select((x, i) => (x, i))
@@ -557,7 +513,7 @@ namespace EcsLte
             }
             else
             {
-                destFilterComponents = new IEntityQueryFilterComponent[sourceFilterComponents.Length + 1];
+                destFilterComponents = new IComponentData[sourceFilterComponents.Length + 1];
                 destFilterComponents[sourceFilterComponents.Length] = filterComponent;
                 Array.Copy(sourceFilterComponents, destFilterComponents, sourceFilterComponents.Length);
                 Array.Sort(destFilterComponents);
@@ -566,9 +522,9 @@ namespace EcsLte
             return destFilterComponents;
         }
 
-        private static IEntityQueryFilterComponent[] AddOrReplaceFilterComponents(IEntityQueryFilterComponent[] sourceFilterComponents, IEntityQueryFilterComponent[] filterComponents, bool replace)
+        private static IComponentData[] AddOrReplaceFilterComponents(IComponentData[] sourceFilterComponents, IComponentData[] filterComponents, bool replace)
         {
-            var destFilterComponents = new List<IEntityQueryFilterComponent>(sourceFilterComponents);
+            var destFilterComponents = new List<IComponentData>(sourceFilterComponents);
             foreach (var filterComponent in filterComponents)
             {
                 var hasFilterComponent = sourceFilterComponents.Any(x => x.Config == filterComponent.Config);
@@ -611,7 +567,7 @@ namespace EcsLte
 
         #region ForEachs
 
-        public unsafe void ForEach(bool runParallel, EntityQueryActions.R0W0 action) => ForEachRun(runParallel,
+        public unsafe void ForEach(EcsContext context, bool runParallel, EntityQueryActions.R0W0 action) => ForEachRun(context, runParallel,
                 new ComponentConfig[0],
                 (int index, Entity entity, EntityData entityData, byte* componentsPtr, ComponentConfigOffset[] configOffsets) =>
                 {
@@ -620,8 +576,8 @@ namespace EcsLte
 
         #region Write 0
 
-        public unsafe void ForEach<T1>(bool runParallel, EntityQueryActions.R1W0<T1> action)
-            where T1 : unmanaged, IComponent => ForEachRun(runParallel,
+        public unsafe void ForEach<T1>(EcsContext context, bool runParallel, EntityQueryActions.R1W0<T1> action)
+            where T1 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config
@@ -632,9 +588,9 @@ namespace EcsLte
                         in *(T1*)(componentsPtr + configOffsets[0].OffsetInBytes));
                 });
 
-        public unsafe void ForEach<T1, T2>(bool runParallel, EntityQueryActions.R2W0<T1, T2> action)
+        public unsafe void ForEach<T1, T2>(EcsContext context, bool runParallel, EntityQueryActions.R2W0<T1, T2> action)
             where T1 : unmanaged, IComponent
-            where T2 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T2 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -647,10 +603,10 @@ namespace EcsLte
                         in *(T2*)(componentsPtr + configOffsets[1].OffsetInBytes));
                 });
 
-        public unsafe void ForEach<T1, T2, T3>(bool runParallel, EntityQueryActions.R3W0<T1, T2, T3> action)
+        public unsafe void ForEach<T1, T2, T3>(EcsContext context, bool runParallel, EntityQueryActions.R3W0<T1, T2, T3> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
-            where T3 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T3 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -665,11 +621,11 @@ namespace EcsLte
                         in *(T3*)(componentsPtr + configOffsets[2].OffsetInBytes));
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4>(bool runParallel, EntityQueryActions.R4W0<T1, T2, T3, T4> action)
+        public unsafe void ForEach<T1, T2, T3, T4>(EcsContext context, bool runParallel, EntityQueryActions.R4W0<T1, T2, T3, T4> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
-            where T4 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T4 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -686,12 +642,12 @@ namespace EcsLte
                         in *(T4*)(componentsPtr + configOffsets[3].OffsetInBytes));
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5>(bool runParallel, EntityQueryActions.R5W0<T1, T2, T3, T4, T5> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5>(EcsContext context, bool runParallel, EntityQueryActions.R5W0<T1, T2, T3, T4, T5> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
-            where T5 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T5 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -710,13 +666,13 @@ namespace EcsLte
                         in *(T5*)(componentsPtr + configOffsets[4].OffsetInBytes));
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(bool runParallel, EntityQueryActions.R6W0<T1, T2, T3, T4, T5, T6> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R6W0<T1, T2, T3, T4, T5, T6> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
             where T5 : unmanaged, IComponent
-            where T6 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T6 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -737,14 +693,14 @@ namespace EcsLte
                         in *(T6*)(componentsPtr + configOffsets[5].OffsetInBytes));
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(bool runParallel, EntityQueryActions.R7W0<T1, T2, T3, T4, T5, T6, T7> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R7W0<T1, T2, T3, T4, T5, T6, T7> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
             where T5 : unmanaged, IComponent
             where T6 : unmanaged, IComponent
-            where T7 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T7 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -767,7 +723,7 @@ namespace EcsLte
                         in *(T7*)(componentsPtr + configOffsets[6].OffsetInBytes));
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(bool runParallel, EntityQueryActions.R8W0<T1, T2, T3, T4, T5, T6, T7, T8> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R8W0<T1, T2, T3, T4, T5, T6, T7, T8> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
@@ -775,7 +731,7 @@ namespace EcsLte
             where T5 : unmanaged, IComponent
             where T6 : unmanaged, IComponent
             where T7 : unmanaged, IComponent
-            where T8 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T8 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -804,8 +760,8 @@ namespace EcsLte
 
         #region Write 1
 
-        public unsafe void ForEach<T1>(bool runParallel, EntityQueryActions.R0W1<T1> action)
-            where T1 : unmanaged, IComponent => ForEachRun(runParallel,
+        public unsafe void ForEach<T1>(EcsContext context, bool runParallel, EntityQueryActions.R0W1<T1> action)
+            where T1 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config
@@ -817,15 +773,19 @@ namespace EcsLte
                     action(index, entity,
                         ref component1);
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2>(bool runParallel, EntityQueryActions.R1W1<T1, T2> action)
+        public unsafe void ForEach<T1, T2>(EcsContext context, bool runParallel, EntityQueryActions.R1W1<T1, T2> action)
             where T1 : unmanaged, IComponent
-            where T2 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T2 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -839,16 +799,20 @@ namespace EcsLte
                         ref component1,
                         *(T2*)(componentsPtr + configOffsets[1].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3>(bool runParallel, EntityQueryActions.R2W1<T1, T2, T3> action)
+        public unsafe void ForEach<T1, T2, T3>(EcsContext context, bool runParallel, EntityQueryActions.R2W1<T1, T2, T3> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
-            where T3 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T3 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -864,17 +828,21 @@ namespace EcsLte
                         in *(T2*)(componentsPtr + configOffsets[1].OffsetInBytes),
                         in *(T3*)(componentsPtr + configOffsets[2].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4>(bool runParallel, EntityQueryActions.R3W1<T1, T2, T3, T4> action)
+        public unsafe void ForEach<T1, T2, T3, T4>(EcsContext context, bool runParallel, EntityQueryActions.R3W1<T1, T2, T3, T4> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
-            where T4 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T4 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -892,18 +860,22 @@ namespace EcsLte
                         in *(T3*)(componentsPtr + configOffsets[2].OffsetInBytes),
                         in *(T4*)(componentsPtr + configOffsets[3].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5>(bool runParallel, EntityQueryActions.R4W1<T1, T2, T3, T4, T5> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5>(EcsContext context, bool runParallel, EntityQueryActions.R4W1<T1, T2, T3, T4, T5> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
-            where T5 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T5 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -923,19 +895,23 @@ namespace EcsLte
                         in *(T4*)(componentsPtr + configOffsets[3].OffsetInBytes),
                         in *(T5*)(componentsPtr + configOffsets[4].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(bool runParallel, EntityQueryActions.R5W1<T1, T2, T3, T4, T5, T6> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R5W1<T1, T2, T3, T4, T5, T6> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
             where T5 : unmanaged, IComponent
-            where T6 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T6 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -957,20 +933,24 @@ namespace EcsLte
                         in *(T5*)(componentsPtr + configOffsets[4].OffsetInBytes),
                         in *(T6*)(componentsPtr + configOffsets[5].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(bool runParallel, EntityQueryActions.R6W1<T1, T2, T3, T4, T5, T6, T7> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R6W1<T1, T2, T3, T4, T5, T6, T7> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
             where T5 : unmanaged, IComponent
             where T6 : unmanaged, IComponent
-            where T7 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T7 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -994,13 +974,17 @@ namespace EcsLte
                         in *(T6*)(componentsPtr + configOffsets[5].OffsetInBytes),
                         in *(T7*)(componentsPtr + configOffsets[6].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(bool runParallel, EntityQueryActions.R7W1<T1, T2, T3, T4, T5, T6, T7, T8> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R7W1<T1, T2, T3, T4, T5, T6, T7, T8> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
@@ -1008,7 +992,7 @@ namespace EcsLte
             where T5 : unmanaged, IComponent
             where T6 : unmanaged, IComponent
             where T7 : unmanaged, IComponent
-            where T8 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T8 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1034,19 +1018,23 @@ namespace EcsLte
                         in *(T7*)(componentsPtr + configOffsets[6].OffsetInBytes),
                         in *(T8*)(componentsPtr + configOffsets[7].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                        });
                 });
 
         #endregion
 
         #region Write 2
 
-        public unsafe void ForEach<T1, T2>(bool runParallel, EntityQueryActions.R0W2<T1, T2> action)
+        public unsafe void ForEach<T1, T2>(EcsContext context, bool runParallel, EntityQueryActions.R0W2<T1, T2> action)
             where T1 : unmanaged, IComponent
-            where T2 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T2 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1061,17 +1049,21 @@ namespace EcsLte
                         ref component1,
                         ref component2);
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3>(bool runParallel, EntityQueryActions.R1W2<T1, T2, T3> action)
+        public unsafe void ForEach<T1, T2, T3>(EcsContext context, bool runParallel, EntityQueryActions.R1W2<T1, T2, T3> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
-            where T3 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T3 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1088,18 +1080,22 @@ namespace EcsLte
                         ref component2,
                         in *(T3*)(componentsPtr + configOffsets[2].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4>(bool runParallel, EntityQueryActions.R2W2<T1, T2, T3, T4> action)
+        public unsafe void ForEach<T1, T2, T3, T4>(EcsContext context, bool runParallel, EntityQueryActions.R2W2<T1, T2, T3, T4> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
-            where T4 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T4 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1118,19 +1114,23 @@ namespace EcsLte
                         in *(T3*)(componentsPtr + configOffsets[2].OffsetInBytes),
                         in *(T4*)(componentsPtr + configOffsets[3].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5>(bool runParallel, EntityQueryActions.R3W2<T1, T2, T3, T4, T5> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5>(EcsContext context, bool runParallel, EntityQueryActions.R3W2<T1, T2, T3, T4, T5> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
-            where T5 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T5 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1151,20 +1151,24 @@ namespace EcsLte
                         in *(T4*)(componentsPtr + configOffsets[3].OffsetInBytes),
                         in *(T5*)(componentsPtr + configOffsets[4].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(bool runParallel, EntityQueryActions.R4W2<T1, T2, T3, T4, T5, T6> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R4W2<T1, T2, T3, T4, T5, T6> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
             where T5 : unmanaged, IComponent
-            where T6 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T6 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1187,21 +1191,25 @@ namespace EcsLte
                         in *(T5*)(componentsPtr + configOffsets[4].OffsetInBytes),
                         in *(T6*)(componentsPtr + configOffsets[5].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(bool runParallel, EntityQueryActions.R5W2<T1, T2, T3, T4, T5, T6, T7> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R5W2<T1, T2, T3, T4, T5, T6, T7> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
             where T5 : unmanaged, IComponent
             where T6 : unmanaged, IComponent
-            where T7 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T7 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1226,14 +1234,18 @@ namespace EcsLte
                         in *(T6*)(componentsPtr + configOffsets[5].OffsetInBytes),
                         in *(T7*)(componentsPtr + configOffsets[6].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(bool runParallel, EntityQueryActions.R6W2<T1, T2, T3, T4, T5, T6, T7, T8> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R6W2<T1, T2, T3, T4, T5, T6, T7, T8> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
@@ -1241,7 +1253,7 @@ namespace EcsLte
             where T5 : unmanaged, IComponent
             where T6 : unmanaged, IComponent
             where T7 : unmanaged, IComponent
-            where T8 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T8 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1268,21 +1280,25 @@ namespace EcsLte
                         in *(T7*)(componentsPtr + configOffsets[6].OffsetInBytes),
                         in *(T8*)(componentsPtr + configOffsets[7].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                        });
                 });
 
         #endregion
 
         #region Write 3
 
-        public unsafe void ForEach<T1, T2, T3>(bool runParallel, EntityQueryActions.R0W3<T1, T2, T3> action)
+        public unsafe void ForEach<T1, T2, T3>(EcsContext context, bool runParallel, EntityQueryActions.R0W3<T1, T2, T3> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
-            where T3 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T3 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1300,19 +1316,23 @@ namespace EcsLte
                         ref component2,
                         ref component3);
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4>(bool runParallel, EntityQueryActions.R1W3<T1, T2, T3, T4> action)
+        public unsafe void ForEach<T1, T2, T3, T4>(EcsContext context, bool runParallel, EntityQueryActions.R1W3<T1, T2, T3, T4> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
-            where T4 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T4 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1332,20 +1352,24 @@ namespace EcsLte
                         ref component3,
                         in *(T4*)(componentsPtr + configOffsets[3].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5>(bool runParallel, EntityQueryActions.R2W3<T1, T2, T3, T4, T5> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5>(EcsContext context, bool runParallel, EntityQueryActions.R2W3<T1, T2, T3, T4, T5> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
-            where T5 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T5 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1367,21 +1391,25 @@ namespace EcsLte
                         in *(T4*)(componentsPtr + configOffsets[3].OffsetInBytes),
                         in *(T5*)(componentsPtr + configOffsets[4].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(bool runParallel, EntityQueryActions.R3W3<T1, T2, T3, T4, T5, T6> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R3W3<T1, T2, T3, T4, T5, T6> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
             where T5 : unmanaged, IComponent
-            where T6 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T6 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1405,22 +1433,26 @@ namespace EcsLte
                         in *(T5*)(componentsPtr + configOffsets[4].OffsetInBytes),
                         in *(T6*)(componentsPtr + configOffsets[5].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(bool runParallel, EntityQueryActions.R4W3<T1, T2, T3, T4, T5, T6, T7> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R4W3<T1, T2, T3, T4, T5, T6, T7> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
             where T5 : unmanaged, IComponent
             where T6 : unmanaged, IComponent
-            where T7 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T7 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1446,15 +1478,19 @@ namespace EcsLte
                         in *(T6*)(componentsPtr + configOffsets[5].OffsetInBytes),
                         in *(T7*)(componentsPtr + configOffsets[6].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(bool runParallel, EntityQueryActions.R5W3<T1, T2, T3, T4, T5, T6, T7, T8> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R5W3<T1, T2, T3, T4, T5, T6, T7, T8> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
@@ -1462,7 +1498,7 @@ namespace EcsLte
             where T5 : unmanaged, IComponent
             where T6 : unmanaged, IComponent
             where T7 : unmanaged, IComponent
-            where T8 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T8 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1490,23 +1526,27 @@ namespace EcsLte
                         in *(T7*)(componentsPtr + configOffsets[6].OffsetInBytes),
                         in *(T8*)(componentsPtr + configOffsets[7].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                        });
                 });
 
         #endregion
 
         #region Write 4
 
-        public unsafe void ForEach<T1, T2, T3, T4>(bool runParallel, EntityQueryActions.R0W4<T1, T2, T3, T4> action)
+        public unsafe void ForEach<T1, T2, T3, T4>(EcsContext context, bool runParallel, EntityQueryActions.R0W4<T1, T2, T3, T4> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
-            where T4 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T4 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1527,21 +1567,25 @@ namespace EcsLte
                         ref component3,
                         ref component4);
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component4);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                            component4,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5>(bool runParallel, EntityQueryActions.R1W4<T1, T2, T3, T4, T5> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5>(EcsContext context, bool runParallel, EntityQueryActions.R1W4<T1, T2, T3, T4, T5> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
-            where T5 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T5 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1564,22 +1608,26 @@ namespace EcsLte
                         ref component4,
                         in *(T5*)(componentsPtr + configOffsets[4].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component4);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                            component4,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(bool runParallel, EntityQueryActions.R2W4<T1, T2, T3, T4, T5, T6> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R2W4<T1, T2, T3, T4, T5, T6> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
             where T5 : unmanaged, IComponent
-            where T6 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T6 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1604,23 +1652,27 @@ namespace EcsLte
                         in *(T5*)(componentsPtr + configOffsets[4].OffsetInBytes),
                         in *(T6*)(componentsPtr + configOffsets[5].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component4);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                            component4,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(bool runParallel, EntityQueryActions.R3W4<T1, T2, T3, T4, T5, T6, T7> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R3W4<T1, T2, T3, T4, T5, T6, T7> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
             where T5 : unmanaged, IComponent
             where T6 : unmanaged, IComponent
-            where T7 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T7 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1647,16 +1699,20 @@ namespace EcsLte
                         in *(T6*)(componentsPtr + configOffsets[5].OffsetInBytes),
                         in *(T7*)(componentsPtr + configOffsets[6].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component4);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                            component4,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(bool runParallel, EntityQueryActions.R4W4<T1, T2, T3, T4, T5, T6, T7, T8> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R4W4<T1, T2, T3, T4, T5, T6, T7, T8> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
@@ -1664,7 +1720,7 @@ namespace EcsLte
             where T5 : unmanaged, IComponent
             where T6 : unmanaged, IComponent
             where T7 : unmanaged, IComponent
-            where T8 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T8 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1693,25 +1749,29 @@ namespace EcsLte
                         in *(T7*)(componentsPtr + configOffsets[6].OffsetInBytes),
                         in *(T8*)(componentsPtr + configOffsets[7].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component4);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                            component4,
+                        });
                 });
 
         #endregion
 
         #region Write 5
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5>(bool runParallel, EntityQueryActions.R0W5<T1, T2, T3, T4, T5> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5>(EcsContext context, bool runParallel, EntityQueryActions.R0W5<T1, T2, T3, T4, T5> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
-            where T5 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T5 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1735,23 +1795,27 @@ namespace EcsLte
                         ref component4,
                         ref component5);
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component4);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component5);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                            component4,
+                            component5,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(bool runParallel, EntityQueryActions.R1W5<T1, T2, T3, T4, T5, T6> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R1W5<T1, T2, T3, T4, T5, T6> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
             where T5 : unmanaged, IComponent
-            where T6 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T6 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1777,24 +1841,28 @@ namespace EcsLte
                         ref component5,
                         in *(T6*)(componentsPtr + configOffsets[5].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component4);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component5);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                            component4,
+                            component5,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(bool runParallel, EntityQueryActions.R2W5<T1, T2, T3, T4, T5, T6, T7> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R2W5<T1, T2, T3, T4, T5, T6, T7> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
             where T5 : unmanaged, IComponent
             where T6 : unmanaged, IComponent
-            where T7 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T7 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1822,17 +1890,21 @@ namespace EcsLte
                         in *(T6*)(componentsPtr + configOffsets[5].OffsetInBytes),
                         in *(T7*)(componentsPtr + configOffsets[6].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component4);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component5);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                            component4,
+                            component5,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(bool runParallel, EntityQueryActions.R3W5<T1, T2, T3, T4, T5, T6, T7, T8> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R3W5<T1, T2, T3, T4, T5, T6, T7, T8> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
@@ -1840,7 +1912,7 @@ namespace EcsLte
             where T5 : unmanaged, IComponent
             where T6 : unmanaged, IComponent
             where T7 : unmanaged, IComponent
-            where T8 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T8 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1870,27 +1942,31 @@ namespace EcsLte
                         in *(T7*)(componentsPtr + configOffsets[6].OffsetInBytes),
                         in *(T8*)(componentsPtr + configOffsets[7].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component4);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component5);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                            component4,
+                            component5,
+                        });
                 });
 
         #endregion
 
         #region Write 6
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(bool runParallel, EntityQueryActions.R0W6<T1, T2, T3, T4, T5, T6> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R0W6<T1, T2, T3, T4, T5, T6> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
             where T5 : unmanaged, IComponent
-            where T6 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T6 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1917,25 +1993,29 @@ namespace EcsLte
                         ref component5,
                         ref component6);
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component4);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component5);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component6);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                            component4,
+                            component5,
+                            component6,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(bool runParallel, EntityQueryActions.R1W6<T1, T2, T3, T4, T5, T6, T7> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R1W6<T1, T2, T3, T4, T5, T6, T7> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
             where T5 : unmanaged, IComponent
             where T6 : unmanaged, IComponent
-            where T7 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T7 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1964,18 +2044,22 @@ namespace EcsLte
                         ref component6,
                         in *(T7*)(componentsPtr + configOffsets[6].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component4);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component5);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component6);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                            component4,
+                            component5,
+                            component6,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(bool runParallel, EntityQueryActions.R2W6<T1, T2, T3, T4, T5, T6, T7, T8> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R2W6<T1, T2, T3, T4, T5, T6, T7, T8> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
@@ -1983,7 +2067,7 @@ namespace EcsLte
             where T5 : unmanaged, IComponent
             where T6 : unmanaged, IComponent
             where T7 : unmanaged, IComponent
-            where T8 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T8 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -2014,29 +2098,33 @@ namespace EcsLte
                         in *(T7*)(componentsPtr + configOffsets[6].OffsetInBytes),
                         in *(T8*)(componentsPtr + configOffsets[7].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component4);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component5);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component6);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                            component4,
+                            component5,
+                            component6,
+                        });
                 });
 
         #endregion
 
         #region Write 7
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(bool runParallel, EntityQueryActions.R0W7<T1, T2, T3, T4, T5, T6, T7> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R0W7<T1, T2, T3, T4, T5, T6, T7> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
             where T4 : unmanaged, IComponent
             where T5 : unmanaged, IComponent
             where T6 : unmanaged, IComponent
-            where T7 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T7 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -2066,19 +2154,23 @@ namespace EcsLte
                         ref component6,
                         ref component7);
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component4);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component5);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component6);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component7);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                            component4,
+                            component5,
+                            component6,
+                            component7,
+                        });
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(bool runParallel, EntityQueryActions.R1W7<T1, T2, T3, T4, T5, T6, T7, T8> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R1W7<T1, T2, T3, T4, T5, T6, T7, T8> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
@@ -2086,7 +2178,7 @@ namespace EcsLte
             where T5 : unmanaged, IComponent
             where T6 : unmanaged, IComponent
             where T7 : unmanaged, IComponent
-            where T8 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T8 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -2118,23 +2210,27 @@ namespace EcsLte
                         ref component7,
                         in *(T8*)(componentsPtr + configOffsets[7].OffsetInBytes));
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component4);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component5);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component6);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component7);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                            component4,
+                            component5,
+                            component6,
+                            component7,
+                        });
                 });
 
         #endregion
 
         #region Write 8
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(bool runParallel, EntityQueryActions.R0W8<T1, T2, T3, T4, T5, T6, T7, T8> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R0W8<T1, T2, T3, T4, T5, T6, T7, T8> action)
             where T1 : unmanaged, IComponent
             where T2 : unmanaged, IComponent
             where T3 : unmanaged, IComponent
@@ -2142,7 +2238,7 @@ namespace EcsLte
             where T5 : unmanaged, IComponent
             where T6 : unmanaged, IComponent
             where T7 : unmanaged, IComponent
-            where T8 : unmanaged, IComponent => ForEachRun(runParallel,
+            where T8 : unmanaged, IComponent => ForEachRun(context, runParallel,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -2175,17 +2271,21 @@ namespace EcsLte
                         ref component7,
                         ref component8);
 
-                    if (QueryData.Context.EntityManager.HasEntity(entity))
-                    {
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component1);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component2);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component3);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component4);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component5);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component6);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component7);
-                        QueryData.Context.EntityManager.UpdateComponentNoCheck(entity, entityData, component8);
-                    }
+                    context.EntityManager.UpdateForEachComponents(
+                        entity,
+                        entityData,
+                        configOffsets,
+                        new IComponent[]
+                        {
+                            component1,
+                            component2,
+                            component3,
+                            component4,
+                            component5,
+                            component6,
+                            component7,
+                            component8,
+                        });
                 });
 
         #endregion
@@ -2194,7 +2294,7 @@ namespace EcsLte
 
         #region Privates
 
-        private unsafe void ForEachRun(bool runParallel, ComponentConfig[] configs, ForEachRunAction action)
+        private unsafe void ForEachRun(EcsContext context, bool runParallel, ComponentConfig[] configs, ForEachRunAction action)
         {
             var missingConfigs = configs.Where(x => !QueryData.AllComponentConfigs.Contains(x));
             if (missingConfigs.Count() > 0)
@@ -2205,18 +2305,78 @@ namespace EcsLte
 
             CheckDuplicateConfigs(configs);
 
-            var configOffsets = new ComponentConfigOffset[configs.Length];
-            var entities = GetEntities(); // This checks queryData
-            var archeTypeDatasHash = new HashSet<PtrWrapper>(QueryData.ArcheTypeDatas);
-            var entityDatas = QueryData.Context.EntityManager.EntityData;
+            var entities = context.EntityManager.GetEntities(this);
+            var contextQueryData = QueryData.ContextQueryData[context];
+            if (runParallel)
+            {
+                var batches = new List<BatchOptions>();
+                var batchCount = entities.Length / _threadCount +
+                    (entities.Length % _threadCount != 0
+                        ? 1
+                        : 0);
+                for (var i = 0; i < _threadCount; i++)
+                {
+                    var batchStartIndex = i * batchCount;
+                    var batchEndIndex = batchStartIndex + batchCount > entities.Length
+                        ? entities.Length
+                        : batchStartIndex + batchCount;
+
+                    if (batchStartIndex < batchEndIndex)
+                    {
+                        batches.Add(new BatchOptions
+                        {
+                            StartIndex = batchStartIndex,
+                            EndIndex = batchEndIndex,
+                            EntityManager = context.EntityManager,
+                            Entities = entities,
+                            Configs = configs,
+                            ArcheTypeDatas = contextQueryData.ArcheTypeDatas,
+                            Action = action
+                        });
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                var results = Parallel.ForEach(batches, new ParallelOptions { MaxDegreeOfParallelism = _threadCount },
+                    batch =>
+                    {
+                        ForEachBatchRun(batch);
+                    });
+                ;
+            }
+            else
+            {
+                var batchOptions = new BatchOptions()
+                {
+                    StartIndex = 0,
+                    EndIndex = entities.Length,
+                    EntityManager = context.EntityManager,
+                    Entities = entities,
+                    Configs = configs,
+                    ArcheTypeDatas = contextQueryData.ArcheTypeDatas,
+                    Action = action
+                };
+
+                ForEachBatchRun(batchOptions);
+            }
+        }
+
+        private static unsafe void ForEachBatchRun(BatchOptions batchOptions)
+        {
+            var configOffsets = new ComponentConfigOffset[batchOptions.Configs.Length];
+            var archeTypeDatasHash = new HashSet<PtrWrapper>(batchOptions.ArcheTypeDatas);
+            var entityDatas = batchOptions.EntityManager.EntityDatas;
 
             var ptrWrapper = new PtrWrapper();
             ArcheTypeData* prevArcheTypeData = null;
-            for (var i = 0; i < entities.Length; i++)
+            for (var i = batchOptions.StartIndex; i < batchOptions.EndIndex; i++)
             {
-                var entity = entities[i];
+                var entity = batchOptions.Entities[i];
                 // Check if entity is alive
-                if (!QueryData.Context.EntityManager.HasEntity(entity))
+                if (!batchOptions.EntityManager.HasEntity(entity))
                     continue;
 
                 var entityData = entityDatas[entity.Id];
@@ -2229,15 +2389,26 @@ namespace EcsLte
                 if (prevArcheTypeData != entityData.ArcheTypeData)
                 {
                     prevArcheTypeData = entityData.ArcheTypeData;
-                    for (var j = 0; j < configs.Length; j++)
-                        prevArcheTypeData->GetComponentOffset(configs[j], out configOffsets[j]);
+                    for (var j = 0; j < batchOptions.Configs.Length; j++)
+                        prevArcheTypeData->GetComponentOffset(batchOptions.Configs[j], out configOffsets[j]);
                 }
 
-                action(i, entity, entityData, entityData.ArcheTypeData->GetComponentsPtr(entityData), configOffsets);
+                batchOptions.Action(i, entity, entityData, entityData.ArcheTypeData->GetComponentsPtr(entityData), configOffsets);
             }
         }
 
         private unsafe delegate void ForEachRunAction(int index, Entity entity, EntityData entityData, byte* componentsPtr, ComponentConfigOffset[] configOffsets);
+
+        private class BatchOptions
+        {
+            public int StartIndex { get; set; }
+            public int EndIndex { get; set; }
+            public EntityManager EntityManager { get; set; }
+            public Entity[] Entities { get; set; }
+            public ComponentConfig[] Configs { get; set; }
+            public PtrWrapper[] ArcheTypeDatas { get; set; }
+            public ForEachRunAction Action { get; set; }
+        }
 
         #endregion
 

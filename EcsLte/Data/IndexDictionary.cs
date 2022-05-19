@@ -13,32 +13,27 @@ namespace EcsLte.Data
         /// <returns></returns>
         bool GetIndexObj(object key, out int index);
         int GetIndexObj(object key);
+        object GetObject(int index);
         void Clear();
     }
 
-    internal static class IndexDictionary
+    internal interface ISharedComponentIndexDictionary : IIndexDictionary
     {
-        public static IIndexDictionary[] CreateSharedComponentIndexDictionaries()
-        {
-            var sharedIndexes = new IIndexDictionary[ComponentConfigs.Instance.AllSharedComponentCount];
-            var indexDicType = typeof(IndexDictionary<>);
-            for (var i = 0; i < sharedIndexes.Length; i++)
-            {
-                sharedIndexes[i] = (IIndexDictionary)Activator
-                    .CreateInstance(indexDicType
-                        .MakeGenericType(ComponentConfigs.Instance.AllSharedTypes[i]));
-            }
-
-            return sharedIndexes;
-        }
+        IComponentData GetComponentData(SharedComponentDataIndex dataIndex);
     }
 
     internal class IndexDictionary<TKey> : IIndexDictionary
     {
         private readonly Dictionary<TKey, int> _indexes;
-        private int _nextIndex;
+        private readonly List<TKey> _values;
+        private readonly object _lockObj;
 
-        public IndexDictionary() => _indexes = new Dictionary<TKey, int>();
+        public IndexDictionary()
+        {
+            _indexes = new Dictionary<TKey, int>();
+            _values = new List<TKey>();
+            _lockObj = new object();
+        }
 
         public IEnumerable<TKey> Keys => _indexes.Keys;
         public IEnumerable<int> Indexes => _indexes.Values;
@@ -54,11 +49,15 @@ namespace EcsLte.Data
         /// <returns>true = new index for value, false = existing index for value</returns>
         public bool GetIndex(TKey key, out int index)
         {
-            if (!_indexes.TryGetValue(key, out index))
+            lock (_lockObj)
             {
-                index = _nextIndex++;
-                _indexes.Add(key, index);
-                return true;
+                if (!_indexes.TryGetValue(key, out index))
+                {
+                    index = _values.Count;
+                    _values.Add(key);
+                    _indexes.Add(key, index);
+                    return true;
+                }
             }
 
             return false;
@@ -66,13 +65,17 @@ namespace EcsLte.Data
 
         public int GetIndex(TKey key)
         {
-            if (!_indexes.TryGetValue(key, out var index))
+            lock (_lockObj)
             {
-                index = _nextIndex++;
-                _indexes.Add(key, index);
-            }
+                if (!_indexes.TryGetValue(key, out var index))
+                {
+                    index = _values.Count;
+                    _values.Add(key);
+                    _indexes.Add(key, index);
+                }
 
-            return index;
+                return index;
+            }
         }
 
         public bool GetIndexObj(object key, out int index)
@@ -95,7 +98,15 @@ namespace EcsLte.Data
             throw new InvalidCastException("key");
         }
 
-        public void RemoveValue(TKey key) => _indexes.Remove(key);
+        public object GetObject(int index) => _values[index];
+
+        public void RemoveValue(TKey key)
+        {
+            lock (_lockObj)
+            {
+                _indexes.Remove(key);
+            }
+        }
 
         public void RemoveObj(object value)
         {
@@ -107,8 +118,37 @@ namespace EcsLte.Data
 
         public void Clear()
         {
-            _indexes.Clear();
-            _nextIndex = 0;
+            lock (_lockObj)
+            {
+                _indexes.Clear();
+                _values.Clear();
+            }
         }
+    }
+
+    internal static class SharedComponentIndexDictionary
+    {
+        internal static ISharedComponentIndexDictionary[] CreateSharedComponentIndexDictionaries()
+        {
+            var sharedIndexes = new ISharedComponentIndexDictionary[ComponentConfigs.Instance.AllSharedCount];
+            var indexDicType = typeof(SharedComponentIndexDictionary<>);
+            for (var i = 0; i < sharedIndexes.Length; i++)
+            {
+                sharedIndexes[i] = (ISharedComponentIndexDictionary)Activator
+                    .CreateInstance(indexDicType
+                        .MakeGenericType(ComponentConfigs.Instance.AllSharedTypes[i]));
+            }
+
+            return sharedIndexes;
+        }
+    }
+
+    internal class SharedComponentIndexDictionary<TSharedComponent> : IndexDictionary<TSharedComponent>, ISharedComponentIndexDictionary
+            where TSharedComponent : unmanaged, ISharedComponent
+    {
+        public IComponentData GetComponentData<TComponent>(SharedComponentDataIndex dataIndex)
+            where TComponent : unmanaged, ISharedComponent => new SharedComponentData<TComponent>((TComponent)GetObject(dataIndex.SharedDataIndex));
+
+        public IComponentData GetComponentData(SharedComponentDataIndex dataIndex) => GetComponentData<TSharedComponent>(dataIndex);
     }
 }

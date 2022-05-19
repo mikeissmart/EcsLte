@@ -9,7 +9,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
         [TestMethod]
         public void FilterBy_Duplicate()
         {
-            var query = Context.QueryManager.CreateQuery()
+            var query = new EntityQuery()
                 .FilterBy(new TestSharedComponent1());
 
             Assert.ThrowsException<EntityQueryAlreadyFilteredByException>(() =>
@@ -19,7 +19,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
         [TestMethod]
         public void FilterBy_Duplicate_Distinct()
         {
-            var query = Context.QueryManager.CreateQuery();
+            var query = new EntityQuery();
 
             Assert.ThrowsException<EntityQueryDuplicateComponentException>(() =>
                 query.FilterBy(new TestSharedComponent1(), new TestSharedComponent1()));
@@ -30,9 +30,10 @@ namespace EcsLte.UnitTest.EntityQueryTests
         {
             var component1 = new TestSharedComponent1 { Prop = 1 };
             var component2 = new TestSharedComponent2 { Prop = 2 };
-            var query = Context.QueryManager.CreateQuery()
+            var query = new EntityQuery()
                 .FilterBy(component1, component2);
 
+            Assert.IsTrue(query.FilterComponents.Length == 2);
             Assert.IsTrue(query.GetFilterBy<TestSharedComponent1>().Prop == component1.Prop);
             Assert.IsTrue(query.GetFilterBy<TestSharedComponent2>().Prop == component2.Prop);
         }
@@ -41,16 +42,17 @@ namespace EcsLte.UnitTest.EntityQueryTests
         public void FilterBy_GetFilterBy_Single()
         {
             var component1 = new TestSharedComponent1 { Prop = 1 };
-            var query = Context.QueryManager.CreateQuery()
+            var query = new EntityQuery()
                 .FilterBy(component1);
 
+            Assert.IsTrue(query.FilterComponents.Length == 1);
             Assert.IsTrue(query.GetFilterBy<TestSharedComponent1>().Prop == component1.Prop);
         }
 
         [TestMethod]
         public void FilterBy_WhereAllOf()
         {
-            var query = Context.QueryManager.CreateQuery()
+            var query = new EntityQuery()
                 .WhereAllOf<TestSharedComponent1>()
                 .FilterBy(new TestSharedComponent1());
 
@@ -61,7 +63,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
         [TestMethod]
         public void FilterBy_WhereAllOf_None()
         {
-            var query = Context.QueryManager.CreateQuery()
+            var query = new EntityQuery()
                 .FilterBy(new TestSharedComponent1());
 
             Assert.IsTrue(query.HasWhereAllOf<TestSharedComponent1>());
@@ -69,11 +71,11 @@ namespace EcsLte.UnitTest.EntityQueryTests
         }
 
         [TestMethod]
-        public void FilterByReplace_Large()
+        public void FilterByReplace_Multiple()
         {
             var component1 = new TestSharedComponent1 { Prop = 1 };
             var component2 = new TestSharedComponent2 { Prop = 2 };
-            var query = Context.QueryManager.CreateQuery()
+            var query = new EntityQuery()
                 .FilterBy(new TestSharedComponent1(), new TestSharedComponent2())
                 .FilterByReplace(component1, component2);
 
@@ -85,7 +87,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
         public void FilterByReplace_Single()
         {
             var component1 = new TestSharedComponent1 { Prop = 1 };
-            var query = Context.QueryManager.CreateQuery()
+            var query = new EntityQuery()
                 .FilterBy(new TestSharedComponent1())
                 .FilterByReplace(component1);
 

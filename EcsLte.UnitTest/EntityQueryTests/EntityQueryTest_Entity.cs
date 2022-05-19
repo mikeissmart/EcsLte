@@ -9,22 +9,23 @@ namespace EcsLte.UnitTest.EntityQueryTests
         [TestMethod]
         public void GetEntities_Destroyed()
         {
-            var query = Context.QueryManager.CreateQuery();
+            var query = new EntityQuery();
             EcsContext.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                query.GetEntities());
+                Context.EntityManager.GetEntities(query));
         }
 
         [TestMethod]
-        public void GetEntities_Large()
+        public void GetEntities()
         {
-            var entities = TestCreateEntities(Context, UnitTestConsts.LargeCount, new TestComponent1());
-            var query = Context.QueryManager.CreateQuery()
+            var entities = TestCreateEntities(Context, UnitTestConsts.SmallCount, new TestComponent1());
+            var query = new EntityQuery()
                 .WhereAllOf<TestComponent1>();
 
-            var getEntities = query.GetEntities();
+            var getEntities = Context.EntityManager.GetEntities(query);
             Assert.IsTrue(getEntities.Length == entities.Length);
+            Assert.IsTrue(getEntities.Length == Context.EntityManager.EntityCount(query));
             for (var i = 0; i < entities.Length; i++)
             {
                 Assert.IsTrue(getEntities[i] == entities[i],
@@ -33,25 +34,13 @@ namespace EcsLte.UnitTest.EntityQueryTests
         }
 
         [TestMethod]
-        public void GetEntities_Single()
-        {
-            var entity = TestCreateEntities(Context, 1, new TestComponent1())[0];
-            var query = Context.QueryManager.CreateQuery()
-                .WhereAllOf<TestComponent1>();
-
-            var entities = query.GetEntities();
-            Assert.IsTrue(entities.Length == 1);
-            Assert.IsTrue(entities[0] == entity);
-        }
-
-        [TestMethod]
         public void HasEntity_Destroyed()
         {
-            var query = Context.QueryManager.CreateQuery();
+            var query = new EntityQuery();
             EcsContext.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                query.HasEntity(Entity.Null));
+                Context.EntityManager.HasEntity(Entity.Null, query));
         }
 
         [TestMethod]
@@ -62,45 +51,45 @@ namespace EcsLte.UnitTest.EntityQueryTests
             var entity2 = TestCreateEntities(Context, 1,
                 new TestComponent1(),
                 new TestComponent2())[0];
-            var query = Context.QueryManager.CreateQuery()
+            var query = new EntityQuery()
                 .WhereAllOf<TestComponent1>();
 
-            Assert.IsTrue(query.GetEntities().Length == 2);
-            Assert.IsTrue(query.HasEntity(entity1));
-            Assert.IsTrue(query.HasEntity(entity2));
+            Assert.IsTrue(Context.EntityManager.GetEntities(query).Length == 2);
+            Assert.IsTrue(Context.EntityManager.HasEntity(entity1, query));
+            Assert.IsTrue(Context.EntityManager.HasEntity(entity2, query));
         }
 
         [TestMethod]
         public void HasEntity_Different_ArcheTypes_Add()
         {
-            var query = Context.QueryManager.CreateQuery()
+            var query = new EntityQuery()
                 .WhereAllOf<TestComponent1>();
-            Assert.IsTrue(query.GetEntities().Length == 0);
+            Assert.IsTrue(Context.EntityManager.GetEntities(query).Length == 0);
 
             var entity1 = TestCreateEntities(Context, 1,
                 new TestComponent1())[0];
-            Assert.IsTrue(query.GetEntities().Length == 1);
-            Assert.IsTrue(query.HasEntity(entity1));
+            Assert.IsTrue(Context.EntityManager.GetEntities(query).Length == 1);
+            Assert.IsTrue(Context.EntityManager.HasEntity(entity1, query));
 
             var entity2 = TestCreateEntities(Context, 1,
                 new TestComponent1(),
                 new TestComponent2())[0];
 
-            Assert.IsTrue(query.GetEntities().Length == 2);
-            Assert.IsTrue(query.HasEntity(entity1));
-            Assert.IsTrue(query.HasEntity(entity2));
+            Assert.IsTrue(Context.EntityManager.GetEntities(query).Length == 2);
+            Assert.IsTrue(Context.EntityManager.HasEntity(entity1, query));
+            Assert.IsTrue(Context.EntityManager.HasEntity(entity2, query));
         }
 
         [TestMethod]
         public void HasEntity_Large()
         {
             var entities = TestCreateEntities(Context, UnitTestConsts.LargeCount, new TestComponent1());
-            var query = Context.QueryManager.CreateQuery()
+            var query = new EntityQuery()
                 .WhereAllOf<TestComponent1>();
 
             for (var i = 0; i < entities.Length; i++)
             {
-                Assert.IsTrue(query.HasEntity(entities[i]),
+                Assert.IsTrue(Context.EntityManager.HasEntity(entities[i], query),
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -109,11 +98,11 @@ namespace EcsLte.UnitTest.EntityQueryTests
         public void HasEntity_Single()
         {
             var entity = TestCreateEntities(Context, 1, new TestComponent1())[0];
-            var query = Context.QueryManager.CreateQuery()
+            var query = new EntityQuery()
                 .WhereAllOf<TestComponent1>();
 
-            Assert.IsTrue(query.HasEntity(entity));
-            Assert.IsFalse(query.HasEntity(Entity.Null));
+            Assert.IsTrue(Context.EntityManager.HasEntity(entity, query));
+            Assert.IsFalse(Context.EntityManager.HasEntity(Entity.Null, query));
         }
     }
 }

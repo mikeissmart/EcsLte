@@ -1,5 +1,4 @@
 ﻿using EcsLte.Exceptions;
-using EcsLte.Utilities;
 using System;
 using System.Linq;
 
@@ -7,115 +6,96 @@ namespace EcsLte
 {
     public class EntityArcheType : IEquatable<EntityArcheType>
     {
-        public EcsContext Context { get; private set; }
-        public ComponentConfig[] ComponentConfigs { get; private set; } = new ComponentConfig[0];
-        public SharedComponentDataIndex[] SharedComponentDataIndexes { get; private set; } = new SharedComponentDataIndex[0];
-        internal ArcheTypeIndex? ArcheTypeIndex { get; set; }
+        public Type[] ComponentTypes => ArcheTypeData.ComponentTypes;
+        public ISharedComponent[] SharedComponents => ArcheTypeData.SharedComponents;
+        internal EntityArcheTypeData ArcheTypeData { get; set; }
 
-        internal EntityArcheType(EcsContext context) => Context = context;
+        public EntityArcheType() => ArcheTypeData = new EntityArcheTypeData();
 
-        internal EntityArcheType(EcsContext context, EntityBlueprint blueprint)
+        internal EntityArcheType(IComponentData[] allComponentDatas, IComponentData[] sharedComponentDatas) => ArcheTypeData = new EntityArcheTypeData(allComponentDatas, sharedComponentDatas);
+
+        internal unsafe EntityArcheType(EcsContext context, ArcheTypeData* archeTypeData) => ArcheTypeData = new EntityArcheTypeData(context, archeTypeData);
+
+        private EntityArcheType(EntityArcheTypeData data) => ArcheTypeData = data;
+
+        public bool HasComponentType<TComponent>() where TComponent : IComponent
         {
-            Context = context;
-            ComponentConfigs = blueprint.AllBlueprintComponents
-                .Select(x => x.Config)
-                .ToArray();
-            SharedComponentDataIndexes = blueprint.SharedBlueprintComponents
-                .Select(x => context.EntityManager.GetSharedComponentDataIndex((ISharedComponent)x.Component, x.Config))
-                .ToArray();
-            ArcheTypeIndex = blueprint.ArcheTypeIndex;
-        }
-
-        public bool HasComponent<TComponent>() where TComponent : IComponent
-        {
-            if (Context.IsDestroyed)
-                throw new EcsContextIsDestroyedException(Context);
-
             var config = ComponentConfig<TComponent>.Config;
-            for (var i = 0; i < ComponentConfigs.Length; i++)
+            for (var i = 0; i < ArcheTypeData.ComponentConfigs.Length; i++)
             {
-                if (ComponentConfigs[i] == config)
+                if (ArcheTypeData.ComponentConfigs[i] == config)
                     return true;
             }
 
             return false;
         }
 
-        public bool HasSharedComponent<TSharedComponent>(TSharedComponent component) where TSharedComponent : ISharedComponent
+        public bool HasSharedComponentData<TSharedComponent>(TSharedComponent component) where TSharedComponent : ISharedComponent
         {
-            if (Context.IsDestroyed)
-                throw new EcsContextIsDestroyedException(Context);
-
-            var sharedDataIndex = Context.EntityManager.GetSharedComponentDataIndex(component);
-            for (var i = 0; i < SharedComponentDataIndexes.Length; i++)
+            for (var i = 0; i < ArcheTypeData.SharedComponentDatas.Length; i++)
             {
-                if (SharedComponentDataIndexes[i] == sharedDataIndex)
+                if (ArcheTypeData.SharedComponentDatas[i].ComponentEquals(component))
                     return true;
             }
 
             return false;
         }
 
-        public EntityArcheType AddComponent<TComponent>() where TComponent : IComponent
+        public EntityArcheType AddComponentType<TComponent>() where TComponent : IComponent
         {
-            if (HasComponent<TComponent>())
+            if (HasComponentType<TComponent>())
                 throw new EntityArcheTypeAlreadyHasComponentException(typeof(TComponent));
 
             var config = ComponentConfig<TComponent>.Config;
             if (config.IsShared)
                 throw new EntityArcheTypeSharedComponentException(typeof(TComponent));
 
-            var archeType = new EntityArcheType(Context)
-            {
-                ComponentConfigs = Helper.CopyInsertSort(ComponentConfigs, config),
-                SharedComponentDataIndexes = SharedComponentDataIndexes
-            };
-
-            return archeType;
+            return new EntityArcheType(EntityArcheTypeData.AddComponentType(ArcheTypeData, config));
         }
 
-        public EntityArcheType AddSharedComponent<TSharedComponent>(TSharedComponent component) where TSharedComponent : ISharedComponent
+        public EntityArcheType RemoveComponentType<TComponent>() where TComponent : IComponent
         {
-            if (HasComponent<TSharedComponent>())
+            if (!HasComponentType<TComponent>())
+                throw new EntityArcheTypeNotHaveComponentException(typeof(TComponent));
+
+            var config = ComponentConfig<TComponent>.Config;
+            if (config.IsShared)
+                throw new EntityArcheTypeSharedComponentException(typeof(TComponent));
+
+            return new EntityArcheType(EntityArcheTypeData.RemoveComponentType(ArcheTypeData, config));
+        }
+
+        public TSharedComponent GetSharedComponent<TSharedComponent>() where TSharedComponent : unmanaged, ISharedComponent
+        {
+            if (!HasComponentType<TSharedComponent>())
+                throw new EntityArcheTypeNotHaveComponentException(typeof(TSharedComponent));
+
+            var config = ComponentConfig<TSharedComponent>.Config;
+            return (TSharedComponent)ArcheTypeData.SharedComponentDatas.First(x => x.Config == config).Component;
+        }
+
+        public EntityArcheType AddSharedComponent<TSharedComponent>(TSharedComponent component) where TSharedComponent : unmanaged, ISharedComponent
+        {
+            if (HasComponentType<TSharedComponent>())
                 throw new EntityArcheTypeAlreadyHasComponentException(typeof(TSharedComponent));
 
-            var config = ComponentConfig<TSharedComponent>.Config;
-            var sharedDataIndex = Context.EntityManager.GetSharedComponentDataIndex(component);
-
-            var archeType = new EntityArcheType(Context)
-            {
-                ComponentConfigs = Helper.CopyInsertSort(ComponentConfigs, config),
-                SharedComponentDataIndexes = Helper.CopyInsertSort(SharedComponentDataIndexes, sharedDataIndex)
-            };
-
-            return archeType;
+            return new EntityArcheType(EntityArcheTypeData.AddSharedComponent(ArcheTypeData, new ComponentData<TSharedComponent>(component)));
         }
 
-        public EntityArcheType ReplaceSharedComponent<TSharedComponent>(TSharedComponent component) where TSharedComponent : ISharedComponent
+        public EntityArcheType ReplaceSharedComponent<TSharedComponent>(TSharedComponent component) where TSharedComponent : unmanaged, ISharedComponent
         {
-            if (!HasComponent<TSharedComponent>())
+            if (!HasComponentType<TSharedComponent>())
                 return AddSharedComponent(component);
 
-            var config = ComponentConfig<TSharedComponent>.Config;
-            var sharedDataIndex = Context.EntityManager.GetSharedComponentDataIndex(component);
+            return new EntityArcheType(EntityArcheTypeData.ReplaceSharedComponent(ArcheTypeData, new ComponentData<TSharedComponent>(component)));
+        }
 
-            var archeType = new EntityArcheType(Context)
-            {
-                ComponentConfigs = ComponentConfigs,
-                SharedComponentDataIndexes = new SharedComponentDataIndex[SharedComponentDataIndexes.Length]
-            };
+        public EntityArcheType RemoveSharedComponent<TSharedComponent>() where TSharedComponent : unmanaged, ISharedComponent
+        {
+            if (!HasComponentType<TSharedComponent>())
+                throw new EntityArcheTypeNotHaveComponentException(typeof(TSharedComponent));
 
-            Array.Copy(SharedComponentDataIndexes, archeType.SharedComponentDataIndexes, SharedComponentDataIndexes.Length);
-            for (var i = 0; i < SharedComponentDataIndexes.Length; i++)
-            {
-                if (SharedComponentDataIndexes[i].SharedIndex == config.SharedIndex)
-                {
-                    archeType.SharedComponentDataIndexes[i] = sharedDataIndex;
-                    break;
-                }
-            }
-
-            return archeType;
+            return new EntityArcheType(EntityArcheTypeData.RemoveSharedComponent(ArcheTypeData, ComponentConfig<TSharedComponent>.Config));
         }
 
         public static bool operator !=(EntityArcheType lhs, EntityArcheType rhs)
@@ -128,25 +108,7 @@ namespace EcsLte
             if (ReferenceEquals(lhs, null) || ReferenceEquals(rhs, null))
                 return false;
 
-            if (lhs.Context != rhs.Context)
-                return false;
-            if (lhs.ComponentConfigs.Length != rhs.ComponentConfigs.Length)
-                return false;
-            if (lhs.SharedComponentDataIndexes.Length != rhs.SharedComponentDataIndexes.Length)
-                return false;
-
-            for (var i = 0; i < lhs.ComponentConfigs.Length; i++)
-            {
-                if (lhs.ComponentConfigs[i] != rhs.ComponentConfigs[i])
-                    return false;
-            }
-            for (var i = 0; i < lhs.SharedComponentDataIndexes.Length; i++)
-            {
-                if (lhs.SharedComponentDataIndexes[i] != rhs.SharedComponentDataIndexes[i])
-                    return false;
-            }
-
-            return true;
+            return lhs.ArcheTypeData == rhs.ArcheTypeData;
         }
 
         public bool Equals(EntityArcheType other)
@@ -155,15 +117,6 @@ namespace EcsLte
         public override bool Equals(object other)
             => other is EntityArcheType obj && this == obj;
 
-        public override int GetHashCode()
-        {
-            var hashCode = HashCodeHelper.StartHashCode();
-            for (var i = 0; i < ComponentConfigs.Length; i++)
-                hashCode = hashCode.AppendHashCode(ComponentConfigs[i]);
-            for (var i = 0; i < SharedComponentDataIndexes.Length; i++)
-                hashCode = hashCode.AppendHashCode(SharedComponentDataIndexes[i]);
-
-            return hashCode.HashCode;
-        }
+        public override int GetHashCode() => ArcheTypeData.GetHashCode();
     }
 }

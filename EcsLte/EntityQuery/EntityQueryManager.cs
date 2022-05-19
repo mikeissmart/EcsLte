@@ -1,13 +1,13 @@
 ﻿using EcsLte.Data;
-using EcsLte.Exceptions;
 using System.Collections.Generic;
 
 namespace EcsLte
 {
-    public class EntityQueryManager
+    internal class EntityQueryManager
     {
         private List<IndexDictionary<EntityQueryData>> _queryDataIndexes;
         private List<List<EntityQueryData>> _queryDatas;
+        private readonly object _lockObj;
 
         public EcsContext Context { get; private set; }
 
@@ -15,31 +15,34 @@ namespace EcsLte
         {
             _queryDataIndexes = new List<IndexDictionary<EntityQueryData>>();
             _queryDatas = new List<List<EntityQueryData>>();
+            _lockObj = new object();
 
             Context = context;
         }
 
-        public EntityQuery CreateQuery()
+        internal void UpdateEntityQuery(EntityQuery query)
         {
-            if (Context.IsDestroyed)
-                throw new EcsContextIsDestroyedException(Context);
-
-            return new EntityQuery(Context);
-        }
-
-        internal EntityQueryData IndexQueryData(EntityQueryData queryData)
-        {
-            GetIndexDic(queryData.ConfigCount, out var indexDic, out var dataList);
-
-            if (indexDic.GetIndex(queryData, out var index))
+            lock (_lockObj)
             {
-                queryData.EntityQueryDataIndex = index;
-                dataList.Add(queryData);
+                if (!query.QueryData.ContextQueryData.ContainsKey(Context))
+                {
+                    GetIndexDic(query.QueryData.ConfigCount, out var indexDic, out var dataList);
 
-                return queryData;
+                    if (indexDic.GetIndex(query.QueryData, out var index))
+                    {
+                        query.QueryData.ContextQueryData.Add(Context, new EntityQueryEcsContextData
+                        {
+                            EntityQueryDataIndex = index
+                        });
+                        dataList.Add(query.QueryData);
+                    }
+                    else
+                    {
+                        query.QueryData = dataList[index];
+                    }
+                }
+                Context.ArcheTypeManager.UpdateEntityQuery(query);
             }
-
-            return dataList[index];
         }
 
         internal void GetIndexDic(int configCount,
@@ -58,8 +61,11 @@ namespace EcsLte
 
         internal void InternalDestroy()
         {
-            _queryDataIndexes = null;
-            _queryDatas = null;
+            lock (_lockObj)
+            {
+                _queryDataIndexes = null;
+                _queryDatas = null;
+            }
         }
     }
 }

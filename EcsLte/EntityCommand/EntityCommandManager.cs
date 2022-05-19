@@ -1,4 +1,5 @@
 ﻿using EcsLte.Exceptions;
+using System;
 using System.Collections.Generic;
 
 namespace EcsLte
@@ -6,12 +7,14 @@ namespace EcsLte
     public class EntityCommandManager
     {
         private readonly Dictionary<string, EntityCommandQueue> _commandQueues;
+        private readonly object _lockObj;
 
         public EcsContext Context { get; private set; }
 
         internal EntityCommandManager(EcsContext context)
         {
             _commandQueues = new Dictionary<string, EntityCommandQueue>();
+            _lockObj = new object();
             Context = context;
         }
 
@@ -36,12 +39,34 @@ namespace EcsLte
             if (HasCommandQueue(name))
                 throw new EntityCommandQueueAlreadyExistException(name);
 
-            var commandQueue = new EntityCommandQueue(Context, name);
-            _commandQueues.Add(name, commandQueue);
+            lock (_lockObj)
+            {
+                var commandQueue = new EntityCommandQueue(Context, name);
+                _commandQueues.Add(name, commandQueue);
 
-            return commandQueue;
+                return commandQueue;
+            }
         }
 
-        public void InternalDestroy() => _commandQueues.Clear();
+        public void RemoveCommandQueue(EntityCommandQueue commandQueue)
+        {
+            if (commandQueue == null)
+                throw new ArgumentNullException(nameof(commandQueue));
+            if (!HasCommandQueue(commandQueue.Name))
+                throw new EntityCommandQueueNotExistException(commandQueue.Name);
+
+            lock (_lockObj)
+            {
+                _commandQueues.Remove(commandQueue.Name);
+            }
+        }
+
+        internal void InternalDestroy()
+        {
+            lock (_lockObj)
+            {
+                _commandQueues.Clear();
+            }
+        }
     }
 }

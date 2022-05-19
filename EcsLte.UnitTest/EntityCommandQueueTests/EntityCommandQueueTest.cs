@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using EcsLte.Exceptions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace EcsLte.UnitTest.EntityCommandQueueTests
 {
@@ -12,47 +13,21 @@ namespace EcsLte.UnitTest.EntityCommandQueueTests
             queue.CreateEntity(new EntityBlueprint()
                 .AddComponent(new TestComponent1()));
 
-            Assert.IsTrue(Context.EntityManager.EntityCount == 0);
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 0);
             queue.ExecuteCommands();
-            Assert.IsTrue(Context.EntityManager.EntityCount == 1);
-        }
-
-        [TestMethod]
-        public void CreateEntity_Large()
-        {
-            var queue = Context.CommandManager.CreateCommandQueue("Test");
-            var blueprint = new EntityBlueprint()
-                .AddComponent(new TestComponent1());
-            for (var i = 0; i < UnitTestConsts.LargeCount; i++)
-                queue.CreateEntity(blueprint);
-
-            Assert.IsTrue(Context.EntityManager.EntityCount == 0);
-            queue.ExecuteCommands();
-            Assert.IsTrue(Context.EntityManager.EntityCount == UnitTestConsts.LargeCount);
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 1);
         }
 
         [TestMethod]
         public void CreateEntities()
         {
             var queue = Context.CommandManager.CreateCommandQueue("Test");
-            queue.CreateEntities(1, new EntityBlueprint()
+            queue.CreateEntities(2, new EntityBlueprint()
                 .AddComponent(new TestComponent1()));
 
-            Assert.IsTrue(Context.EntityManager.EntityCount == 0);
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 0);
             queue.ExecuteCommands();
-            Assert.IsTrue(Context.EntityManager.EntityCount == 1);
-        }
-
-        [TestMethod]
-        public void CreateEntities_Large()
-        {
-            var queue = Context.CommandManager.CreateCommandQueue("Test");
-            queue.CreateEntities(UnitTestConsts.LargeCount, new EntityBlueprint()
-                .AddComponent(new TestComponent1()));
-
-            Assert.IsTrue(Context.EntityManager.EntityCount == 0);
-            queue.ExecuteCommands();
-            Assert.IsTrue(Context.EntityManager.EntityCount == UnitTestConsts.LargeCount);
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 2);
         }
 
         [TestMethod]
@@ -62,49 +37,187 @@ namespace EcsLte.UnitTest.EntityCommandQueueTests
             queue.DestroyEntity(Context.EntityManager.CreateEntity(new EntityBlueprint()
                 .AddComponent(new TestComponent1())));
 
-            Assert.IsTrue(Context.EntityManager.EntityCount == 1);
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 1);
             queue.ExecuteCommands();
-            Assert.IsTrue(Context.EntityManager.EntityCount == 0);
-        }
-
-        [TestMethod]
-        public void DestroyEntity_Large()
-        {
-            var queue = Context.CommandManager.CreateCommandQueue("Test");
-            var blueprint = new EntityBlueprint()
-                .AddComponent(new TestComponent1());
-            for (var i = 0; i < UnitTestConsts.LargeCount; i++)
-                queue.DestroyEntity(Context.EntityManager.CreateEntity(blueprint));
-
-            Assert.IsTrue(Context.EntityManager.EntityCount == UnitTestConsts.LargeCount);
-            queue.ExecuteCommands();
-            Assert.IsTrue(Context.EntityManager.EntityCount == 0);
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 0);
         }
 
         [TestMethod]
         public void DestroyEntities()
         {
             var queue = Context.CommandManager.CreateCommandQueue("Test");
-            var entities = Context.EntityManager.CreateEntities(1, new EntityBlueprint()
-                .AddComponent(new TestComponent1()));
-            queue.DestroyEntities(entities);
+            queue.DestroyEntities(Context.EntityManager.CreateEntities(2, new EntityBlueprint()
+                .AddComponent(new TestComponent1())));
 
-            Assert.IsTrue(Context.EntityManager.EntityCount == 1);
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 2);
             queue.ExecuteCommands();
-            Assert.IsTrue(Context.EntityManager.EntityCount == 0);
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 0);
         }
 
         [TestMethod]
-        public void DestroyEntities_Large()
+        public void DestroyEntities_EntityArcheType()
         {
             var queue = Context.CommandManager.CreateCommandQueue("Test");
-            var entities = Context.EntityManager.CreateEntities(UnitTestConsts.LargeCount, new EntityBlueprint()
+            Context.EntityManager.CreateEntities(2, new EntityBlueprint()
                 .AddComponent(new TestComponent1()));
-            queue.DestroyEntities(entities);
+            var entityArcheType = new EntityArcheType()
+                .AddComponentType<TestComponent1>();
+            queue.DestroyEntities(entityArcheType);
 
-            Assert.IsTrue(Context.EntityManager.EntityCount == UnitTestConsts.LargeCount);
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 2);
             queue.ExecuteCommands();
-            Assert.IsTrue(Context.EntityManager.EntityCount == 0);
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 0);
+        }
+
+        [TestMethod]
+        public void DestroyEntities_EntityQuery()
+        {
+            var queue = Context.CommandManager.CreateCommandQueue("Test");
+            Context.EntityManager.CreateEntities(2, new EntityBlueprint()
+                .AddComponent(new TestComponent1()));
+            var entityQuery = new EntityQuery()
+                .WhereAllOf<TestComponent1>();
+            queue.DestroyEntities(entityQuery);
+
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 2);
+            queue.ExecuteCommands();
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 0);
+        }
+
+        [TestMethod]
+        public void TransferEntity()
+        {
+            var destContext = EcsContext.CreateContext("TransferContext");
+            var queue = destContext.CommandManager.CreateCommandQueue("Test");
+            var entity = Context.EntityManager.CreateEntity(new EntityBlueprint()
+                .AddComponent(new TestComponent1()));
+            queue.TransferEntity(Context, entity, false);
+
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 1);
+            queue.ExecuteCommands();
+            Assert.IsTrue(destContext.EntityManager.EntityCount() == 1);
+
+            EcsContext.DestroyContext(destContext);
+        }
+
+        [TestMethod]
+        public void TransferEntity_DestroyEntity()
+        {
+            var destContext = EcsContext.CreateContext("TransferContext");
+            var queue = destContext.CommandManager.CreateCommandQueue("Test");
+            var entity = Context.EntityManager.CreateEntity(new EntityBlueprint()
+                .AddComponent(new TestComponent1()));
+            queue.TransferEntity(Context, entity, true);
+
+            queue.ExecuteCommands();
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 0);
+            Assert.IsTrue(destContext.EntityManager.EntityCount() == 1);
+
+            EcsContext.DestroyContext(destContext);
+        }
+
+        [TestMethod]
+        public void TransferEntities()
+        {
+            var destContext = EcsContext.CreateContext("TransferContext");
+            var queue = destContext.CommandManager.CreateCommandQueue("Test");
+            var entities = Context.EntityManager.CreateEntities(2, new EntityBlueprint()
+                .AddComponent(new TestComponent1()));
+            queue.TransferEntities(Context, entities, false);
+
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 2);
+            queue.ExecuteCommands();
+            Assert.IsTrue(destContext.EntityManager.EntityCount() == 2);
+
+            EcsContext.DestroyContext(destContext);
+        }
+
+        [TestMethod]
+        public void TransferEntities_DestroyEntities()
+        {
+            var destContext = EcsContext.CreateContext("TransferContext");
+            var queue = destContext.CommandManager.CreateCommandQueue("Test");
+            var entities = Context.EntityManager.CreateEntities(2, new EntityBlueprint()
+                .AddComponent(new TestComponent1()));
+            queue.TransferEntities(Context, entities, true);
+
+            queue.ExecuteCommands();
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 0);
+            Assert.IsTrue(destContext.EntityManager.EntityCount() == 2);
+
+            EcsContext.DestroyContext(destContext);
+        }
+
+        [TestMethod]
+        public void TransferEntities_EntityArcheType()
+        {
+            var destContext = EcsContext.CreateContext("TransferContext");
+            var queue = destContext.CommandManager.CreateCommandQueue("Test");
+            Context.EntityManager.CreateEntities(2, new EntityBlueprint()
+                .AddComponent(new TestComponent1()));
+            var archeType = new EntityArcheType()
+                .AddComponentType<TestComponent1>();
+            queue.TransferEntities(Context, archeType, false);
+
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 2);
+            queue.ExecuteCommands();
+            Assert.IsTrue(destContext.EntityManager.EntityCount() == 2);
+
+            EcsContext.DestroyContext(destContext);
+        }
+
+        [TestMethod]
+        public void TransferEntities_EntityArcheType_DestroyEntities()
+        {
+            var destContext = EcsContext.CreateContext("TransferContext");
+            var queue = destContext.CommandManager.CreateCommandQueue("Test");
+            Context.EntityManager.CreateEntities(2, new EntityBlueprint()
+                .AddComponent(new TestComponent1()));
+            var archeType = new EntityArcheType()
+                .AddComponentType<TestComponent1>();
+            queue.TransferEntities(Context, archeType, true);
+
+            queue.ExecuteCommands();
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 0);
+            Assert.IsTrue(destContext.EntityManager.EntityCount() == 2);
+
+            EcsContext.DestroyContext(destContext);
+        }
+
+        [TestMethod]
+        public void TransferEntities_EntityQuery()
+        {
+            var destContext = EcsContext.CreateContext("TransferContext");
+            var queue = destContext.CommandManager.CreateCommandQueue("Test");
+            Context.EntityManager.CreateEntities(2, new EntityBlueprint()
+                .AddComponent(new TestComponent1()));
+            var query = new EntityQuery()
+                .WhereAllOf<TestComponent1>();
+            queue.TransferEntities(Context, query, false);
+
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 2);
+            queue.ExecuteCommands();
+            Assert.IsTrue(destContext.EntityManager.EntityCount() == 2);
+
+            EcsContext.DestroyContext(destContext);
+        }
+
+        [TestMethod]
+        public void TransferEntities_EntityQuery_DestroyEntities()
+        {
+            var destContext = EcsContext.CreateContext("TransferContext");
+            var queue = destContext.CommandManager.CreateCommandQueue("Test");
+            Context.EntityManager.CreateEntities(2, new EntityBlueprint()
+                .AddComponent(new TestComponent1()));
+            var query = new EntityQuery()
+                .WhereAllOf<TestComponent1>();
+            queue.TransferEntities(Context, query, true);
+
+            queue.ExecuteCommands();
+            Assert.IsTrue(Context.EntityManager.EntityCount() == 0);
+            Assert.IsTrue(destContext.EntityManager.EntityCount() == 2);
+
+            EcsContext.DestroyContext(destContext);
         }
 
         [TestMethod]
@@ -144,15 +257,39 @@ namespace EcsLte.UnitTest.EntityCommandQueueTests
         }
 
         [TestMethod]
+        public void UpdateComponent_EntityArcheType()
+        {
+            var component = new TestComponent1 { Prop = 1 };
+            var updatedComponent = new TestComponent1 { Prop = 10 };
+            var queue = Context.CommandManager.CreateCommandQueue("Test");
+            var archeType = new EntityArcheType()
+                .AddComponentType<TestComponent1>();
+            var entities = TestCreateEntities(Context, UnitTestConsts.LargeCount, component);
+
+            queue.UpdateComponent(archeType, updatedComponent);
+            for (var i = 0; i < entities.Length; i++)
+            {
+                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entities[i]).Prop == component.Prop,
+                    $"Enity.Id {entities[i].Id}");
+            }
+            queue.ExecuteCommands();
+            for (var i = 0; i < entities.Length; i++)
+            {
+                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entities[i]).Prop == updatedComponent.Prop,
+                    $"Enity.Id {entities[i].Id}");
+            }
+        }
+
+        [TestMethod]
         public void UpdateComponent_EntityQuery()
         {
             var component = new TestComponent1 { Prop = 1 };
             var updatedComponent = new TestComponent1 { Prop = 10 };
             var queue = Context.CommandManager.CreateCommandQueue("Test");
-            var query = Context.QueryManager.CreateQuery()
+            var query = new EntityQuery()
                 .WhereAllOf<TestComponent1>();
             TestCreateEntities(Context, UnitTestConsts.LargeCount, component);
-            var entities = query.GetEntities();
+            var entities = Context.EntityManager.GetEntities(query);
 
             queue.UpdateComponent(query, updatedComponent);
             for (var i = 0; i < entities.Length; i++)
@@ -166,6 +303,16 @@ namespace EcsLte.UnitTest.EntityCommandQueueTests
                 Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entities[i]).Prop == updatedComponent.Prop,
                     $"Enity.Id {entities[i].Id}");
             }
+        }
+
+        [TestMethod]
+        public void ExecuteCommands_Destroyed()
+        {
+            var queue = Context.CommandManager.CreateCommandQueue("Test");
+            EcsContext.DestroyContext(Context);
+
+            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
+                queue.ExecuteCommands());
         }
     }
 }

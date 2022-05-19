@@ -19,6 +19,8 @@ namespace EcsLte
         private bool _isExecuteSystemsDirty;
         private bool _isCleanupSystemsDirty;
         private bool _isTearDownSystemsDirty;
+        private bool _isAlreadyRunning;
+        private readonly object _lockObj;
 
         public EcsContext Context { get; private set; }
 
@@ -37,6 +39,8 @@ namespace EcsLte
             _isExecuteSystemsDirty = true;
             _isCleanupSystemsDirty = true;
             _isTearDownSystemsDirty = true;
+            _isAlreadyRunning = false;
+            _lockObj = new object();
             Context = context;
         }
 
@@ -110,16 +114,19 @@ namespace EcsLte
             var system = (TSystem)Activator.CreateInstance(typeof(TSystem), new[] { Context });
             var config = SystemConfig<TSystem>.Config;
 
-            system.Config = config;
-            _allSystems[config.SystemIndex] = system;
-            if (config.IsInitialize)
-                UpdateInitialize();
-            if (config.IsExecute)
-                UpdateExecute();
-            if (config.IsCleanup)
-                UpdateCleanup();
-            if (config.IsTearDown)
-                UpdateTearDown();
+            lock (_lockObj)
+            {
+                system.Config = config;
+                _allSystems[config.SystemIndex] = system;
+                if (config.IsInitialize)
+                    UpdateInitialize();
+                if (config.IsExecute)
+                    UpdateExecute();
+                if (config.IsCleanup)
+                    UpdateCleanup();
+                if (config.IsTearDown)
+                    UpdateTearDown();
+            }
 
             return system;
         }
@@ -129,43 +136,49 @@ namespace EcsLte
             if (Context.IsDestroyed)
                 throw new EcsContextIsDestroyedException(Context);
 
-            var initializeAdded = false;
-            var executeAdded = false;
-            var cleanupAdded = false;
-            var tearDownAdded = false;
-            var args = new[] { Context };
-
-            for (var i = 0; i < SystemConfigs.Instance.AllAutoAddCount; i++)
+            lock (_lockObj)
             {
-                var config = SystemConfigs.Instance.AllAutoAddSystemConfigs[i];
-                if (_allSystems[config.SystemIndex] != null)
-                    continue;
+                var initializeAdded = false;
+                var executeAdded = false;
+                var cleanupAdded = false;
+                var tearDownAdded = false;
+                var args = new[] { Context };
 
-                var type = SystemConfigs.Instance.AllAutoAddSystemTypes[i];
-                var system = (SystemBase)Activator.CreateInstance(type, args);
-                system.Config = config;
+                for (var i = 0; i < SystemConfigs.Instance.AllAutoAddCount; i++)
+                {
+                    var config = SystemConfigs.Instance.AllAutoAddSystemConfigs[i];
+                    if (_allSystems[config.SystemIndex] != null)
+                        continue;
 
-                _allSystems[config.SystemIndex] = system;
-                initializeAdded |= config.IsInitialize;
-                executeAdded |= config.IsExecute;
-                cleanupAdded |= config.IsCleanup;
-                tearDownAdded |= config.IsTearDown;
+                    var type = SystemConfigs.Instance.AllAutoAddSystemTypes[i];
+                    var system = (SystemBase)Activator.CreateInstance(type, args);
+                    system.Config = config;
+
+                    _allSystems[config.SystemIndex] = system;
+                    initializeAdded |= config.IsInitialize;
+                    executeAdded |= config.IsExecute;
+                    cleanupAdded |= config.IsCleanup;
+                    tearDownAdded |= config.IsTearDown;
+                }
+
+                if (initializeAdded)
+                    UpdateInitialize();
+                if (executeAdded)
+                    UpdateExecute();
+                if (cleanupAdded)
+                    UpdateCleanup();
+                if (tearDownAdded)
+                    UpdateTearDown();
             }
-
-            if (initializeAdded)
-                UpdateInitialize();
-            if (executeAdded)
-                UpdateExecute();
-            if (cleanupAdded)
-                UpdateCleanup();
-            if (tearDownAdded)
-                UpdateTearDown();
         }
 
         public void RunInitializeSystems()
         {
             if (Context.IsDestroyed)
                 throw new EcsContextIsDestroyedException(Context);
+            if (_isAlreadyRunning)
+                throw new SystemAlreadyRunningException();
+            _isAlreadyRunning = true;
 
             if (_isInitializeSystemsDirty)
             {
@@ -182,12 +195,16 @@ namespace EcsLte
                 if (system.IsActive)
                     system.Initialize();
             }
+            _isAlreadyRunning = false;
         }
 
         public void RunExecuteSystems()
         {
             if (Context.IsDestroyed)
                 throw new EcsContextIsDestroyedException(Context);
+            if (_isAlreadyRunning)
+                throw new SystemAlreadyRunningException();
+            _isAlreadyRunning = true;
 
             if (_isExecuteSystemsDirty)
             {
@@ -204,12 +221,16 @@ namespace EcsLte
                 if (system.IsActive)
                     system.Execute();
             }
+            _isAlreadyRunning = false;
         }
 
         public void RunCleanupSystems()
         {
             if (Context.IsDestroyed)
                 throw new EcsContextIsDestroyedException(Context);
+            if (_isAlreadyRunning)
+                throw new SystemAlreadyRunningException();
+            _isAlreadyRunning = true;
 
             if (_isCleanupSystemsDirty)
             {
@@ -226,12 +247,16 @@ namespace EcsLte
                 if (system.IsActive)
                     system.Cleanup();
             }
+            _isAlreadyRunning = false;
         }
 
         public void RunTearDownSystems()
         {
             if (Context.IsDestroyed)
                 throw new EcsContextIsDestroyedException(Context);
+            if (_isAlreadyRunning)
+                throw new SystemAlreadyRunningException();
+            _isAlreadyRunning = true;
 
             if (_isTearDownSystemsDirty)
             {
@@ -248,23 +273,28 @@ namespace EcsLte
                 if (system.IsActive)
                     system.TearDown();
             }
+            _isAlreadyRunning = false;
         }
 
         internal void InternalDestroy()
         {
-            _allSystems = null;
-            _initializeSystems = null;
-            _executeSystems = null;
-            _cleanupSystems = null;
-            _tearDownSystems = null;
-            _cachedInitializeSystems = null;
-            _cachedExecuteSystems = null;
-            _cachedCleanupSystems = null;
-            _cachedTearDownSystems = null;
-            _isInitializeSystemsDirty = true;
-            _isExecuteSystemsDirty = true;
-            _isCleanupSystemsDirty = true;
-            _isTearDownSystemsDirty = true;
+            lock (_lockObj)
+            {
+                _allSystems = null;
+                _initializeSystems = null;
+                _executeSystems = null;
+                _cleanupSystems = null;
+                _tearDownSystems = null;
+                _cachedInitializeSystems = null;
+                _cachedExecuteSystems = null;
+                _cachedCleanupSystems = null;
+                _cachedTearDownSystems = null;
+                _isInitializeSystemsDirty = true;
+                _isExecuteSystemsDirty = true;
+                _isCleanupSystemsDirty = true;
+                _isTearDownSystemsDirty = true;
+                _isAlreadyRunning = false;
+            }
         }
 
         private void UpdateInitialize()

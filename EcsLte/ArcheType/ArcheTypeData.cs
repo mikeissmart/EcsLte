@@ -8,6 +8,8 @@ namespace EcsLte
     internal unsafe struct ArcheTypeData
     {
         private ComponentConfigOffset* _configOffsets;
+        private ComponentConfig* _managedConfigs;
+        private int _managedConfigsLength;
         /// <summary>
         /// [Entity1,Entity2],[Component1,Component2,Component1,Component2]
         /// </summary>
@@ -20,8 +22,6 @@ namespace EcsLte
         internal int EntityCount { get; private set; }
         internal int EntityCapacity { get; private set; }
         internal int ComponentsSizeInBytes { get; private set; }
-        internal ComponentConfig* UniqueConfigs { get; private set; }
-        internal int UniqueConfigsLength { get; private set; }
 
         internal static ArcheTypeData* Alloc(ArcheType archeType, ArcheTypeIndex archeTypeIndex)
         {
@@ -113,7 +113,7 @@ namespace EcsLte
             prevArcheTypeData->EntityCount = 0;
         }
 
-        internal void PreCheckEntityStateAllocation(int count)
+        internal void PreCheckEntityAllocation(int count)
             => CheckResize(count);
 
         internal void CopyEntities(ref Entity[] entities, int startingIndex)
@@ -152,7 +152,7 @@ namespace EcsLte
             return entityData;
         }
 
-        internal EntityData RemoveEntity(Entity entity, ref EntityData[] allEntityDatas)
+        internal void RemoveEntity(Entity entity, ref EntityData[] allEntityDatas)
         {
             var entityData = allEntityDatas[entity.Id];
             if (EntityCount > 1)
@@ -171,8 +171,6 @@ namespace EcsLte
                 allEntityDatas[lastEntity.Id] = lastEntityData;
             }
             EntityCount--;
-
-            return new EntityData();
         }
 
         internal void ClearAllEntities() => EntityCount = 0;
@@ -186,13 +184,13 @@ namespace EcsLte
         internal byte* GetComponentsPtr(EntityData entityData)
             => _dataBuffer + CalculateComponentsOffset(entityData.EntityIndex);
 
-        internal void CopyBlueprintComponentsBuffer(IEntityBlueprintComponentData[] blueprintComponents, byte* buffer)
+        internal void CopyComponentDatasToBuffer(IComponentData[] componentDatas, byte* buffer)
         {
-            for (var i = 0; i < blueprintComponents.Length; i++)
+            for (var i = 0; i < componentDatas.Length; i++)
             {
-                var blueprintComponent = blueprintComponents[i];
-                if (blueprintComponent.Config.UnmanagedSizeInBytes != 0)
-                    blueprintComponent.CopyComponentData(buffer + _configOffsets[i].OffsetInBytes);
+                var componentData = componentDatas[i];
+                if (componentData.Config.UnmanagedSizeInBytes != 0)
+                    componentData.CopyComponentData(buffer + _configOffsets[i].OffsetInBytes);
             }
         }
 
@@ -218,11 +216,21 @@ namespace EcsLte
             GetComponentOffset(config, out var componentConfigOffset);
 
             var componentOffsetInBytes = componentConfigOffset.OffsetInBytes;
-            var buffer = CalculateComponentsOffset(0);
-            for (var i = 0; i <= EntityCount; i++, componentOffsetInBytes += ComponentsSizeInBytes)
+            var buffer = _dataBuffer + CalculateComponentsOffset(0);
+            for (var i = 0; i < EntityCount; i++, componentOffsetInBytes += ComponentsSizeInBytes)
                 components[i] = *(TComponent*)(buffer + componentOffsetInBytes);
 
             return components;
+        }
+
+        internal void GetAllComponentTypes<TComponent>(ref TComponent[] components, int startingIndex, ComponentConfig config) where TComponent : unmanaged
+        {
+            GetComponentOffset(config, out var componentConfigOffset);
+
+            var componentOffsetInBytes = componentConfigOffset.OffsetInBytes;
+            var buffer = _dataBuffer + CalculateComponentsOffset(0);
+            for (var i = 0; i < EntityCount; i++, componentOffsetInBytes += ComponentsSizeInBytes)
+                components[i + startingIndex] = *(TComponent*)(buffer + componentOffsetInBytes);
         }
 
         internal void SetComponent(EntityData entityData, void* component, ComponentConfig config)
@@ -251,7 +259,7 @@ namespace EcsLte
             }
         }
 
-        public bool GetComponentOffset(ComponentConfig config, out ComponentConfigOffset configOffset)
+        internal bool GetComponentOffset(ComponentConfig config, out ComponentConfigOffset configOffset)
         {
             configOffset = new ComponentConfigOffset();
             for (var i = 0; i < ArcheType.ComponentConfigLength; i++)
@@ -268,6 +276,12 @@ namespace EcsLte
         {
             MemoryHelper.Free(_configOffsets);
             _configOffsets = null;
+            if (_managedConfigsLength > 0)
+            {
+                MemoryHelper.Free(_managedConfigs);
+                _managedConfigs = null;
+                _managedConfigsLength = 0;
+            }
             if (_dataBuffer != null)
                 MemoryHelper.Free(_dataBuffer);
             _dataBuffer = null;
@@ -276,44 +290,41 @@ namespace EcsLte
             EntityCount = 0;
             EntityCapacity = 0;
             ComponentsSizeInBytes = 0;
-            if (UniqueConfigsLength > 0)
-                MemoryHelper.Free(UniqueConfigs);
-            UniqueConfigs = null;
-            UniqueConfigsLength = 0;
         }
 
         private void Initialize(ArcheType archeType, ArcheTypeIndex archeTypeIndex)
         {
             _configOffsets = MemoryHelper.Alloc<ComponentConfigOffset>(archeType.ComponentConfigLength);
 
-            var uniqueConfigs = new List<ComponentConfig>();
-            for (var i = 0; i < archeType.ComponentConfigLength; i++)
+            if (archeType.ComponentConfigLength > 0)
             {
-                var config = archeType.ComponentConfigs[i];
-                if (config.IsUnique)
-                    uniqueConfigs.Add(config);
-
-                _configOffsets[i] = new ComponentConfigOffset
+                var managedConfigs = new List<ComponentConfig>();
+                for (var i = 0; i < archeType.ComponentConfigLength; i++)
                 {
-                    Config = config,
-                    OffsetInBytes = ComponentsSizeInBytes
-                };
-                if (config.UnmanagedSizeInBytes == 0)
-                    ComponentsSizeInBytes++;
-                else
-                    ComponentsSizeInBytes += config.UnmanagedSizeInBytes;
+                    var config = archeType.ComponentConfigs[i];
+                    if (config.IsManaged)
+                        managedConfigs.Add(config);
+
+                    _configOffsets[i] = new ComponentConfigOffset
+                    {
+                        Config = config,
+                        OffsetInBytes = ComponentsSizeInBytes
+                    };
+                    if (config.UnmanagedSizeInBytes == 0)
+                        ComponentsSizeInBytes++;
+                    else
+                        ComponentsSizeInBytes += config.UnmanagedSizeInBytes;
+                }
+                if (managedConfigs.Count > 0)
+                {
+                    _managedConfigs = MemoryHelper.Alloc<ComponentConfig>(managedConfigs.Count);
+                    _managedConfigsLength = managedConfigs.Count;
+                    for (var i = 0; i < _managedConfigsLength; i++)
+                        _managedConfigs[i] = managedConfigs[i];
+                }
             }
-            if (ComponentsSizeInBytes == 0)
-                ComponentsSizeInBytes = 1;
             ArcheType = archeType;
             ArcheTypeIndex = archeTypeIndex;
-            if (uniqueConfigs.Count > 0)
-            {
-                UniqueConfigs = MemoryHelper.Alloc<ComponentConfig>(uniqueConfigs.Count);
-                UniqueConfigsLength = uniqueConfigs.Count;
-                for (var i = 0; i < uniqueConfigs.Count; i++)
-                    UniqueConfigs[i] = uniqueConfigs[i];
-            }
         }
 
         private void CheckResize(int count)

@@ -1,7 +1,4 @@
-﻿using BenchmarkDotNet.Attributes;
-using System;
-
-namespace EcsLte.BenchmarkTest.EcsContextTests
+﻿namespace EcsLte.BenchmarkTest.EcsContextTests
 {
     // Tests to quick
     /*public class EcsContext_UpdateComponent

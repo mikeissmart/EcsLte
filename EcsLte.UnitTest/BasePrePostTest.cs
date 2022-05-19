@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 
 namespace EcsLte.UnitTest
 {
@@ -51,6 +52,17 @@ namespace EcsLte.UnitTest
                 .AddComponent(component2)
                 .AddComponent(component3);
             return context.EntityManager.CreateEntities(entityCount, blueprint);
+        }
+
+        protected void AssertClassEquals<T>(T same1, T same2, T different, T nullable) where T : IEquatable<T>
+        {
+            Assert.IsTrue(same1.GetHashCode() != 0);
+            Assert.IsTrue(same1.GetHashCode() == same2.GetHashCode());
+            Assert.IsFalse(same1.GetHashCode() == different.GetHashCode());
+
+            Assert.IsTrue(same1.Equals(same2));
+            Assert.IsFalse(different.Equals(same1));
+            Assert.IsFalse(same1.Equals(nullable));
         }
     }
 }
