@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace EcsLte
 {
-    internal unsafe class ArcheTypeManager
+    /*internal unsafe class ArcheTypeManager
     {
         private List<IndexDictionary<ArcheType>> _archeTypeIndexes;
         /// <summary>
@@ -142,7 +142,7 @@ namespace EcsLte
             for (var i = 0; i < archeType.SharedComponentDataLength; i++)
             {
                 var component = archeTypeData.SharedComponentDatas[i];
-                archeType.SharedComponentDataIndexes[i] = context.EntityManager.GetSharedComponentDataIndex(
+                archeType.SharedComponentDataIndexes[i] = context.GetSharedComponentDataIndex(
                     (ISharedComponent)component.Component, component.Config);
             }
 
@@ -162,5 +162,5 @@ namespace EcsLte
             indexDic = _archeTypeIndexes[configCount];
             dataList = _archeTypeDatas[configCount];
         }
-    }
+    }*/
 }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using EcsLte.Data;
+using System;
+using System.Runtime.InteropServices;
 
 namespace EcsLte
 {
@@ -7,12 +9,14 @@ namespace EcsLte
         ComponentConfig Config { get; }
         IComponent Component { get; }
 
-        unsafe void CopyComponentData(byte* componentPtr/*, int componentIndex, IManagedComponentPool[] managedComponentPools*/);
+        unsafe void CopyBlittableComponentData(byte* componentPtr);
+        unsafe void CopyManagedComponentData(ArcheTypeData* archeTypeData, EntityData entityData, int componentIndex, IManagedComponentPool managedPool);
         bool ComponentEquals<TComponentEqual>(TComponentEqual component) where TComponentEqual : IComponent;
+        SharedComponentDataIndex GetSharedComponentDataIndex(SharedComponentIndexDictionaries sharedIndexDics);
     }
 
     internal class ComponentData<TComponent> : IComponentData
-        where TComponent : unmanaged, IComponent
+        where TComponent : IComponent
     {
         private readonly TComponent _component;
 
@@ -25,51 +29,17 @@ namespace EcsLte
             Config = ComponentConfig<TComponent>.Config;
         }
 
-        public unsafe void CopyComponentData(byte* componentPtr/*, int componentIndex, IManagedComponentPool[] managedComponentPools*/) =>
-            /*if (Config.IsManaged)
-{
-var pool = (ManagedComponentPool<TComponent>)managedComponentPools[Config.ManagedIndex];
-pool.SetComponent(componentIndex, _component);
-*(int*)componentPtr = componentIndex;
-}
-else
-{
-Marshal.StructureToPtr(_component, (IntPtr)componentPtr, false);
-}*/
-            *(TComponent*)componentPtr = _component;
+        public unsafe void CopyBlittableComponentData(byte* componentPtr) => Marshal.StructureToPtr(_component, (IntPtr)componentPtr, false);
+
+        public unsafe void CopyManagedComponentData(ArcheTypeData* archeTypeData, EntityData entityData, int componentIndex, IManagedComponentPool managedPool) =>
+            archeTypeData->SetComponentAndIndex(entityData, _component, Config, componentIndex, (ManagedComponentPool<TComponent>)managedPool);
 
         public bool ComponentEquals<TComponentEqual>(TComponentEqual component)
              where TComponentEqual : IComponent => Config == ComponentConfig<TComponentEqual>.Config &&
                 _component.Equals(component);
 
-        public int CompareTo(IComponentData other)
-            => Config.CompareTo(other.Config);
-
-        public bool Equals(IComponentData other)
-            => Config.Equals(other.Config) &&
-                _component.Equals((TComponent)other.Component);
-    }
-
-    internal class SharedComponentData<TComponent> : IComponentData
-        where TComponent : unmanaged, ISharedComponent
-    {
-        private readonly TComponent _component;
-
-        public ComponentConfig Config { get; private set; }
-        public IComponent Component => _component;
-
-        internal SharedComponentData(TComponent component)
-        {
-            _component = component;
-            Config = ComponentConfig<TComponent>.Config;
-        }
-
-        public unsafe void CopyComponentData(byte* componentPtr)
-            => *(TComponent*)componentPtr = _component;
-
-        public bool ComponentEquals<TComponentEqual>(TComponentEqual component)
-             where TComponentEqual : IComponent => Config == ComponentConfig<TComponentEqual>.Config &&
-                _component.Equals(component);
+        public SharedComponentDataIndex GetSharedComponentDataIndex(SharedComponentIndexDictionaries sharedIndexDics) =>
+            sharedIndexDics.GetDataIndex(_component);
 
         public int CompareTo(IComponentData other)
             => Config.CompareTo(other.Config);

@@ -65,7 +65,7 @@ namespace EcsLte
             return new EntityArcheType(EntityArcheTypeData.RemoveComponentType(ArcheTypeData, config));
         }
 
-        public TSharedComponent GetSharedComponent<TSharedComponent>() where TSharedComponent : unmanaged, ISharedComponent
+        public TSharedComponent GetSharedComponent<TSharedComponent>() where TSharedComponent : ISharedComponent
         {
             if (!HasComponentType<TSharedComponent>())
                 throw new EntityArcheTypeNotHaveComponentException(typeof(TSharedComponent));
@@ -74,7 +74,7 @@ namespace EcsLte
             return (TSharedComponent)ArcheTypeData.SharedComponentDatas.First(x => x.Config == config).Component;
         }
 
-        public EntityArcheType AddSharedComponent<TSharedComponent>(TSharedComponent component) where TSharedComponent : unmanaged, ISharedComponent
+        public EntityArcheType AddSharedComponent<TSharedComponent>(TSharedComponent component) where TSharedComponent : ISharedComponent
         {
             if (HasComponentType<TSharedComponent>())
                 throw new EntityArcheTypeAlreadyHasComponentException(typeof(TSharedComponent));
@@ -82,7 +82,7 @@ namespace EcsLte
             return new EntityArcheType(EntityArcheTypeData.AddSharedComponent(ArcheTypeData, new ComponentData<TSharedComponent>(component)));
         }
 
-        public EntityArcheType ReplaceSharedComponent<TSharedComponent>(TSharedComponent component) where TSharedComponent : unmanaged, ISharedComponent
+        public EntityArcheType ReplaceSharedComponent<TSharedComponent>(TSharedComponent component) where TSharedComponent : ISharedComponent
         {
             if (!HasComponentType<TSharedComponent>())
                 return AddSharedComponent(component);
@@ -90,12 +90,43 @@ namespace EcsLte
             return new EntityArcheType(EntityArcheTypeData.ReplaceSharedComponent(ArcheTypeData, new ComponentData<TSharedComponent>(component)));
         }
 
-        public EntityArcheType RemoveSharedComponent<TSharedComponent>() where TSharedComponent : unmanaged, ISharedComponent
+        public EntityArcheType RemoveSharedComponent<TSharedComponent>() where TSharedComponent : ISharedComponent
         {
             if (!HasComponentType<TSharedComponent>())
                 throw new EntityArcheTypeNotHaveComponentException(typeof(TSharedComponent));
 
             return new EntityArcheType(EntityArcheTypeData.RemoveSharedComponent(ArcheTypeData, ComponentConfig<TSharedComponent>.Config));
+        }
+
+        public EntityArcheType AddComponentTypeOrSharedComponent<TComponent>(TComponent component) where TComponent : IComponent
+        {
+            if (HasComponentType<TComponent>())
+                throw new EntityArcheTypeAlreadyHasComponentException(typeof(TComponent));
+
+            return ComponentConfig<TComponent>.Config.IsShared
+                ? new EntityArcheType(EntityArcheTypeData.AddSharedComponent(ArcheTypeData, new ComponentData<TComponent>(component)))
+                : AddComponentType<TComponent>();
+        }
+
+        public EntityArcheType ReplaceComponentTypeOrSharedComponent<TComponent>(TComponent component) where TComponent : IComponent
+        {
+            if (!HasComponentType<TComponent>())
+                return AddComponentTypeOrSharedComponent(component);
+
+            return ComponentConfig<TComponent>.Config.IsShared
+                ? new EntityArcheType(EntityArcheTypeData.ReplaceSharedComponent(ArcheTypeData, new ComponentData<TComponent>(component)))
+                : this;
+        }
+
+        public EntityArcheType RemoveComponentTypeOrSharedComponent<TComponent>() where TComponent : IComponent
+        {
+            if (!HasComponentType<TComponent>())
+                throw new EntityArcheTypeNotHaveComponentException(typeof(TComponent));
+
+            var config = ComponentConfig<TComponent>.Config;
+            return config.IsShared
+                ? new EntityArcheType(EntityArcheTypeData.RemoveSharedComponent(ArcheTypeData, config))
+                : new EntityArcheType(EntityArcheTypeData.RemoveComponentType(ArcheTypeData, config));
         }
 
         public static bool operator !=(EntityArcheType lhs, EntityArcheType rhs)

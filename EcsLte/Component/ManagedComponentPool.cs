@@ -13,21 +13,27 @@ namespace EcsLte
         void Clear();
     }
 
-    internal static class ManagedComponentPool
+    internal class ManagedComponentPools
     {
-        internal static IManagedComponentPool[] CreateManagedComponentPools()
+        private IManagedComponentPool[] _managePools;
+
+        internal ManagedComponentPools()
         {
-            var managedPools = new IManagedComponentPool[ComponentConfigs.Instance.AllManagedCount];
+            _managePools = new IManagedComponentPool[ComponentConfigs.Instance.AllManagedCount];
             var poolType = typeof(ManagedComponentPool<>);
-            for (var i = 0; i < managedPools.Length; i++)
+            for (var i = 0; i < _managePools.Length; i++)
             {
-                managedPools[i] = (IManagedComponentPool)Activator
+                _managePools[i] = (IManagedComponentPool)Activator
                     .CreateInstance(poolType
                         .MakeGenericType(ComponentConfigs.Instance.AllManagedTypes[i]));
             }
-
-            return managedPools;
         }
+
+        internal IManagedComponentPool GetPool(ComponentConfig config) => _managePools[config.ManagedIndex];
+
+        internal ManagedComponentPool<TComponent> GetPool<TComponent>()
+            where TComponent : IComponent =>
+            (ManagedComponentPool<TComponent>)_managePools[ComponentConfig<TComponent>.Config.ManagedIndex];
     }
 
     internal class ManagedComponentPool<TComponent> : IManagedComponentPool
@@ -37,7 +43,7 @@ namespace EcsLte
         private readonly Stack<int> _reusableComponents;
         private int _nextIndex;
 
-        internal ManagedComponentPool()
+        public ManagedComponentPool()
         {
             _components = new TComponent[1];
             _reusableComponents = new Stack<int>();
@@ -45,18 +51,13 @@ namespace EcsLte
             _nextIndex = 1;
         }
 
-        public IComponent GetComponent(int index) => _components[index];
-
         public int AllocateComponent()
         {
             CheckCapacity(1);
-            var index = 0;
             if (_reusableComponents.Count > 0)
-                index = _reusableComponents.Pop();
-            else
-                index = _nextIndex++;
+                return _reusableComponents.Pop();
 
-            return index;
+            return _nextIndex++;
         }
 
         public int[] AllocateComponents(int count)
@@ -65,22 +66,30 @@ namespace EcsLte
             var indexes = new int[count];
             for (var i = 0; i < count; i++)
             {
-                var index = 0;
                 if (_reusableComponents.Count > 0)
-                    index = _reusableComponents.Pop();
+                    indexes[i] = _reusableComponents.Pop();
                 else
-                    index = _nextIndex++;
-                indexes[i] = index;
+                    indexes[i] = _nextIndex++;
             }
 
             return indexes;
         }
 
-        public void SetComponent(int index, IComponent component) => _components[index] = (TComponent)component;
+        public TComponent GetComponent(int index) => _components[index];
+
+        public ref TComponent GetComponentRef(int index) => ref _components[index];
+
+        IComponent IManagedComponentPool.GetComponent(int index) => _components[index];
 
         public void SetComponent(int index, TComponent component) => _components[index] = component;
 
-        public void ClearComponent(int index) => _reusableComponents.Push(index);
+        void IManagedComponentPool.SetComponent(int index, IComponent component) => _components[index] = (TComponent)component;
+
+        public void ClearComponent(int index)
+        {
+            _components[index] = default;
+            _reusableComponents.Push(index);
+        }
 
         private void CheckCapacity(int count)
         {

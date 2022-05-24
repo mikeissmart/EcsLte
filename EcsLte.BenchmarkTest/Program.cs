@@ -23,12 +23,13 @@ namespace EcsLte.BenchmarkTest
                 .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical));
             ;
 #if DEBUG
-            BenchmarkRunner.Run(typeof(Program).Assembly, config);
+            //BenchmarkRunner.Run(typeof(Program).Assembly, config);
+            BenchmarkRunner.Run<EntityQueryTests.EntityQuery_ForEach>(config);
             Console.WriteLine("done");
             Console.ReadLine();
 #else
-            BenchmarkRunner.Run(typeof(Program).Assembly, config);
-            //BenchmarkRunner.Run<EcsContextTests.EcsContext_EntityComponent>(config);
+            //BenchmarkRunner.Run(typeof(Program).Assembly, config);
+            BenchmarkRunner.Run<EntityQueryTests.EntityQuery_ForEach>(config);
 #endif
         }
     }

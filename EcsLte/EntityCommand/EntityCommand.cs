@@ -18,7 +18,7 @@ namespace EcsLte
             _blueprint = blueprint;
         }
 
-        public void Execute(EcsContext context) => context.EntityManager.CreateEntities(_count, _blueprint);
+        public void Execute(EcsContext context) => context.CreateEntities(_count, _blueprint);
     }
 
     internal class EntityCommand_DestroyEntities : IEntityCommand
@@ -27,7 +27,7 @@ namespace EcsLte
 
         public EntityCommand_DestroyEntities(IEnumerable<Entity> entities) => _entities = entities;
 
-        public void Execute(EcsContext context) => context.EntityManager.DestroyEntities(_entities);
+        public void Execute(EcsContext context) => context.DestroyEntities(_entities);
     }
 
     internal class EntityCommand_DestroyEntities_EntityArcheType : IEntityCommand
@@ -36,7 +36,7 @@ namespace EcsLte
 
         public EntityCommand_DestroyEntities_EntityArcheType(EntityArcheType entityArcheType) => _entityArcheType = entityArcheType;
 
-        public void Execute(EcsContext context) => context.EntityManager.DestroyEntities(_entityArcheType);
+        public void Execute(EcsContext context) => context.DestroyEntities(_entityArcheType);
     }
 
     internal class EntityCommand_DestroyEntities_EntityQuery : IEntityCommand
@@ -45,7 +45,7 @@ namespace EcsLte
 
         public EntityCommand_DestroyEntities_EntityQuery(EntityQuery entityQuery) => _entityQuery = entityQuery;
 
-        public void Execute(EcsContext context) => context.EntityManager.DestroyEntities(_entityQuery);
+        public void Execute(EcsContext context) => context.DestroyEntities(_entityQuery);
     }
 
     internal class EntityCommand_TransferEntities : IEntityCommand
@@ -61,7 +61,7 @@ namespace EcsLte
             _destroyEntities = destroyEntities;
         }
 
-        public void Execute(EcsContext context) => context.EntityManager.TransferEntities(_sourceContext, _entities, _destroyEntities);
+        public void Execute(EcsContext context) => context.TransferEntities(_sourceContext, _entities, _destroyEntities);
     }
 
     internal class EntityCommand_TransferEntities_EntityArcheType : IEntityCommand
@@ -77,7 +77,7 @@ namespace EcsLte
             _destroyEntities = destroyEntities;
         }
 
-        public void Execute(EcsContext context) => context.EntityManager.TransferEntities(_sourceContext, _entityArcheType, _destroyEntities);
+        public void Execute(EcsContext context) => context.TransferEntities(_sourceContext, _entityArcheType, _destroyEntities);
     }
 
     internal class EntityCommand_TransferEntities_EntityQuery : IEntityCommand
@@ -93,11 +93,11 @@ namespace EcsLte
             _destroyEntities = destroyEntities;
         }
 
-        public void Execute(EcsContext context) => context.EntityManager.TransferEntities(_sourceContext, _entityQuery, _destroyEntities);
+        public void Execute(EcsContext context) => context.TransferEntities(_sourceContext, _entityQuery, _destroyEntities);
     }
 
     internal class EntityCommand_UpdateComponent<TComponent> : IEntityCommand
-         where TComponent : unmanaged, IComponent
+         where TComponent : IComponent
     {
         private readonly IEnumerable<Entity> _entities;
         private readonly TComponent _component;
@@ -108,11 +108,11 @@ namespace EcsLte
             _component = component;
         }
 
-        public void Execute(EcsContext context) => context.EntityManager.UpdateComponent(_entities, _component);
+        public void Execute(EcsContext context) => context.UpdateComponents(_entities, _component);
     }
 
     internal class EntityCommand_UpdateComponent_EntityArcheType<TComponent> : IEntityCommand
-         where TComponent : unmanaged, IComponent
+         where TComponent : IComponent
     {
         private readonly EntityArcheType _entityArcheType;
         private readonly TComponent _component;
@@ -123,11 +123,11 @@ namespace EcsLte
             _component = component;
         }
 
-        public void Execute(EcsContext context) => context.EntityManager.UpdateComponent(_entityArcheType, _component);
+        public void Execute(EcsContext context) => context.UpdateComponents(_entityArcheType, _component);
     }
 
     internal class EntityCommand_UpdateComponent_EntityQuery<TComponent> : IEntityCommand
-         where TComponent : unmanaged, IComponent
+         where TComponent : IComponent
     {
         private readonly EntityQuery _entityQuery;
         private readonly TComponent _component;
@@ -138,6 +138,6 @@ namespace EcsLte
             _component = component;
         }
 
-        public void Execute(EcsContext context) => context.EntityManager.UpdateComponent(_entityQuery, _component);
+        public void Execute(EcsContext context) => context.UpdateComponents(_entityQuery, _component);
     }
 }

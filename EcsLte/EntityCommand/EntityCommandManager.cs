@@ -4,7 +4,17 @@ using System.Collections.Generic;
 
 namespace EcsLte
 {
-    public class EntityCommandManager
+    public interface ICommands
+    {
+        EcsContext Context { get; }
+
+        bool HasCommandQueue(string name);
+        EntityCommandQueue GetCommandQueue(string name);
+        EntityCommandQueue CreateCommandQueue(string name);
+        void RemoveCommandQueue(EntityCommandQueue commandQueue);
+    }
+
+    internal class EntityCommandManager : ICommands
     {
         private readonly Dictionary<string, EntityCommandQueue> _commandQueues;
         private readonly object _lockObj;

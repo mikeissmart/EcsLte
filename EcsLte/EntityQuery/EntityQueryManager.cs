@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace EcsLte
 {
-    internal class EntityQueryManager
+    /*internal class EntityQueryManager
     {
         private List<IndexDictionary<EntityQueryData>> _queryDataIndexes;
         private List<List<EntityQueryData>> _queryDatas;
@@ -41,7 +41,7 @@ namespace EcsLte
                         query.QueryData = dataList[index];
                     }
                 }
-                Context.ArcheTypeManager.UpdateEntityQuery(query);
+                //Context.ArcheTypeManager.UpdateEntityQuery(query);
             }
         }
 
@@ -67,5 +67,5 @@ namespace EcsLte
                 _queryDatas = null;
             }
         }
-    }
+    }*/
 }

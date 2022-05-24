@@ -13,9 +13,9 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         [GlobalSetup]
         public void GlobalSetup()
         {
-            if (EcsContext.HasContext("Test"))
-                EcsContext.DestroyContext(EcsContext.GetContext("Test"));
-            _context = EcsContext.CreateContext("Test");
+            if (EcsContexts.HasContext("Test"))
+                EcsContexts.DestroyContext(EcsContexts.GetContext("Test"));
+            _context = EcsContexts.CreateContext("Test");
             _entities = new Entity[BenchmarkTestConsts.LargeCount];
         }
 
@@ -23,7 +23,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         public void GlobalCleanup()
         {
             if (!_context.IsDestroyed)
-                EcsContext.DestroyContext(_context);
+                EcsContexts.DestroyContext(_context);
         }
 
         #region Create
@@ -35,7 +35,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         })]
         public void IterationSetup_Create()
         {
-            _context = EcsContext.CreateContext("Test_Create");
+            _context = EcsContexts.CreateContext("Test_Create");
             _entities = new Entity[BenchmarkTestConsts.LargeCount];
         }
 
@@ -44,21 +44,21 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             nameof(CreateEntity),
             nameof(CreateEntities)
         })]
-        public void IterationCleanup_Create() => EcsContext.DestroyContext(_context);
+        public void IterationCleanup_Create() => EcsContexts.DestroyContext(_context);
 
         [Benchmark]
         public void CreateEntity()
         {
             var blueprint = EcsContextSetupCleanup.CreateBlueprint(CompArr);
             for (var i = 0; i < _entities.Length; i++)
-                _entities[i] = _context.EntityManager.CreateEntity(blueprint);
+                _entities[i] = _context.CreateEntity(blueprint);
         }
 
         [Benchmark]
         public void CreateEntities()
         {
             var blueprint = EcsContextSetupCleanup.CreateBlueprint(CompArr);
-            _entities = _context.EntityManager.CreateEntities(_entities.Length, blueprint);
+            _entities = _context.CreateEntities(_entities.Length, blueprint);
         }
 
         #endregion
@@ -70,21 +70,21 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             nameof(CreateEntity_Reuse),
             nameof(CreateEntities_Reuse)
         })]
-        public void IterationCleanup_Create_Reuse() => _context.EntityManager.DestroyEntities(_entities);
+        public void IterationCleanup_Create_Reuse() => _context.DestroyEntities(_entities);
 
         [Benchmark]
         public void CreateEntity_Reuse()
         {
             var blueprint = EcsContextSetupCleanup.CreateBlueprint(CompArr);
             for (var i = 0; i < _entities.Length; i++)
-                _entities[i] = _context.EntityManager.CreateEntity(blueprint);
+                _entities[i] = _context.CreateEntity(blueprint);
         }
 
         [Benchmark]
         public void CreateEntities_Reuse()
         {
             var blueprint = EcsContextSetupCleanup.CreateBlueprint(CompArr);
-            _entities = _context.EntityManager.CreateEntities(_entities.Length, blueprint);
+            _entities = _context.CreateEntities(_entities.Length, blueprint);
         }
 
         #endregion
@@ -98,8 +98,8 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         })]
         public void IterationSetup_Destroy()
         {
-            _context = EcsContext.CreateContext("Test_Create");
-            _entities = _context.EntityManager.CreateEntities(_entities.Length,
+            _context = EcsContexts.CreateContext("Test_Create");
+            _entities = _context.CreateEntities(_entities.Length,
                 EcsContextSetupCleanup.CreateBlueprint(CompArr));
         }
 
@@ -108,17 +108,17 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             nameof(DestroyEntity),
             nameof(DestroyEntities)
         })]
-        public void IterationCleanup_Destroy() => EcsContext.DestroyContext(_context);
+        public void IterationCleanup_Destroy() => EcsContexts.DestroyContext(_context);
 
         [Benchmark]
         public void DestroyEntity()
         {
             for (var i = 0; i < _entities.Length; i++)
-                _context.EntityManager.DestroyEntity(_entities[i]);
+                _context.DestroyEntity(_entities[i]);
         }
 
         [Benchmark]
-        public void DestroyEntities() => _context.EntityManager.DestroyEntities(_entities);
+        public void DestroyEntities() => _context.DestroyEntities(_entities);
 
         #endregion
 
@@ -129,18 +129,18 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             nameof(DestroyEntity_Reuse),
             nameof(DestroyEntities_Reuse)
         })]
-        public void IterationSetup_Destroy_Reuse() => _entities = _context.EntityManager.CreateEntities(_entities.Length,
+        public void IterationSetup_Destroy_Reuse() => _entities = _context.CreateEntities(_entities.Length,
                 EcsContextSetupCleanup.CreateBlueprint(CompArr));
 
         [Benchmark]
         public void DestroyEntity_Reuse()
         {
             for (var i = 0; i < _entities.Length; i++)
-                _context.EntityManager.DestroyEntity(_entities[i]);
+                _context.DestroyEntity(_entities[i]);
         }
 
         [Benchmark]
-        public void DestroyEntities_Reuse() => _context.EntityManager.DestroyEntities(_entities);
+        public void DestroyEntities_Reuse() => _context.DestroyEntities(_entities);
 
         #endregion
     }

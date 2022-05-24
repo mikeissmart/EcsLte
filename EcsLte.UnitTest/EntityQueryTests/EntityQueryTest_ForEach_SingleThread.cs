@@ -8,18 +8,13 @@ namespace EcsLte.UnitTest.EntityQueryTests
     {
         private TestComponent1 _component1 = new TestComponent1 { Prop = 1 };
         private TestComponent2 _component2 = new TestComponent2 { Prop = 2 };
-        private TestComponent3 _component3 = new TestComponent3 { Prop = 3 };
-        private TestComponent4 _component4 = new TestComponent4 { Prop = 4 };
-        private TestComponent5 _component5 = new TestComponent5 { Prop = 5 };
-        private TestComponent6 _component6 = new TestComponent6 { Prop = 6 };
-        private TestComponent7 _component7 = new TestComponent7 { Prop = 7 };
-        private TestComponent8 _component8 = new TestComponent8 { Prop = 8 };
+        private TestManageComponent1 _component3 = new TestManageComponent1 { Prop = 3 };
+        private TestManageComponent2 _component4 = new TestManageComponent2 { Prop = 4 };
+        private TestSharedComponent1 _component5 = new TestSharedComponent1 { Prop = 5 };
+        private TestSharedComponent2 _component6 = new TestSharedComponent2 { Prop = 6 };
+        private TestManageSharedComponent1 _component7 = new TestManageSharedComponent1 { Prop = 7 };
+        private TestManageSharedComponent2 _component8 = new TestManageSharedComponent2 { Prop = 8 };
         private readonly int _refChangeAmount = 10;
-
-        private struct abc
-        {
-            public string a { get; set; }
-        }
 
         [TestMethod]
         public void ForEach_Duplicate()
@@ -95,7 +90,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2,
-                in TestComponent3 component3) =>
+                in TestManageComponent1 component3) =>
             {
                 Assert.IsTrue(component1.Prop == _component1.Prop,
                     $"Enity.Id {entity.Id}");
@@ -115,8 +110,8 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2,
-                in TestComponent3 component3,
-                in TestComponent4 component4) =>
+                in TestManageComponent1 component3,
+                in TestManageComponent2 component4) =>
             {
                 Assert.IsTrue(component1.Prop == _component1.Prop,
                     $"Enity.Id {entity.Id}");
@@ -138,9 +133,9 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2,
-                in TestComponent3 component3,
-                in TestComponent4 component4,
-                in TestComponent5 component5) =>
+                in TestManageComponent1 component3,
+                in TestManageComponent2 component4,
+                in TestSharedComponent1 component5) =>
             {
                 Assert.IsTrue(component1.Prop == _component1.Prop,
                     $"Enity.Id {entity.Id}");
@@ -164,10 +159,10 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2,
-                in TestComponent3 component3,
-                in TestComponent4 component4,
-                in TestComponent5 component5,
-                in TestComponent6 component6) =>
+                in TestManageComponent1 component3,
+                in TestManageComponent2 component4,
+                in TestSharedComponent1 component5,
+                in TestSharedComponent2 component6) =>
             {
                 Assert.IsTrue(component1.Prop == _component1.Prop,
                     $"Enity.Id {entity.Id}");
@@ -193,11 +188,11 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2,
-                in TestComponent3 component3,
-                in TestComponent4 component4,
-                in TestComponent5 component5,
-                in TestComponent6 component6,
-                in TestComponent7 component7) =>
+                in TestManageComponent1 component3,
+                in TestManageComponent2 component4,
+                in TestSharedComponent1 component5,
+                in TestSharedComponent2 component6,
+                in TestManageSharedComponent1 component7) =>
             {
                 Assert.IsTrue(component1.Prop == _component1.Prop,
                     $"Enity.Id {entity.Id}");
@@ -225,12 +220,12 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2,
-                in TestComponent3 component3,
-                in TestComponent4 component4,
-                in TestComponent5 component5,
-                in TestComponent6 component6,
-                in TestComponent7 component7,
-                in TestComponent8 component8) =>
+                in TestManageComponent1 component3,
+                in TestManageComponent2 component4,
+                in TestSharedComponent1 component5,
+                in TestSharedComponent2 component6,
+                in TestManageSharedComponent1 component7,
+                in TestManageSharedComponent2 component8) =>
             {
                 Assert.IsTrue(component1.Prop == _component1.Prop,
                     $"Enity.Id {entity.Id}");
@@ -270,7 +265,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -295,7 +290,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -310,7 +305,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2,
-                in TestComponent3 component3) =>
+                in TestManageComponent1 component3) =>
             {
                 component1.Prop += _refChangeAmount;
 
@@ -323,7 +318,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -338,8 +333,8 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2,
-                in TestComponent3 component3,
-                in TestComponent4 component4) =>
+                in TestManageComponent1 component3,
+                in TestManageComponent2 component4) =>
             {
                 component1.Prop += _refChangeAmount;
 
@@ -354,7 +349,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -369,9 +364,9 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2,
-                in TestComponent3 component3,
-                in TestComponent4 component4,
-                in TestComponent5 component5) =>
+                in TestManageComponent1 component3,
+                in TestManageComponent2 component4,
+                in TestSharedComponent1 component5) =>
             {
                 component1.Prop += _refChangeAmount;
 
@@ -388,7 +383,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -403,10 +398,10 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2,
-                in TestComponent3 component3,
-                in TestComponent4 component4,
-                in TestComponent5 component5,
-                in TestComponent6 component6) =>
+                in TestManageComponent1 component3,
+                in TestManageComponent2 component4,
+                in TestSharedComponent1 component5,
+                in TestSharedComponent2 component6) =>
             {
                 component1.Prop += _refChangeAmount;
 
@@ -425,7 +420,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -440,11 +435,11 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2,
-                in TestComponent3 component3,
-                in TestComponent4 component4,
-                in TestComponent5 component5,
-                in TestComponent6 component6,
-                in TestComponent7 component7) =>
+                in TestManageComponent1 component3,
+                in TestManageComponent2 component4,
+                in TestSharedComponent1 component5,
+                in TestSharedComponent2 component6,
+                in TestManageSharedComponent1 component7) =>
             {
                 component1.Prop += _refChangeAmount;
 
@@ -465,7 +460,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -480,12 +475,12 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2,
-                in TestComponent3 component3,
-                in TestComponent4 component4,
-                in TestComponent5 component5,
-                in TestComponent6 component6,
-                in TestComponent7 component7,
-                in TestComponent8 component8) =>
+                in TestManageComponent1 component3,
+                in TestManageComponent2 component4,
+                in TestSharedComponent1 component5,
+                in TestSharedComponent2 component6,
+                in TestManageSharedComponent1 component7,
+                in TestManageSharedComponent2 component8) =>
             {
                 component1.Prop += _refChangeAmount;
 
@@ -508,7 +503,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -534,9 +529,9 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -551,7 +546,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                in TestComponent3 component3) =>
+                in TestManageComponent1 component3) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -563,9 +558,9 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -580,8 +575,8 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                in TestComponent3 component3,
-                in TestComponent4 component4) =>
+                in TestManageComponent1 component3,
+                in TestManageComponent2 component4) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -595,9 +590,9 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -612,9 +607,9 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                in TestComponent3 component3,
-                in TestComponent4 component4,
-                in TestComponent5 component5) =>
+                in TestManageComponent1 component3,
+                in TestManageComponent2 component4,
+                in TestSharedComponent1 component5) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -630,9 +625,9 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -647,10 +642,10 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                in TestComponent3 component3,
-                in TestComponent4 component4,
-                in TestComponent5 component5,
-                in TestComponent6 component6) =>
+                in TestManageComponent1 component3,
+                in TestManageComponent2 component4,
+                in TestSharedComponent1 component5,
+                in TestSharedComponent2 component6) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -668,9 +663,9 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -685,11 +680,11 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                in TestComponent3 component3,
-                in TestComponent4 component4,
-                in TestComponent5 component5,
-                in TestComponent6 component6,
-                in TestComponent7 component7) =>
+                in TestManageComponent1 component3,
+                in TestManageComponent2 component4,
+                in TestSharedComponent1 component5,
+                in TestSharedComponent2 component6,
+                in TestManageSharedComponent1 component7) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -709,9 +704,9 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -726,12 +721,12 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                in TestComponent3 component3,
-                in TestComponent4 component4,
-                in TestComponent5 component5,
-                in TestComponent6 component6,
-                in TestComponent7 component7,
-                in TestComponent8 component8) =>
+                in TestManageComponent1 component3,
+                in TestManageComponent2 component4,
+                in TestSharedComponent1 component5,
+                in TestSharedComponent2 component6,
+                in TestManageSharedComponent1 component7,
+                in TestManageSharedComponent2 component8) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -753,9 +748,9 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -773,7 +768,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3) =>
+                ref TestManageComponent1 component3) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -783,11 +778,11 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -802,8 +797,8 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                in TestComponent4 component4) =>
+                ref TestManageComponent1 component3,
+                in TestManageComponent2 component4) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -816,11 +811,11 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -835,9 +830,9 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                in TestComponent4 component4,
-                in TestComponent5 component5) =>
+                ref TestManageComponent1 component3,
+                in TestManageComponent2 component4,
+                in TestSharedComponent1 component5) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -852,11 +847,11 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -871,10 +866,10 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                in TestComponent4 component4,
-                in TestComponent5 component5,
-                in TestComponent6 component6) =>
+                ref TestManageComponent1 component3,
+                in TestManageComponent2 component4,
+                in TestSharedComponent1 component5,
+                in TestSharedComponent2 component6) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -891,11 +886,11 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -910,11 +905,11 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                in TestComponent4 component4,
-                in TestComponent5 component5,
-                in TestComponent6 component6,
-                in TestComponent7 component7) =>
+                ref TestManageComponent1 component3,
+                in TestManageComponent2 component4,
+                in TestSharedComponent1 component5,
+                in TestSharedComponent2 component6,
+                in TestManageSharedComponent1 component7) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -933,11 +928,11 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -952,12 +947,12 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                in TestComponent4 component4,
-                in TestComponent5 component5,
-                in TestComponent6 component6,
-                in TestComponent7 component7,
-                in TestComponent8 component8) =>
+                ref TestManageComponent1 component3,
+                in TestManageComponent2 component4,
+                in TestSharedComponent1 component5,
+                in TestSharedComponent2 component6,
+                in TestManageSharedComponent1 component7,
+                in TestManageSharedComponent2 component8) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -978,11 +973,11 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -1000,8 +995,8 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                ref TestComponent4 component4) =>
+                ref TestManageComponent1 component3,
+                ref TestManageComponent2 component4) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -1012,13 +1007,13 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent4>(entity).Prop == _component4.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent2>(entity).Prop == _component4.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -1033,9 +1028,9 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                ref TestComponent4 component4,
-                in TestComponent5 component5) =>
+                ref TestManageComponent1 component3,
+                ref TestManageComponent2 component4,
+                in TestSharedComponent1 component5) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -1049,13 +1044,13 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent4>(entity).Prop == _component4.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent2>(entity).Prop == _component4.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -1070,10 +1065,10 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                ref TestComponent4 component4,
-                in TestComponent5 component5,
-                in TestComponent6 component6) =>
+                ref TestManageComponent1 component3,
+                ref TestManageComponent2 component4,
+                in TestSharedComponent1 component5,
+                in TestSharedComponent2 component6) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -1089,13 +1084,13 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent4>(entity).Prop == _component4.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent2>(entity).Prop == _component4.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -1110,11 +1105,11 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                ref TestComponent4 component4,
-                in TestComponent5 component5,
-                in TestComponent6 component6,
-                in TestComponent7 component7) =>
+                ref TestManageComponent1 component3,
+                ref TestManageComponent2 component4,
+                in TestSharedComponent1 component5,
+                in TestSharedComponent2 component6,
+                in TestManageSharedComponent1 component7) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -1132,13 +1127,13 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent4>(entity).Prop == _component4.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent2>(entity).Prop == _component4.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -1153,12 +1148,12 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                ref TestComponent4 component4,
-                in TestComponent5 component5,
-                in TestComponent6 component6,
-                in TestComponent7 component7,
-                in TestComponent8 component8) =>
+                ref TestManageComponent1 component3,
+                ref TestManageComponent2 component4,
+                in TestSharedComponent1 component5,
+                in TestSharedComponent2 component6,
+                in TestManageSharedComponent1 component7,
+                in TestManageSharedComponent2 component8) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -1178,13 +1173,13 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent4>(entity).Prop == _component4.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent2>(entity).Prop == _component4.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -1202,9 +1197,9 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                ref TestComponent4 component4,
-                ref TestComponent5 component5) =>
+                ref TestManageComponent1 component3,
+                ref TestManageComponent2 component4,
+                ref TestSharedComponent1 component5) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -1216,15 +1211,15 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent4>(entity).Prop == _component4.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent2>(entity).Prop == _component4.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent5>(entity).Prop == _component5.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent1>(entity).Prop == _component5.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -1239,10 +1234,10 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                ref TestComponent4 component4,
-                ref TestComponent5 component5,
-                in TestComponent6 component6) =>
+                ref TestManageComponent1 component3,
+                ref TestManageComponent2 component4,
+                ref TestSharedComponent1 component5,
+                in TestSharedComponent2 component6) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -1257,15 +1252,15 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent4>(entity).Prop == _component4.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent2>(entity).Prop == _component4.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent5>(entity).Prop == _component5.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent1>(entity).Prop == _component5.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -1280,11 +1275,11 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                ref TestComponent4 component4,
-                ref TestComponent5 component5,
-                in TestComponent6 component6,
-                in TestComponent7 component7) =>
+                ref TestManageComponent1 component3,
+                ref TestManageComponent2 component4,
+                ref TestSharedComponent1 component5,
+                in TestSharedComponent2 component6,
+                in TestManageSharedComponent1 component7) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -1301,15 +1296,15 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent4>(entity).Prop == _component4.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent2>(entity).Prop == _component4.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent5>(entity).Prop == _component5.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent1>(entity).Prop == _component5.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -1324,12 +1319,12 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                ref TestComponent4 component4,
-                ref TestComponent5 component5,
-                in TestComponent6 component6,
-                in TestComponent7 component7,
-                in TestComponent8 component8) =>
+                ref TestManageComponent1 component3,
+                ref TestManageComponent2 component4,
+                ref TestSharedComponent1 component5,
+                in TestSharedComponent2 component6,
+                in TestManageSharedComponent1 component7,
+                in TestManageSharedComponent2 component8) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -1348,15 +1343,15 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent4>(entity).Prop == _component4.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent2>(entity).Prop == _component4.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent5>(entity).Prop == _component5.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent1>(entity).Prop == _component5.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -1374,10 +1369,10 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                ref TestComponent4 component4,
-                ref TestComponent5 component5,
-                ref TestComponent6 component6) =>
+                ref TestManageComponent1 component3,
+                ref TestManageComponent2 component4,
+                ref TestSharedComponent1 component5,
+                ref TestSharedComponent2 component6) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -1390,17 +1385,17 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent4>(entity).Prop == _component4.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent2>(entity).Prop == _component4.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent5>(entity).Prop == _component5.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent1>(entity).Prop == _component5.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent6>(entity).Prop == _component6.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent2>(entity).Prop == _component6.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -1415,11 +1410,11 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                ref TestComponent4 component4,
-                ref TestComponent5 component5,
-                ref TestComponent6 component6,
-                in TestComponent7 component7) =>
+                ref TestManageComponent1 component3,
+                ref TestManageComponent2 component4,
+                ref TestSharedComponent1 component5,
+                ref TestSharedComponent2 component6,
+                in TestManageSharedComponent1 component7) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -1435,17 +1430,17 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent4>(entity).Prop == _component4.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent2>(entity).Prop == _component4.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent5>(entity).Prop == _component5.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent1>(entity).Prop == _component5.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent6>(entity).Prop == _component6.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent2>(entity).Prop == _component6.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -1460,12 +1455,12 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                ref TestComponent4 component4,
-                ref TestComponent5 component5,
-                ref TestComponent6 component6,
-                in TestComponent7 component7,
-                in TestComponent8 component8) =>
+                ref TestManageComponent1 component3,
+                ref TestManageComponent2 component4,
+                ref TestSharedComponent1 component5,
+                ref TestSharedComponent2 component6,
+                in TestManageSharedComponent1 component7,
+                in TestManageSharedComponent2 component8) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -1483,17 +1478,17 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent4>(entity).Prop == _component4.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent2>(entity).Prop == _component4.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent5>(entity).Prop == _component5.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent1>(entity).Prop == _component5.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent6>(entity).Prop == _component6.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent2>(entity).Prop == _component6.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -1511,11 +1506,11 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                ref TestComponent4 component4,
-                ref TestComponent5 component5,
-                ref TestComponent6 component6,
-                ref TestComponent7 component7) =>
+                ref TestManageComponent1 component3,
+                ref TestManageComponent2 component4,
+                ref TestSharedComponent1 component5,
+                ref TestSharedComponent2 component6,
+                ref TestManageSharedComponent1 component7) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -1529,19 +1524,19 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent4>(entity).Prop == _component4.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent2>(entity).Prop == _component4.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent5>(entity).Prop == _component5.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent1>(entity).Prop == _component5.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent6>(entity).Prop == _component6.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent2>(entity).Prop == _component6.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent7>(entity).Prop == _component7.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageSharedComponent1>(entity).Prop == _component7.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -1556,12 +1551,12 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                ref TestComponent4 component4,
-                ref TestComponent5 component5,
-                ref TestComponent6 component6,
-                ref TestComponent7 component7,
-                in TestComponent8 component8) =>
+                ref TestManageComponent1 component3,
+                ref TestManageComponent2 component4,
+                ref TestSharedComponent1 component5,
+                ref TestSharedComponent2 component6,
+                ref TestManageSharedComponent1 component7,
+                in TestManageSharedComponent2 component8) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -1578,19 +1573,19 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent4>(entity).Prop == _component4.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent2>(entity).Prop == _component4.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent5>(entity).Prop == _component5.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent1>(entity).Prop == _component5.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent6>(entity).Prop == _component6.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent2>(entity).Prop == _component6.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent7>(entity).Prop == _component7.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageSharedComponent1>(entity).Prop == _component7.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
@@ -1608,12 +1603,12 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query.ForEach(Context, false, (int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
-                ref TestComponent3 component3,
-                ref TestComponent4 component4,
-                ref TestComponent5 component5,
-                ref TestComponent6 component6,
-                ref TestComponent7 component7,
-                ref TestComponent8 component8) =>
+                ref TestManageComponent1 component3,
+                ref TestManageComponent2 component4,
+                ref TestSharedComponent1 component5,
+                ref TestSharedComponent2 component6,
+                ref TestManageSharedComponent1 component7,
+                ref TestManageSharedComponent2 component8) =>
             {
                 component1.Prop += _refChangeAmount;
                 component2.Prop += _refChangeAmount;
@@ -1628,28 +1623,28 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
             {
                 var entity = entities[i];
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent1>(entity).Prop == _component1.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestComponent2>(entity).Prop == _component2.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent3>(entity).Prop == _component3.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent1>(entity).Prop == _component3.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent4>(entity).Prop == _component4.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageComponent2>(entity).Prop == _component4.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent5>(entity).Prop == _component5.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent1>(entity).Prop == _component5.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent6>(entity).Prop == _component6.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent2>(entity).Prop == _component6.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent7>(entity).Prop == _component7.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageSharedComponent1>(entity).Prop == _component7.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
-                Assert.IsTrue(Context.EntityManager.GetComponent<TestComponent8>(entity).Prop == _component8.Prop + _refChangeAmount,
+                Assert.IsTrue(Context.GetComponent<TestManageSharedComponent2>(entity).Prop == _component8.Prop + _refChangeAmount,
                     $"Enity.Id {entities[i].Id}");
             }
         }
 
         #endregion
 
-        private Entity[] CreateEntities_x8() => Context.EntityManager.CreateEntities(UnitTestConsts.SmallCount, new EntityBlueprint()
+        private Entity[] CreateEntities_x8() => Context.CreateEntities(UnitTestConsts.SmallCount, new EntityBlueprint()
                 .AddComponent(_component1)
                 .AddComponent(_component2)
                 .AddComponent(_component3)
@@ -1660,7 +1655,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                 .AddComponent(_component8));
 
         private EntityQuery CreateQuery_x8() => new EntityQuery()
-                .WhereAllOf<TestComponent1, TestComponent2, TestComponent3, TestComponent4>()
-                .WhereAllOf<TestComponent5, TestComponent6, TestComponent7, TestComponent8>();
+                .WhereAllOf<TestComponent1, TestComponent2, TestManageComponent1, TestManageComponent2>()
+                .WhereAllOf<TestSharedComponent1, TestSharedComponent2, TestManageSharedComponent1, TestManageSharedComponent2>();
     }
 }

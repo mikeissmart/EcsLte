@@ -10,41 +10,41 @@ namespace EcsLte.UnitTest.ManagerTests
         [TestMethod]
         public void HasCommandQueue()
         {
-            var queue = Context.CommandManager.CreateCommandQueue("Test");
+            var queue = Context.Commands.CreateCommandQueue("Test");
 
-            Assert.IsTrue(Context.CommandManager.HasCommandQueue("Test"));
+            Assert.IsTrue(Context.Commands.HasCommandQueue("Test"));
         }
 
         [TestMethod]
         public void HasCommandQueue_Destroyed()
         {
-            EcsContext.DestroyContext(Context);
+            EcsContexts.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.CommandManager.HasCommandQueue("Test"));
+                Context.Commands.HasCommandQueue("Test"));
         }
 
         [TestMethod]
         public void GetCommandQueue()
         {
-            var queue = Context.CommandManager.CreateCommandQueue("Test");
+            var queue = Context.Commands.CreateCommandQueue("Test");
 
-            Assert.IsTrue(queue == Context.CommandManager.GetCommandQueue("Test"));
+            Assert.IsTrue(queue == Context.Commands.GetCommandQueue("Test"));
         }
 
         [TestMethod]
         public void GetCommandQueue_Destroyed()
         {
-            EcsContext.DestroyContext(Context);
+            EcsContexts.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.CommandManager.GetCommandQueue("Test"));
+                Context.Commands.GetCommandQueue("Test"));
         }
 
         [TestMethod]
         public void CreateCommandQueue()
         {
-            var queue = Context.CommandManager.CreateCommandQueue("Test");
+            var queue = Context.Commands.CreateCommandQueue("Test");
 
             Assert.IsTrue(queue.Name == "Test");
             Assert.IsTrue(queue.Context == Context);
@@ -53,10 +53,10 @@ namespace EcsLte.UnitTest.ManagerTests
         [TestMethod]
         public void CreateCommandQueue_Destroyed()
         {
-            EcsContext.DestroyContext(Context);
+            EcsContexts.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.CommandManager.CreateCommandQueue("Test"));
+                Context.Commands.CreateCommandQueue("Test"));
         }
     }
 }

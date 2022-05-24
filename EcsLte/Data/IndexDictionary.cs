@@ -17,10 +17,10 @@ namespace EcsLte.Data
         void Clear();
     }
 
-    internal interface ISharedComponentIndexDictionary : IIndexDictionary
+    /*internal interface ISharedComponentIndexDictionary : IIndexDictionary
     {
         IComponentData GetComponentData(SharedComponentDataIndex dataIndex);
-    }
+    }*/
 
     internal class IndexDictionary<TKey> : IIndexDictionary
     {
@@ -100,6 +100,8 @@ namespace EcsLte.Data
 
         public object GetObject(int index) => _values[index];
 
+        public TKey GetKey(int index) => _values[index];
+
         public void RemoveValue(TKey key)
         {
             lock (_lockObj)
@@ -126,7 +128,7 @@ namespace EcsLte.Data
         }
     }
 
-    internal static class SharedComponentIndexDictionary
+    /*internal static class SharedComponentIndexDictionary
     {
         internal static ISharedComponentIndexDictionary[] CreateSharedComponentIndexDictionaries()
         {
@@ -144,11 +146,11 @@ namespace EcsLte.Data
     }
 
     internal class SharedComponentIndexDictionary<TSharedComponent> : IndexDictionary<TSharedComponent>, ISharedComponentIndexDictionary
-            where TSharedComponent : unmanaged, ISharedComponent
+            where TSharedComponent : ISharedComponent
     {
         public IComponentData GetComponentData<TComponent>(SharedComponentDataIndex dataIndex)
-            where TComponent : unmanaged, ISharedComponent => new SharedComponentData<TComponent>((TComponent)GetObject(dataIndex.SharedDataIndex));
+            where TComponent : ISharedComponent => new SharedComponentData<TComponent>((TComponent)GetObject(dataIndex.SharedDataIndex));
 
         public IComponentData GetComponentData(SharedComponentDataIndex dataIndex) => GetComponentData<TSharedComponent>(dataIndex);
-    }
+    }*/
 }

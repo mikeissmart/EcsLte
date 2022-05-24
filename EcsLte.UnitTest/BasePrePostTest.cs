@@ -8,50 +8,50 @@ namespace EcsLte.UnitTest
         public EcsContext Context { get; private set; }
 
         [TestInitialize]
-        public void PreTest() => Context = EcsContext.CreateContext("UnitTest");
+        public void PreTest() => Context = EcsContexts.CreateContext("UnitTest");
 
         [TestCleanup]
         public void PostTest()
         {
-            if (!Context.IsDestroyed)
-                EcsContext.DestroyContext(Context);
+            foreach (var context in EcsContexts.GetAllContexts())
+                EcsContexts.DestroyContext(context);
             Context = null;
         }
 
         protected Entity[] TestCreateEntities<T1>(EcsContext context, int entityCount,
             T1 component1)
-            where T1 : unmanaged, IComponent
+            where T1 : IComponent
         {
             var blueprint = new EntityBlueprint()
                 .AddComponent(component1);
-            return context.EntityManager.CreateEntities(entityCount, blueprint);
+            return context.CreateEntities(entityCount, blueprint);
         }
 
         protected Entity[] TestCreateEntities<T1, T2>(EcsContext context, int entityCount,
             T1 component1,
             T2 component2)
-            where T1 : unmanaged, IComponent
-            where T2 : unmanaged, IComponent
+            where T1 : IComponent
+            where T2 : IComponent
         {
             var blueprint = new EntityBlueprint()
                 .AddComponent(component1)
                 .AddComponent(component2);
-            return context.EntityManager.CreateEntities(entityCount, blueprint);
+            return context.CreateEntities(entityCount, blueprint);
         }
 
         protected Entity[] TestCreateEntities<T1, T2, T3>(EcsContext context, int entityCount,
             T1 component1,
             T2 component2,
             T3 component3)
-            where T1 : unmanaged, IComponent
-            where T2 : unmanaged, IComponent
-            where T3 : unmanaged, IComponent
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
         {
             var blueprint = new EntityBlueprint()
                 .AddComponent(component1)
                 .AddComponent(component2)
                 .AddComponent(component3);
-            return context.EntityManager.CreateEntities(entityCount, blueprint);
+            return context.CreateEntities(entityCount, blueprint);
         }
 
         protected void AssertClassEquals<T>(T same1, T same2, T different, T nullable) where T : IEquatable<T>

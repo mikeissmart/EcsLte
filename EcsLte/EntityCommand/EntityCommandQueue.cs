@@ -100,7 +100,7 @@ namespace EcsLte
             }
         }
 
-        public void UpdateComponent<TComponent>(Entity entity, TComponent component) where TComponent : unmanaged, IComponent
+        public void UpdateComponent<TComponent>(Entity entity, TComponent component) where TComponent : IComponent
         {
             lock (_lockObj)
             {
@@ -108,7 +108,7 @@ namespace EcsLte
             }
         }
 
-        public void UpdateComponent<TComponent>(IEnumerable<Entity> entities, TComponent component) where TComponent : unmanaged, IComponent
+        public void UpdateComponent<TComponent>(IEnumerable<Entity> entities, TComponent component) where TComponent : IComponent
         {
             lock (_lockObj)
             {
@@ -116,7 +116,7 @@ namespace EcsLte
             }
         }
 
-        public void UpdateComponent<TComponent>(EntityArcheType entityArcheType, TComponent component) where TComponent : unmanaged, IComponent
+        public void UpdateComponent<TComponent>(EntityArcheType entityArcheType, TComponent component) where TComponent : IComponent
         {
             lock (_lockObj)
             {
@@ -124,7 +124,7 @@ namespace EcsLte
             }
         }
 
-        public void UpdateComponent<TComponent>(EntityQuery query, TComponent component) where TComponent : unmanaged, IComponent
+        public void UpdateComponent<TComponent>(EntityQuery query, TComponent component) where TComponent : IComponent
         {
             lock (_lockObj)
             {

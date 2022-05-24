@@ -4,7 +4,26 @@ using System.Linq;
 
 namespace EcsLte
 {
-    public class SystemManager
+    public interface ISystems
+    {
+        EcsContext Context { get; }
+
+        bool HasSystem<TSystem>() where TSystem : SystemBase;
+        TSystem GetSystem<TSystem>() where TSystem : SystemBase;
+        SystemBase[] GetAllSystems();
+        IInitializeSystem[] GetAllInitializeSystems();
+        IExecuteSystem[] GetAllExecuteSystems();
+        ICleanupSystem[] GetAllCleanupSystems();
+        ITearDownSystem[] GetAllTearDownSystems();
+        TSystem AddSystem<TSystem>() where TSystem : SystemBase;
+        void AutoAddSystems();
+        void RunInitializeSystems();
+        void RunExecuteSystems();
+        void RunCleanupSystems();
+        void RunTearDownSystems();
+    }
+
+    public class SystemManager : ISystems
     {
         private SystemBase[] _allSystems;
         private IInitializeSystem[] _initializeSystems;
@@ -79,6 +98,7 @@ namespace EcsLte
 
             return _initializeSystems.ToArray();
         }
+
         public IExecuteSystem[] GetAllExecuteSystems()
         {
             if (Context.IsDestroyed)

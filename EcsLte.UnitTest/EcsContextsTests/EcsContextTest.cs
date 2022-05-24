@@ -10,7 +10,7 @@ namespace EcsLte.UnitTest.EcsContextTests
         [TestMethod]
         public void Default()
         {
-            var context = EcsContext.Default;
+            var context = EcsContexts.Default;
 
             Assert.IsTrue(context != null);
             Assert.IsFalse(context.IsDestroyed);
@@ -18,43 +18,43 @@ namespace EcsLte.UnitTest.EcsContextTests
 
         [TestMethod]
         public void GetContext()
-            => Assert.IsTrue(EcsContext.GetContext(EcsContext.Default.Name) != null);
+            => Assert.IsTrue(EcsContexts.GetContext(EcsContexts.Default.Name) != null);
 
         [TestMethod]
         public void HasContext()
-            => Assert.IsTrue(EcsContext.HasContext(EcsContext.Default.Name));
+            => Assert.IsTrue(EcsContexts.HasContext(EcsContexts.Default.Name));
 
         [TestMethod]
         public void Create()
         {
-            var context = EcsContext.CreateContext("TestCreate");
+            var context = EcsContexts.CreateContext("TestCreate");
 
             Assert.IsTrue(context != null);
             Assert.IsFalse(context.IsDestroyed);
 
-            EcsContext.DestroyContext(context);
+            EcsContexts.DestroyContext(context);
         }
 
         [TestMethod]
         public void Create_Duplicate()
         {
-            var context = EcsContext.CreateContext("TestCreate");
+            var context = EcsContexts.CreateContext("TestCreate");
 
             Assert.ThrowsException<EcsContextNameAlreadyExistException>(()
-                => EcsContext.CreateContext("TestCreate"));
+                => EcsContexts.CreateContext("TestCreate"));
 
-            EcsContext.DestroyContext(context);
+            EcsContexts.DestroyContext(context);
         }
 
         [TestMethod]
         public void Create_null() => Assert.ThrowsException<ArgumentNullException>(()
-                                       => EcsContext.CreateContext(null));
+                                       => EcsContexts.CreateContext(null));
 
         [TestMethod]
         public void CreateMultiple()
         {
-            var context1 = EcsContext.CreateContext("TestCreateMultiple1");
-            var context2 = EcsContext.CreateContext("TestCreateMultiple2");
+            var context1 = EcsContexts.CreateContext("TestCreateMultiple1");
+            var context2 = EcsContexts.CreateContext("TestCreateMultiple2");
 
             Assert.IsTrue(context1 != null);
             Assert.IsFalse(context1.IsDestroyed);
@@ -62,32 +62,32 @@ namespace EcsLte.UnitTest.EcsContextTests
             Assert.IsFalse(context2.IsDestroyed);
             Assert.IsTrue(context1 != context2);
 
-            EcsContext.DestroyContext(context1);
-            EcsContext.DestroyContext(context2);
+            EcsContexts.DestroyContext(context1);
+            EcsContexts.DestroyContext(context2);
         }
 
         [TestMethod]
         public void Destroy()
         {
-            var context = EcsContext.CreateContext("TestDestroy");
-            EcsContext.DestroyContext(context);
+            var context = EcsContexts.CreateContext("TestDestroy");
+            EcsContexts.DestroyContext(context);
 
             Assert.IsTrue(context.IsDestroyed);
-            Assert.IsFalse(EcsContext.HasContext(context.Name));
+            Assert.IsFalse(EcsContexts.HasContext(context.Name));
         }
 
         [TestMethod]
         public void Destroy_Null() => Assert.ThrowsException<ArgumentNullException>(()
-                                        => EcsContext.DestroyContext(null));
+                                        => EcsContexts.DestroyContext(null));
 
         [TestMethod]
         public void Destroy_Duplicate()
         {
-            var context = EcsContext.CreateContext("TestDestroyAfterDestroy");
-            EcsContext.DestroyContext(context);
+            var context = EcsContexts.CreateContext("TestDestroyAfterDestroy");
+            EcsContexts.DestroyContext(context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(()
-                => EcsContext.DestroyContext(context));
+                => EcsContexts.DestroyContext(context));
         }
     }
 }

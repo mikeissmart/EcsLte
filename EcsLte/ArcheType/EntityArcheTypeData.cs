@@ -62,8 +62,10 @@ namespace EcsLte
             SharedComponentDatas = new IComponentData[archeType.SharedComponentDataLength];
             for (var i = 0; i < archeType.SharedComponentDataLength; i++)
             {
-                SharedComponentDatas[i] = context.EntityManager.GetSharedComponentData(
-                    archeType.SharedComponentDataIndexes[i]);
+                var sharedDataIndex = archeType.SharedComponentDataIndexes[i];
+                var config = EcsLte.ComponentConfigs.Instance.AllSharedConfigs[sharedDataIndex.SharedIndex];
+                SharedComponentDatas[i] = context.SharedIndexDics.GetSharedIndexDic(config)
+                    .GetComponentData(sharedDataIndex);
             }
             ComponentTypes = ComponentConfigs
                 .Select(x => EcsLte.ComponentConfigs.Instance.AllComponentTypes[x.ComponentIndex])

@@ -139,13 +139,13 @@ namespace EcsLte
             if (sharedNoEquatableOrGetHashCode.Count > 0)
                 throw new ComponentSharedUniqueException(sharedNoEquatableOrGetHashCode);
 
-            configTypes = configTypes
+            /*configTypes = configTypes
                 .OrderBy(x => x.Config.BlittableIndex)
                 .ThenBy(x => x.Config.RecordableIndex)
                 .ThenBy(x => x.Config.SharedIndex)
                 .ThenBy(x => x.Config.UniqueIndex)
                 .ThenBy(x => x.Type.Name)
-                .ToList();
+                .ToList();*/
 
             _componentConfigTypes = new Dictionary<Type, ComponentConfig>();
             var componentConfigIndexes = new List<ComponentConfig>();

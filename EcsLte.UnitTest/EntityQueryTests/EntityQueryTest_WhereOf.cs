@@ -1,5 +1,6 @@
 ﻿using EcsLte.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Linq;
 
 namespace EcsLte.UnitTest.EntityQueryTests
@@ -98,6 +99,33 @@ namespace EcsLte.UnitTest.EntityQueryTests
 
             Assert.ThrowsException<EntityQueryDuplicateComponentException>(() =>
                 query.WhereNoneOf<TestComponent1, TestComponent1>());
+        }
+
+        [TestMethod]
+        public void WhereAllOf_EntityArcheType()
+        {
+            var archeType = new EntityArcheType()
+                .AddComponentType<TestComponent1>();
+            var query = new EntityQuery()
+                .WhereAllOf(archeType);
+
+            Assert.IsTrue(query.AllComponentTypes.Length == 1);
+            Assert.IsTrue(query.AnyComponentTypes.Length == 0);
+            Assert.IsTrue(query.NoneComponentTypes.Length == 0);
+            Assert.IsTrue(query.AllComponentTypes.Any(x => x == typeof(TestComponent1)));
+            Assert.IsTrue(query.HasWhereOf<TestComponent1>());
+            Assert.IsTrue(query.HasWhereAllOf<TestComponent1>());
+            Assert.IsFalse(query.HasWhereAnyOf<TestComponent1>());
+            Assert.IsFalse(query.HasWhereNoneOf<TestComponent1>());
+        }
+
+        [TestMethod]
+        public void WhereAllOf_EntityArcheType_Null()
+        {
+            EntityArcheType archeType = null;
+
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                new EntityQuery().WhereAllOf(archeType));
         }
 
         [TestMethod]
@@ -201,6 +229,33 @@ namespace EcsLte.UnitTest.EntityQueryTests
         }
 
         [TestMethod]
+        public void WhereAnyOf_EntityArcheType()
+        {
+            var archeType = new EntityArcheType()
+                .AddComponentType<TestComponent1>();
+            var query = new EntityQuery()
+                .WhereAnyOf(archeType);
+
+            Assert.IsTrue(query.AllComponentTypes.Length == 0);
+            Assert.IsTrue(query.AnyComponentTypes.Length == 1);
+            Assert.IsTrue(query.NoneComponentTypes.Length == 0);
+            Assert.IsTrue(query.AnyComponentTypes.Any(x => x == typeof(TestComponent1)));
+            Assert.IsTrue(query.HasWhereOf<TestComponent1>());
+            Assert.IsFalse(query.HasWhereAllOf<TestComponent1>());
+            Assert.IsTrue(query.HasWhereAnyOf<TestComponent1>());
+            Assert.IsFalse(query.HasWhereNoneOf<TestComponent1>());
+        }
+
+        [TestMethod]
+        public void WhereAnyOf_EntityArcheType_Null()
+        {
+            EntityArcheType archeType = null;
+
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                new EntityQuery().WhereAnyOf(archeType));
+        }
+
+        [TestMethod]
         public void WhereAnyOf_x1()
         {
             var query = new EntityQuery()
@@ -298,6 +353,33 @@ namespace EcsLte.UnitTest.EntityQueryTests
             Assert.IsFalse(query.HasWhereAllOf<TestSharedComponent2>());
             Assert.IsTrue(query.HasWhereAnyOf<TestSharedComponent2>());
             Assert.IsFalse(query.HasWhereNoneOf<TestSharedComponent2>());
+        }
+
+        [TestMethod]
+        public void WhereNoneOf_EntityArcheType()
+        {
+            var archeType = new EntityArcheType()
+                .AddComponentType<TestComponent1>();
+            var query = new EntityQuery()
+                .WhereNoneOf(archeType);
+
+            Assert.IsTrue(query.AllComponentTypes.Length == 0);
+            Assert.IsTrue(query.AnyComponentTypes.Length == 0);
+            Assert.IsTrue(query.NoneComponentTypes.Length == 1);
+            Assert.IsTrue(query.NoneComponentTypes.Any(x => x == typeof(TestComponent1)));
+            Assert.IsTrue(query.HasWhereOf<TestComponent1>());
+            Assert.IsFalse(query.HasWhereAllOf<TestComponent1>());
+            Assert.IsFalse(query.HasWhereAnyOf<TestComponent1>());
+            Assert.IsTrue(query.HasWhereNoneOf<TestComponent1>());
+        }
+
+        [TestMethod]
+        public void WhereNoneOf_EntityArcheType_Null()
+        {
+            EntityArcheType archeType = null;
+
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                new EntityQuery().WhereNoneOf(archeType));
         }
 
         [TestMethod]

@@ -10,199 +10,199 @@ namespace EcsLte.UnitTest.ManagerTests
         [TestMethod]
         public void HasSystem()
         {
-            Context.SystemManager.AddSystem<System_A>();
+            Context.Systems.AddSystem<System_A>();
 
-            Assert.IsTrue(Context.SystemManager.HasSystem<System_A>());
+            Assert.IsTrue(Context.Systems.HasSystem<System_A>());
         }
 
         [TestMethod]
         public void HasSystem_Destroy()
         {
-            EcsContext.DestroyContext(Context);
+            EcsContexts.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.SystemManager.HasSystem<System_A>());
+                Context.Systems.HasSystem<System_A>());
         }
 
         [TestMethod]
-        public void HasSystem_Never() => Assert.IsFalse(Context.SystemManager.HasSystem<System_A>());
+        public void HasSystem_Never() => Assert.IsFalse(Context.Systems.HasSystem<System_A>());
 
         [TestMethod]
         public void GetSystem()
         {
-            var systemA = Context.SystemManager.AddSystem<System_A>();
+            var systemA = Context.Systems.AddSystem<System_A>();
 
-            Assert.IsTrue(Context.SystemManager.GetSystem<System_A>() == systemA);
+            Assert.IsTrue(Context.Systems.GetSystem<System_A>() == systemA);
         }
 
         [TestMethod]
         public void GetSystem_Destroy()
         {
-            EcsContext.DestroyContext(Context);
+            EcsContexts.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.SystemManager.GetSystem<System_A>());
+                Context.Systems.GetSystem<System_A>());
         }
 
         [TestMethod]
         public void GetAllSystems()
         {
-            var systemA = Context.SystemManager.AddSystem<System_A>();
+            var systemA = Context.Systems.AddSystem<System_A>();
 
-            Assert.IsTrue(Context.SystemManager.GetAllSystems().Length == 1);
-            Assert.IsTrue(Context.SystemManager.GetAllSystems()[0] == systemA);
+            Assert.IsTrue(Context.Systems.GetAllSystems().Length == 1);
+            Assert.IsTrue(Context.Systems.GetAllSystems()[0] == systemA);
         }
 
         [TestMethod]
         public void GetAllSystems_Destroy()
         {
-            EcsContext.DestroyContext(Context);
+            EcsContexts.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.SystemManager.GetAllSystems());
+                Context.Systems.GetAllSystems());
         }
 
         [TestMethod]
         public void GetAllInitializeSystems()
         {
-            var systemA = Context.SystemManager.AddSystem<System_A>();
-            var systemInitialize = Context.SystemManager.AddSystem<System_Initialize>();
-            Context.SystemManager.AddSystem<System_Execute>();
+            var systemA = Context.Systems.AddSystem<System_A>();
+            var systemInitialize = Context.Systems.AddSystem<System_Initialize>();
+            Context.Systems.AddSystem<System_Execute>();
 
-            Assert.IsTrue(Context.SystemManager.GetAllInitializeSystems().Length == 2);
-            Assert.IsTrue(Context.SystemManager.GetAllInitializeSystems().Contains(systemA));
-            Assert.IsTrue(Context.SystemManager.GetAllInitializeSystems().Contains(systemInitialize));
+            Assert.IsTrue(Context.Systems.GetAllInitializeSystems().Length == 2);
+            Assert.IsTrue(Context.Systems.GetAllInitializeSystems().Contains(systemA));
+            Assert.IsTrue(Context.Systems.GetAllInitializeSystems().Contains(systemInitialize));
         }
 
         [TestMethod]
         public void GetAllInitializeSystems_Destroy()
         {
-            EcsContext.DestroyContext(Context);
+            EcsContexts.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.SystemManager.GetAllInitializeSystems());
+                Context.Systems.GetAllInitializeSystems());
         }
 
         [TestMethod]
         public void GetAllExecuteSystems()
         {
-            var systemA = Context.SystemManager.AddSystem<System_A>();
-            var systemExecute = Context.SystemManager.AddSystem<System_Execute>();
-            Context.SystemManager.AddSystem<System_Initialize>();
+            var systemA = Context.Systems.AddSystem<System_A>();
+            var systemExecute = Context.Systems.AddSystem<System_Execute>();
+            Context.Systems.AddSystem<System_Initialize>();
 
-            Assert.IsTrue(Context.SystemManager.GetAllExecuteSystems().Length == 2);
-            Assert.IsTrue(Context.SystemManager.GetAllExecuteSystems().Contains(systemA));
-            Assert.IsTrue(Context.SystemManager.GetAllExecuteSystems().Contains(systemExecute));
+            Assert.IsTrue(Context.Systems.GetAllExecuteSystems().Length == 2);
+            Assert.IsTrue(Context.Systems.GetAllExecuteSystems().Contains(systemA));
+            Assert.IsTrue(Context.Systems.GetAllExecuteSystems().Contains(systemExecute));
         }
 
         [TestMethod]
         public void GetAllExecuteSystems_Destroy()
         {
-            EcsContext.DestroyContext(Context);
+            EcsContexts.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.SystemManager.GetAllExecuteSystems());
+                Context.Systems.GetAllExecuteSystems());
         }
 
         [TestMethod]
         public void GetAllCleanupSystems()
         {
-            var systemA = Context.SystemManager.AddSystem<System_A>();
-            var systemCleanup = Context.SystemManager.AddSystem<System_Cleanup>();
-            Context.SystemManager.AddSystem<System_Initialize>();
+            var systemA = Context.Systems.AddSystem<System_A>();
+            var systemCleanup = Context.Systems.AddSystem<System_Cleanup>();
+            Context.Systems.AddSystem<System_Initialize>();
 
-            Assert.IsTrue(Context.SystemManager.GetAllCleanupSystems().Length == 2);
-            Assert.IsTrue(Context.SystemManager.GetAllCleanupSystems().Contains(systemA));
-            Assert.IsTrue(Context.SystemManager.GetAllCleanupSystems().Contains(systemCleanup));
+            Assert.IsTrue(Context.Systems.GetAllCleanupSystems().Length == 2);
+            Assert.IsTrue(Context.Systems.GetAllCleanupSystems().Contains(systemA));
+            Assert.IsTrue(Context.Systems.GetAllCleanupSystems().Contains(systemCleanup));
         }
 
         [TestMethod]
         public void GetAllCleanupSystems_Destroy()
         {
-            EcsContext.DestroyContext(Context);
+            EcsContexts.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.SystemManager.GetAllCleanupSystems());
+                Context.Systems.GetAllCleanupSystems());
         }
 
         [TestMethod]
         public void GetAllTearDownSystems()
         {
-            var systemA = Context.SystemManager.AddSystem<System_A>();
-            var systemTearDown = Context.SystemManager.AddSystem<System_TearDown>();
-            Context.SystemManager.AddSystem<System_Initialize>();
+            var systemA = Context.Systems.AddSystem<System_A>();
+            var systemTearDown = Context.Systems.AddSystem<System_TearDown>();
+            Context.Systems.AddSystem<System_Initialize>();
 
-            Assert.IsTrue(Context.SystemManager.GetAllTearDownSystems().Length == 2);
-            Assert.IsTrue(Context.SystemManager.GetAllTearDownSystems().Contains(systemA));
-            Assert.IsTrue(Context.SystemManager.GetAllTearDownSystems().Contains(systemTearDown));
+            Assert.IsTrue(Context.Systems.GetAllTearDownSystems().Length == 2);
+            Assert.IsTrue(Context.Systems.GetAllTearDownSystems().Contains(systemA));
+            Assert.IsTrue(Context.Systems.GetAllTearDownSystems().Contains(systemTearDown));
         }
 
         [TestMethod]
         public void GetAllTearDownSystems_Destroy()
         {
-            EcsContext.DestroyContext(Context);
+            EcsContexts.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.SystemManager.GetAllTearDownSystems());
+                Context.Systems.GetAllTearDownSystems());
         }
 
         [TestMethod]
         public void AddSystem()
         {
-            var systemA = Context.SystemManager.AddSystem<System_A>();
+            var systemA = Context.Systems.AddSystem<System_A>();
 
-            Assert.IsTrue(Context.SystemManager.HasSystem<System_A>());
-            Assert.IsTrue(Context.SystemManager.GetSystem<System_A>() == systemA);
-            Assert.IsTrue(Context.SystemManager.GetAllSystems().Length == 1);
+            Assert.IsTrue(Context.Systems.HasSystem<System_A>());
+            Assert.IsTrue(Context.Systems.GetSystem<System_A>() == systemA);
+            Assert.IsTrue(Context.Systems.GetAllSystems().Length == 1);
         }
 
         [TestMethod]
         public void AddSystem_Destroy()
         {
-            EcsContext.DestroyContext(Context);
+            EcsContexts.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.SystemManager.AddSystem<System_A>());
+                Context.Systems.AddSystem<System_A>());
         }
 
         [TestMethod]
         public void AddSystem_Duplicate()
         {
-            Context.SystemManager.AddSystem<System_A>();
+            Context.Systems.AddSystem<System_A>();
 
             Assert.ThrowsException<SystemAlreadyHasException>(() =>
-                Context.SystemManager.AddSystem<System_A>());
+                Context.Systems.AddSystem<System_A>());
         }
 
         [TestMethod]
         public void AutoAddSystems()
         {
-            Context.SystemManager.AutoAddSystems();
+            Context.Systems.AutoAddSystems();
 
-            Assert.IsTrue(Context.SystemManager.GetAllSystems().Length == 3);
-            Assert.IsTrue(Context.SystemManager.HasSystem<System_A>());
-            Assert.IsTrue(Context.SystemManager.HasSystem<System_B>());
-            Assert.IsTrue(Context.SystemManager.HasSystem<System_C>());
+            Assert.IsTrue(Context.Systems.GetAllSystems().Length == 3);
+            Assert.IsTrue(Context.Systems.HasSystem<System_A>());
+            Assert.IsTrue(Context.Systems.HasSystem<System_B>());
+            Assert.IsTrue(Context.Systems.HasSystem<System_C>());
         }
 
         [TestMethod]
         public void AutoAddSystems_Destroy()
         {
-            EcsContext.DestroyContext(Context);
+            EcsContexts.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.SystemManager.AutoAddSystems());
+                Context.Systems.AutoAddSystems());
         }
 
         [TestMethod]
         public void RunInitializeSystems()
         {
-            Context.SystemManager.AutoAddSystems();
-            var systemA = Context.SystemManager.GetSystem<System_A>();
-            var systemB = Context.SystemManager.GetSystem<System_B>();
-            var systemC = Context.SystemManager.GetSystem<System_C>();
+            Context.Systems.AutoAddSystems();
+            var systemA = Context.Systems.GetSystem<System_A>();
+            var systemB = Context.Systems.GetSystem<System_B>();
+            var systemC = Context.Systems.GetSystem<System_C>();
 
-            Context.SystemManager.RunInitializeSystems();
+            Context.Systems.RunInitializeSystems();
 
             Assert.IsTrue(systemA.InitializeCalledCount == 1 &&
                 systemA.ExecuteCalledCount == 0 &&
@@ -221,26 +221,26 @@ namespace EcsLte.UnitTest.ManagerTests
         [TestMethod]
         public void RunInitializeSystems_Destroy()
         {
-            EcsContext.DestroyContext(Context);
+            EcsContexts.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.SystemManager.RunInitializeSystems());
+                Context.Systems.RunInitializeSystems());
         }
 
         [TestMethod]
         public void RunInitializeSystems_InOrder()
         {
-            Context.SystemManager.AutoAddSystems();
+            Context.Systems.AutoAddSystems();
             var systemOrder = new SystemOrder();
-            var systemA = Context.SystemManager.GetSystem<System_A>();
-            var systemB = Context.SystemManager.GetSystem<System_B>();
-            var systemC = Context.SystemManager.GetSystem<System_C>();
+            var systemA = Context.Systems.GetSystem<System_A>();
+            var systemB = Context.Systems.GetSystem<System_B>();
+            var systemC = Context.Systems.GetSystem<System_C>();
 
             systemA.SystemOrder = systemOrder;
             systemB.SystemOrder = systemOrder;
             systemC.SystemOrder = systemOrder;
 
-            Context.SystemManager.RunInitializeSystems();
+            Context.Systems.RunInitializeSystems();
 
             Assert.IsTrue(systemA.InitializeCalledCount == 1 &&
                 systemA.ExecuteCalledCount == 0 &&
@@ -262,12 +262,12 @@ namespace EcsLte.UnitTest.ManagerTests
         [TestMethod]
         public void RunExecuteSystems()
         {
-            Context.SystemManager.AutoAddSystems();
-            var systemA = Context.SystemManager.GetSystem<System_A>();
-            var systemB = Context.SystemManager.GetSystem<System_B>();
-            var systemC = Context.SystemManager.GetSystem<System_C>();
+            Context.Systems.AutoAddSystems();
+            var systemA = Context.Systems.GetSystem<System_A>();
+            var systemB = Context.Systems.GetSystem<System_B>();
+            var systemC = Context.Systems.GetSystem<System_C>();
 
-            Context.SystemManager.RunExecuteSystems();
+            Context.Systems.RunExecuteSystems();
 
             Assert.IsTrue(systemA.InitializeCalledCount == 0 &&
                 systemA.ExecuteCalledCount == 1 &&
@@ -286,26 +286,26 @@ namespace EcsLte.UnitTest.ManagerTests
         [TestMethod]
         public void RunExecuteSystems_Destroy()
         {
-            EcsContext.DestroyContext(Context);
+            EcsContexts.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.SystemManager.RunExecuteSystems());
+                Context.Systems.RunExecuteSystems());
         }
 
         [TestMethod]
         public void RunExecuteSystems_InOrder()
         {
-            Context.SystemManager.AutoAddSystems();
+            Context.Systems.AutoAddSystems();
             var systemOrder = new SystemOrder();
-            var systemA = Context.SystemManager.GetSystem<System_A>();
-            var systemB = Context.SystemManager.GetSystem<System_B>();
-            var systemC = Context.SystemManager.GetSystem<System_C>();
+            var systemA = Context.Systems.GetSystem<System_A>();
+            var systemB = Context.Systems.GetSystem<System_B>();
+            var systemC = Context.Systems.GetSystem<System_C>();
 
             systemA.SystemOrder = systemOrder;
             systemB.SystemOrder = systemOrder;
             systemC.SystemOrder = systemOrder;
 
-            Context.SystemManager.RunExecuteSystems();
+            Context.Systems.RunExecuteSystems();
 
             Assert.IsTrue(systemA.InitializeCalledCount == 0 &&
                 systemA.ExecuteCalledCount == 1 &&
@@ -327,12 +327,12 @@ namespace EcsLte.UnitTest.ManagerTests
         [TestMethod]
         public void RunCleanupSystems()
         {
-            Context.SystemManager.AutoAddSystems();
-            var systemA = Context.SystemManager.GetSystem<System_A>();
-            var systemB = Context.SystemManager.GetSystem<System_B>();
-            var systemC = Context.SystemManager.GetSystem<System_C>();
+            Context.Systems.AutoAddSystems();
+            var systemA = Context.Systems.GetSystem<System_A>();
+            var systemB = Context.Systems.GetSystem<System_B>();
+            var systemC = Context.Systems.GetSystem<System_C>();
 
-            Context.SystemManager.RunCleanupSystems();
+            Context.Systems.RunCleanupSystems();
 
             Assert.IsTrue(systemA.InitializeCalledCount == 0 &&
                 systemA.ExecuteCalledCount == 0 &&
@@ -351,26 +351,26 @@ namespace EcsLte.UnitTest.ManagerTests
         [TestMethod]
         public void RunCleanupSystems_Destroy()
         {
-            EcsContext.DestroyContext(Context);
+            EcsContexts.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.SystemManager.RunCleanupSystems());
+                Context.Systems.RunCleanupSystems());
         }
 
         [TestMethod]
         public void RunCleanupSystems_InOrder()
         {
-            Context.SystemManager.AutoAddSystems();
+            Context.Systems.AutoAddSystems();
             var systemOrder = new SystemOrder();
-            var systemA = Context.SystemManager.GetSystem<System_A>();
-            var systemB = Context.SystemManager.GetSystem<System_B>();
-            var systemC = Context.SystemManager.GetSystem<System_C>();
+            var systemA = Context.Systems.GetSystem<System_A>();
+            var systemB = Context.Systems.GetSystem<System_B>();
+            var systemC = Context.Systems.GetSystem<System_C>();
 
             systemA.SystemOrder = systemOrder;
             systemB.SystemOrder = systemOrder;
             systemC.SystemOrder = systemOrder;
 
-            Context.SystemManager.RunCleanupSystems();
+            Context.Systems.RunCleanupSystems();
 
             Assert.IsTrue(systemA.InitializeCalledCount == 0 &&
                 systemA.ExecuteCalledCount == 0 &&
@@ -392,12 +392,12 @@ namespace EcsLte.UnitTest.ManagerTests
         [TestMethod]
         public void RunTearDownSystems()
         {
-            Context.SystemManager.AutoAddSystems();
-            var systemA = Context.SystemManager.GetSystem<System_A>();
-            var systemB = Context.SystemManager.GetSystem<System_B>();
-            var systemC = Context.SystemManager.GetSystem<System_C>();
+            Context.Systems.AutoAddSystems();
+            var systemA = Context.Systems.GetSystem<System_A>();
+            var systemB = Context.Systems.GetSystem<System_B>();
+            var systemC = Context.Systems.GetSystem<System_C>();
 
-            Context.SystemManager.RunTearDownSystems();
+            Context.Systems.RunTearDownSystems();
 
             Assert.IsTrue(systemA.InitializeCalledCount == 0 &&
                 systemA.ExecuteCalledCount == 0 &&
@@ -416,26 +416,26 @@ namespace EcsLte.UnitTest.ManagerTests
         [TestMethod]
         public void RunTearDownSystems_Destroy()
         {
-            EcsContext.DestroyContext(Context);
+            EcsContexts.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.SystemManager.RunTearDownSystems());
+                Context.Systems.RunTearDownSystems());
         }
 
         [TestMethod]
         public void RunTearDownSystems_InOrder()
         {
-            Context.SystemManager.AutoAddSystems();
+            Context.Systems.AutoAddSystems();
             var systemOrder = new SystemOrder();
-            var systemA = Context.SystemManager.GetSystem<System_A>();
-            var systemB = Context.SystemManager.GetSystem<System_B>();
-            var systemC = Context.SystemManager.GetSystem<System_C>();
+            var systemA = Context.Systems.GetSystem<System_A>();
+            var systemB = Context.Systems.GetSystem<System_B>();
+            var systemC = Context.Systems.GetSystem<System_C>();
 
             systemA.SystemOrder = systemOrder;
             systemB.SystemOrder = systemOrder;
             systemC.SystemOrder = systemOrder;
 
-            Context.SystemManager.RunTearDownSystems();
+            Context.Systems.RunTearDownSystems();
 
             Assert.IsTrue(systemA.InitializeCalledCount == 0 &&
                 systemA.ExecuteCalledCount == 0 &&
