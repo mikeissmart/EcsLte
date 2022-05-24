@@ -104,7 +104,7 @@ namespace EcsLte.UnitTest.ManagerTests
 
         [TestMethod]
         public void GetComponents_Entities_NoEntity_All() => Assert.ThrowsException<EntityDoesNotExistException>(() =>
-                                                               Context.GetComponents<TestComponent1>(new[] { Entity.Null, Entity.Null }));
+                                                                        Context.GetComponents<TestComponent1>(new[] { Entity.Null, Entity.Null }));
 
         [TestMethod]
         public void GetComponents_Entities_NoEntity_Some()
@@ -190,7 +190,7 @@ namespace EcsLte.UnitTest.ManagerTests
                 (entities) => Context.GetComponents<T5>(entities),
                 (entities) => Context.GetComponents<T6>(entities));
 
-        #endregion
+        #endregion Entities
 
         #region EntityArcheType
 
@@ -395,7 +395,7 @@ namespace EcsLte.UnitTest.ManagerTests
                 (entities) => Context.GetComponents<T6>(archeType));
         }
 
-        #endregion
+        #endregion EntityArcheType
 
         #region EntityQuery
 
@@ -600,7 +600,7 @@ namespace EcsLte.UnitTest.ManagerTests
                 (entities) => Context.GetComponents<T6>(query));
         }
 
-        #endregion
+        #endregion EntityQuery
 
         #region Assert
 
@@ -729,7 +729,7 @@ namespace EcsLte.UnitTest.ManagerTests
             }
         }
 
-        #endregion
+        #endregion Assert
 
         #region Components
 
@@ -795,7 +795,7 @@ namespace EcsLte.UnitTest.ManagerTests
 
         private void Components_Manage_Unique(int entityCount, Action<int, TestManageUniqueComponent1> assertAction) =>
             assertAction.Invoke(entityCount, new TestManageUniqueComponent1 { Prop = 1 });
-        
-        #endregion
+
+        #endregion Components
     }
 }

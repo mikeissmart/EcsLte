@@ -1,15 +1,32 @@
 <!DOCTYPE html>
 <html lang='en'>
 <head>
-<meta charset='utf-8' />
-<title>BenchmarkRun-joined-2022-04-27-03-09-52</title>
+    <meta charset='utf-8' />
+    <title>BenchmarkRun-joined-2022-04-27-03-09-52</title>
 
-<style type="text/css">
-	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
-	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
-	tr { background-color: #fff; border-top: 1px solid #ccc; }
-	tr:nth-child(even) { background: #f8f8f8; }
-</style>
+    <style type="text/css">
+        table {
+            border-collapse: collapse;
+            display: block;
+            width: 100%;
+            overflow: auto;
+        }
+
+        td, th {
+            padding: 6px 13px;
+            border: 1px solid #ddd;
+            text-align: right;
+        }
+
+        tr {
+            background-color: #fff;
+            border-top: 1px solid #ccc;
+        }
+
+            tr:nth-child(even) {
+                background: #f8f8f8;
+            }
+    </style>
 </head>
 <body>
 <pre><code>
@@ -19,103 +36,1210 @@ AMD Ryzen 9 3900X, 1 CPU, 24 logical and 12 physical cores
   Job-FTOBUC : .NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
   DefaultJob : .NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
 </code></pre>
-<pre><code>InvocationCount=1  
+<pre><code>InvocationCount=1
 </code></pre>
 
-<table>
-<thead><tr><th>                      Namespace</th><th>                Type</th><th>               Method</th><th> Job</th><th>UnrollFactor</th><th>      CompArr</th><th>ReadWrite</th><th>        Mean</th><th>    Error</th><th>  StdDev</th><th>      Median</th>
-</tr>
-</thead><tbody><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntities</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1</td><td>?</td><td>30,415,773.3 ns</td><td>272,291.33 ns</td><td>254,701.5 ns</td><td>30,317,200.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntities</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2</td><td>?</td><td>27,051,633.3 ns</td><td>131,570.26 ns</td><td>123,070.9 ns</td><td>27,034,100.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntities</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x1</td><td>?</td><td>26,066,010.5 ns</td><td>317,210.05 ns</td><td>352,578.1 ns</td><td>25,988,600.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntities</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x2</td><td>?</td><td>31,780,357.1 ns</td><td>217,514.34 ns</td><td>192,820.8 ns</td><td>31,794,650.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntities</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x1</td><td>?</td><td>31,616,075.0 ns</td><td>184,102.85 ns</td><td>143,735.4 ns</td><td>31,600,750.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntities</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x2</td><td>?</td><td>32,309,026.7 ns</td><td>254,340.78 ns</td><td>237,910.5 ns</td><td>32,264,400.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntities</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x1</td><td>?</td><td>32,683,160.9 ns</td><td>636,510.12 ns</td><td>804,981.5 ns</td><td>32,447,900.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntities</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x2</td><td>?</td><td>32,848,050.0 ns</td><td>165,602.06 ns</td><td>146,801.9 ns</td><td>32,810,300.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntities_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1</td><td>?</td><td>29,121,282.4 ns</td><td>564,870.81 ns</td><td>580,080.7 ns</td><td>29,255,900.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntities_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2</td><td>?</td><td>32,065,360.0 ns</td><td>630,396.82 ns</td><td>589,673.6 ns</td><td>32,328,800.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntities_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x1</td><td>?</td><td>29,233,909.5 ns</td><td>562,485.77 ns</td><td>669,599.3 ns</td><td>29,365,600.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntities_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x2</td><td>?</td><td>29,350,035.3 ns</td><td>584,834.62 ns</td><td>600,582.1 ns</td><td>29,251,400.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntities_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x1</td><td>?</td><td>29,357,464.7 ns</td><td>563,072.72 ns</td><td>578,234.2 ns</td><td>29,566,900.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntities_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x2</td><td>?</td><td>29,434,762.5 ns</td><td>567,119.43 ns</td><td>556,987.1 ns</td><td>29,455,050.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntities_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x1</td><td>?</td><td>29,453,700.0 ns</td><td>587,354.65 ns</td><td>576,860.8 ns</td><td>29,503,400.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntities_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x2</td><td>?</td><td>23,476,150.0 ns</td><td>462,384.65 ns</td><td>692,075.6 ns</td><td>23,477,750.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntity</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1</td><td>?</td><td>66,157,141.7 ns</td><td>822,441.03 ns</td><td>642,107.9 ns</td><td>66,057,750.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntity</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2</td><td>?</td><td>77,269,650.0 ns</td><td>797,387.14 ns</td><td>1,091,472.5 ns</td><td>76,996,150.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntity</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x1</td><td>?</td><td>66,381,900.0 ns</td><td>1,238,924.81 ns</td><td>1,034,558.3 ns</td><td>66,307,800.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntity</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x2</td><td>?</td><td>78,048,502.6 ns</td><td>1,526,451.32 ns</td><td>2,673,456.4 ns</td><td>76,946,800.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntity</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x1</td><td>?</td><td>79,533,260.3 ns</td><td>1,423,204.33 ns</td><td>3,123,968.0 ns</td><td>78,472,550.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntity</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x2</td><td>?</td><td>86,944,733.3 ns</td><td>1,709,616.38 ns</td><td>2,222,984.2 ns</td><td>86,295,050.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntity</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x1</td><td>?</td><td>87,855,148.5 ns</td><td>1,684,318.50 ns</td><td>2,671,507.6 ns</td><td>86,861,000.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntity</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x2</td><td>?</td><td>95,351,486.8 ns</td><td>1,902,128.32 ns</td><td>3,970,450.1 ns</td><td>93,547,300.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntity_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1</td><td>?</td><td>54,703,613.3 ns</td><td>393,642.31 ns</td><td>368,213.3 ns</td><td>54,742,900.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntity_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2</td><td>?</td><td>63,581,980.0 ns</td><td>489,987.15 ns</td><td>458,334.3 ns</td><td>63,459,500.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntity_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x1</td><td>?</td><td>55,338,333.3 ns</td><td>273,723.96 ns</td><td>256,041.6 ns</td><td>55,352,500.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntity_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x2</td><td>?</td><td>62,783,125.0 ns</td><td>227,170.28 ns</td><td>177,359.6 ns</td><td>62,810,450.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntity_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x1</td><td>?</td><td>63,466,450.0 ns</td><td>293,599.32 ns</td><td>260,268.1 ns</td><td>63,513,150.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntity_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x2</td><td>?</td><td>68,628,666.7 ns</td><td>421,363.21 ns</td><td>394,143.4 ns</td><td>68,561,500.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntity_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x1</td><td>?</td><td>69,204,276.9 ns</td><td>267,672.87 ns</td><td>223,519.0 ns</td><td>69,206,800.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>CreateEntity_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x2</td><td>?</td><td>75,096,280.0 ns</td><td>609,994.87 ns</td><td>570,589.6 ns</td><td>75,044,300.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntities</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1</td><td>?</td><td>37,835,192.3 ns</td><td>231,067.39 ns</td><td>192,951.7 ns</td><td>37,780,500.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntities</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2</td><td>?</td><td>39,577,846.2 ns</td><td>435,487.74 ns</td><td>363,652.0 ns</td><td>39,497,000.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntities</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x1</td><td>?</td><td>37,836,428.6 ns</td><td>515,446.41 ns</td><td>456,929.8 ns</td><td>37,848,350.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntities</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x2</td><td>?</td><td>39,647,891.7 ns</td><td>424,350.71 ns</td><td>331,305.1 ns</td><td>39,594,850.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntities</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x1</td><td>?</td><td>39,574,641.7 ns</td><td>298,391.27 ns</td><td>232,964.3 ns</td><td>39,533,550.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntities</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x2</td><td>?</td><td>41,271,308.3 ns</td><td>639,881.85 ns</td><td>499,577.7 ns</td><td>41,153,700.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntities</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x1</td><td>?</td><td>41,123,316.7 ns</td><td>407,801.15 ns</td><td>318,384.3 ns</td><td>41,003,200.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntities</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x2</td><td>?</td><td>42,520,738.5 ns</td><td>380,417.78 ns</td><td>317,666.1 ns</td><td>42,542,900.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntities_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1</td><td>?</td><td>34,135,913.3 ns</td><td>435,670.48 ns</td><td>407,526.4 ns</td><td>34,173,000.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntities_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2</td><td>?</td><td>35,420,650.0 ns</td><td>263,183.95 ns</td><td>233,305.7 ns</td><td>35,369,300.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntities_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x1</td><td>?</td><td>33,432,533.3 ns</td><td>243,273.85 ns</td><td>227,558.5 ns</td><td>33,383,900.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntities_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x2</td><td>?</td><td>35,336,557.1 ns</td><td>245,079.52 ns</td><td>217,256.6 ns</td><td>35,285,200.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntities_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x1</td><td>?</td><td>35,283,075.0 ns</td><td>144,751.89 ns</td><td>113,012.8 ns</td><td>35,290,050.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntities_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x2</td><td>?</td><td>36,690,400.0 ns</td><td>214,251.14 ns</td><td>200,410.7 ns</td><td>36,604,200.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntities_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x1</td><td>?</td><td>36,646,557.1 ns</td><td>163,021.22 ns</td><td>144,514.1 ns</td><td>36,628,200.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntities_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x2</td><td>?</td><td>38,200,026.7 ns</td><td>248,922.20 ns</td><td>232,842.0 ns</td><td>38,142,700.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntity</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1</td><td>?</td><td>44,925,607.7 ns</td><td>710,943.66 ns</td><td>593,670.2 ns</td><td>44,966,300.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntity</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2</td><td>?</td><td>46,405,221.4 ns</td><td>778,267.33 ns</td><td>689,913.7 ns</td><td>46,156,950.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntity</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x1</td><td>?</td><td>44,165,769.2 ns</td><td>515,409.64 ns</td><td>430,390.4 ns</td><td>43,970,700.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntity</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x2</td><td>?</td><td>46,395,453.8 ns</td><td>586,169.20 ns</td><td>489,477.8 ns</td><td>46,212,900.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntity</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x1</td><td>?</td><td>46,289,685.7 ns</td><td>550,207.57 ns</td><td>487,744.7 ns</td><td>46,157,600.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntity</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x2</td><td>?</td><td>47,896,125.0 ns</td><td>285,215.21 ns</td><td>222,677.3 ns</td><td>47,824,400.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntity</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x1</td><td>?</td><td>48,035,061.5 ns</td><td>348,216.97 ns</td><td>290,776.9 ns</td><td>48,052,400.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntity</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x2</td><td>?</td><td>49,610,342.9 ns</td><td>740,253.70 ns</td><td>656,215.6 ns</td><td>49,389,800.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntity_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1</td><td>?</td><td>39,923,850.0 ns</td><td>414,128.36 ns</td><td>367,114.0 ns</td><td>39,919,950.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntity_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2</td><td>?</td><td>41,987,928.6 ns</td><td>218,799.56 ns</td><td>193,960.1 ns</td><td>41,964,300.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntity_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x1</td><td>?</td><td>39,621,541.7 ns</td><td>250,817.03 ns</td><td>195,821.4 ns</td><td>39,704,150.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntity_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x2</td><td>?</td><td>41,960,614.3 ns</td><td>234,704.87 ns</td><td>208,059.8 ns</td><td>41,929,850.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntity_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x1</td><td>?</td><td>42,036,828.6 ns</td><td>188,755.33 ns</td><td>167,326.7 ns</td><td>42,037,950.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntity_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x2</td><td>?</td><td>43,421,692.9 ns</td><td>279,003.41 ns</td><td>247,329.3 ns</td><td>43,374,000.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntity_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x1</td><td>?</td><td>43,455,285.7 ns</td><td>394,039.07 ns</td><td>349,305.4 ns</td><td>43,430,950.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_New</td><td>DestroyEntity_Reuse</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x2</td><td>?</td><td>45,016,500.0 ns</td><td>230,652.21 ns</td><td>215,752.2 ns</td><td>44,949,800.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1</td><td>?</td><td>55,513,664.3 ns</td><td>395,375.82 ns</td><td>350,490.4 ns</td><td>55,413,800.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2</td><td>?</td><td>116,881,113.3 ns</td><td>558,028.83 ns</td><td>521,980.5 ns</td><td>116,943,900.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x1</td><td>?</td><td>382,640,261.5 ns</td><td>1,680,334.84 ns</td><td>1,403,155.7 ns</td><td>382,701,300.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x2</td><td>?</td><td>910,081,300.0 ns</td><td>2,647,524.76 ns</td><td>2,476,496.3 ns</td><td>909,227,800.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x1</td><td>?</td><td>501,234,460.0 ns</td><td>1,713,397.09 ns</td><td>1,602,712.7 ns</td><td>500,777,600.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x2</td><td>?</td><td>1,134,356,706.7 ns</td><td>7,384,050.39 ns</td><td>6,907,045.3 ns</td><td>1,134,158,300.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x1</td><td>?</td><td>644,528,678.6 ns</td><td>1,535,816.94 ns</td><td>1,361,461.7 ns</td><td>644,198,350.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x2</td><td>?</td><td>1,300,542,714.3 ns</td><td>4,931,665.96 ns</td><td>4,371,793.4 ns</td><td>1,298,903,400.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent_EntityQuery</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1</td><td>?</td><td>801.1 ns</td><td>64.51 ns</td><td>184.0 ns</td><td>800.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent_EntityQuery</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2</td><td>?</td><td>924.0 ns</td><td>68.54 ns</td><td>197.7 ns</td><td>900.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent_EntityQuery</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x1</td><td>?</td><td>840.4 ns</td><td>75.29 ns</td><td>220.8 ns</td><td>800.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent_EntityQuery</td><td>Job-FTOBUC</td><td>1</td><td>Shared_x2</td><td>?</td><td>1,205.2 ns</td><td>75.84 ns</td><td>220.0 ns</td><td>1,200.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent_EntityQuery</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x1</td><td>?</td><td>1,187.0 ns</td><td>73.05 ns</td><td>215.4 ns</td><td>1,200.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent_EntityQuery</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x1_Shared_x2</td><td>?</td><td>1,352.6 ns</td><td>73.98 ns</td><td>214.6 ns</td><td>1,300.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent_EntityQuery</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x1</td><td>?</td><td>1,354.1 ns</td><td>82.54 ns</td><td>240.8 ns</td><td>1,400.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent_EntityQuery</td><td>Job-FTOBUC</td><td>1</td><td>Normal_x2_Shared_x2</td><td>?</td><td>88,765,906.7 ns</td><td>608,542.68 ns</td><td>569,231.2 ns</td><td>88,661,300.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>DefaultJob</td><td>16</td><td>?</td><td>R0W0</td><td>28,341,818.3 ns</td><td>151,157.16 ns</td><td>141,392.5 ns</td><td>28,369,878.1 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>DefaultJob</td><td>16</td><td>?</td><td>R0W1_Normal</td><td>71,676,287.5 ns</td><td>362,673.25 ns</td><td>321,500.4 ns</td><td>71,552,962.5 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>DefaultJob</td><td>16</td><td>?</td><td>R0W2_Normal</td><td>115,970,558.7 ns</td><td>359,046.04 ns</td><td>335,851.9 ns</td><td>116,041,040.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>DefaultJob</td><td>16</td><td>?</td><td>R0W1_Shared</td><td>71,674,243.9 ns</td><td>168,685.42 ns</td><td>149,535.2 ns</td><td>71,707,042.9 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>DefaultJob</td><td>16</td><td>?</td><td>R0W2_Shared</td><td>1,177,577,416.7 ns</td><td>6,397,810.00 ns</td><td>4,994,989.2 ns</td><td>1,178,724,900.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>DefaultJob</td><td>16</td><td>?</td><td>R1W0_Normal</td><td>28,467,969.0 ns</td><td>134,555.70 ns</td><td>119,280.1 ns</td><td>28,435,162.5 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>DefaultJob</td><td>16</td><td>?</td><td>R1W1_Normal</td><td>71,270,115.4 ns</td><td>201,783.78 ns</td><td>168,498.6 ns</td><td>71,312,157.1 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>DefaultJob</td><td>16</td><td>?</td><td>R1W0_Shared</td><td>28,450,844.4 ns</td><td>94,927.75 ns</td><td>84,151.0 ns</td><td>28,428,689.1 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>DefaultJob</td><td>16</td><td>?</td><td>R1W1_Shared</td><td>609,228,314.3 ns</td><td>3,063,696.69 ns</td><td>2,715,887.3 ns</td><td>608,706,400.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>DefaultJob</td><td>16</td><td>?</td><td>R2W0_Normal</td><td>28,618,199.2 ns</td><td>122,014.84 ns</td><td>114,132.8 ns</td><td>28,604,675.0 ns</td>
-</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>DefaultJob</td><td>16</td><td>?</td><td>R2W0_Shared</td><td>28,546,300.2 ns</td><td>91,841.04 ns</td><td>85,908.2 ns</td><td>28,550,875.0 ns</td>
-</tr></tbody></table>
+    <table>
+        <thead>
+            <tr>
+                <th>                      Namespace</th>
+                <th>                Type</th>
+                <th>               Method</th>
+                <th> Job</th>
+                <th>UnrollFactor</th>
+                <th>      CompArr</th>
+                <th>ReadWrite</th>
+                <th>        Mean</th>
+                <th>    Error</th>
+                <th>  StdDev</th>
+                <th>      Median</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntities</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1</td>
+                <td>?</td>
+                <td>30,415,773.3 ns</td>
+                <td>272,291.33 ns</td>
+                <td>254,701.5 ns</td>
+                <td>30,317,200.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntities</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2</td>
+                <td>?</td>
+                <td>27,051,633.3 ns</td>
+                <td>131,570.26 ns</td>
+                <td>123,070.9 ns</td>
+                <td>27,034,100.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntities</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x1</td>
+                <td>?</td>
+                <td>26,066,010.5 ns</td>
+                <td>317,210.05 ns</td>
+                <td>352,578.1 ns</td>
+                <td>25,988,600.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntities</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x2</td>
+                <td>?</td>
+                <td>31,780,357.1 ns</td>
+                <td>217,514.34 ns</td>
+                <td>192,820.8 ns</td>
+                <td>31,794,650.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntities</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x1</td>
+                <td>?</td>
+                <td>31,616,075.0 ns</td>
+                <td>184,102.85 ns</td>
+                <td>143,735.4 ns</td>
+                <td>31,600,750.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntities</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x2</td>
+                <td>?</td>
+                <td>32,309,026.7 ns</td>
+                <td>254,340.78 ns</td>
+                <td>237,910.5 ns</td>
+                <td>32,264,400.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntities</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x1</td>
+                <td>?</td>
+                <td>32,683,160.9 ns</td>
+                <td>636,510.12 ns</td>
+                <td>804,981.5 ns</td>
+                <td>32,447,900.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntities</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x2</td>
+                <td>?</td>
+                <td>32,848,050.0 ns</td>
+                <td>165,602.06 ns</td>
+                <td>146,801.9 ns</td>
+                <td>32,810,300.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntities_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1</td>
+                <td>?</td>
+                <td>29,121,282.4 ns</td>
+                <td>564,870.81 ns</td>
+                <td>580,080.7 ns</td>
+                <td>29,255,900.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntities_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2</td>
+                <td>?</td>
+                <td>32,065,360.0 ns</td>
+                <td>630,396.82 ns</td>
+                <td>589,673.6 ns</td>
+                <td>32,328,800.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntities_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x1</td>
+                <td>?</td>
+                <td>29,233,909.5 ns</td>
+                <td>562,485.77 ns</td>
+                <td>669,599.3 ns</td>
+                <td>29,365,600.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntities_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x2</td>
+                <td>?</td>
+                <td>29,350,035.3 ns</td>
+                <td>584,834.62 ns</td>
+                <td>600,582.1 ns</td>
+                <td>29,251,400.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntities_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x1</td>
+                <td>?</td>
+                <td>29,357,464.7 ns</td>
+                <td>563,072.72 ns</td>
+                <td>578,234.2 ns</td>
+                <td>29,566,900.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntities_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x2</td>
+                <td>?</td>
+                <td>29,434,762.5 ns</td>
+                <td>567,119.43 ns</td>
+                <td>556,987.1 ns</td>
+                <td>29,455,050.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntities_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x1</td>
+                <td>?</td>
+                <td>29,453,700.0 ns</td>
+                <td>587,354.65 ns</td>
+                <td>576,860.8 ns</td>
+                <td>29,503,400.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntities_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x2</td>
+                <td>?</td>
+                <td>23,476,150.0 ns</td>
+                <td>462,384.65 ns</td>
+                <td>692,075.6 ns</td>
+                <td>23,477,750.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntity</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1</td>
+                <td>?</td>
+                <td>66,157,141.7 ns</td>
+                <td>822,441.03 ns</td>
+                <td>642,107.9 ns</td>
+                <td>66,057,750.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntity</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2</td>
+                <td>?</td>
+                <td>77,269,650.0 ns</td>
+                <td>797,387.14 ns</td>
+                <td>1,091,472.5 ns</td>
+                <td>76,996,150.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntity</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x1</td>
+                <td>?</td>
+                <td>66,381,900.0 ns</td>
+                <td>1,238,924.81 ns</td>
+                <td>1,034,558.3 ns</td>
+                <td>66,307,800.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntity</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x2</td>
+                <td>?</td>
+                <td>78,048,502.6 ns</td>
+                <td>1,526,451.32 ns</td>
+                <td>2,673,456.4 ns</td>
+                <td>76,946,800.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntity</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x1</td>
+                <td>?</td>
+                <td>79,533,260.3 ns</td>
+                <td>1,423,204.33 ns</td>
+                <td>3,123,968.0 ns</td>
+                <td>78,472,550.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntity</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x2</td>
+                <td>?</td>
+                <td>86,944,733.3 ns</td>
+                <td>1,709,616.38 ns</td>
+                <td>2,222,984.2 ns</td>
+                <td>86,295,050.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntity</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x1</td>
+                <td>?</td>
+                <td>87,855,148.5 ns</td>
+                <td>1,684,318.50 ns</td>
+                <td>2,671,507.6 ns</td>
+                <td>86,861,000.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntity</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x2</td>
+                <td>?</td>
+                <td>95,351,486.8 ns</td>
+                <td>1,902,128.32 ns</td>
+                <td>3,970,450.1 ns</td>
+                <td>93,547,300.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntity_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1</td>
+                <td>?</td>
+                <td>54,703,613.3 ns</td>
+                <td>393,642.31 ns</td>
+                <td>368,213.3 ns</td>
+                <td>54,742,900.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntity_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2</td>
+                <td>?</td>
+                <td>63,581,980.0 ns</td>
+                <td>489,987.15 ns</td>
+                <td>458,334.3 ns</td>
+                <td>63,459,500.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntity_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x1</td>
+                <td>?</td>
+                <td>55,338,333.3 ns</td>
+                <td>273,723.96 ns</td>
+                <td>256,041.6 ns</td>
+                <td>55,352,500.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntity_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x2</td>
+                <td>?</td>
+                <td>62,783,125.0 ns</td>
+                <td>227,170.28 ns</td>
+                <td>177,359.6 ns</td>
+                <td>62,810,450.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntity_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x1</td>
+                <td>?</td>
+                <td>63,466,450.0 ns</td>
+                <td>293,599.32 ns</td>
+                <td>260,268.1 ns</td>
+                <td>63,513,150.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntity_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x2</td>
+                <td>?</td>
+                <td>68,628,666.7 ns</td>
+                <td>421,363.21 ns</td>
+                <td>394,143.4 ns</td>
+                <td>68,561,500.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntity_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x1</td>
+                <td>?</td>
+                <td>69,204,276.9 ns</td>
+                <td>267,672.87 ns</td>
+                <td>223,519.0 ns</td>
+                <td>69,206,800.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>CreateEntity_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x2</td>
+                <td>?</td>
+                <td>75,096,280.0 ns</td>
+                <td>609,994.87 ns</td>
+                <td>570,589.6 ns</td>
+                <td>75,044,300.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntities</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1</td>
+                <td>?</td>
+                <td>37,835,192.3 ns</td>
+                <td>231,067.39 ns</td>
+                <td>192,951.7 ns</td>
+                <td>37,780,500.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntities</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2</td>
+                <td>?</td>
+                <td>39,577,846.2 ns</td>
+                <td>435,487.74 ns</td>
+                <td>363,652.0 ns</td>
+                <td>39,497,000.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntities</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x1</td>
+                <td>?</td>
+                <td>37,836,428.6 ns</td>
+                <td>515,446.41 ns</td>
+                <td>456,929.8 ns</td>
+                <td>37,848,350.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntities</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x2</td>
+                <td>?</td>
+                <td>39,647,891.7 ns</td>
+                <td>424,350.71 ns</td>
+                <td>331,305.1 ns</td>
+                <td>39,594,850.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntities</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x1</td>
+                <td>?</td>
+                <td>39,574,641.7 ns</td>
+                <td>298,391.27 ns</td>
+                <td>232,964.3 ns</td>
+                <td>39,533,550.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntities</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x2</td>
+                <td>?</td>
+                <td>41,271,308.3 ns</td>
+                <td>639,881.85 ns</td>
+                <td>499,577.7 ns</td>
+                <td>41,153,700.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntities</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x1</td>
+                <td>?</td>
+                <td>41,123,316.7 ns</td>
+                <td>407,801.15 ns</td>
+                <td>318,384.3 ns</td>
+                <td>41,003,200.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntities</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x2</td>
+                <td>?</td>
+                <td>42,520,738.5 ns</td>
+                <td>380,417.78 ns</td>
+                <td>317,666.1 ns</td>
+                <td>42,542,900.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntities_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1</td>
+                <td>?</td>
+                <td>34,135,913.3 ns</td>
+                <td>435,670.48 ns</td>
+                <td>407,526.4 ns</td>
+                <td>34,173,000.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntities_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2</td>
+                <td>?</td>
+                <td>35,420,650.0 ns</td>
+                <td>263,183.95 ns</td>
+                <td>233,305.7 ns</td>
+                <td>35,369,300.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntities_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x1</td>
+                <td>?</td>
+                <td>33,432,533.3 ns</td>
+                <td>243,273.85 ns</td>
+                <td>227,558.5 ns</td>
+                <td>33,383,900.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntities_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x2</td>
+                <td>?</td>
+                <td>35,336,557.1 ns</td>
+                <td>245,079.52 ns</td>
+                <td>217,256.6 ns</td>
+                <td>35,285,200.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntities_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x1</td>
+                <td>?</td>
+                <td>35,283,075.0 ns</td>
+                <td>144,751.89 ns</td>
+                <td>113,012.8 ns</td>
+                <td>35,290,050.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntities_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x2</td>
+                <td>?</td>
+                <td>36,690,400.0 ns</td>
+                <td>214,251.14 ns</td>
+                <td>200,410.7 ns</td>
+                <td>36,604,200.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntities_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x1</td>
+                <td>?</td>
+                <td>36,646,557.1 ns</td>
+                <td>163,021.22 ns</td>
+                <td>144,514.1 ns</td>
+                <td>36,628,200.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntities_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x2</td>
+                <td>?</td>
+                <td>38,200,026.7 ns</td>
+                <td>248,922.20 ns</td>
+                <td>232,842.0 ns</td>
+                <td>38,142,700.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntity</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1</td>
+                <td>?</td>
+                <td>44,925,607.7 ns</td>
+                <td>710,943.66 ns</td>
+                <td>593,670.2 ns</td>
+                <td>44,966,300.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntity</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2</td>
+                <td>?</td>
+                <td>46,405,221.4 ns</td>
+                <td>778,267.33 ns</td>
+                <td>689,913.7 ns</td>
+                <td>46,156,950.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntity</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x1</td>
+                <td>?</td>
+                <td>44,165,769.2 ns</td>
+                <td>515,409.64 ns</td>
+                <td>430,390.4 ns</td>
+                <td>43,970,700.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntity</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x2</td>
+                <td>?</td>
+                <td>46,395,453.8 ns</td>
+                <td>586,169.20 ns</td>
+                <td>489,477.8 ns</td>
+                <td>46,212,900.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntity</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x1</td>
+                <td>?</td>
+                <td>46,289,685.7 ns</td>
+                <td>550,207.57 ns</td>
+                <td>487,744.7 ns</td>
+                <td>46,157,600.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntity</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x2</td>
+                <td>?</td>
+                <td>47,896,125.0 ns</td>
+                <td>285,215.21 ns</td>
+                <td>222,677.3 ns</td>
+                <td>47,824,400.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntity</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x1</td>
+                <td>?</td>
+                <td>48,035,061.5 ns</td>
+                <td>348,216.97 ns</td>
+                <td>290,776.9 ns</td>
+                <td>48,052,400.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntity</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x2</td>
+                <td>?</td>
+                <td>49,610,342.9 ns</td>
+                <td>740,253.70 ns</td>
+                <td>656,215.6 ns</td>
+                <td>49,389,800.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntity_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1</td>
+                <td>?</td>
+                <td>39,923,850.0 ns</td>
+                <td>414,128.36 ns</td>
+                <td>367,114.0 ns</td>
+                <td>39,919,950.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntity_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2</td>
+                <td>?</td>
+                <td>41,987,928.6 ns</td>
+                <td>218,799.56 ns</td>
+                <td>193,960.1 ns</td>
+                <td>41,964,300.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntity_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x1</td>
+                <td>?</td>
+                <td>39,621,541.7 ns</td>
+                <td>250,817.03 ns</td>
+                <td>195,821.4 ns</td>
+                <td>39,704,150.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntity_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x2</td>
+                <td>?</td>
+                <td>41,960,614.3 ns</td>
+                <td>234,704.87 ns</td>
+                <td>208,059.8 ns</td>
+                <td>41,929,850.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntity_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x1</td>
+                <td>?</td>
+                <td>42,036,828.6 ns</td>
+                <td>188,755.33 ns</td>
+                <td>167,326.7 ns</td>
+                <td>42,037,950.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntity_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x2</td>
+                <td>?</td>
+                <td>43,421,692.9 ns</td>
+                <td>279,003.41 ns</td>
+                <td>247,329.3 ns</td>
+                <td>43,374,000.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntity_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x1</td>
+                <td>?</td>
+                <td>43,455,285.7 ns</td>
+                <td>394,039.07 ns</td>
+                <td>349,305.4 ns</td>
+                <td>43,430,950.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_New</td>
+                <td>DestroyEntity_Reuse</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x2</td>
+                <td>?</td>
+                <td>45,016,500.0 ns</td>
+                <td>230,652.21 ns</td>
+                <td>215,752.2 ns</td>
+                <td>44,949,800.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_UpdateComponent</td>
+                <td>UpdateComponent</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1</td>
+                <td>?</td>
+                <td>55,513,664.3 ns</td>
+                <td>395,375.82 ns</td>
+                <td>350,490.4 ns</td>
+                <td>55,413,800.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_UpdateComponent</td>
+                <td>UpdateComponent</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2</td>
+                <td>?</td>
+                <td>116,881,113.3 ns</td>
+                <td>558,028.83 ns</td>
+                <td>521,980.5 ns</td>
+                <td>116,943,900.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_UpdateComponent</td>
+                <td>UpdateComponent</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x1</td>
+                <td>?</td>
+                <td>382,640,261.5 ns</td>
+                <td>1,680,334.84 ns</td>
+                <td>1,403,155.7 ns</td>
+                <td>382,701,300.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_UpdateComponent</td>
+                <td>UpdateComponent</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x2</td>
+                <td>?</td>
+                <td>910,081,300.0 ns</td>
+                <td>2,647,524.76 ns</td>
+                <td>2,476,496.3 ns</td>
+                <td>909,227,800.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_UpdateComponent</td>
+                <td>UpdateComponent</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x1</td>
+                <td>?</td>
+                <td>501,234,460.0 ns</td>
+                <td>1,713,397.09 ns</td>
+                <td>1,602,712.7 ns</td>
+                <td>500,777,600.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_UpdateComponent</td>
+                <td>UpdateComponent</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x2</td>
+                <td>?</td>
+                <td>1,134,356,706.7 ns</td>
+                <td>7,384,050.39 ns</td>
+                <td>6,907,045.3 ns</td>
+                <td>1,134,158,300.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_UpdateComponent</td>
+                <td>UpdateComponent</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x1</td>
+                <td>?</td>
+                <td>644,528,678.6 ns</td>
+                <td>1,535,816.94 ns</td>
+                <td>1,361,461.7 ns</td>
+                <td>644,198,350.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_UpdateComponent</td>
+                <td>UpdateComponent</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x2</td>
+                <td>?</td>
+                <td>1,300,542,714.3 ns</td>
+                <td>4,931,665.96 ns</td>
+                <td>4,371,793.4 ns</td>
+                <td>1,298,903,400.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_UpdateComponent</td>
+                <td>UpdateComponent_EntityQuery</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1</td>
+                <td>?</td>
+                <td>801.1 ns</td>
+                <td>64.51 ns</td>
+                <td>184.0 ns</td>
+                <td>800.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_UpdateComponent</td>
+                <td>UpdateComponent_EntityQuery</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2</td>
+                <td>?</td>
+                <td>924.0 ns</td>
+                <td>68.54 ns</td>
+                <td>197.7 ns</td>
+                <td>900.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_UpdateComponent</td>
+                <td>UpdateComponent_EntityQuery</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x1</td>
+                <td>?</td>
+                <td>840.4 ns</td>
+                <td>75.29 ns</td>
+                <td>220.8 ns</td>
+                <td>800.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_UpdateComponent</td>
+                <td>UpdateComponent_EntityQuery</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Shared_x2</td>
+                <td>?</td>
+                <td>1,205.2 ns</td>
+                <td>75.84 ns</td>
+                <td>220.0 ns</td>
+                <td>1,200.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_UpdateComponent</td>
+                <td>UpdateComponent_EntityQuery</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x1</td>
+                <td>?</td>
+                <td>1,187.0 ns</td>
+                <td>73.05 ns</td>
+                <td>215.4 ns</td>
+                <td>1,200.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_UpdateComponent</td>
+                <td>UpdateComponent_EntityQuery</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x1_Shared_x2</td>
+                <td>?</td>
+                <td>1,352.6 ns</td>
+                <td>73.98 ns</td>
+                <td>214.6 ns</td>
+                <td>1,300.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_UpdateComponent</td>
+                <td>UpdateComponent_EntityQuery</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x1</td>
+                <td>?</td>
+                <td>1,354.1 ns</td>
+                <td>82.54 ns</td>
+                <td>240.8 ns</td>
+                <td>1,400.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EcsContextTests</td>
+                <td>EcsContext_UpdateComponent</td>
+                <td>UpdateComponent_EntityQuery</td>
+                <td>Job-FTOBUC</td>
+                <td>1</td>
+                <td>Normal_x2_Shared_x2</td>
+                <td>?</td>
+                <td>88,765,906.7 ns</td>
+                <td>608,542.68 ns</td>
+                <td>569,231.2 ns</td>
+                <td>88,661,300.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EntityQueryTests</td>
+                <td>EntityQuery_ForEach</td>
+                <td>ForEach</td>
+                <td>DefaultJob</td>
+                <td>16</td>
+                <td>?</td>
+                <td>R0W0</td>
+                <td>28,341,818.3 ns</td>
+                <td>151,157.16 ns</td>
+                <td>141,392.5 ns</td>
+                <td>28,369,878.1 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EntityQueryTests</td>
+                <td>EntityQuery_ForEach</td>
+                <td>ForEach</td>
+                <td>DefaultJob</td>
+                <td>16</td>
+                <td>?</td>
+                <td>R0W1_Normal</td>
+                <td>71,676,287.5 ns</td>
+                <td>362,673.25 ns</td>
+                <td>321,500.4 ns</td>
+                <td>71,552,962.5 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EntityQueryTests</td>
+                <td>EntityQuery_ForEach</td>
+                <td>ForEach</td>
+                <td>DefaultJob</td>
+                <td>16</td>
+                <td>?</td>
+                <td>R0W2_Normal</td>
+                <td>115,970,558.7 ns</td>
+                <td>359,046.04 ns</td>
+                <td>335,851.9 ns</td>
+                <td>116,041,040.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EntityQueryTests</td>
+                <td>EntityQuery_ForEach</td>
+                <td>ForEach</td>
+                <td>DefaultJob</td>
+                <td>16</td>
+                <td>?</td>
+                <td>R0W1_Shared</td>
+                <td>71,674,243.9 ns</td>
+                <td>168,685.42 ns</td>
+                <td>149,535.2 ns</td>
+                <td>71,707,042.9 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EntityQueryTests</td>
+                <td>EntityQuery_ForEach</td>
+                <td>ForEach</td>
+                <td>DefaultJob</td>
+                <td>16</td>
+                <td>?</td>
+                <td>R0W2_Shared</td>
+                <td>1,177,577,416.7 ns</td>
+                <td>6,397,810.00 ns</td>
+                <td>4,994,989.2 ns</td>
+                <td>1,178,724,900.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EntityQueryTests</td>
+                <td>EntityQuery_ForEach</td>
+                <td>ForEach</td>
+                <td>DefaultJob</td>
+                <td>16</td>
+                <td>?</td>
+                <td>R1W0_Normal</td>
+                <td>28,467,969.0 ns</td>
+                <td>134,555.70 ns</td>
+                <td>119,280.1 ns</td>
+                <td>28,435,162.5 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EntityQueryTests</td>
+                <td>EntityQuery_ForEach</td>
+                <td>ForEach</td>
+                <td>DefaultJob</td>
+                <td>16</td>
+                <td>?</td>
+                <td>R1W1_Normal</td>
+                <td>71,270,115.4 ns</td>
+                <td>201,783.78 ns</td>
+                <td>168,498.6 ns</td>
+                <td>71,312,157.1 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EntityQueryTests</td>
+                <td>EntityQuery_ForEach</td>
+                <td>ForEach</td>
+                <td>DefaultJob</td>
+                <td>16</td>
+                <td>?</td>
+                <td>R1W0_Shared</td>
+                <td>28,450,844.4 ns</td>
+                <td>94,927.75 ns</td>
+                <td>84,151.0 ns</td>
+                <td>28,428,689.1 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EntityQueryTests</td>
+                <td>EntityQuery_ForEach</td>
+                <td>ForEach</td>
+                <td>DefaultJob</td>
+                <td>16</td>
+                <td>?</td>
+                <td>R1W1_Shared</td>
+                <td>609,228,314.3 ns</td>
+                <td>3,063,696.69 ns</td>
+                <td>2,715,887.3 ns</td>
+                <td>608,706,400.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EntityQueryTests</td>
+                <td>EntityQuery_ForEach</td>
+                <td>ForEach</td>
+                <td>DefaultJob</td>
+                <td>16</td>
+                <td>?</td>
+                <td>R2W0_Normal</td>
+                <td>28,618,199.2 ns</td>
+                <td>122,014.84 ns</td>
+                <td>114,132.8 ns</td>
+                <td>28,604,675.0 ns</td>
+            </tr>
+            <tr>
+                <td>EcsLte.BenchmarkTest.EntityQueryTests</td>
+                <td>EntityQuery_ForEach</td>
+                <td>ForEach</td>
+                <td>DefaultJob</td>
+                <td>16</td>
+                <td>?</td>
+                <td>R2W0_Shared</td>
+                <td>28,546,300.2 ns</td>
+                <td>91,841.04 ns</td>
+                <td>85,908.2 ns</td>
+                <td>28,550,875.0 ns</td>
+            </tr>
+        </tbody>
+    </table>
 </body>
 </html>

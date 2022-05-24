@@ -6,7 +6,8 @@ namespace EcsLte.UnitTest.EntityQueryTests
     public class EntityQueryTest : BasePrePostTest
     {
         [TestMethod]
-        public void Equals() => AssertClassEquals(
+        public void Equals() =>
+            AssertClassEquals(
                 new EntityQuery()
                     .WhereAllOf<TestComponent1>(),
                 new EntityQuery()

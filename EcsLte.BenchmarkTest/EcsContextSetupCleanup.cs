@@ -35,6 +35,7 @@ namespace EcsLte.BenchmarkTest
                         .AddComponent(Component3)
                         .AddComponent(Component4);
                     break;
+
                 case ComponentArrangement.Shared_Bx4:
                     blueprint = blueprint
                         .AddComponent(SharedComponent1)
@@ -42,6 +43,7 @@ namespace EcsLte.BenchmarkTest
                         .AddComponent(SharedComponent3)
                         .AddComponent(SharedComponent4);
                     break;
+
                 case ComponentArrangement.Normal_Mx4:
                     blueprint = blueprint
                         .AddComponent(ManageComponent1)
@@ -49,6 +51,7 @@ namespace EcsLte.BenchmarkTest
                         .AddComponent(ManageComponent3)
                         .AddComponent(ManageComponent4);
                     break;
+
                 case ComponentArrangement.Shared_Mx4:
                     blueprint = blueprint
                         .AddComponent(ManageSharedComponent1)
@@ -56,6 +59,7 @@ namespace EcsLte.BenchmarkTest
                         .AddComponent(ManageSharedComponent3)
                         .AddComponent(ManageSharedComponent4);
                     break;
+
                 case ComponentArrangement.Normal_Bx2_Mx2:
                     blueprint = blueprint
                         .AddComponent(Component1)
@@ -63,6 +67,7 @@ namespace EcsLte.BenchmarkTest
                         .AddComponent(ManageComponent1)
                         .AddComponent(ManageComponent2);
                     break;
+
                 case ComponentArrangement.Shared_Bx2_Mx2:
                     blueprint = blueprint
                         .AddComponent(SharedComponent1)
@@ -70,6 +75,7 @@ namespace EcsLte.BenchmarkTest
                         .AddComponent(ManageSharedComponent1)
                         .AddComponent(ManageSharedComponent2);
                     break;
+
                 default:
                     throw new InvalidOperationException();
             }
@@ -86,6 +92,7 @@ namespace EcsLte.BenchmarkTest
                     blueprint = blueprint
                         .AddComponent(Component1);
                     break;
+
                 case EntityQuery_ForEach.ReadWriteType.R0W4_Normal_Bx4:
                 case EntityQuery_ForEach.ReadWriteType.R4W0_Normal_Bx4:
                     blueprint = blueprint
@@ -94,6 +101,7 @@ namespace EcsLte.BenchmarkTest
                         .AddComponent(Component3)
                         .AddComponent(Component4);
                     break;
+
                 case EntityQuery_ForEach.ReadWriteType.R0W4_Normal_Mx4:
                 case EntityQuery_ForEach.ReadWriteType.R4W0_Normal_Mx4:
                     blueprint = blueprint
@@ -102,6 +110,7 @@ namespace EcsLte.BenchmarkTest
                         .AddComponent(ManageComponent3)
                         .AddComponent(ManageComponent4);
                     break;
+
                 case EntityQuery_ForEach.ReadWriteType.R0W4_Shared_Bx4:
                 case EntityQuery_ForEach.ReadWriteType.R4W0_Shared_Bx4:
                     blueprint = blueprint
@@ -110,6 +119,7 @@ namespace EcsLte.BenchmarkTest
                         .AddComponent(SharedComponent3)
                         .AddComponent(SharedComponent4);
                     break;
+
                 case EntityQuery_ForEach.ReadWriteType.R0W4_Shared_Mx4:
                 case EntityQuery_ForEach.ReadWriteType.R4W0_Shared_Mx4:
                     blueprint = blueprint
@@ -118,6 +128,7 @@ namespace EcsLte.BenchmarkTest
                         .AddComponent(ManageSharedComponent3)
                         .AddComponent(ManageSharedComponent4);
                     break;
+
                 case EntityQuery_ForEach.ReadWriteType.R0W4_Normal_Bx2_Mx2:
                 case EntityQuery_ForEach.ReadWriteType.R4W0_Normal_Bx2_Mx2:
                     blueprint = blueprint
@@ -126,6 +137,7 @@ namespace EcsLte.BenchmarkTest
                         .AddComponent(ManageComponent1)
                         .AddComponent(ManageComponent2);
                     break;
+
                 case EntityQuery_ForEach.ReadWriteType.R4W0_Shared_Bx2_Mx2:
                 case EntityQuery_ForEach.ReadWriteType.R0W4_Shared_Bx2_Mx2:
                     blueprint = blueprint

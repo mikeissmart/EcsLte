@@ -1,5 +1,4 @@
-﻿using EcsLte.Data;
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 
 namespace EcsLte
@@ -10,8 +9,11 @@ namespace EcsLte
         IComponent Component { get; }
 
         unsafe void CopyBlittableComponentData(byte* componentPtr);
+
         unsafe void CopyManagedComponentData(ArcheTypeData* archeTypeData, EntityData entityData, int componentIndex, IManagedComponentPool managedPool);
+
         bool ComponentEquals<TComponentEqual>(TComponentEqual component) where TComponentEqual : IComponent;
+
         SharedComponentDataIndex GetSharedComponentDataIndex(SharedComponentIndexDictionaries sharedIndexDics);
     }
 

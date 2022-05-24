@@ -65,6 +65,7 @@ public struct TestSharedComponent4 : ISharedComponent, IEquatable<TestSharedComp
 
     public override int GetHashCode() => Prop.GetHashCode();
 }
+
 ////
 
 public struct TestManageComponent1 : IComponent, ITestComponent

@@ -193,7 +193,7 @@ namespace EcsLte.UnitTest.ManagerTests
             }
         }
 
-        #endregion
+        #endregion GetComponent
 
         #region GetAllComponents
 
@@ -457,7 +457,7 @@ namespace EcsLte.UnitTest.ManagerTests
             }
         }
 
-        #endregion
+        #endregion GetAllComponents
 
         #region HasComponent
 
@@ -642,7 +642,7 @@ namespace EcsLte.UnitTest.ManagerTests
             }
         }
 
-        #endregion
+        #endregion HasComponent
 
         #region GetUniqueComponent
 
@@ -688,7 +688,7 @@ namespace EcsLte.UnitTest.ManagerTests
             Assert.IsTrue(Context.GetUniqueComponent<TestManageUniqueComponent1>().Prop == component.Prop);
         }
 
-        #endregion
+        #endregion GetUniqueComponent
 
         #region GetUniqueEntity
 
@@ -731,7 +731,7 @@ namespace EcsLte.UnitTest.ManagerTests
             Assert.IsTrue(Context.GetUniqueEntity<TestManageUniqueComponent1>() == entity);
         }
 
-        #endregion
+        #endregion GetUniqueEntity
 
         #region Components
 
@@ -798,6 +798,6 @@ namespace EcsLte.UnitTest.ManagerTests
         private void Components_Manage_Unique(Action<int, TestManageUniqueComponent1> assertAction) =>
             assertAction.Invoke(1, new TestManageUniqueComponent1());
 
-        #endregion
+        #endregion Components
     }
 }

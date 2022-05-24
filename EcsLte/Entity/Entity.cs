@@ -27,6 +27,7 @@ namespace EcsLte
                 .AppendHashCode(Id)
                 .AppendHashCode(Version)
                 .HashCode;
+
         public int CompareTo(Entity other)
         {
             var compare = Version.CompareTo(other.Version);

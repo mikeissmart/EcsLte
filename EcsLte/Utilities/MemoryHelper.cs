@@ -46,7 +46,6 @@ namespace EcsLte.Utilities
             return newPtr;
         }
 
-
         internal static unsafe void Free(void* ptr)
            => Marshal.FreeHGlobal((IntPtr)ptr);
 

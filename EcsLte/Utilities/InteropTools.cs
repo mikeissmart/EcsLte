@@ -8,7 +8,9 @@ namespace EcsLte.Utilities
     public static unsafe class InteropTools
     {
         private static readonly Type SafeBufferType = typeof(SafeBuffer);
+
         public delegate void PtrToStructureNativeDelegate(byte* ptr, TypedReference structure, uint sizeofT);
+
         public delegate void StructureToPtrNativeDelegate(TypedReference structure, byte* ptr, uint sizeofT);
 
         private const BindingFlags flags = BindingFlags.NonPublic | BindingFlags.Static;

@@ -9,6 +9,7 @@ namespace EcsLte
     {
         private static readonly Dictionary<string, EcsContext> _ecsContexts =
             new Dictionary<string, EcsContext>();
+
         private static readonly object _lockObj = new object();
 
         public static EcsContext Default { get; set; } = CreateContext("Default");

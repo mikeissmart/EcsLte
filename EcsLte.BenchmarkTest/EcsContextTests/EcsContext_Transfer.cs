@@ -67,22 +67,16 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         }
 
         [Benchmark]
-        public void TransferEntities_NoDestroy()
-        {
+        public void TransferEntities_NoDestroy() =>
             _destEntities = _destContext.TransferEntities(_sourceContext, _sourceEntities, false);
-        }
 
         [Benchmark]
-        public void TransferEntityArcheType_NoDestroy()
-        {
+        public void TransferEntityArcheType_NoDestroy() =>
             _destEntities = _destContext.TransferEntities(_sourceContext, _archeType, false);
-        }
 
         [Benchmark]
-        public void TransferEntityQuery_NoDestroy()
-        {
+        public void TransferEntityQuery_NoDestroy() =>
             _destEntities = _destContext.TransferEntities(_sourceContext, _query, false);
-        }
 
         [Benchmark]
         public void TransferEntity_Destroy()
@@ -92,21 +86,15 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         }
 
         [Benchmark]
-        public void TransferEntities_Destroy()
-        {
+        public void TransferEntities_Destroy() =>
             _destEntities = _destContext.TransferEntities(_sourceContext, _sourceEntities, true);
-        }
 
         [Benchmark]
-        public void TransferEntityArcheType_Destroy()
-        {
+        public void TransferEntityArcheType_Destroy() =>
             _destEntities = _destContext.TransferEntities(_sourceContext, _archeType, true);
-        }
 
         [Benchmark]
-        public void TransferEntityQuery_Destroy()
-        {
+        public void TransferEntityQuery_Destroy() =>
             _destEntities = _destContext.TransferEntities(_sourceContext, _query, true);
-        }
     }
 }

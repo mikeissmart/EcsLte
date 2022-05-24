@@ -11,7 +11,7 @@ namespace EcsLte
     public class EntityQuery : IEquatable<EntityQuery>
     {
         private static readonly int _threadCount = (int)(Environment.ProcessorCount * 0.75);
-        private static bool _oneUpdate = true;
+        private static readonly bool _oneUpdate = true;
 
         public Type[] AllComponentTypes => QueryData.AllComponentTypes;
         public Type[] AnyComponentTypes => QueryData.AnyComponentTypes;
@@ -109,7 +109,8 @@ namespace EcsLte
                     ComponentConfig<T3>.Config,
                     ComponentConfig<T4>.Config
                 });
-        #endregion
+
+        #endregion WhereAllOf
 
         #region WhereAnyOf
 
@@ -172,7 +173,7 @@ namespace EcsLte
                     ComponentConfig<T4>.Config
                 });
 
-        #endregion
+        #endregion WhereAnyOf
 
         #region WhereNoneOf
 
@@ -235,9 +236,9 @@ namespace EcsLte
                     ComponentConfig<T4>.Config
                 });
 
-        #endregion
+        #endregion WhereNoneOf
 
-        #endregion
+        #endregion WhereOfs
 
         #region FilterBys
 
@@ -391,7 +392,7 @@ namespace EcsLte
                 },
                 true);
 
-        #endregion
+        #endregion FilterBys
 
         #region Privates
 
@@ -611,9 +612,9 @@ namespace EcsLte
             None
         }
 
-        #endregion
+        #endregion Privates
 
-        #endregion
+        #endregion WhereOfs Filters
 
         #region ForEachs
 
@@ -852,7 +853,7 @@ namespace EcsLte
                         in component8);
                 });
 
-        #endregion
+        #endregion Write 0
 
         #region Write 1
 
@@ -1152,7 +1153,7 @@ namespace EcsLte
                     }
                 });
 
-        #endregion
+        #endregion Write 1
 
         #region Write 2
 
@@ -1436,7 +1437,7 @@ namespace EcsLte
                     }
                 });
 
-        #endregion
+        #endregion Write 2
 
         #region Write 3
 
@@ -1698,7 +1699,7 @@ namespace EcsLte
                     }
                 });
 
-        #endregion
+        #endregion Write 3
 
         #region Write 4
 
@@ -1932,7 +1933,7 @@ namespace EcsLte
                     }
                 });
 
-        #endregion
+        #endregion Write 4
 
         #region Write 5
 
@@ -2132,7 +2133,7 @@ namespace EcsLte
                     }
                 });
 
-        #endregion
+        #endregion Write 5
 
         #region Write 6
 
@@ -2292,7 +2293,7 @@ namespace EcsLte
                     }
                 });
 
-        #endregion
+        #endregion Write 6
 
         #region Write 7
 
@@ -2406,7 +2407,7 @@ namespace EcsLte
                     }
                 });
 
-        #endregion
+        #endregion Write 7
 
         #region Write 8
 
@@ -2468,9 +2469,9 @@ namespace EcsLte
                     }
                 });
 
-        #endregion
+        #endregion Write 8
 
-        #endregion
+        #endregion ForEachs
 
         #region Privates
 
@@ -2620,8 +2621,8 @@ namespace EcsLte
             }
         }
 
-        #endregion
+        #endregion Privates
 
-        #endregion
+        #endregion ForEachs
     }
 }

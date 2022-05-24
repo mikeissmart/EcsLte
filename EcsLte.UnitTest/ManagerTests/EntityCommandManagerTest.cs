@@ -6,7 +6,6 @@ namespace EcsLte.UnitTest.ManagerTests
     [TestClass]
     public class EntityCommandManagerTest : BasePrePostTest
     {
-
         [TestMethod]
         public void HasCommandQueue()
         {

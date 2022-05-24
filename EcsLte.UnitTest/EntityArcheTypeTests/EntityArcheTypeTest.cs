@@ -187,7 +187,8 @@ namespace EcsLte.UnitTest.EntityArcheTypeTests
         }
 
         [TestMethod]
-        public void Equals() => AssertClassEquals(
+        public void Equals() => 
+           AssertClassEquals(
                 new EntityArcheType()
                     .AddComponentType<TestComponent1>(),
                 new EntityArcheType()

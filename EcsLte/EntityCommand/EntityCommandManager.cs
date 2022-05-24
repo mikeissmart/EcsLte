@@ -9,8 +9,11 @@ namespace EcsLte
         EcsContext Context { get; }
 
         bool HasCommandQueue(string name);
+
         EntityCommandQueue GetCommandQueue(string name);
+
         EntityCommandQueue CreateCommandQueue(string name);
+
         void RemoveCommandQueue(EntityCommandQueue commandQueue);
     }
 

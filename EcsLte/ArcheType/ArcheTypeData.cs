@@ -8,10 +8,12 @@ namespace EcsLte
     internal unsafe struct ArcheTypeData
     {
         private ComponentConfigOffset* _configOffsets;
+
         /// <summary>
         /// [Entity1,Entity2],[Component1,Component2,Component1,Component2]
         /// </summary>
         private byte* _dataBuffer;
+
         private int _dataBufferSizeInBytes;
         private int _dataBufferComponentsOffset;
 
@@ -254,7 +256,6 @@ namespace EcsLte
                         ComponentConfigs.Instance.AllComponentTypes[configOffset.Config.ComponentIndex])
                     : managedPools.GetPool(configOffset.Config)
                         .GetComponent(*(int*)(dataBuffer + configOffset.OffsetInBytes));
-
             }
 
             return components;

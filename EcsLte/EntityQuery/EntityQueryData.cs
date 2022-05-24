@@ -21,6 +21,7 @@ namespace EcsLte
                 return _allComponentTypes;
             }
         }
+
         internal Type[] AnyComponentTypes
         {
             get
@@ -30,6 +31,7 @@ namespace EcsLte
                 return _anyComponentTypes;
             }
         }
+
         internal Type[] NoneComponentTypes
         {
             get
@@ -39,6 +41,7 @@ namespace EcsLte
                 return _noneComponentTypes;
             }
         }
+
         internal ISharedComponent[] FilterComponents
         {
             get
@@ -52,6 +55,7 @@ namespace EcsLte
                 return _filterComponents;
             }
         }
+
         internal int ConfigCount => AllComponentConfigs.Length + AnyComponentConfigs.Length + NoneComponentConfigs.Length;
         internal ComponentConfig[] AllComponentConfigs { get; private set; }
         internal ComponentConfig[] AnyComponentConfigs { get; private set; }

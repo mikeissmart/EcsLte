@@ -48,7 +48,7 @@ namespace EcsLte.UnitTest.EcsContextTests
 
         [TestMethod]
         public void Create_null() => Assert.ThrowsException<ArgumentNullException>(()
-                                       => EcsContexts.CreateContext(null));
+                                                => EcsContexts.CreateContext(null));
 
         [TestMethod]
         public void CreateMultiple()
@@ -77,8 +77,9 @@ namespace EcsLte.UnitTest.EcsContextTests
         }
 
         [TestMethod]
-        public void Destroy_Null() => Assert.ThrowsException<ArgumentNullException>(()
-                                        => EcsContexts.DestroyContext(null));
+        public void Destroy_Null() =>
+            Assert.ThrowsException<ArgumentNullException>(()
+                => EcsContexts.DestroyContext(null));
 
         [TestMethod]
         public void Destroy_Duplicate()
@@ -86,8 +87,8 @@ namespace EcsLte.UnitTest.EcsContextTests
             var context = EcsContexts.CreateContext("TestDestroyAfterDestroy");
             EcsContexts.DestroyContext(context);
 
-            Assert.ThrowsException<EcsContextIsDestroyedException>(()
-                => EcsContexts.DestroyContext(context));
+            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
+            EcsContexts.DestroyContext(context));
         }
     }
 }

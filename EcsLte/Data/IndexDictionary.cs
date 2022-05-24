@@ -12,8 +12,11 @@ namespace EcsLte.Data
         /// <param name="index"></param>
         /// <returns></returns>
         bool GetIndexObj(object key, out int index);
+
         int GetIndexObj(object key);
+
         object GetObject(int index);
+
         void Clear();
     }
 
@@ -42,7 +45,7 @@ namespace EcsLte.Data
         public Dictionary<TKey, int> GetDictionary() => _indexes;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="key"></param>
         /// <param name="index"></param>
@@ -86,7 +89,7 @@ namespace EcsLte.Data
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="key"></param>
         /// <param name="index"></param>
@@ -127,30 +130,4 @@ namespace EcsLte.Data
             }
         }
     }
-
-    /*internal static class SharedComponentIndexDictionary
-    {
-        internal static ISharedComponentIndexDictionary[] CreateSharedComponentIndexDictionaries()
-        {
-            var sharedIndexes = new ISharedComponentIndexDictionary[ComponentConfigs.Instance.AllSharedCount];
-            var indexDicType = typeof(SharedComponentIndexDictionary<>);
-            for (var i = 0; i < sharedIndexes.Length; i++)
-            {
-                sharedIndexes[i] = (ISharedComponentIndexDictionary)Activator
-                    .CreateInstance(indexDicType
-                        .MakeGenericType(ComponentConfigs.Instance.AllSharedTypes[i]));
-            }
-
-            return sharedIndexes;
-        }
-    }
-
-    internal class SharedComponentIndexDictionary<TSharedComponent> : IndexDictionary<TSharedComponent>, ISharedComponentIndexDictionary
-            where TSharedComponent : ISharedComponent
-    {
-        public IComponentData GetComponentData<TComponent>(SharedComponentDataIndex dataIndex)
-            where TComponent : ISharedComponent => new SharedComponentData<TComponent>((TComponent)GetObject(dataIndex.SharedDataIndex));
-
-        public IComponentData GetComponentData(SharedComponentDataIndex dataIndex) => GetComponentData<TSharedComponent>(dataIndex);
-    }*/
 }

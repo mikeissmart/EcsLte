@@ -6,16 +6,21 @@ namespace EcsLte
     internal interface IManagedComponentPool
     {
         IComponent GetComponent(int index);
+
         int AllocateComponent();
+
         int[] AllocateComponents(int count);
+
         void SetComponent(int index, IComponent component);
+
         void ClearComponent(int index);
+
         void Clear();
     }
 
     internal class ManagedComponentPools
     {
-        private IManagedComponentPool[] _managePools;
+        private readonly IManagedComponentPool[] _managePools;
 
         internal ManagedComponentPools()
         {

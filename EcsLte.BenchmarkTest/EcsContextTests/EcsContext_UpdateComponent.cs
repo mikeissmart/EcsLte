@@ -81,6 +81,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
                         _context.UpdateComponent(entity, Component4);
                     }
                     break;
+
                 case ComponentArrangement.Shared_Bx4:
                     for (var i = 0; i < _entities.Length; i++)
                     {
@@ -91,6 +92,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
                         _context.UpdateComponent(entity, SharedComponent4);
                     }
                     break;
+
                 case ComponentArrangement.Normal_Mx4:
                     for (var i = 0; i < _entities.Length; i++)
                     {
@@ -101,6 +103,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
                         _context.UpdateComponent(entity, ManageComponent4);
                     }
                     break;
+
                 case ComponentArrangement.Shared_Mx4:
                     for (var i = 0; i < _entities.Length; i++)
                     {
@@ -111,6 +114,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
                         _context.UpdateComponent(entity, ManageSharedComponent4);
                     }
                     break;
+
                 case ComponentArrangement.Normal_Bx2_Mx2:
                     for (var i = 0; i < _entities.Length; i++)
                     {
@@ -121,6 +125,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
                         _context.UpdateComponent(entity, ManageComponent2);
                     }
                     break;
+
                 case ComponentArrangement.Shared_Bx2_Mx2:
                     for (var i = 0; i < _entities.Length; i++)
                     {
@@ -139,42 +144,46 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         {
             switch (CompArr)
             {
-
                 case ComponentArrangement.Normal_Bx4:
-                        _context.UpdateComponents(_entities, Component1);
-                        _context.UpdateComponents(_entities, Component2);
-                        _context.UpdateComponents(_entities, Component3);
-                        _context.UpdateComponents(_entities, Component4);
+                    _context.UpdateComponents(_entities, Component1);
+                    _context.UpdateComponents(_entities, Component2);
+                    _context.UpdateComponents(_entities, Component3);
+                    _context.UpdateComponents(_entities, Component4);
                     break;
+
                 case ComponentArrangement.Shared_Bx4:
-                        _context.UpdateComponents(_entities, SharedComponent1);
-                        _context.UpdateComponents(_entities, SharedComponent2);
-                        _context.UpdateComponents(_entities, SharedComponent3);
-                        _context.UpdateComponents(_entities, SharedComponent4);
+                    _context.UpdateComponents(_entities, SharedComponent1);
+                    _context.UpdateComponents(_entities, SharedComponent2);
+                    _context.UpdateComponents(_entities, SharedComponent3);
+                    _context.UpdateComponents(_entities, SharedComponent4);
                     break;
+
                 case ComponentArrangement.Normal_Mx4:
-                        _context.UpdateComponents(_entities, ManageComponent1);
-                        _context.UpdateComponents(_entities, ManageComponent2);
-                        _context.UpdateComponents(_entities, ManageComponent3);
-                        _context.UpdateComponents(_entities, ManageComponent4);
+                    _context.UpdateComponents(_entities, ManageComponent1);
+                    _context.UpdateComponents(_entities, ManageComponent2);
+                    _context.UpdateComponents(_entities, ManageComponent3);
+                    _context.UpdateComponents(_entities, ManageComponent4);
                     break;
+
                 case ComponentArrangement.Shared_Mx4:
-                        _context.UpdateComponents(_entities, ManageSharedComponent1);
-                        _context.UpdateComponents(_entities, ManageSharedComponent2);
-                        _context.UpdateComponents(_entities, ManageSharedComponent3);
-                        _context.UpdateComponents(_entities, ManageSharedComponent4);
+                    _context.UpdateComponents(_entities, ManageSharedComponent1);
+                    _context.UpdateComponents(_entities, ManageSharedComponent2);
+                    _context.UpdateComponents(_entities, ManageSharedComponent3);
+                    _context.UpdateComponents(_entities, ManageSharedComponent4);
                     break;
+
                 case ComponentArrangement.Normal_Bx2_Mx2:
-                        _context.UpdateComponents(_entities, Component1);
-                        _context.UpdateComponents(_entities, Component2);
-                        _context.UpdateComponents(_entities, ManageComponent1);
-                        _context.UpdateComponents(_entities, ManageComponent2);
+                    _context.UpdateComponents(_entities, Component1);
+                    _context.UpdateComponents(_entities, Component2);
+                    _context.UpdateComponents(_entities, ManageComponent1);
+                    _context.UpdateComponents(_entities, ManageComponent2);
                     break;
+
                 case ComponentArrangement.Shared_Bx2_Mx2:
-                        _context.UpdateComponents(_entities, SharedComponent1);
-                        _context.UpdateComponents(_entities, SharedComponent2);
-                        _context.UpdateComponents(_entities, ManageSharedComponent1);
-                        _context.UpdateComponents(_entities, ManageSharedComponent2);
+                    _context.UpdateComponents(_entities, SharedComponent1);
+                    _context.UpdateComponents(_entities, SharedComponent2);
+                    _context.UpdateComponents(_entities, ManageSharedComponent1);
+                    _context.UpdateComponents(_entities, ManageSharedComponent2);
                     break;
             }
         }
@@ -184,37 +193,41 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         {
             switch (CompArr)
             {
-
                 case ComponentArrangement.Normal_Bx4:
                     _context.UpdateComponents(_archeType1, Component1);
                     _context.UpdateComponents(_archeType2, Component2);
                     _context.UpdateComponents(_archeType3, Component3);
                     _context.UpdateComponents(_archeType4, Component4);
                     break;
+
                 case ComponentArrangement.Shared_Bx4:
                     _context.UpdateComponents(_archeType1, SharedComponent1);
                     _context.UpdateComponents(_archeType2, SharedComponent2);
                     _context.UpdateComponents(_archeType3, SharedComponent3);
                     _context.UpdateComponents(_archeType4, SharedComponent4);
                     break;
+
                 case ComponentArrangement.Normal_Mx4:
                     _context.UpdateComponents(_archeType1, ManageComponent1);
                     _context.UpdateComponents(_archeType2, ManageComponent2);
                     _context.UpdateComponents(_archeType3, ManageComponent3);
                     _context.UpdateComponents(_archeType4, ManageComponent4);
                     break;
+
                 case ComponentArrangement.Shared_Mx4:
                     _context.UpdateComponents(_archeType1, ManageSharedComponent1);
                     _context.UpdateComponents(_archeType2, ManageSharedComponent2);
                     _context.UpdateComponents(_archeType3, ManageSharedComponent3);
                     _context.UpdateComponents(_archeType4, ManageSharedComponent4);
                     break;
+
                 case ComponentArrangement.Normal_Bx2_Mx2:
                     _context.UpdateComponents(_archeType1, Component1);
                     _context.UpdateComponents(_archeType2, Component2);
                     _context.UpdateComponents(_archeType3, ManageComponent1);
                     _context.UpdateComponents(_archeType4, ManageComponent2);
                     break;
+
                 case ComponentArrangement.Shared_Bx2_Mx2:
                     _context.UpdateComponents(_archeType1, SharedComponent1);
                     _context.UpdateComponents(_archeType2, SharedComponent2);
@@ -229,37 +242,41 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         {
             switch (CompArr)
             {
-
                 case ComponentArrangement.Normal_Bx4:
                     _context.UpdateComponents(_query1, Component1);
                     _context.UpdateComponents(_query2, Component2);
                     _context.UpdateComponents(_query3, Component3);
                     _context.UpdateComponents(_query4, Component4);
                     break;
+
                 case ComponentArrangement.Shared_Bx4:
                     _context.UpdateComponents(_query1, SharedComponent1);
                     _context.UpdateComponents(_query2, SharedComponent2);
                     _context.UpdateComponents(_query3, SharedComponent3);
                     _context.UpdateComponents(_query4, SharedComponent4);
                     break;
+
                 case ComponentArrangement.Normal_Mx4:
                     _context.UpdateComponents(_query1, ManageComponent1);
                     _context.UpdateComponents(_query2, ManageComponent2);
                     _context.UpdateComponents(_query3, ManageComponent3);
                     _context.UpdateComponents(_query4, ManageComponent4);
                     break;
+
                 case ComponentArrangement.Shared_Mx4:
                     _context.UpdateComponents(_query1, ManageSharedComponent1);
                     _context.UpdateComponents(_query2, ManageSharedComponent2);
                     _context.UpdateComponents(_query3, ManageSharedComponent3);
                     _context.UpdateComponents(_query4, ManageSharedComponent4);
                     break;
+
                 case ComponentArrangement.Normal_Bx2_Mx2:
                     _context.UpdateComponents(_query1, Component1);
                     _context.UpdateComponents(_query2, Component2);
                     _context.UpdateComponents(_query3, ManageComponent1);
                     _context.UpdateComponents(_query4, ManageComponent2);
                     break;
+
                 case ComponentArrangement.Shared_Bx2_Mx2:
                     _context.UpdateComponents(_query1, SharedComponent1);
                     _context.UpdateComponents(_query2, SharedComponent2);
@@ -279,36 +296,42 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
                     _archeType3 = BlueprintUpdateAndArcheType(Component2);
                     _archeType4 = BlueprintUpdateAndArcheType(Component3);
                     break;
+
                 case ComponentArrangement.Shared_Bx4:
                     _archeType1 = _blueprint.GetEntityArcheType();
                     _archeType2 = BlueprintUpdateAndArcheType(SharedComponent1);
                     _archeType3 = BlueprintUpdateAndArcheType(SharedComponent2);
                     _archeType4 = BlueprintUpdateAndArcheType(SharedComponent3);
                     break;
+
                 case ComponentArrangement.Normal_Mx4:
                     _archeType1 = _blueprint.GetEntityArcheType();
                     _archeType2 = BlueprintUpdateAndArcheType(ManageComponent1);
                     _archeType3 = BlueprintUpdateAndArcheType(ManageComponent2);
                     _archeType4 = BlueprintUpdateAndArcheType(ManageComponent3);
                     break;
+
                 case ComponentArrangement.Shared_Mx4:
                     _archeType1 = _blueprint.GetEntityArcheType();
                     _archeType2 = BlueprintUpdateAndArcheType(ManageSharedComponent1);
                     _archeType3 = BlueprintUpdateAndArcheType(ManageSharedComponent2);
                     _archeType4 = BlueprintUpdateAndArcheType(ManageSharedComponent3);
                     break;
+
                 case ComponentArrangement.Normal_Bx2_Mx2:
                     _archeType1 = _blueprint.GetEntityArcheType();
                     _archeType2 = BlueprintUpdateAndArcheType(Component1);
                     _archeType3 = BlueprintUpdateAndArcheType(Component2);
                     _archeType4 = BlueprintUpdateAndArcheType(ManageComponent1);
                     break;
+
                 case ComponentArrangement.Shared_Bx2_Mx2:
                     _archeType1 = _blueprint.GetEntityArcheType();
                     _archeType2 = BlueprintUpdateAndArcheType(SharedComponent1);
                     _archeType3 = BlueprintUpdateAndArcheType(SharedComponent2);
                     _archeType4 = BlueprintUpdateAndArcheType(ManageSharedComponent1);
                     break;
+
                 default:
                     throw new InvalidOperationException();
             }

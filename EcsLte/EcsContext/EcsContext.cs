@@ -10,10 +10,12 @@ namespace EcsLte
     public unsafe class EcsContext
     {
         private List<IndexDictionary<ArcheType>> _archeTypeIndexes;
+
         /// <summary>
         /// ArcheTypeData*
         /// </summary>
         private List<List<PtrWrapper>> _archeTypeDatas;
+
         private List<IndexDictionary<EntityQueryData>> _queryDataIndexes;
         private List<List<EntityQueryData>> _queryDatas;
         private int _archeTypeDataVersion;
@@ -25,13 +27,13 @@ namespace EcsLte
         private int _entityCount;
         private Stack<Entity> _reusableEntities;
         private Entity[] _uniqueComponentEntities;
-        private EntityCommandManager _commands;
-        private SystemManager _systems;
+        private readonly EntityCommandManager _commands;
+        private readonly SystemManager _systems;
 
         public string Name { get; }
         public bool IsDestroyed { get; private set; }
-        public ICommands Commands { get => _commands; }
-        public ISystems Systems { get => _systems; }
+        public ICommands Commands => _commands;
+        public ISystems Systems => _systems;
         internal EntityData[] EntityDatas => _entityDatas;
         internal SharedComponentIndexDictionaries SharedIndexDics { get; private set; }
         internal ManagedComponentPools ManagePools { get; private set; }
@@ -877,7 +879,9 @@ namespace EcsLte
                             cachedArcheTypeDatas.Add(prevArcheTypePtr, nextArcheTypeDataPtr);
                         }
                         else
+                        {
                             nextArcheTypeData = (ArcheTypeData*)nextArcheTypeDataPtr.Ptr;
+                        }
 
                         if (prevArcheTypeData != nextArcheTypeData)
                         {
@@ -948,7 +952,9 @@ namespace EcsLte
                         ArcheTypeData.TransferAllEntities(prevArcheTypeData, nextArcheTypeData, ref _entityDatas);
 
                     if (config.IsBlittable)
+                    {
                         nextArcheTypeData->SetAllComponents(component, config);
+                    }
                     else
                     {
                         nextArcheTypeData->SetAllComponents(component, config, ManagePools.GetPool<TComponent>());
@@ -1339,7 +1345,7 @@ namespace EcsLte
             dataList = _archeTypeDatas[configCount];
         }
 
-        #endregion
+        #endregion ArcheType
 
         #region Query
 
@@ -1406,6 +1412,6 @@ namespace EcsLte
             dataList = _queryDatas[configCount];
         }
 
-        #endregion
+        #endregion Query
     }
 }

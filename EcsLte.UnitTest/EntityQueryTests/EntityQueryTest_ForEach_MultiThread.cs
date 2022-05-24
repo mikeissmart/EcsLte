@@ -25,7 +25,6 @@ namespace EcsLte.UnitTest.EntityQueryTests
                 query.ForEach(Context, true,
                     (int index, Entity entity, in TestComponent1 component1, in TestComponent1 component2) =>
                     {
-
                     }));
         }
 
@@ -246,7 +245,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             });
         }
 
-        #endregion
+        #endregion Write 0
 
         #region Write 1
 
@@ -508,7 +507,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
         }
 
-        #endregion
+        #endregion Write 1
 
         #region Write 2
 
@@ -755,7 +754,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
         }
 
-        #endregion
+        #endregion Write 2
 
         #region Write 3
 
@@ -982,7 +981,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
         }
 
-        #endregion
+        #endregion Write 3
 
         #region Write 4
 
@@ -1184,7 +1183,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
         }
 
-        #endregion
+        #endregion Write 4
 
         #region Write 5
 
@@ -1356,7 +1355,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
         }
 
-        #endregion
+        #endregion Write 5
 
         #region Write 6
 
@@ -1493,7 +1492,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
         }
 
-        #endregion
+        #endregion Write 6
 
         #region Write 7
 
@@ -1590,7 +1589,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
         }
 
-        #endregion
+        #endregion Write 7
 
         #region Write 8
 
@@ -1642,7 +1641,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
         }
 
-        #endregion
+        #endregion Write 8
 
         private Entity[] CreateEntities_x8() => Context.CreateEntities(UnitTestConsts.SmallCount, new EntityBlueprint()
                 .AddComponent(_component1)

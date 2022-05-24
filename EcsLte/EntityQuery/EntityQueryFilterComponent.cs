@@ -6,7 +6,9 @@ namespace EcsLte
     {
         ISharedComponent Component { get; }
         ComponentConfig Config { get; }
+
         bool IsEqual(IComponent component);
+
         int GetHashCode();
     }
 

@@ -9,11 +9,11 @@ namespace EcsLte.UnitTest.ManagerTests
     {
         [TestMethod]
         public void CreateEntity_Null() => Assert.ThrowsException<ArgumentNullException>(() =>
-                                             Context.CreateEntity(null));
+                                                      Context.CreateEntity(null));
 
         [TestMethod]
         public void CreateEntity_NoComponents() => Assert.ThrowsException<EntityBlueprintNoComponentsException>(() =>
-                                                     Context.CreateEntity(new EntityBlueprint()));
+                                                              Context.CreateEntity(new EntityBlueprint()));
 
         [TestMethod]
         public void CreateEntity_DuplicateUniqueComponent()
@@ -94,21 +94,21 @@ namespace EcsLte.UnitTest.ManagerTests
 
         [TestMethod]
         public void CreateEntities_DuplicateUniqueComponent() => Assert.ThrowsException<EntityAlreadyHasComponentException>(() =>
-                                                                   Context.CreateEntities(2, new EntityBlueprint()
-                                                                       .AddComponent(new TestUniqueComponent1())));
+                                                                            Context.CreateEntities(2, new EntityBlueprint()
+                                                                                .AddComponent(new TestUniqueComponent1())));
 
         [TestMethod]
         public void CreateEntities_NegativeCount() => Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                                                        Context.CreateEntities(-1, new EntityBlueprint()
-                                                            .AddComponent(new TestComponent1())));
+                                                                 Context.CreateEntities(-1, new EntityBlueprint()
+                                                                     .AddComponent(new TestComponent1())));
 
         [TestMethod]
         public void CreateEntities_NoComponents() => Assert.ThrowsException<EntityBlueprintNoComponentsException>(() =>
-                                                       Context.CreateEntities(1, new EntityBlueprint()));
+                                                                Context.CreateEntities(1, new EntityBlueprint()));
 
         [TestMethod]
         public void CreateEntities_Null() => Assert.ThrowsException<ArgumentNullException>(() =>
-                                               Context.CreateEntities(1, null));
+                                                        Context.CreateEntities(1, null));
 
         [TestMethod]
         public void CreateEntities_Destroyed()
@@ -170,7 +170,7 @@ namespace EcsLte.UnitTest.ManagerTests
 
         [TestMethod]
         public void DestroyEntity_Never() => Assert.ThrowsException<EntityDoesNotExistException>(() =>
-                                               Context.DestroyEntity(Entity.Null));
+                                                        Context.DestroyEntity(Entity.Null));
 
         [TestMethod]
         public void DestroyEntities()

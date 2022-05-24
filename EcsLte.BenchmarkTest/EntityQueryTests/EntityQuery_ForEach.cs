@@ -48,7 +48,6 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
                     _query.ForEach(_context, false,
                         (int index, Entity entity) =>
                         {
-
                         });
                     break;
 
@@ -64,6 +63,7 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
                             component4.Prop++;
                         });
                     break;
+
                 case ReadWriteType.R4W0_Normal_Bx4:
                     _query.ForEach(_context, false,
                         (int index, Entity entity, in TestComponent1 component1, in TestComponent2 component2, in TestComponent3 component3, in TestComponent4 component4) =>
@@ -74,6 +74,7 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
                             var prop4 = component4.Prop + 1;
                         });
                     break;
+
                 case ReadWriteType.R0W4_Normal_Mx4:
                     _query.ForEach(_context, false,
                         (int index, Entity entity, ref TestManageComponent1 component1, ref TestManageComponent2 component2, ref TestManageComponent3 component3, ref TestManageComponent4 component4) =>
@@ -84,6 +85,7 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
                             component4.Prop++;
                         });
                     break;
+
                 case ReadWriteType.R4W0_Normal_Mx4:
                     _query.ForEach(_context, false,
                         (int index, Entity entity, in TestManageComponent1 component1, in TestManageComponent2 component2, in TestManageComponent3 component3, in TestManageComponent4 component4) =>
@@ -95,7 +97,7 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
                         });
                     break;
 
-                #endregion
+                #endregion Normal
 
                 #region Shared
 
@@ -109,6 +111,7 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
                             component4.Prop++;
                         });
                     break;
+
                 case ReadWriteType.R4W0_Shared_Bx4:
                     _query.ForEach(_context, false,
                         (int index, Entity entity, in TestSharedComponent1 component1, in TestSharedComponent2 component2, in TestSharedComponent3 component3, in TestSharedComponent4 component4) =>
@@ -119,6 +122,7 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
                             var prop4 = component4.Prop + 1;
                         });
                     break;
+
                 case ReadWriteType.R0W4_Shared_Mx4:
                     _query.ForEach(_context, false,
                         (int index, Entity entity, ref TestManageSharedComponent1 component1, ref TestManageSharedComponent2 component2, ref TestManageSharedComponent3 component3, ref TestManageSharedComponent4 component4) =>
@@ -129,6 +133,7 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
                             component4.Prop++;
                         });
                     break;
+
                 case ReadWriteType.R4W0_Shared_Mx4:
                     _query.ForEach(_context, false,
                         (int index, Entity entity, in TestManageSharedComponent1 component1, in TestManageSharedComponent2 component2, in TestManageSharedComponent3 component3, in TestManageSharedComponent4 component4) =>
@@ -140,7 +145,7 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
                         });
                     break;
 
-                #endregion
+                #endregion Shared
 
                 #region Both Normal
 
@@ -154,6 +159,7 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
                             component4.Prop++;
                         });
                     break;
+
                 case ReadWriteType.R4W0_Normal_Bx2_Mx2:
                     _query.ForEach(_context, false,
                         (int index, Entity entity, in TestComponent1 component1, in TestComponent2 component2, in TestManageComponent1 component3, in TestManageComponent2 component4) =>
@@ -165,7 +171,7 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
                         });
                     break;
 
-                #endregion
+                #endregion Both Normal
 
                 #region Both Shared
 
@@ -179,6 +185,7 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
                             component4.Prop++;
                         });
                     break;
+
                 case ReadWriteType.R4W0_Shared_Bx2_Mx2:
                     _query.ForEach(_context, false,
                         (int index, Entity entity, in TestSharedComponent1 component1, in TestSharedComponent2 component2, in TestManageSharedComponent1 component3, in TestManageSharedComponent2 component4) =>
@@ -190,7 +197,7 @@ namespace EcsLte.BenchmarkTest.EntityQueryTests
                         });
                     break;
 
-                #endregion
+                #endregion Both Shared
 
                 default:
                     throw new InvalidOperationException();

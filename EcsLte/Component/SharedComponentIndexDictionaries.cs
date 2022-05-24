@@ -1,7 +1,5 @@
 ﻿using EcsLte.Data;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte
 {
@@ -13,7 +11,7 @@ namespace EcsLte
     internal class SharedComponentIndexDictionary<TComponent> : IndexDictionary<TComponent>, ISharedComponentIndexDictionary
             where TComponent : IComponent
     {
-        public ComponentData<TComponent> GetComponentData(SharedComponentDataIndex dataIndex)=>
+        public ComponentData<TComponent> GetComponentData(SharedComponentDataIndex dataIndex) =>
             new ComponentData<TComponent>(GetKey(dataIndex.SharedDataIndex));
 
         IComponentData ISharedComponentIndexDictionary.GetComponentData(SharedComponentDataIndex dataIndex) =>
@@ -22,7 +20,7 @@ namespace EcsLte
 
     internal class SharedComponentIndexDictionaries
     {
-        private ISharedComponentIndexDictionary[] _sharedComponentIndexes;
+        private readonly ISharedComponentIndexDictionary[] _sharedComponentIndexes;
 
         internal SharedComponentIndexDictionaries()
         {

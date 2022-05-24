@@ -218,7 +218,7 @@ namespace EcsLte.UnitTest.ManagerTests
                         Context.UpdateComponent(entities[i], component);
                 });
 
-        #endregion
+        #endregion Entity
 
         #region Entities
 
@@ -376,7 +376,7 @@ namespace EcsLte.UnitTest.ManagerTests
                 (Entity[] entities, T5 component) => Context.UpdateComponents(entities, component),
                 (Entity[] entities, T6 component) => Context.UpdateComponents(entities, component));
 
-        #endregion
+        #endregion Entities
 
         #region EntityArcheType
 
@@ -552,7 +552,7 @@ namespace EcsLte.UnitTest.ManagerTests
                 (Entity[] entities, T6 component) => Context.UpdateComponents(Context.GetEntityArcheType(entities[0]), component));
         }
 
-        #endregion
+        #endregion EntityArcheType
 
         #region EntityQuery
 
@@ -743,7 +743,7 @@ namespace EcsLte.UnitTest.ManagerTests
                 (Entity[] entities, T6 component) => Context.UpdateComponents(query, component));
         }
 
-        #endregion
+        #endregion EntityQuery
 
         #region Assert
 
@@ -858,7 +858,7 @@ namespace EcsLte.UnitTest.ManagerTests
             }
         }
 
-        #endregion
+        #endregion Assert
 
         #region Components
 
@@ -925,6 +925,6 @@ namespace EcsLte.UnitTest.ManagerTests
         private void Components_BlittableManage_Unique(Action<int, TestUniqueComponent1, TestManageUniqueComponent1> assertAction) =>
             assertAction.Invoke(1, new TestUniqueComponent1(), new TestManageUniqueComponent1());
 
-        #endregion
+        #endregion Components
     }
 }

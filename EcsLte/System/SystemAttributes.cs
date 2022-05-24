@@ -42,6 +42,5 @@ namespace EcsLte
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public class DontAutoAddSystem : Attribute
     {
-
     }
 }

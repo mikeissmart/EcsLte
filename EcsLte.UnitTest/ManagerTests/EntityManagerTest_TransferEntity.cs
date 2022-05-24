@@ -758,27 +758,27 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         private void Components_Blittable(Action<ArgumentsDelegate<TestComponent1, TestComponent2>> assertAction,
-            ArgumentsDelegate<TestComponent1, TestComponent2> arguments)
-            => assertAction.Invoke(arguments);
+            ArgumentsDelegate<TestComponent1, TestComponent2> arguments) =>
+            assertAction.Invoke(arguments);
 
         private void Components_Blittable_Unique(Action<ArgumentsDelegate<TestUniqueComponent1, TestComponent1>> assertAction,
-            ArgumentsDelegate<TestUniqueComponent1, TestComponent1> arguments)
-            => assertAction.Invoke(arguments);
+            ArgumentsDelegate<TestUniqueComponent1, TestComponent1> arguments) =>
+           assertAction.Invoke(arguments);
 
         private void Components_BlittableManage(Action<ArgumentsDelegate<TestComponent1, TestManageComponent2, TestUniqueComponent1>> assertAction,
-            ArgumentsDelegate<TestComponent1, TestManageComponent2, TestUniqueComponent1> arguments)
-            => assertAction.Invoke(arguments);
+            ArgumentsDelegate<TestComponent1, TestManageComponent2, TestUniqueComponent1> arguments) =>
+           assertAction.Invoke(arguments);
 
         private void Components_BlittableManage_Unique(Action<ArgumentsDelegate<TestUniqueComponent1, TestManageComponent1, TestUniqueComponent2>> assertAction,
-            ArgumentsDelegate<TestUniqueComponent1, TestManageComponent1, TestUniqueComponent2> arguments)
-            => assertAction.Invoke(arguments);
+            ArgumentsDelegate<TestUniqueComponent1, TestManageComponent1, TestUniqueComponent2> arguments) =>
+           assertAction.Invoke(arguments);
 
         private void Components_Manage(Action<ArgumentsDelegate<TestManageComponent1, TestManageComponent2>> assertAction,
-            ArgumentsDelegate<TestManageComponent1, TestManageComponent2> arguments)
-            => assertAction.Invoke(arguments);
+            ArgumentsDelegate<TestManageComponent1, TestManageComponent2> arguments) =>
+           assertAction.Invoke(arguments);
 
         private void Components_Manage_Unique(Action<ArgumentsDelegate<TestManageUniqueComponent1, TestManageComponent1>> assertAction,
-            ArgumentsDelegate<TestManageUniqueComponent1, TestManageComponent1> arguments)
-            => assertAction.Invoke(arguments);
+            ArgumentsDelegate<TestManageUniqueComponent1, TestManageComponent1> arguments) =>
+           assertAction.Invoke(arguments);
     }
 }

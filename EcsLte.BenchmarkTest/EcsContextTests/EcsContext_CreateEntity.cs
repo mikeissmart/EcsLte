@@ -61,7 +61,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             _entities = _context.CreateEntities(_entities.Length, blueprint);
         }
 
-        #endregion
+        #endregion Create
 
         #region Create Reuse
 
@@ -87,7 +87,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             _entities = _context.CreateEntities(_entities.Length, blueprint);
         }
 
-        #endregion
+        #endregion Create Reuse
 
         #region Destroy
 
@@ -120,7 +120,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         [Benchmark]
         public void DestroyEntities() => _context.DestroyEntities(_entities);
 
-        #endregion
+        #endregion Destroy
 
         #region Destroy Reuse
 
@@ -142,6 +142,6 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         [Benchmark]
         public void DestroyEntities_Reuse() => _context.DestroyEntities(_entities);
 
-        #endregion
+        #endregion Destroy Reuse
     }
 }
