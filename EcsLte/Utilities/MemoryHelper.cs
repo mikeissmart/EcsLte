@@ -47,7 +47,9 @@ namespace EcsLte.Utilities
         }
 
         internal static unsafe void Free(void* ptr)
-           => Marshal.FreeHGlobal((IntPtr)ptr);
+        {
+            Marshal.FreeHGlobal((IntPtr)ptr);
+        }
 
         internal static unsafe void Copy(void* sourcePtr, void* destinationPtr, int sizeInBytes)
             => Buffer.MemoryCopy(sourcePtr, destinationPtr, sizeInBytes, sizeInBytes);

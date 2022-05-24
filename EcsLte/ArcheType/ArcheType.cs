@@ -5,8 +5,45 @@ namespace EcsLte
 {
     internal unsafe struct ArcheType : IEquatable<ArcheType>, IDisposable
     {
-        internal ComponentConfig* ComponentConfigs { get; set; }
-        internal SharedComponentDataIndex* SharedComponentDataIndexes { get; set; }
+        internal static ArcheType Alloc(int componentConfigLength, int sharedComponentDataLength)
+        {
+            if (componentConfigLength < 0)
+                throw new ArgumentOutOfRangeException(nameof(componentConfigLength));
+            if (sharedComponentDataLength < 0 || sharedComponentDataLength > componentConfigLength)
+                throw new ArgumentOutOfRangeException(nameof(sharedComponentDataLength));
+
+            return new ArcheType
+            {
+                ComponentConfigs = MemoryHelper.Alloc<ComponentConfig>(componentConfigLength),
+                SharedComponentDataIndexes = sharedComponentDataLength > 0
+                    ? MemoryHelper.Alloc<SharedComponentDataIndex>(sharedComponentDataLength)
+                    : null,
+                ComponentConfigLength = componentConfigLength,
+                SharedComponentDataLength = sharedComponentDataLength
+            };
+        }
+
+        internal static ArcheType AllocClone(ArcheType source)
+        {
+            var archeType = Alloc(source.ComponentConfigLength, source.SharedComponentDataLength);
+
+            MemoryHelper.Copy(
+                source.ComponentConfigs,
+                archeType.ComponentConfigs,
+                archeType.ComponentConfigLength * TypeCache<ComponentConfig>.SizeInBytes);
+            if (source.SharedComponentDataLength > 0)
+            {
+                MemoryHelper.Copy(
+                    source.SharedComponentDataIndexes,
+                    archeType.SharedComponentDataIndexes,
+                    source.SharedComponentDataLength * TypeCache<SharedComponentDataIndex>.SizeInBytes);
+            }
+
+            return archeType;
+        }
+
+        internal ComponentConfig* ComponentConfigs { get; private set; }
+        internal SharedComponentDataIndex* SharedComponentDataIndexes { get; private set; }
         internal int ComponentConfigLength { get; set; }
         internal int SharedComponentDataLength { get; set; }
 
@@ -49,34 +86,7 @@ namespace EcsLte
 
             return false;
         }
-
-        internal ArcheType Clone()
-        {
-            var clone = new ArcheType
-            {
-                ComponentConfigs = MemoryHelper.Alloc<ComponentConfig>(ComponentConfigLength),
-                ComponentConfigLength = ComponentConfigLength,
-                SharedComponentDataIndexes = SharedComponentDataLength > 0
-                    ? MemoryHelper.Alloc<SharedComponentDataIndex>(SharedComponentDataLength)
-                    : null,
-                SharedComponentDataLength = SharedComponentDataLength
-            };
-
-            MemoryHelper.Copy(
-                ComponentConfigs,
-                clone.ComponentConfigs,
-                ComponentConfigLength * TypeCache<ComponentConfig>.SizeInBytes);
-            if (SharedComponentDataLength > 0)
-            {
-                MemoryHelper.Copy(
-                    SharedComponentDataIndexes,
-                    clone.SharedComponentDataIndexes,
-                    SharedComponentDataLength * TypeCache<SharedComponentDataIndex>.SizeInBytes);
-            }
-
-            return clone;
-        }
-
+        
         public void Dispose()
         {
             if (ComponentConfigLength != 0)
@@ -99,18 +109,16 @@ namespace EcsLte
                 return false;
             if (lhs.SharedComponentDataLength != rhs.SharedComponentDataLength)
                 return false;
-            unsafe
+
+            for (var i = 0; i < lhs.ComponentConfigLength; i++)
             {
-                for (var i = 0; i < lhs.ComponentConfigLength; i++)
-                {
-                    if (lhs.ComponentConfigs[i] != rhs.ComponentConfigs[i])
-                        return false;
-                }
-                for (var i = 0; i < lhs.SharedComponentDataLength; i++)
-                {
-                    if (lhs.SharedComponentDataIndexes[i] != rhs.SharedComponentDataIndexes[i])
-                        return false;
-                }
+                if (lhs.ComponentConfigs[i] != rhs.ComponentConfigs[i])
+                    return false;
+            }
+            for (var i = 0; i < lhs.SharedComponentDataLength; i++)
+            {
+                if (lhs.SharedComponentDataIndexes[i] != rhs.SharedComponentDataIndexes[i])
+                    return false;
             }
 
             return true;

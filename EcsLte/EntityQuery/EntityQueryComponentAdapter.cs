@@ -90,7 +90,8 @@ namespace EcsLte
                 SharedDataIndex = new SharedComponentDataIndex
                 {
                     SharedIndex = Config.SharedIndex,
-                    SharedDataIndex = ((IndexDictionary<T>)_sharedComponentIndexDic).GetIndex(component)
+                    SharedDataIndex = ((IndexDictionary<T>)_sharedComponentIndexDic)
+                        .GetOrAdd(component)
                 };
             }
         }
@@ -132,7 +133,8 @@ namespace EcsLte
                 SharedDataIndex = new SharedComponentDataIndex
                 {
                     SharedIndex = Config.SharedIndex,
-                    SharedDataIndex = ((IndexDictionary<T>)_sharedComponentIndexDic).GetIndex(component)
+                    SharedDataIndex = ((IndexDictionary<T>)_sharedComponentIndexDic)
+                        .GetOrAdd(component)
                 };
             }
         }

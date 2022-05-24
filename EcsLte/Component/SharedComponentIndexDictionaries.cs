@@ -15,7 +15,7 @@ namespace EcsLte
             new ComponentData<TComponent>(GetKey(dataIndex.SharedDataIndex));
 
         IComponentData ISharedComponentIndexDictionary.GetComponentData(SharedComponentDataIndex dataIndex) =>
-            new ComponentData<TComponent>((TComponent)GetObject(dataIndex.SharedDataIndex));
+            new ComponentData<TComponent>(GetKey(dataIndex.SharedDataIndex));
     }
 
     internal class SharedComponentIndexDictionaries
@@ -44,10 +44,11 @@ namespace EcsLte
         internal SharedComponentDataIndex GetDataIndex(ComponentConfig config, IComponent component)
         {
             var indexDic = GetSharedIndexDic(config);
+
             return new SharedComponentDataIndex
             {
                 SharedIndex = config.SharedIndex,
-                SharedDataIndex = indexDic.GetIndexObj(component)
+                SharedDataIndex = indexDic.GetOrAdd(component)
             };
         }
 
@@ -55,17 +56,18 @@ namespace EcsLte
             where TComponent : IComponent
         {
             var indexDic = GetSharedIndexDic<TComponent>();
+
             return new SharedComponentDataIndex
             {
                 SharedIndex = ComponentConfig<TComponent>.Config.SharedIndex,
-                SharedDataIndex = indexDic.GetIndex(component)
+                SharedDataIndex = indexDic.GetOrAdd(component)
             };
         }
 
         internal void Clear()
         {
             for (var i = 0; i < _sharedComponentIndexes.Length; i++)
-                _sharedComponentIndexes[i].Clear();
+                while (_sharedComponentIndexes[i].PopKeyObj(out var _)){ }
         }
     }
 }

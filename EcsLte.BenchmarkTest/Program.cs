@@ -28,8 +28,8 @@ namespace EcsLte.BenchmarkTest
             Console.WriteLine("done");
             Console.ReadLine();
 #else
-            //BenchmarkRunner.Run(typeof(Program).Assembly, config);
-            BenchmarkRunner.Run<EntityQueryTests.EntityQuery_ForEach>(config);
+            BenchmarkRunner.Run(typeof(Program).Assembly, config);
+            //BenchmarkRunner.Run<EcsContextTests.EcsContext_GetComponent>(config);
 #endif
         }
     }

@@ -29,6 +29,7 @@ namespace EcsLte
         private Entity[] _uniqueComponentEntities;
         private readonly EntityCommandManager _commands;
         private readonly SystemManager _systems;
+        private ArcheType _cachedArcheType;
 
         public string Name { get; }
         public bool IsDestroyed { get; private set; }
@@ -55,6 +56,9 @@ namespace EcsLte
             _uniqueComponentEntities = new Entity[ComponentConfigs.Instance.AllUniqueCount];
             _commands = new EntityCommandManager(this);
             _systems = new SystemManager(this);
+            _cachedArcheType = ArcheType.Alloc(
+                ComponentConfigs.Instance.AllComponentCount,
+                ComponentConfigs.Instance.AllSharedCount); 
 
             Name = name;
             SharedIndexDics = new SharedComponentIndexDictionaries();
@@ -400,13 +404,13 @@ namespace EcsLte
 
                 var prevEntityData = sourceContext._entityDatas[entity.Id];
                 var prevArcheTypeData = prevEntityData.ArcheTypeData;
-                var archeType = prevArcheTypeData->ArcheType.Clone();
+                CopyToCachedArcheType(prevArcheTypeData->ArcheType);
 
-                var nextArcheTypeData = GetArcheTypeDataFromArcheType(ref archeType);
+                var nextArcheTypeData = GetArcheTypeDataFromCachedArcheType();
                 nextEntity = AllocateEntity();
                 var nextEntityData = nextArcheTypeData->AddEntity(entity);
                 _entityDatas[nextEntity.Id] = nextEntityData;
-                CheckAndSetUniqueComponents(nextEntity, archeType);
+                CheckAndSetUniqueComponents(nextEntity, _cachedArcheType);
 
                 nextArcheTypeData->SetComponentsBuffer(nextEntityData, prevArcheTypeData->GetComponentsPtr(prevEntityData));
                 for (var j = 0; j < nextArcheTypeData->ManagedConfigsLength; j++)
@@ -470,8 +474,8 @@ namespace EcsLte
                     ArcheTypeData* nextArcheTypeData;
                     if (!cachedArcheTypeDatas.TryGetValue(prevArcheTypeDataPtr, out var nextArcheTypeDataPtr))
                     {
-                        var archeType = prevArcheTypeData->ArcheType.Clone();
-                        nextArcheTypeData = GetArcheTypeDataFromArcheType(ref archeType);
+                        CopyToCachedArcheType(prevArcheTypeData->ArcheType);
+                        nextArcheTypeData = GetArcheTypeDataFromCachedArcheType();
                         nextArcheTypeDataPtr.Ptr = nextArcheTypeData;
                         cachedArcheTypeDatas.Add(prevArcheTypeDataPtr, nextArcheTypeDataPtr);
                     }
@@ -820,9 +824,9 @@ namespace EcsLte
                 var entityData = _entityDatas[entity.Id];
                 if (config.IsShared)
                 {
-                    var nextArcheType = entityData.ArcheTypeData->ArcheType.Clone();
-                    nextArcheType.ReplaceSharedComponentDataIndex(SharedIndexDics.GetDataIndex(component));
-                    var nextArcheTypeData = GetArcheTypeDataFromArcheType(ref nextArcheType);
+                    CopyToCachedArcheType(entityData.ArcheTypeData->ArcheType);
+                    _cachedArcheType.ReplaceSharedComponentDataIndex(SharedIndexDics.GetDataIndex(component));
+                    var nextArcheTypeData = GetArcheTypeDataFromCachedArcheType();
                     if (nextArcheTypeData != entityData.ArcheTypeData)
                         entityData = ArcheTypeData.TransferEntity(entity, nextArcheTypeData, ref _entityDatas);
                 }
@@ -868,13 +872,13 @@ namespace EcsLte
                         prevArcheTypePtr.Ptr = entityData.ArcheTypeData;
                         if (!cachedArcheTypeDatas.TryGetValue(prevArcheTypePtr, out var nextArcheTypeDataPtr))
                         {
-                            var nextArcheType = prevArcheTypeData->ArcheType.Clone();
-                            nextArcheType.ReplaceSharedComponentDataIndex(new SharedComponentDataIndex
+                            CopyToCachedArcheType(prevArcheTypeData->ArcheType);
+                            _cachedArcheType.ReplaceSharedComponentDataIndex(new SharedComponentDataIndex
                             {
                                 SharedIndex = config.SharedIndex,
-                                SharedDataIndex = sharedIndexDic.GetIndex(component),
+                                SharedDataIndex = sharedIndexDic.GetOrAdd(component),
                             });
-                            nextArcheTypeData = GetArcheTypeDataFromArcheType(ref nextArcheType);
+                            nextArcheTypeData = GetArcheTypeDataFromCachedArcheType();
                             nextArcheTypeDataPtr.Ptr = nextArcheTypeData;
                             cachedArcheTypeDatas.Add(prevArcheTypePtr, nextArcheTypeDataPtr);
                         }
@@ -940,14 +944,15 @@ namespace EcsLte
                 if (config.IsShared)
                 {
                     var prevArcheTypeData = GetArcheTypeDataFromEntityArcheType(entityArcheType, true);
-                    var nextArcheType = prevArcheTypeData->ArcheType.Clone();
-                    var sharedIndexDic = SharedIndexDics.GetSharedIndexDic<TComponent>();
-                    nextArcheType.ReplaceSharedComponentDataIndex(new SharedComponentDataIndex
+                    CopyToCachedArcheType(prevArcheTypeData->ArcheType);
+                    _cachedArcheType.ReplaceSharedComponentDataIndex(new SharedComponentDataIndex
                     {
                         SharedIndex = config.SharedIndex,
-                        SharedDataIndex = sharedIndexDic.GetIndex(component),
+                        SharedDataIndex = SharedIndexDics
+                            .GetSharedIndexDic<TComponent>()
+                            .GetOrAdd(component),
                     });
-                    var nextArcheTypeData = GetArcheTypeDataFromArcheType(ref nextArcheType);
+                    var nextArcheTypeData = GetArcheTypeDataFromCachedArcheType();
                     if (nextArcheTypeData != prevArcheTypeData)
                         ArcheTypeData.TransferAllEntities(prevArcheTypeData, nextArcheTypeData, ref _entityDatas);
 
@@ -993,13 +998,13 @@ namespace EcsLte
                         for (var i = 0; i < contextQueryData.ArcheTypeDatas.Length; i++)
                         {
                             var prevArcheTypeData = (ArcheTypeData*)contextQueryData.ArcheTypeDatas[i].Ptr;
-                            var nextArcheType = prevArcheTypeData->ArcheType.Clone();
-                            nextArcheType.ReplaceSharedComponentDataIndex(new SharedComponentDataIndex
+                            CopyToCachedArcheType(prevArcheTypeData->ArcheType);
+                            _cachedArcheType.ReplaceSharedComponentDataIndex(new SharedComponentDataIndex
                             {
                                 SharedIndex = config.SharedIndex,
-                                SharedDataIndex = sharedIndexDic.GetIndex(component),
+                                SharedDataIndex = sharedIndexDic.GetOrAdd(component),
                             });
-                            var nextArcheTypeData = GetArcheTypeDataFromArcheType(ref nextArcheType);
+                            var nextArcheTypeData = GetArcheTypeDataFromCachedArcheType();
                             if (nextArcheTypeData != prevArcheTypeData)
                                 ArcheTypeData.TransferAllEntities(prevArcheTypeData, nextArcheTypeData, ref _entityDatas);
 
@@ -1012,13 +1017,13 @@ namespace EcsLte
                         for (var i = 0; i < contextQueryData.ArcheTypeDatas.Length; i++)
                         {
                             var prevArcheTypeData = (ArcheTypeData*)contextQueryData.ArcheTypeDatas[i].Ptr;
-                            var nextArcheType = prevArcheTypeData->ArcheType.Clone();
-                            nextArcheType.ReplaceSharedComponentDataIndex(new SharedComponentDataIndex
+                            CopyToCachedArcheType(prevArcheTypeData->ArcheType);
+                            _cachedArcheType.ReplaceSharedComponentDataIndex(new SharedComponentDataIndex
                             {
                                 SharedIndex = config.SharedIndex,
-                                SharedDataIndex = sharedIndexDic.GetIndex(component),
+                                SharedDataIndex = sharedIndexDic.GetOrAdd(component),
                             });
-                            var nextArcheTypeData = GetArcheTypeDataFromArcheType(ref nextArcheType);
+                            var nextArcheTypeData = GetArcheTypeDataFromCachedArcheType();
                             if (nextArcheTypeData != prevArcheTypeData)
                                 ArcheTypeData.TransferAllEntities(prevArcheTypeData, nextArcheTypeData, ref _entityDatas);
 
@@ -1056,11 +1061,11 @@ namespace EcsLte
 
             if (updatedAdapters.Count() > 0)
             {
-                var archeType = entityData.ArcheTypeData->ArcheType.Clone();
+                CopyToCachedArcheType(entityData.ArcheTypeData->ArcheType);
                 foreach (var adapter in updatedAdapters)
-                    archeType.ReplaceSharedComponentDataIndex(adapter.SharedDataIndex);
+                    _cachedArcheType.ReplaceSharedComponentDataIndex(adapter.SharedDataIndex);
 
-                var nextArcheTypeData = GetArcheTypeDataFromArcheType(ref archeType);
+                var nextArcheTypeData = GetArcheTypeDataFromCachedArcheType();
                 if (nextArcheTypeData != entityData.ArcheTypeData)
                     entityData = ArcheTypeData.TransferEntity(entity, nextArcheTypeData, ref _entityDatas);
             }
@@ -1072,7 +1077,7 @@ namespace EcsLte
             {
                 foreach (var indexDic in _archeTypeIndexes)
                 {
-                    foreach (var archeType in indexDic.Keys)
+                    while (indexDic.PopKey(out var archeType))
                         archeType.Dispose();
                 }
                 _archeTypeIndexes = null;
@@ -1097,6 +1102,7 @@ namespace EcsLte
                 _uniqueComponentEntities = null;
                 _commands.InternalDestroy();
                 _systems.InternalDestroy();
+                _cachedArcheType.Dispose();
 
                 IsDestroyed = true;
                 SharedIndexDics = null;
@@ -1204,8 +1210,8 @@ namespace EcsLte
             var entitiesLength = prevArcheTypeData->EntityCount;
             CheckCapacity(entitiesLength);
 
-            var archeType = prevArcheTypeData->ArcheType.Clone();
-            var nextArcheTypeData = GetArcheTypeDataFromArcheType(ref archeType);
+            CopyToCachedArcheType(prevArcheTypeData->ArcheType);
+            var nextArcheTypeData = GetArcheTypeDataFromCachedArcheType();
 
             var componentIndexes = new int[nextArcheTypeData->ManagedConfigsLength][];
             for (var i = 0; i < nextArcheTypeData->ManagedConfigsLength; i++)
@@ -1245,6 +1251,24 @@ namespace EcsLte
 
         #region ArcheType
 
+        private void CopyToCachedArcheType(ArcheType source)
+        {
+            _cachedArcheType.ComponentConfigLength = source.ComponentConfigLength;
+            _cachedArcheType.SharedComponentDataLength = source.SharedComponentDataLength;
+
+            MemoryHelper.Copy(
+                source.ComponentConfigs,
+                _cachedArcheType.ComponentConfigs,
+                source.ComponentConfigLength * TypeCache<ComponentConfig>.SizeInBytes);
+            if (source.SharedComponentDataLength > 0)
+            {
+                MemoryHelper.Copy(
+                    source.SharedComponentDataIndexes,
+                    _cachedArcheType.SharedComponentDataIndexes,
+                    source.SharedComponentDataLength * TypeCache<SharedComponentDataIndex>.SizeInBytes);
+            }
+        }
+
         private ArcheTypeData* GetArcheTypeDataFromEntityArcheType(EntityArcheType entityArcheType, bool behindLock)
         {
             if (entityArcheType.ArcheTypeData.TryGetArcheTypeIndex(this, out var archeTypeIndex))
@@ -1259,70 +1283,68 @@ namespace EcsLte
             else
             {
                 var entityArcheTypeData = entityArcheType.ArcheTypeData;
-                var archeType = new ArcheType
-                {
-                    ComponentConfigLength = entityArcheTypeData.ComponentConfigs.Length,
-                    ComponentConfigs = MemoryHelper.Alloc<ComponentConfig>(entityArcheTypeData.ComponentConfigs.Length),
-                    SharedComponentDataLength = entityArcheTypeData.SharedComponentDatas.Length,
-                    SharedComponentDataIndexes = entityArcheTypeData.SharedComponentDatas.Length > 0
-                        ? MemoryHelper.Alloc<SharedComponentDataIndex>(entityArcheTypeData.SharedComponentDatas.Length)
-                        : null
-                };
-                for (var i = 0; i < archeType.ComponentConfigLength; i++)
-                    archeType.ComponentConfigs[i] = entityArcheTypeData.ComponentConfigs[i];
-                for (var i = 0; i < archeType.SharedComponentDataLength; i++)
+                _cachedArcheType.ComponentConfigLength = entityArcheTypeData.ComponentConfigs.Length;
+                _cachedArcheType.SharedComponentDataLength = entityArcheTypeData.SharedComponentDatas.Length;
+
+                for (var i = 0; i < _cachedArcheType.ComponentConfigLength; i++)
+                    _cachedArcheType.ComponentConfigs[i] = entityArcheTypeData.ComponentConfigs[i];
+                for (var i = 0; i < _cachedArcheType.SharedComponentDataLength; i++)
                 {
                     var component = entityArcheTypeData.SharedComponentDatas[i];
-                    archeType.SharedComponentDataIndexes[i] = component.GetSharedComponentDataIndex(SharedIndexDics);
+                    _cachedArcheType.SharedComponentDataIndexes[i] = component.GetSharedComponentDataIndex(SharedIndexDics);
                 }
 
-                GetArcheTypeIndexDic(archeType.ComponentConfigLength, out var indexDic, out var dataList);
+                GetArcheTypeIndexDic(_cachedArcheType.ComponentConfigLength, out var indexDic, out var dataList);
+                ArcheTypeData* archeTypeData = null;
 
-                ArcheTypeData* archeTypeData;
-                if (indexDic.GetIndex(archeType, out var index))
-                {
-                    archeTypeIndex = new ArcheTypeIndex
+                var wasAdded = false;
+                var index = indexDic.GetOrAdd(_cachedArcheType,
+                    (newIndex) =>
                     {
-                        ComponentConfigLength = archeType.ComponentConfigLength,
-                        Index = index
-                    };
-                    archeTypeData = ArcheTypeData.Alloc(archeType, archeTypeIndex);
-                    dataList.Add(new PtrWrapper { Ptr = archeTypeData });
-                    _archeTypeDataVersion++;
-                }
-                else
-                {
+                        var archeType = ArcheType.AllocClone(_cachedArcheType);
+                        archeTypeData = ArcheTypeData.Alloc(archeType, new ArcheTypeIndex
+                        {
+                            ComponentConfigLength = _cachedArcheType.ComponentConfigLength,
+                            Index = newIndex
+                        });
+                        dataList.Add(new PtrWrapper { Ptr = archeTypeData });
+                        _archeTypeDataVersion++;
+                        wasAdded = true;
+
+                        return archeType;
+                    });
+                if (!wasAdded)
                     archeTypeData = (ArcheTypeData*)dataList[index].Ptr;
-                    archeTypeIndex = archeTypeData->ArcheTypeIndex;
-                    archeType.Dispose();
-                }
-                entityArcheType.ArcheTypeData.AddArcheTypeIndex(this, archeTypeIndex);
+
+                entityArcheType.ArcheTypeData.AddArcheTypeIndex(this, archeTypeData->ArcheTypeIndex);
 
                 return archeTypeData;
             }
         }
 
-        private ArcheTypeData* GetArcheTypeDataFromArcheType(ref ArcheType archeType)
+        private ArcheTypeData* GetArcheTypeDataFromCachedArcheType()
         {
-            GetArcheTypeIndexDic(archeType.ComponentConfigLength, out var indexDic, out var dataList);
-            ArcheTypeData* archeTypeData;
+            GetArcheTypeIndexDic(_cachedArcheType.ComponentConfigLength, out var indexDic, out var dataList);
+            ArcheTypeData* archeTypeData = null;
 
-            if (indexDic.GetIndex(archeType, out var index))
-            {
-                archeTypeData = ArcheTypeData.Alloc(archeType, new ArcheTypeIndex
+            var wasAdded = false;
+            var index = indexDic.GetOrAdd(_cachedArcheType,
+                (newIndex) =>
                 {
-                    ComponentConfigLength = archeType.ComponentConfigLength,
-                    Index = index
+                    var archeType = ArcheType.AllocClone(_cachedArcheType);
+                    archeTypeData = ArcheTypeData.Alloc(archeType, new ArcheTypeIndex
+                    {
+                        ComponentConfigLength = _cachedArcheType.ComponentConfigLength,
+                        Index = newIndex
+                    });
+                    dataList.Add(new PtrWrapper { Ptr = archeTypeData });
+                    _archeTypeDataVersion++;
+                    wasAdded = true;
+
+                    return archeType;
                 });
-                dataList.Add(new PtrWrapper { Ptr = archeTypeData });
-                _archeTypeDataVersion++;
-            }
-            else
-            {
+            if (!wasAdded)
                 archeTypeData = (ArcheTypeData*)dataList[index].Ptr;
-                archeType.Dispose();
-                archeType = archeTypeData->ArcheType;
-            }
 
             return archeTypeData;
         }
@@ -1364,18 +1386,19 @@ namespace EcsLte
                 {
                     GetQueryIndexDic(query.QueryData.ConfigCount, out var indexDic, out var dataList);
 
-                    if (indexDic.GetIndex(query.QueryData, out var index))
-                    {
-                        query.QueryData.ContextQueryData.Add(this, new EntityQueryEcsContextData
+                    var wasAdded = false;
+                    var index = indexDic.GetOrAdd(query.QueryData,
+                        (newIndex) =>
                         {
-                            EntityQueryDataIndex = index
+                            query.QueryData.ContextQueryData.Add(this, new EntityQueryEcsContextData
+                            {
+                                EntityQueryDataIndex = newIndex
+                            });
+                            dataList.Add(query.QueryData);
+                            wasAdded = true;
                         });
-                        dataList.Add(query.QueryData);
-                    }
-                    else
-                    {
+                    if (!wasAdded)
                         query.QueryData = dataList[index];
-                    }
                 }
 
                 var contextQueryData = query.QueryData.ContextQueryData[this];

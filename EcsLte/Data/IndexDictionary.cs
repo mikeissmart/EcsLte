@@ -1,29 +1,22 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EcsLte.Data
 {
     internal interface IIndexDictionary
     {
-        /// <summary>
-        /// Return true = new index for value, false = existing index for value
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        bool GetIndexObj(object key, out int index);
+        int GetOrAdd(object key);
 
-        int GetIndexObj(object key);
+        int GetOrAdd(object key, Action<int> addAction);
 
-        object GetObject(int index);
+        int GetOrAdd(object key, Func<int, object> addAction);
 
-        void Clear();
+        object GetKey(int index);
+
+        bool PopKeyObj(out object key);
     }
-
-    /*internal interface ISharedComponentIndexDictionary : IIndexDictionary
-    {
-        IComponentData GetComponentData(SharedComponentDataIndex dataIndex);
-    }*/
 
     internal class IndexDictionary<TKey> : IIndexDictionary
     {
@@ -31,34 +24,106 @@ namespace EcsLte.Data
         private readonly List<TKey> _values;
         private readonly object _lockObj;
 
-        public IndexDictionary()
+        internal IndexDictionary()
         {
             _indexes = new Dictionary<TKey, int>();
             _values = new List<TKey>();
             _lockObj = new object();
         }
 
-        public IEnumerable<TKey> Keys => _indexes.Keys;
-        public IEnumerable<int> Indexes => _indexes.Values;
-        public IEnumerable<KeyValuePair<TKey, int>> KeyValuePairs => _indexes;
-
-        public Dictionary<TKey, int> GetDictionary() => _indexes;
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="index"></param>
-        /// <returns>true = new index for value, false = existing index for value</returns>
-        public bool GetIndex(TKey key, out int index)
+        internal int GetOrAdd(TKey key)
         {
             lock (_lockObj)
             {
-                if (!_indexes.TryGetValue(key, out index))
+                if (!_indexes.TryGetValue(key, out var index))
                 {
-                    index = _values.Count;
-                    _values.Add(key);
                     _indexes.Add(key, index);
+                    _values.Add(key);
+                }
+
+                return index;
+            }
+        }
+
+        public int GetOrAdd(object key)
+        {
+            if (key is TKey val)
+                return GetOrAdd(val);
+            throw new InvalidCastException("key");
+        }
+
+        internal int GetOrAdd(TKey key, Action<int> addAction)
+        {
+            lock (_lockObj)
+            {
+                if (!_indexes.TryGetValue(key, out var index))
+                {
+                    _indexes.Add(key, index);
+                    _values.Add(key);
+                    addAction.Invoke(index);
+                }
+
+                return index;
+            }
+        }
+
+        public int GetOrAdd(object key, Action<int> addAction)
+        {
+            if (key is TKey val)
+                return GetOrAdd(val, addAction);
+            throw new InvalidCastException("key");
+        }
+
+        internal int GetOrAdd(TKey key, Func<int, TKey> addAction)
+        {
+            lock (_lockObj)
+            {
+                if (!_indexes.TryGetValue(key, out var index))
+                {
+                    key = addAction.Invoke(index);
+                    _indexes.Add(key, index);
+                    _values.Add(key);
+                }
+
+                return index;
+            }
+        }
+
+        public int GetOrAdd(object key, Func<int, object> addAction)
+        {
+            if (key is TKey val)
+                return GetOrAdd(val, addAction);
+            throw new InvalidCastException("key");
+        }
+
+        internal TKey GetKey(int index)
+        {
+            lock (_lockObj)
+            {
+                return _values[index];
+            }
+        }
+
+        object IIndexDictionary.GetKey(int index)
+        {
+            lock (_lockObj)
+            {
+                return _values[index];
+            }
+        }
+
+        internal bool PopKey(out TKey key)
+        {
+            key = default;
+            lock (_lockObj)
+            {
+                if (_indexes.Count > 0)
+                {
+                    var pair = _indexes.First();
+                    _indexes.Remove(pair.Key);
+                    _values[pair.Value] = default;
+                    key = pair.Key;
+
                     return true;
                 }
             }
@@ -66,59 +131,23 @@ namespace EcsLte.Data
             return false;
         }
 
-        public int GetIndex(TKey key)
+        public bool PopKeyObj(out object key)
         {
+            key = default;
             lock (_lockObj)
             {
-                if (!_indexes.TryGetValue(key, out var index))
+                if (_indexes.Count > 0)
                 {
-                    index = _values.Count;
-                    _values.Add(key);
-                    _indexes.Add(key, index);
+                    var pair = _indexes.First();
+                    _indexes.Remove(pair.Key);
+                    _values[pair.Value] = default;
+                    key = pair.Key;
+
+                    return true;
                 }
-
-                return index;
             }
-        }
 
-        public bool GetIndexObj(object key, out int index)
-        {
-            if (key is TKey val)
-                return GetIndex(val, out index);
-            throw new InvalidCastException("key");
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="key"></param>
-        /// <param name="index"></param>
-        /// <returns>true = new index for value, false = existing index for value</returns>
-        public int GetIndexObj(object key)
-        {
-            if (key is TKey val)
-                return GetIndex(val);
-            throw new InvalidCastException("key");
-        }
-
-        public object GetObject(int index) => _values[index];
-
-        public TKey GetKey(int index) => _values[index];
-
-        public void RemoveValue(TKey key)
-        {
-            lock (_lockObj)
-            {
-                _indexes.Remove(key);
-            }
-        }
-
-        public void RemoveObj(object value)
-        {
-            if (value is TKey val)
-                RemoveValue(val);
-            else
-                throw new InvalidCastException("key");
+            return false;
         }
 
         public void Clear()

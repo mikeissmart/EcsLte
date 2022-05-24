@@ -346,32 +346,29 @@ namespace EcsLte
         {
             _configOffsets = MemoryHelper.Alloc<ComponentConfigOffset>(archeType.ComponentConfigLength);
 
-            if (archeType.ComponentConfigLength > 0)
+            var managedConfigs = new List<ComponentConfig>();
+            for (var i = 0; i < archeType.ComponentConfigLength; i++)
             {
-                var managedConfigs = new List<ComponentConfig>();
-                for (var i = 0; i < archeType.ComponentConfigLength; i++)
-                {
-                    var config = archeType.ComponentConfigs[i];
-                    if (config.IsManaged)
-                        managedConfigs.Add(config);
+                var config = archeType.ComponentConfigs[i];
+                if (config.IsManaged)
+                    managedConfigs.Add(config);
 
-                    _configOffsets[i] = new ComponentConfigOffset
-                    {
-                        Config = config,
-                        OffsetInBytes = ComponentsSizeInBytes
-                    };
-                    if (config.UnmanagedSizeInBytes == 0)
-                        ComponentsSizeInBytes++;
-                    else
-                        ComponentsSizeInBytes += config.UnmanagedSizeInBytes;
-                }
-                if (managedConfigs.Count > 0)
+                _configOffsets[i] = new ComponentConfigOffset
                 {
-                    ManagedConfigs = MemoryHelper.Alloc<ComponentConfig>(managedConfigs.Count);
-                    ManagedConfigsLength = managedConfigs.Count;
-                    for (var i = 0; i < ManagedConfigsLength; i++)
-                        ManagedConfigs[i] = managedConfigs[i];
-                }
+                    Config = config,
+                    OffsetInBytes = ComponentsSizeInBytes
+                };
+                if (config.UnmanagedSizeInBytes == 0)
+                    ComponentsSizeInBytes++;
+                else
+                    ComponentsSizeInBytes += config.UnmanagedSizeInBytes;
+            }
+            if (managedConfigs.Count > 0)
+            {
+                ManagedConfigs = MemoryHelper.Alloc<ComponentConfig>(managedConfigs.Count);
+                ManagedConfigsLength = managedConfigs.Count;
+                for (var i = 0; i < ManagedConfigsLength; i++)
+                    ManagedConfigs[i] = managedConfigs[i];
             }
             ArcheType = archeType;
             ArcheTypeIndex = archeTypeIndex;
@@ -440,17 +437,5 @@ namespace EcsLte
             }
             EntityCount--;
         }
-
-        /*private int CalculateEntityOffset(int entityIndex)
-            => entityIndex * TypeCache<Entity>.SizeInBytes;
-
-        private int CalculateComponentsOffset(int entityIndex)
-            => (EntityCapacity * TypeCache<Entity>.SizeInBytes) + (entityIndex * ComponentsSizeInBytes);
-
-        private int CalculateComponentsOffset(int entityIndex, ComponentConfig config)
-        {
-            GetComponentOffset(config, out var configOffset);
-            return CalculateComponentsOffset(entityIndex) + configOffset.OffsetInBytes;
-        }*/
     }
 }
