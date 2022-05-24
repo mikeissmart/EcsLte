@@ -58,7 +58,7 @@ namespace EcsLte
             _systems = new SystemManager(this);
             _cachedArcheType = ArcheType.Alloc(
                 ComponentConfigs.Instance.AllComponentCount,
-                ComponentConfigs.Instance.AllSharedCount); 
+                ComponentConfigs.Instance.AllSharedCount);
 
             Name = name;
             SharedIndexDics = new SharedComponentIndexDictionaries();

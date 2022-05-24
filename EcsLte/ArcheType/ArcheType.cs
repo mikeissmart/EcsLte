@@ -86,7 +86,7 @@ namespace EcsLte
 
             return false;
         }
-        
+
         public void Dispose()
         {
             if (ComponentConfigLength != 0)

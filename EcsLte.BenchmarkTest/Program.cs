@@ -1,7 +1,6 @@
 ﻿using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Running;
-using System;
 
 namespace EcsLte.BenchmarkTest
 {
@@ -12,8 +11,8 @@ namespace EcsLte.BenchmarkTest
 #if DEBUG
             var config = ManualConfig.Create(new DebugInProcessConfig());
 #else
-			var config = ManualConfig.Create(DefaultConfig.Instance);
-			config.ArtifactsPath = "../../BenchResults";
+            var config = ManualConfig.Create(DefaultConfig.Instance);
+            config.ArtifactsPath = "../../BenchResults";
 #endif
             config = config.WithOptions(ConfigOptions.JoinSummary)
                 .StopOnFirstError(true)
