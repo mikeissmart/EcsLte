@@ -1,6 +1,5 @@
 ﻿using EcsLte.Data;
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace EcsLte
@@ -29,7 +28,7 @@ namespace EcsLte
         public ComponentConfig Config { get; private set; }
         public ComponentConfigOffset ConfigOffset { get; private set; }
         public SharedComponentDataIndex SharedDataIndex { get; protected set; }
-        public bool IsUpdated { get => !OrignalComponent.Equals(Component); }
+        public bool IsUpdated => !OrignalComponent.Equals(Component);
 
         protected TComponent Component;
         protected TComponent OrignalComponent;
@@ -79,14 +78,11 @@ namespace EcsLte
             : base(config) =>
             _sharedComponentIndexDic = sharedIndexDics.GetSharedIndexDic<TComponent>();
 
-        public override SharedComponentDataIndex GetSharedDataIndex()
+        public override SharedComponentDataIndex GetSharedDataIndex() => new SharedComponentDataIndex
         {
-            return new SharedComponentDataIndex
-            {
-                SharedIndex = Config.SharedIndex,
-                SharedDataIndex = _sharedComponentIndexDic.GetOrAdd(Component)
-            };
-        }
+            SharedIndex = Config.SharedIndex,
+            SharedDataIndex = _sharedComponentIndexDic.GetOrAdd(Component)
+        };
     }
 
     internal class ManageComponentAdapter<TComponent> : ComponentAdapter<TComponent>
@@ -100,7 +96,7 @@ namespace EcsLte
         public override unsafe void StoreComponent(byte* componentsPtr, ArcheTypeData* archeTypeData)
         {
             CurrentArcheTypeData = archeTypeData;
-            var componentIndex =  Marshal.PtrToStructure<int>((IntPtr)(componentsPtr + ConfigOffset.OffsetInBytes));
+            var componentIndex = Marshal.PtrToStructure<int>((IntPtr)(componentsPtr + ConfigOffset.OffsetInBytes));
             Component = _managePool.GetComponent(componentIndex);
             OrignalComponent = Component;
         }
@@ -124,14 +120,11 @@ namespace EcsLte
             : base(config, managePools) =>
             _sharedComponentIndexDic = sharedIndexDics.GetSharedIndexDic<TComponent>();
 
-        public override SharedComponentDataIndex GetSharedDataIndex()
+        public override SharedComponentDataIndex GetSharedDataIndex() => new SharedComponentDataIndex
         {
-            return new SharedComponentDataIndex
-            {
-                SharedIndex = Config.SharedIndex,
-                SharedDataIndex = _sharedComponentIndexDic.GetOrAdd(Component)
-            };
-        }
+            SharedIndex = Config.SharedIndex,
+            SharedDataIndex = _sharedComponentIndexDic.GetOrAdd(Component)
+        };
     }
 
     internal static class EntityQueryComponentAdapters

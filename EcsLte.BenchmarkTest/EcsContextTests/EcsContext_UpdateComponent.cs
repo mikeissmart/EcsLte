@@ -1,6 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
 using System;
-using System.Collections.Generic;
 
 namespace EcsLte.BenchmarkTest.EcsContextTests
 {

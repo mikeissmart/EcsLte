@@ -1270,12 +1270,10 @@ namespace EcsLte
             }
         }
 
-        private ArcheTypeData* CachedArcheTypeGetNextArcheTypeData(ArcheTypeData* prevArcheTypeData, SharedComponentDataIndex replaceSharedDataIndex)
-        {
-            return _cachedArcheType.ReplaceSharedComponentDataIndex(replaceSharedDataIndex)
+        private ArcheTypeData* CachedArcheTypeGetNextArcheTypeData(ArcheTypeData* prevArcheTypeData, SharedComponentDataIndex replaceSharedDataIndex) =>
+            _cachedArcheType.ReplaceSharedComponentDataIndex(replaceSharedDataIndex)
                 ? GetArcheTypeDataFromCachedArcheType()
                 : prevArcheTypeData;
-        }
 
         private ArcheTypeData* GetArcheTypeDataFromEntityArcheType(EntityArcheType entityArcheType, bool behindLock)
         {
@@ -1357,7 +1355,8 @@ namespace EcsLte
             return archeTypeData;
         }
 
-        private ArcheTypeData* GetArcheTypeDataFromIndex(ArcheTypeIndex archeTypeIndex) => (ArcheTypeData*)_archeTypeDatas
+        private ArcheTypeData* GetArcheTypeDataFromIndex(ArcheTypeIndex archeTypeIndex) =>
+            (ArcheTypeData*)_archeTypeDatas
                 [archeTypeIndex.ComponentConfigLength]
                 [archeTypeIndex.Index]
                 .Ptr;
