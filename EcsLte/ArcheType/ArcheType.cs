@@ -58,28 +58,13 @@ namespace EcsLte
             return false;
         }
 
-        internal bool HasSharedComponentDataIndex(SharedComponentDataIndex sharedComponentDataindex)
+        internal bool ReplaceSharedComponentDataIndex(SharedComponentDataIndex nextSharedDataIndex)
         {
             for (var i = 0; i < SharedComponentDataLength; i++)
             {
-                var check = SharedComponentDataIndexes[i];
-                if (check.SharedIndex == sharedComponentDataindex.SharedDataIndex &&
-                    check.SharedDataIndex == sharedComponentDataindex.SharedDataIndex)
+                if (SharedComponentDataIndexes[i].SharedIndex == nextSharedDataIndex.SharedIndex)
                 {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        internal bool ReplaceSharedComponentDataIndex(SharedComponentDataIndex sharedDataIndex)
-        {
-            for (var i = 0; i < SharedComponentDataLength; i++)
-            {
-                if (SharedComponentDataIndexes[i].SharedIndex == sharedDataIndex.SharedIndex)
-                {
-                    SharedComponentDataIndexes[i] = sharedDataIndex;
+                    SharedComponentDataIndexes[i] = nextSharedDataIndex;
                     return true;
                 }
             }
@@ -105,19 +90,19 @@ namespace EcsLte
 
         public static bool operator ==(ArcheType lhs, ArcheType rhs)
         {
-            if (lhs.ComponentConfigLength != rhs.ComponentConfigLength)
-                return false;
             if (lhs.SharedComponentDataLength != rhs.SharedComponentDataLength)
                 return false;
+            if (lhs.ComponentConfigLength != rhs.ComponentConfigLength)
+                return false;
 
+            for (var i = 0; i < lhs.SharedComponentDataLength; i++)
+            {
+                if (lhs.SharedComponentDataIndexes[i].SharedIndex != rhs.SharedComponentDataIndexes[i].SharedIndex)
+                    return false;
+            }
             for (var i = 0; i < lhs.ComponentConfigLength; i++)
             {
                 if (lhs.ComponentConfigs[i] != rhs.ComponentConfigs[i])
-                    return false;
-            }
-            for (var i = 0; i < lhs.SharedComponentDataLength; i++)
-            {
-                if (lhs.SharedComponentDataIndexes[i] != rhs.SharedComponentDataIndexes[i])
                     return false;
             }
 

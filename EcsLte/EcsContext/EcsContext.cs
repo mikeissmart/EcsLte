@@ -404,7 +404,7 @@ namespace EcsLte
 
                 var prevEntityData = sourceContext._entityDatas[entity.Id];
                 var prevArcheTypeData = prevEntityData.ArcheTypeData;
-                CopyToCachedArcheType(prevArcheTypeData->ArcheType);
+                CachedArcheTypeCopyTo(prevArcheTypeData->ArcheType);
 
                 var nextArcheTypeData = GetArcheTypeDataFromCachedArcheType();
                 nextEntity = AllocateEntity();
@@ -474,7 +474,7 @@ namespace EcsLte
                     ArcheTypeData* nextArcheTypeData;
                     if (!cachedArcheTypeDatas.TryGetValue(prevArcheTypeDataPtr, out var nextArcheTypeDataPtr))
                     {
-                        CopyToCachedArcheType(prevArcheTypeData->ArcheType);
+                        CachedArcheTypeCopyTo(prevArcheTypeData->ArcheType);
                         nextArcheTypeData = GetArcheTypeDataFromCachedArcheType();
                         nextArcheTypeDataPtr.Ptr = nextArcheTypeData;
                         cachedArcheTypeDatas.Add(prevArcheTypeDataPtr, nextArcheTypeDataPtr);
@@ -824,10 +824,10 @@ namespace EcsLte
                 var entityData = _entityDatas[entity.Id];
                 if (config.IsShared)
                 {
-                    CopyToCachedArcheType(entityData.ArcheTypeData->ArcheType);
-                    _cachedArcheType.ReplaceSharedComponentDataIndex(SharedIndexDics.GetDataIndex(component));
-                    var nextArcheTypeData = GetArcheTypeDataFromCachedArcheType();
-                    if (nextArcheTypeData != entityData.ArcheTypeData)
+                    CachedArcheTypeCopyTo(entityData.ArcheTypeData->ArcheType);
+                    var nextArcheTypeData = CachedArcheTypeGetNextArcheTypeData(entityData.ArcheTypeData,
+                        SharedIndexDics.GetDataIndex(component));
+                    if (entityData.ArcheTypeData != nextArcheTypeData)
                         entityData = ArcheTypeData.TransferEntity(entity, nextArcheTypeData, ref _entityDatas);
                 }
 
@@ -872,13 +872,14 @@ namespace EcsLte
                         prevArcheTypePtr.Ptr = entityData.ArcheTypeData;
                         if (!cachedArcheTypeDatas.TryGetValue(prevArcheTypePtr, out var nextArcheTypeDataPtr))
                         {
-                            CopyToCachedArcheType(prevArcheTypeData->ArcheType);
-                            _cachedArcheType.ReplaceSharedComponentDataIndex(new SharedComponentDataIndex
+                            CachedArcheTypeCopyTo(prevArcheTypeData->ArcheType);
+                            var nextSharedDataIndex = new SharedComponentDataIndex
                             {
                                 SharedIndex = config.SharedIndex,
                                 SharedDataIndex = sharedIndexDic.GetOrAdd(component),
-                            });
-                            nextArcheTypeData = GetArcheTypeDataFromCachedArcheType();
+                            };
+                            nextArcheTypeData = CachedArcheTypeGetNextArcheTypeData(prevArcheTypeData, nextSharedDataIndex);
+
                             nextArcheTypeDataPtr.Ptr = nextArcheTypeData;
                             cachedArcheTypeDatas.Add(prevArcheTypePtr, nextArcheTypeDataPtr);
                         }
@@ -888,9 +889,7 @@ namespace EcsLte
                         }
 
                         if (prevArcheTypeData != nextArcheTypeData)
-                        {
                             entityData = ArcheTypeData.TransferEntity(entity, nextArcheTypeData, ref _entityDatas);
-                        }
 
                         if (!cachedConfigOffsets.TryGetValue(nextArcheTypeDataPtr, out var configOffset))
                         {
@@ -944,15 +943,10 @@ namespace EcsLte
                 if (config.IsShared)
                 {
                     var prevArcheTypeData = GetArcheTypeDataFromEntityArcheType(entityArcheType, true);
-                    CopyToCachedArcheType(prevArcheTypeData->ArcheType);
-                    _cachedArcheType.ReplaceSharedComponentDataIndex(new SharedComponentDataIndex
-                    {
-                        SharedIndex = config.SharedIndex,
-                        SharedDataIndex = SharedIndexDics
-                            .GetSharedIndexDic<TComponent>()
-                            .GetOrAdd(component),
-                    });
-                    var nextArcheTypeData = GetArcheTypeDataFromCachedArcheType();
+                    CachedArcheTypeCopyTo(prevArcheTypeData->ArcheType);
+                    var nextArcheTypeData = CachedArcheTypeGetNextArcheTypeData(prevArcheTypeData,
+                        SharedIndexDics.GetDataIndex(component));
+
                     if (nextArcheTypeData != prevArcheTypeData)
                         ArcheTypeData.TransferAllEntities(prevArcheTypeData, nextArcheTypeData, ref _entityDatas);
 
@@ -998,13 +992,13 @@ namespace EcsLte
                         for (var i = 0; i < contextQueryData.ArcheTypeDatas.Length; i++)
                         {
                             var prevArcheTypeData = (ArcheTypeData*)contextQueryData.ArcheTypeDatas[i].Ptr;
-                            CopyToCachedArcheType(prevArcheTypeData->ArcheType);
-                            _cachedArcheType.ReplaceSharedComponentDataIndex(new SharedComponentDataIndex
+                            CachedArcheTypeCopyTo(prevArcheTypeData->ArcheType);
+                            var nextSharedDataIndex = new SharedComponentDataIndex
                             {
                                 SharedIndex = config.SharedIndex,
                                 SharedDataIndex = sharedIndexDic.GetOrAdd(component),
-                            });
-                            var nextArcheTypeData = GetArcheTypeDataFromCachedArcheType();
+                            };
+                            var nextArcheTypeData = CachedArcheTypeGetNextArcheTypeData(prevArcheTypeData, nextSharedDataIndex);
                             if (nextArcheTypeData != prevArcheTypeData)
                                 ArcheTypeData.TransferAllEntities(prevArcheTypeData, nextArcheTypeData, ref _entityDatas);
 
@@ -1017,13 +1011,13 @@ namespace EcsLte
                         for (var i = 0; i < contextQueryData.ArcheTypeDatas.Length; i++)
                         {
                             var prevArcheTypeData = (ArcheTypeData*)contextQueryData.ArcheTypeDatas[i].Ptr;
-                            CopyToCachedArcheType(prevArcheTypeData->ArcheType);
-                            _cachedArcheType.ReplaceSharedComponentDataIndex(new SharedComponentDataIndex
+                            CachedArcheTypeCopyTo(prevArcheTypeData->ArcheType);
+                            var nextSharedDataIndex = new SharedComponentDataIndex
                             {
                                 SharedIndex = config.SharedIndex,
                                 SharedDataIndex = sharedIndexDic.GetOrAdd(component),
-                            });
-                            var nextArcheTypeData = GetArcheTypeDataFromCachedArcheType();
+                            };
+                            var nextArcheTypeData = CachedArcheTypeGetNextArcheTypeData(prevArcheTypeData, nextSharedDataIndex);
                             if (nextArcheTypeData != prevArcheTypeData)
                                 ArcheTypeData.TransferAllEntities(prevArcheTypeData, nextArcheTypeData, ref _entityDatas);
 
@@ -1054,20 +1048,27 @@ namespace EcsLte
             }
         }
 
-        internal void UpdateForEachArcheType(Entity entity, EntityData entityData, IComponentAdapter[] sharedComponentAdapters)
+        internal void UpdateForEachArcheType(Entity entity, IComponentAdapter[] writeAdapters)
         {
-            var updatedAdapters = sharedComponentAdapters
-                .Where(x => x.IsUpdated);
-
-            if (updatedAdapters.Count() > 0)
+            lock (LockObj)
             {
-                CopyToCachedArcheType(entityData.ArcheTypeData->ArcheType);
-                foreach (var adapter in updatedAdapters)
-                    _cachedArcheType.ReplaceSharedComponentDataIndex(adapter.SharedDataIndex);
+                if (!HasEntity(entity))
+                    throw new EntityDoesNotExistException(entity);
 
-                var nextArcheTypeData = GetArcheTypeDataFromCachedArcheType();
-                if (nextArcheTypeData != entityData.ArcheTypeData)
-                    entityData = ArcheTypeData.TransferEntity(entity, nextArcheTypeData, ref _entityDatas);
+                var entityData = _entityDatas[entity.Id];
+                var anyChangeArcheType = false;
+                CachedArcheTypeCopyTo(entityData.ArcheTypeData->ArcheType);
+                for (var i = 0; i < writeAdapters.Length; i++)
+                {
+                    var adapter = writeAdapters[i];
+                    adapter.UpdateComponent(entityData, entityData.ArcheTypeData);
+                    if (adapter.Config.IsShared && adapter.IsUpdated)
+                        anyChangeArcheType |= _cachedArcheType.ReplaceSharedComponentDataIndex(adapter.GetSharedDataIndex());
+                }
+
+                if (anyChangeArcheType)
+                    entityData = ArcheTypeData.TransferEntity(entity, GetArcheTypeDataFromCachedArcheType(), ref _entityDatas);
+
             }
         }
 
@@ -1210,7 +1211,7 @@ namespace EcsLte
             var entitiesLength = prevArcheTypeData->EntityCount;
             CheckCapacity(entitiesLength);
 
-            CopyToCachedArcheType(prevArcheTypeData->ArcheType);
+            CachedArcheTypeCopyTo(prevArcheTypeData->ArcheType);
             var nextArcheTypeData = GetArcheTypeDataFromCachedArcheType();
 
             var componentIndexes = new int[nextArcheTypeData->ManagedConfigsLength][];
@@ -1251,7 +1252,7 @@ namespace EcsLte
 
         #region ArcheType
 
-        private void CopyToCachedArcheType(ArcheType source)
+        private void CachedArcheTypeCopyTo(ArcheType source)
         {
             _cachedArcheType.ComponentConfigLength = source.ComponentConfigLength;
             _cachedArcheType.SharedComponentDataLength = source.SharedComponentDataLength;
@@ -1267,6 +1268,13 @@ namespace EcsLte
                     _cachedArcheType.SharedComponentDataIndexes,
                     source.SharedComponentDataLength * TypeCache<SharedComponentDataIndex>.SizeInBytes);
             }
+        }
+
+        private ArcheTypeData* CachedArcheTypeGetNextArcheTypeData(ArcheTypeData* prevArcheTypeData, SharedComponentDataIndex replaceSharedDataIndex)
+        {
+            return _cachedArcheType.ReplaceSharedComponentDataIndex(replaceSharedDataIndex)
+                ? GetArcheTypeDataFromCachedArcheType()
+                : prevArcheTypeData;
         }
 
         private ArcheTypeData* GetArcheTypeDataFromEntityArcheType(EntityArcheType entityArcheType, bool behindLock)
@@ -1359,7 +1367,7 @@ namespace EcsLte
         {
             while (_archeTypeIndexes.Count <= configCount)
             {
-                _archeTypeIndexes.Add(new IndexDictionary<ArcheType>());
+                _archeTypeIndexes.Add(new IndexDictionary<ArcheType>(ArcheTypeEqualityComparer.Comparer));
                 _archeTypeDatas.Add(new List<PtrWrapper>());
             }
 
@@ -1427,7 +1435,7 @@ namespace EcsLte
         {
             while (_queryDatas.Count <= configCount)
             {
-                _queryDataIndexes.Add(new IndexDictionary<EntityQueryData>());
+                _queryDataIndexes.Add(new IndexDictionary<EntityQueryData>(EntityQueryDataEqualityComparer.Comparer));
                 _queryDatas.Add(new List<EntityQueryData>());
             }
 

@@ -23,9 +23,16 @@ namespace EcsLte.Data
         private readonly List<TKey> _values;
         private readonly object _lockObj;
 
-        internal IndexDictionary()
+        protected IndexDictionary()
         {
             _indexes = new Dictionary<TKey, int>();
+            _values = new List<TKey>();
+            _lockObj = new object();
+        }
+
+        internal IndexDictionary(IEqualityComparer<TKey> comparer)
+        {
+            _indexes = new Dictionary<TKey, int>(comparer);
             _values = new List<TKey>();
             _lockObj = new object();
         }
@@ -36,6 +43,7 @@ namespace EcsLte.Data
             {
                 if (!_indexes.TryGetValue(key, out var index))
                 {
+                    index = _values.Count;
                     _indexes.Add(key, index);
                     _values.Add(key);
                 }
@@ -57,6 +65,7 @@ namespace EcsLte.Data
             {
                 if (!_indexes.TryGetValue(key, out var index))
                 {
+                    index = _values.Count;
                     _indexes.Add(key, index);
                     _values.Add(key);
                     addAction.Invoke(index);
@@ -79,6 +88,7 @@ namespace EcsLte.Data
             {
                 if (!_indexes.TryGetValue(key, out var index))
                 {
+                    index = _values.Count;
                     key = addAction.Invoke(index);
                     _indexes.Add(key, index);
                     _values.Add(key);

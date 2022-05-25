@@ -620,74 +620,66 @@ namespace EcsLte
 
         #region ForEachs
 
-        public unsafe void ForEach(EcsContext context, bool runParallel, EntityQueryActions.R0W0 action) => ForEachRun(context, runParallel,
+        public unsafe void ForEach(EcsContext context, bool runParallel, EntityQueryActions.R0W0 action) =>
+            ForEachRun(context, runParallel, 0,
                 new ComponentConfig[0],
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    action(index, entity);
+                    action(options.Index, options.CurrentEntity);
                 });
 
         #region Write 0
 
         public unsafe void ForEach<T1>(EcsContext context, bool runParallel, EntityQueryActions.R1W0<T1> action)
-            where T1 : IComponent => ForEachRun(context, runParallel,
+            where T1 : IComponent => ForEachRun(context, runParallel, 0,
                 new[]
                 {
                     ComponentConfig<T1>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-
-                    action(index, entity,
-                        in component1);
+                    action(options.Index, options.CurrentEntity,
+                        in ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2>(EcsContext context, bool runParallel, EntityQueryActions.R2W0<T1, T2> action)
             where T1 : IComponent
-            where T2 : IComponent => ForEachRun(context, runParallel,
+            where T2 : IComponent => ForEachRun(context, runParallel, 0,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
                     ComponentConfig<T2>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-
-                    action(index, entity,
-                        in component1,
-                        in component2);
+                    action(options.Index, options.CurrentEntity,
+                        in ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        in ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3>(EcsContext context, bool runParallel, EntityQueryActions.R3W0<T1, T2, T3> action)
             where T1 : IComponent
             where T2 : IComponent
-            where T3 : IComponent => ForEachRun(context, runParallel,
+            where T3 : IComponent => ForEachRun(context, runParallel, 0,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
                     ComponentConfig<T2>.Config,
                     ComponentConfig<T3>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-
-                    action(index, entity,
-                        in component1,
-                        in component2,
-                        in component3);
+                    action(options.Index, options.CurrentEntity,
+                        in ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        in ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4>(EcsContext context, bool runParallel, EntityQueryActions.R4W0<T1, T2, T3, T4> action)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
-            where T4 : IComponent => ForEachRun(context, runParallel,
+            where T4 : IComponent => ForEachRun(context, runParallel, 0,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -695,18 +687,13 @@ namespace EcsLte
                     ComponentConfig<T3>.Config,
                     ComponentConfig<T4>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-
-                    action(index, entity,
-                        in component1,
-                        in component2,
-                        in component3,
-                        in component4);
+                    action(options.Index, options.CurrentEntity,
+                        in ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        in ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5>(EcsContext context, bool runParallel, EntityQueryActions.R5W0<T1, T2, T3, T4, T5> action)
@@ -714,7 +701,7 @@ namespace EcsLte
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
-            where T5 : IComponent => ForEachRun(context, runParallel,
+            where T5 : IComponent => ForEachRun(context, runParallel, 0,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -723,20 +710,14 @@ namespace EcsLte
                     ComponentConfig<T4>.Config,
                     ComponentConfig<T5>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-
-                    action(index, entity,
-                        in component1,
-                        in component2,
-                        in component3,
-                        in component4,
-                        in component5);
+                    action(options.Index, options.CurrentEntity,
+                        in ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        in ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R6W0<T1, T2, T3, T4, T5, T6> action)
@@ -745,7 +726,7 @@ namespace EcsLte
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
-            where T6 : IComponent => ForEachRun(context, runParallel,
+            where T6 : IComponent => ForEachRun(context, runParallel, 0,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -755,22 +736,15 @@ namespace EcsLte
                     ComponentConfig<T5>.Config,
                     ComponentConfig<T6>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-
-                    action(index, entity,
-                        in component1,
-                        in component2,
-                        in component3,
-                        in component4,
-                        in component5,
-                        in component6);
+                    action(options.Index, options.CurrentEntity,
+                        in ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        in ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R7W0<T1, T2, T3, T4, T5, T6, T7> action)
@@ -780,7 +754,7 @@ namespace EcsLte
             where T4 : IComponent
             where T5 : IComponent
             where T6 : IComponent
-            where T7 : IComponent => ForEachRun(context, runParallel,
+            where T7 : IComponent => ForEachRun(context, runParallel, 0,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -791,24 +765,16 @@ namespace EcsLte
                     ComponentConfig<T6>.Config,
                     ComponentConfig<T7>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-                    var component7 = componentAdapters[6].GetComponent<T7>();
-
-                    action(index, entity,
-                        in component1,
-                        in component2,
-                        in component3,
-                        in component4,
-                        in component5,
-                        in component6,
-                        in component7);
+                    action(options.Index, options.CurrentEntity,
+                        in ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        in ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef(),
+                        in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R8W0<T1, T2, T3, T4, T5, T6, T7, T8> action)
@@ -819,7 +785,7 @@ namespace EcsLte
             where T5 : IComponent
             where T6 : IComponent
             where T7 : IComponent
-            where T8 : IComponent => ForEachRun(context, runParallel,
+            where T8 : IComponent => ForEachRun(context, runParallel, 0,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -831,26 +797,17 @@ namespace EcsLte
                     ComponentConfig<T7>.Config,
                     ComponentConfig<T8>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-                    var component7 = componentAdapters[6].GetComponent<T7>();
-                    var component8 = componentAdapters[7].GetComponent<T8>();
-
-                    action(index, entity,
-                        in component1,
-                        in component2,
-                        in component3,
-                        in component4,
-                        in component5,
-                        in component6,
-                        in component7,
-                        in component8);
+                    action(options.Index, options.CurrentEntity,
+                        in ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        in ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef(),
+                        in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef(),
+                        in ((IComponentAdapter<T8>)options.ComponentAdapters[7]).GetComponentRef());
                 });
 
         #endregion Write 0
@@ -858,91 +815,55 @@ namespace EcsLte
         #region Write 1
 
         public unsafe void ForEach<T1>(EcsContext context, bool runParallel, EntityQueryActions.R0W1<T1> action)
-            where T1 : IComponent => ForEachRun(context, runParallel,
+            where T1 : IComponent => ForEachRun(context, runParallel, 1,
                 new[]
                 {
                     ComponentConfig<T1>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-
-                    action(index, entity,
-                        ref component1);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2>(EcsContext context, bool runParallel, EntityQueryActions.R1W1<T1, T2> action)
             where T1 : IComponent
-            where T2 : IComponent => ForEachRun(context, runParallel,
+            where T2 : IComponent => ForEachRun(context, runParallel, 1,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
                     ComponentConfig<T2>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-
-                    action(index, entity,
-                        ref component1,
-                        in component2);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        in ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3>(EcsContext context, bool runParallel, EntityQueryActions.R2W1<T1, T2, T3> action)
             where T1 : IComponent
             where T2 : IComponent
-            where T3 : IComponent => ForEachRun(context, runParallel,
+            where T3 : IComponent => ForEachRun(context, runParallel, 1,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
                     ComponentConfig<T2>.Config,
                     ComponentConfig<T3>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-
-                    action(index, entity,
-                        ref component1,
-                        in component2,
-                        in component3);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        in ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4>(EcsContext context, bool runParallel, EntityQueryActions.R3W1<T1, T2, T3, T4> action)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
-            where T4 : IComponent => ForEachRun(context, runParallel,
+            where T4 : IComponent => ForEachRun(context, runParallel, 1,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -950,27 +871,13 @@ namespace EcsLte
                     ComponentConfig<T3>.Config,
                     ComponentConfig<T4>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-
-                    action(index, entity,
-                        ref component1,
-                        in component2,
-                        in component3,
-                        in component4);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        in ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5>(EcsContext context, bool runParallel, EntityQueryActions.R4W1<T1, T2, T3, T4, T5> action)
@@ -978,7 +885,7 @@ namespace EcsLte
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
-            where T5 : IComponent => ForEachRun(context, runParallel,
+            where T5 : IComponent => ForEachRun(context, runParallel, 1,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -987,29 +894,14 @@ namespace EcsLte
                     ComponentConfig<T4>.Config,
                     ComponentConfig<T5>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-
-                    action(index, entity,
-                        ref component1,
-                        in component2,
-                        in component3,
-                        in component4,
-                        in component5);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        in ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R5W1<T1, T2, T3, T4, T5, T6> action)
@@ -1018,7 +910,7 @@ namespace EcsLte
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
-            where T6 : IComponent => ForEachRun(context, runParallel,
+            where T6 : IComponent => ForEachRun(context, runParallel, 1,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1028,31 +920,15 @@ namespace EcsLte
                     ComponentConfig<T5>.Config,
                     ComponentConfig<T6>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-
-                    action(index, entity,
-                        ref component1,
-                        in component2,
-                        in component3,
-                        in component4,
-                        in component5,
-                        in component6);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        in ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R6W1<T1, T2, T3, T4, T5, T6, T7> action)
@@ -1062,7 +938,7 @@ namespace EcsLte
             where T4 : IComponent
             where T5 : IComponent
             where T6 : IComponent
-            where T7 : IComponent => ForEachRun(context, runParallel,
+            where T7 : IComponent => ForEachRun(context, runParallel, 1,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1073,33 +949,16 @@ namespace EcsLte
                     ComponentConfig<T6>.Config,
                     ComponentConfig<T7>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-                    var component7 = componentAdapters[6].GetComponent<T7>();
-
-                    action(index, entity,
-                        ref component1,
-                        in component2,
-                        in component3,
-                        in component4,
-                        in component5,
-                        in component6,
-                        in component7);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        in ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef(),
+                        in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R7W1<T1, T2, T3, T4, T5, T6, T7, T8> action)
@@ -1110,7 +969,7 @@ namespace EcsLte
             where T5 : IComponent
             where T6 : IComponent
             where T7 : IComponent
-            where T8 : IComponent => ForEachRun(context, runParallel,
+            where T8 : IComponent => ForEachRun(context, runParallel, 1,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1122,35 +981,17 @@ namespace EcsLte
                     ComponentConfig<T7>.Config,
                     ComponentConfig<T8>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-                    var component7 = componentAdapters[6].GetComponent<T7>();
-                    var component8 = componentAdapters[7].GetComponent<T8>();
-
-                    action(index, entity,
-                        ref component1,
-                        in component2,
-                        in component3,
-                        in component4,
-                        in component5,
-                        in component6,
-                        in component7,
-                        in component8);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        in ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef(),
+                        in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef(),
+                        in ((IComponentAdapter<T8>)options.ComponentAdapters[7]).GetComponentRef());
                 });
 
         #endregion Write 1
@@ -1159,69 +1000,42 @@ namespace EcsLte
 
         public unsafe void ForEach<T1, T2>(EcsContext context, bool runParallel, EntityQueryActions.R0W2<T1, T2> action)
             where T1 : IComponent
-            where T2 : IComponent => ForEachRun(context, runParallel,
+            where T2 : IComponent => ForEachRun(context, runParallel, 2,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
                     ComponentConfig<T2>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3>(EcsContext context, bool runParallel, EntityQueryActions.R1W2<T1, T2, T3> action)
             where T1 : IComponent
             where T2 : IComponent
-            where T3 : IComponent => ForEachRun(context, runParallel,
+            where T3 : IComponent => ForEachRun(context, runParallel, 2,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
                     ComponentConfig<T2>.Config,
                     ComponentConfig<T3>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        in component3);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4>(EcsContext context, bool runParallel, EntityQueryActions.R2W2<T1, T2, T3, T4> action)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
-            where T4 : IComponent => ForEachRun(context, runParallel,
+            where T4 : IComponent => ForEachRun(context, runParallel, 2,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1229,28 +1043,13 @@ namespace EcsLte
                     ComponentConfig<T3>.Config,
                     ComponentConfig<T4>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        in component3,
-                        in component4);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5>(EcsContext context, bool runParallel, EntityQueryActions.R3W2<T1, T2, T3, T4, T5> action)
@@ -1258,7 +1057,7 @@ namespace EcsLte
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
-            where T5 : IComponent => ForEachRun(context, runParallel,
+            where T5 : IComponent => ForEachRun(context, runParallel, 2,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1267,30 +1066,14 @@ namespace EcsLte
                     ComponentConfig<T4>.Config,
                     ComponentConfig<T5>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        in component3,
-                        in component4,
-                        in component5);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R4W2<T1, T2, T3, T4, T5, T6> action)
@@ -1299,7 +1082,7 @@ namespace EcsLte
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
-            where T6 : IComponent => ForEachRun(context, runParallel,
+            where T6 : IComponent => ForEachRun(context, runParallel, 2,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1309,32 +1092,15 @@ namespace EcsLte
                     ComponentConfig<T5>.Config,
                     ComponentConfig<T6>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        in component3,
-                        in component4,
-                        in component5,
-                        in component6);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R5W2<T1, T2, T3, T4, T5, T6, T7> action)
@@ -1344,7 +1110,7 @@ namespace EcsLte
             where T4 : IComponent
             where T5 : IComponent
             where T6 : IComponent
-            where T7 : IComponent => ForEachRun(context, runParallel,
+            where T7 : IComponent => ForEachRun(context, runParallel, 2,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1355,34 +1121,16 @@ namespace EcsLte
                     ComponentConfig<T6>.Config,
                     ComponentConfig<T7>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-                    var component7 = componentAdapters[6].GetComponent<T7>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        in component3,
-                        in component4,
-                        in component5,
-                        in component6,
-                        in component7);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef(),
+                        in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R6W2<T1, T2, T3, T4, T5, T6, T7, T8> action)
@@ -1393,7 +1141,7 @@ namespace EcsLte
             where T5 : IComponent
             where T6 : IComponent
             where T7 : IComponent
-            where T8 : IComponent => ForEachRun(context, runParallel,
+            where T8 : IComponent => ForEachRun(context, runParallel, 2,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1405,36 +1153,17 @@ namespace EcsLte
                     ComponentConfig<T7>.Config,
                     ComponentConfig<T8>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-                    var component7 = componentAdapters[6].GetComponent<T7>();
-                    var component8 = componentAdapters[7].GetComponent<T8>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        in component3,
-                        in component4,
-                        in component5,
-                        in component6,
-                        in component7,
-                        in component8);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef(),
+                        in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef(),
+                        in ((IComponentAdapter<T8>)options.ComponentAdapters[7]).GetComponentRef());
                 });
 
         #endregion Write 2
@@ -1444,41 +1173,26 @@ namespace EcsLte
         public unsafe void ForEach<T1, T2, T3>(EcsContext context, bool runParallel, EntityQueryActions.R0W3<T1, T2, T3> action)
             where T1 : IComponent
             where T2 : IComponent
-            where T3 : IComponent => ForEachRun(context, runParallel,
+            where T3 : IComponent => ForEachRun(context, runParallel, 3,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
                     ComponentConfig<T2>.Config,
                     ComponentConfig<T3>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4>(EcsContext context, bool runParallel, EntityQueryActions.R1W3<T1, T2, T3, T4> action)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
-            where T4 : IComponent => ForEachRun(context, runParallel,
+            where T4 : IComponent => ForEachRun(context, runParallel, 3,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1486,29 +1200,13 @@ namespace EcsLte
                     ComponentConfig<T3>.Config,
                     ComponentConfig<T4>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        in component4);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5>(EcsContext context, bool runParallel, EntityQueryActions.R2W3<T1, T2, T3, T4, T5> action)
@@ -1516,7 +1214,7 @@ namespace EcsLte
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
-            where T5 : IComponent => ForEachRun(context, runParallel,
+            where T5 : IComponent => ForEachRun(context, runParallel, 3,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1525,31 +1223,14 @@ namespace EcsLte
                     ComponentConfig<T4>.Config,
                     ComponentConfig<T5>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        in component4,
-                        in component5);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R3W3<T1, T2, T3, T4, T5, T6> action)
@@ -1558,7 +1239,7 @@ namespace EcsLte
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
-            where T6 : IComponent => ForEachRun(context, runParallel,
+            where T6 : IComponent => ForEachRun(context, runParallel, 3,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1568,33 +1249,15 @@ namespace EcsLte
                     ComponentConfig<T5>.Config,
                     ComponentConfig<T6>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        in component4,
-                        in component5,
-                        in component6);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R4W3<T1, T2, T3, T4, T5, T6, T7> action)
@@ -1604,7 +1267,7 @@ namespace EcsLte
             where T4 : IComponent
             where T5 : IComponent
             where T6 : IComponent
-            where T7 : IComponent => ForEachRun(context, runParallel,
+            where T7 : IComponent => ForEachRun(context, runParallel, 3,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1615,35 +1278,16 @@ namespace EcsLte
                     ComponentConfig<T6>.Config,
                     ComponentConfig<T7>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-                    var component7 = componentAdapters[6].GetComponent<T7>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        in component4,
-                        in component5,
-                        in component6,
-                        in component7);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef(),
+                        in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R5W3<T1, T2, T3, T4, T5, T6, T7, T8> action)
@@ -1654,7 +1298,7 @@ namespace EcsLte
             where T5 : IComponent
             where T6 : IComponent
             where T7 : IComponent
-            where T8 : IComponent => ForEachRun(context, runParallel,
+            where T8 : IComponent => ForEachRun(context, runParallel, 3,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1666,37 +1310,17 @@ namespace EcsLte
                     ComponentConfig<T7>.Config,
                     ComponentConfig<T8>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-                    var component7 = componentAdapters[6].GetComponent<T7>();
-                    var component8 = componentAdapters[7].GetComponent<T8>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        in component4,
-                        in component5,
-                        in component6,
-                        in component7,
-                        in component8);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef(),
+                        in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef(),
+                        in ((IComponentAdapter<T8>)options.ComponentAdapters[7]).GetComponentRef());
                 });
 
         #endregion Write 3
@@ -1707,7 +1331,7 @@ namespace EcsLte
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
-            where T4 : IComponent => ForEachRun(context, runParallel,
+            where T4 : IComponent => ForEachRun(context, runParallel, 4,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1715,30 +1339,13 @@ namespace EcsLte
                     ComponentConfig<T3>.Config,
                     ComponentConfig<T4>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        ref component4);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            componentAdapters[3].SetComponent(component4);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        ref ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5>(EcsContext context, bool runParallel, EntityQueryActions.R1W4<T1, T2, T3, T4, T5> action)
@@ -1746,7 +1353,7 @@ namespace EcsLte
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
-            where T5 : IComponent => ForEachRun(context, runParallel,
+            where T5 : IComponent => ForEachRun(context, runParallel, 4,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1755,32 +1362,14 @@ namespace EcsLte
                     ComponentConfig<T4>.Config,
                     ComponentConfig<T5>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        ref component4,
-                        in component5);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            componentAdapters[3].SetComponent(component4);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        ref ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R2W4<T1, T2, T3, T4, T5, T6> action)
@@ -1789,7 +1378,7 @@ namespace EcsLte
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
-            where T6 : IComponent => ForEachRun(context, runParallel,
+            where T6 : IComponent => ForEachRun(context, runParallel, 4,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1799,34 +1388,15 @@ namespace EcsLte
                     ComponentConfig<T5>.Config,
                     ComponentConfig<T6>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        ref component4,
-                        in component5,
-                        in component6);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            componentAdapters[3].SetComponent(component4);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        ref ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R3W4<T1, T2, T3, T4, T5, T6, T7> action)
@@ -1836,7 +1406,7 @@ namespace EcsLte
             where T4 : IComponent
             where T5 : IComponent
             where T6 : IComponent
-            where T7 : IComponent => ForEachRun(context, runParallel,
+            where T7 : IComponent => ForEachRun(context, runParallel, 4,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1847,36 +1417,16 @@ namespace EcsLte
                     ComponentConfig<T6>.Config,
                     ComponentConfig<T7>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-                    var component7 = componentAdapters[6].GetComponent<T7>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        ref component4,
-                        in component5,
-                        in component6,
-                        in component7);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            componentAdapters[3].SetComponent(component4);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        ref ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef(),
+                        in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R4W4<T1, T2, T3, T4, T5, T6, T7, T8> action)
@@ -1887,7 +1437,7 @@ namespace EcsLte
             where T5 : IComponent
             where T6 : IComponent
             where T7 : IComponent
-            where T8 : IComponent => ForEachRun(context, runParallel,
+            where T8 : IComponent => ForEachRun(context, runParallel, 4,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1899,38 +1449,17 @@ namespace EcsLte
                     ComponentConfig<T7>.Config,
                     ComponentConfig<T8>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-                    var component7 = componentAdapters[6].GetComponent<T7>();
-                    var component8 = componentAdapters[7].GetComponent<T8>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        ref component4,
-                        in component5,
-                        in component6,
-                        in component7,
-                        in component8);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            componentAdapters[3].SetComponent(component4);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        ref ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef(),
+                        in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef(),
+                        in ((IComponentAdapter<T8>)options.ComponentAdapters[7]).GetComponentRef());
                 });
 
         #endregion Write 4
@@ -1942,7 +1471,7 @@ namespace EcsLte
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
-            where T5 : IComponent => ForEachRun(context, runParallel,
+            where T5 : IComponent => ForEachRun(context, runParallel, 5,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1951,33 +1480,14 @@ namespace EcsLte
                     ComponentConfig<T4>.Config,
                     ComponentConfig<T5>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        ref component4,
-                        ref component5);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            componentAdapters[3].SetComponent(component4);
-                            componentAdapters[4].SetComponent(component5);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        ref ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        ref ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R1W5<T1, T2, T3, T4, T5, T6> action)
@@ -1986,7 +1496,7 @@ namespace EcsLte
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
-            where T6 : IComponent => ForEachRun(context, runParallel,
+            where T6 : IComponent => ForEachRun(context, runParallel, 5,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1996,35 +1506,15 @@ namespace EcsLte
                     ComponentConfig<T5>.Config,
                     ComponentConfig<T6>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        ref component4,
-                        ref component5,
-                        in component6);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            componentAdapters[3].SetComponent(component4);
-                            componentAdapters[4].SetComponent(component5);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        ref ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        ref ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R2W5<T1, T2, T3, T4, T5, T6, T7> action)
@@ -2034,7 +1524,7 @@ namespace EcsLte
             where T4 : IComponent
             where T5 : IComponent
             where T6 : IComponent
-            where T7 : IComponent => ForEachRun(context, runParallel,
+            where T7 : IComponent => ForEachRun(context, runParallel, 5,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -2045,37 +1535,16 @@ namespace EcsLte
                     ComponentConfig<T6>.Config,
                     ComponentConfig<T7>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-                    var component7 = componentAdapters[6].GetComponent<T7>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        ref component4,
-                        ref component5,
-                        in component6,
-                        in component7);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            componentAdapters[3].SetComponent(component4);
-                            componentAdapters[4].SetComponent(component5);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        ref ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        ref ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef(),
+                        in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R3W5<T1, T2, T3, T4, T5, T6, T7, T8> action)
@@ -2086,7 +1555,7 @@ namespace EcsLte
             where T5 : IComponent
             where T6 : IComponent
             where T7 : IComponent
-            where T8 : IComponent => ForEachRun(context, runParallel,
+            where T8 : IComponent => ForEachRun(context, runParallel, 5,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -2098,39 +1567,17 @@ namespace EcsLte
                     ComponentConfig<T7>.Config,
                     ComponentConfig<T8>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-                    var component7 = componentAdapters[6].GetComponent<T7>();
-                    var component8 = componentAdapters[7].GetComponent<T8>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        ref component4,
-                        ref component5,
-                        in component6,
-                        in component7,
-                        in component8);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            componentAdapters[3].SetComponent(component4);
-                            componentAdapters[4].SetComponent(component5);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        ref ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        ref ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef(),
+                        in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef(),
+                        in ((IComponentAdapter<T8>)options.ComponentAdapters[7]).GetComponentRef());
                 });
 
         #endregion Write 5
@@ -2143,7 +1590,7 @@ namespace EcsLte
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
-            where T6 : IComponent => ForEachRun(context, runParallel,
+            where T6 : IComponent => ForEachRun(context, runParallel, 6,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -2153,36 +1600,15 @@ namespace EcsLte
                     ComponentConfig<T5>.Config,
                     ComponentConfig<T6>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        ref component4,
-                        ref component5,
-                        ref component6);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            componentAdapters[3].SetComponent(component4);
-                            componentAdapters[4].SetComponent(component5);
-                            componentAdapters[5].SetComponent(component6);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        ref ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        ref ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        ref ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R1W6<T1, T2, T3, T4, T5, T6, T7> action)
@@ -2192,7 +1618,7 @@ namespace EcsLte
             where T4 : IComponent
             where T5 : IComponent
             where T6 : IComponent
-            where T7 : IComponent => ForEachRun(context, runParallel,
+            where T7 : IComponent => ForEachRun(context, runParallel, 6,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -2203,38 +1629,16 @@ namespace EcsLte
                     ComponentConfig<T6>.Config,
                     ComponentConfig<T7>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-                    var component7 = componentAdapters[6].GetComponent<T7>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        ref component4,
-                        ref component5,
-                        ref component6,
-                        in component7);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            componentAdapters[3].SetComponent(component4);
-                            componentAdapters[4].SetComponent(component5);
-                            componentAdapters[5].SetComponent(component6);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        ref ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        ref ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        ref ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef(),
+                        in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R2W6<T1, T2, T3, T4, T5, T6, T7, T8> action)
@@ -2245,7 +1649,7 @@ namespace EcsLte
             where T5 : IComponent
             where T6 : IComponent
             where T7 : IComponent
-            where T8 : IComponent => ForEachRun(context, runParallel,
+            where T8 : IComponent => ForEachRun(context, runParallel, 6,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -2257,40 +1661,17 @@ namespace EcsLte
                     ComponentConfig<T7>.Config,
                     ComponentConfig<T8>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-                    var component7 = componentAdapters[6].GetComponent<T7>();
-                    var component8 = componentAdapters[7].GetComponent<T8>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        ref component4,
-                        ref component5,
-                        ref component6,
-                        in component7,
-                        in component8);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            componentAdapters[3].SetComponent(component4);
-                            componentAdapters[4].SetComponent(component5);
-                            componentAdapters[5].SetComponent(component6);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        ref ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        ref ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        ref ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef(),
+                        in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef(),
+                        in ((IComponentAdapter<T8>)options.ComponentAdapters[7]).GetComponentRef());
                 });
 
         #endregion Write 6
@@ -2304,7 +1685,7 @@ namespace EcsLte
             where T4 : IComponent
             where T5 : IComponent
             where T6 : IComponent
-            where T7 : IComponent => ForEachRun(context, runParallel,
+            where T7 : IComponent => ForEachRun(context, runParallel, 7,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -2315,39 +1696,16 @@ namespace EcsLte
                     ComponentConfig<T6>.Config,
                     ComponentConfig<T7>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-                    var component7 = componentAdapters[6].GetComponent<T7>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        ref component4,
-                        ref component5,
-                        ref component6,
-                        ref component7);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            componentAdapters[3].SetComponent(component4);
-                            componentAdapters[4].SetComponent(component5);
-                            componentAdapters[5].SetComponent(component6);
-                            componentAdapters[6].SetComponent(component7);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        ref ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        ref ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        ref ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef(),
+                        ref ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef());
                 });
 
         public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R1W7<T1, T2, T3, T4, T5, T6, T7, T8> action)
@@ -2358,7 +1716,7 @@ namespace EcsLte
             where T5 : IComponent
             where T6 : IComponent
             where T7 : IComponent
-            where T8 : IComponent => ForEachRun(context, runParallel,
+            where T8 : IComponent => ForEachRun(context, runParallel, 7,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -2370,41 +1728,17 @@ namespace EcsLte
                     ComponentConfig<T7>.Config,
                     ComponentConfig<T8>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-                    var component7 = componentAdapters[6].GetComponent<T7>();
-                    var component8 = componentAdapters[7].GetComponent<T8>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        ref component4,
-                        ref component5,
-                        ref component6,
-                        ref component7,
-                        in component8);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            componentAdapters[3].SetComponent(component4);
-                            componentAdapters[4].SetComponent(component5);
-                            componentAdapters[5].SetComponent(component6);
-                            componentAdapters[6].SetComponent(component7);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        ref ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        ref ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        ref ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef(),
+                        ref ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef(),
+                        in ((IComponentAdapter<T8>)options.ComponentAdapters[7]).GetComponentRef());
                 });
 
         #endregion Write 7
@@ -2419,7 +1753,7 @@ namespace EcsLte
             where T5 : IComponent
             where T6 : IComponent
             where T7 : IComponent
-            where T8 : IComponent => ForEachRun(context, runParallel,
+            where T8 : IComponent => ForEachRun(context, runParallel, 8,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -2431,42 +1765,17 @@ namespace EcsLte
                     ComponentConfig<T7>.Config,
                     ComponentConfig<T8>.Config
                 },
-                (int index, Entity entity, EntityData entityData, IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters) =>
+                (options) =>
                 {
-                    var component1 = componentAdapters[0].GetComponent<T1>();
-                    var component2 = componentAdapters[1].GetComponent<T2>();
-                    var component3 = componentAdapters[2].GetComponent<T3>();
-                    var component4 = componentAdapters[3].GetComponent<T4>();
-                    var component5 = componentAdapters[4].GetComponent<T5>();
-                    var component6 = componentAdapters[5].GetComponent<T6>();
-                    var component7 = componentAdapters[6].GetComponent<T7>();
-                    var component8 = componentAdapters[7].GetComponent<T8>();
-
-                    action(index, entity,
-                        ref component1,
-                        ref component2,
-                        ref component3,
-                        ref component4,
-                        ref component5,
-                        ref component6,
-                        ref component7,
-                        ref component8);
-
-                    lock (context.LockObj)
-                    {
-                        if (context.HasEntity(entity))
-                        {
-                            componentAdapters[0].SetComponent(component1);
-                            componentAdapters[1].SetComponent(component2);
-                            componentAdapters[2].SetComponent(component3);
-                            componentAdapters[3].SetComponent(component4);
-                            componentAdapters[4].SetComponent(component5);
-                            componentAdapters[5].SetComponent(component6);
-                            componentAdapters[6].SetComponent(component7);
-                            componentAdapters[7].SetComponent(component8);
-                            context.UpdateForEachArcheType(entity, entityData, sharedComponentAdapters);
-                        }
-                    }
+                    action(options.Index, options.CurrentEntity,
+                        ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef(),
+                        ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef(),
+                        ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef(),
+                        ref ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef(),
+                        ref ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef(),
+                        ref ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef(),
+                        ref ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef(),
+                        ref ((IComponentAdapter<T8>)options.ComponentAdapters[7]).GetComponentRef());
                 });
 
         #endregion Write 8
@@ -2475,7 +1784,7 @@ namespace EcsLte
 
         #region Privates
 
-        private unsafe void ForEachRun(EcsContext context, bool runParallel, ComponentConfig[] configs, ForEachRunAction action)
+        private unsafe void ForEachRun(EcsContext context, bool runParallel, int writeCount, ComponentConfig[] configs, ForEachRunAction action)
         {
             var missingConfigs = configs.Where(x => !QueryData.AllComponentConfigs.Contains(x));
             if (missingConfigs.Count() > 0)
@@ -2508,6 +1817,7 @@ namespace EcsLte
                         {
                             StartIndex = batchStartIndex,
                             EndIndex = batchEndIndex,
+                            WriteCount = writeCount,
                             Context = context,
                             Entities = entities,
                             Configs = configs,
@@ -2526,7 +1836,6 @@ namespace EcsLte
                     {
                         ForEachBatchRun(batch);
                     });
-                ;
             }
             else
             {
@@ -2534,6 +1843,7 @@ namespace EcsLte
                 {
                     StartIndex = 0,
                     EndIndex = entities.Length,
+                    WriteCount = writeCount,
                     Context = context,
                     Entities = entities,
                     Configs = configs,
@@ -2547,59 +1857,32 @@ namespace EcsLte
 
         private static unsafe void ForEachBatchRun(BatchOptions batchOptions)
         {
-            var componentAdapters = new IComponentAdapter[batchOptions.Configs.Length];
-            for (var i = 0; i < batchOptions.Configs.Length; i++)
-            {
-                componentAdapters[i] = EntityQueryComponentAdapter.Create(batchOptions.Configs[i],
-                    batchOptions.Context.SharedIndexDics, batchOptions.Context.ManagePools);
-            }
+            var componentAdapters = EntityQueryComponentAdapters.CreateAdapters(batchOptions.Configs,
+                batchOptions.Context.SharedIndexDics, batchOptions.Context.ManagePools);
             var sharedComponentAdapters = componentAdapters
                 .Where(x => x.Config.IsShared)
                 .ToArray();
-            var archeTypeDatasHash = new HashSet<PtrWrapper>(batchOptions.ArcheTypeDatas);
-            var entityDatas = batchOptions.Context.EntityDatas;
+            var forEachOptions = new ForEachOptions(batchOptions.ArcheTypeDatas, componentAdapters,
+                batchOptions.WriteCount);
 
-            var ptrWrapper = new PtrWrapper();
-            ArcheTypeData* prevArcheTypeData = null;
             for (var i = batchOptions.StartIndex; i < batchOptions.EndIndex; i++)
             {
                 var entity = batchOptions.Entities[i];
-                // Check if entity is alive
-                if (!batchOptions.Context.HasEntity(entity))
-                    continue;
-
-                var entityData = entityDatas[entity.Id];
-                ptrWrapper.Ptr = entityData.ArcheTypeData;
-                // Check if entity changed ArcheType
-                if (!archeTypeDatasHash.Contains(ptrWrapper))
-                    continue;
-
-                // Re-cache component offsets
-                if (prevArcheTypeData != entityData.ArcheTypeData)
+                if (forEachOptions.StoreComponents(batchOptions.Context, i, batchOptions.Entities[i]))
                 {
-                    prevArcheTypeData = entityData.ArcheTypeData;
-                    for (var j = 0; j < batchOptions.Configs.Length; j++)
-                    {
-                        prevArcheTypeData->GetComponentConfigOffset(batchOptions.Configs[j], out var configOffset);
-                        componentAdapters[j].SetComponentConfigOffset(configOffset);
-                    }
+                    batchOptions.Action(forEachOptions);
+                    batchOptions.Context.UpdateForEachArcheType(entity, forEachOptions.WriteComponentAdapters);
                 }
-
-                var componentsPtr = entityData.ArcheTypeData->GetComponentsPtr(entityData);
-                for (var j = 0; j < batchOptions.Configs.Length; j++)
-                    componentAdapters[j].SetComponentsPtr(componentsPtr);
-
-                batchOptions.Action(i, entity, entityData, componentAdapters, sharedComponentAdapters);
             }
         }
 
-        private unsafe delegate void ForEachRunAction(int index, Entity entity, EntityData entityData,
-            IComponentAdapter[] componentAdapters, IComponentAdapter[] sharedComponentAdapters);
+        private unsafe delegate void ForEachRunAction(ForEachOptions options);
 
         private class BatchOptions
         {
             public int StartIndex { get; set; }
             public int EndIndex { get; set; }
+            public int WriteCount { get; set; }
             public EcsContext Context { get; set; }
             public Entity[] Entities { get; set; }
             public ComponentConfig[] Configs { get; set; }
@@ -2607,17 +1890,55 @@ namespace EcsLte
             public ForEachRunAction Action { get; set; }
         }
 
-        private static unsafe TComponent GetComponentFromPtr<TComponent>(byte* componentsPtr, ComponentConfigOffset configOffset, IManagedComponentPool[] managedPools)
-            where TComponent : IComponent
+        private class ForEachOptions
         {
-            if (configOffset.Config.IsBlittable)
+            public int Index { get; private set; }
+            public Entity CurrentEntity { get; private set; }
+            public HashSet<PtrWrapper> ArcheTypeDataHash { get; private set; }
+            public unsafe ArcheTypeData* PrevArcheTypeData { get; private set; }
+            public IComponentAdapter[] ComponentAdapters { get; private set; }
+            public IComponentAdapter[] WriteComponentAdapters { get; private set; }
+
+            public ForEachOptions(PtrWrapper[] archeTypeDatas, IComponentAdapter[] componentAdapters, int writeCount)
             {
-                return Marshal.PtrToStructure<TComponent>((IntPtr)(componentsPtr + configOffset.OffsetInBytes));
+                ArcheTypeDataHash = new HashSet<PtrWrapper>(archeTypeDatas);
+                ComponentAdapters = componentAdapters;
+                WriteComponentAdapters = componentAdapters.Take(writeCount).ToArray();
             }
-            else
+
+            public unsafe bool StoreComponents(EcsContext context, int index, Entity entity)
             {
-                return ((ManagedComponentPool<TComponent>)managedPools[configOffset.Config.ManagedIndex])
-                    .GetComponent(*(int*)(componentsPtr + configOffset.OffsetInBytes));
+                lock (context.LockObj)
+                {
+                    if (!context.HasEntity(entity))
+                        return false;
+
+                    Index = index;
+                    CurrentEntity = entity;
+
+                    var entityData = context.EntityDatas[CurrentEntity.Id];
+                    if (!ArcheTypeDataHash.Contains(new PtrWrapper { Ptr = entityData.ArcheTypeData }))
+                        return false;
+
+                    var componentsPtr = entityData.ArcheTypeData->GetComponentsPtr(entityData);
+                    if (PrevArcheTypeData != entityData.ArcheTypeData)
+                    {
+                        PrevArcheTypeData = entityData.ArcheTypeData;
+                        for (var i = 0; i < ComponentAdapters.Length; i++)
+                        {
+                            entityData.ArcheTypeData->GetComponentConfigOffset(ComponentAdapters[i].Config, out var configOffset);
+                            ComponentAdapters[i].SetComponentConfigOffset(configOffset);
+                            ComponentAdapters[i].StoreComponent(componentsPtr, entityData.ArcheTypeData);
+                        }
+                    }
+                    else
+                    {
+                        for (var i = 0; i < ComponentAdapters.Length; i++)
+                            ComponentAdapters[i].StoreComponent(componentsPtr, entityData.ArcheTypeData);
+                    }
+                }
+
+                return true;
             }
         }
 

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>BenchmarkRun-joined-2022-05-24-22-09-02</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.13.1, OS=Windows 10.0.19043.1348 (21H1/May2021Update)
+AMD Ryzen 9 3900X, 1 CPU, 24 logical and 12 physical cores
+  [Host]     : .NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
+  Job-FTOBUC : .NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
+</code></pre>
+<pre><code>InvocationCount=1  UnrollFactor=1  
+</code></pre>
+
+<table>
+<thead><tr><th>                      Namespace</th><th>                Type</th><th>                     Method</th><th>EntityCount</th><th> CompArr</th><th>    ReadWrite</th><th>  Mean</th><th>Error</th><th>StdDev</th><th>Median</th>
+</tr>
+</thead><tbody><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_GetComponent</td><td>GetComponent_Entity</td><td>10000</td><td>?</td><td>?</td><td>13.984 ms</td><td>0.1501 ms</td><td>0.1404 ms</td><td>13.943 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_GetComponent</td><td>GetComponent_Entity</td><td>1000000</td><td>?</td><td>?</td><td>1,375.743 ms</td><td>3.2100 ms</td><td>2.8456 ms</td><td>1,376.187 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_GetComponent</td><td>GetComponents_Entities</td><td>10000</td><td>?</td><td>?</td><td>11.018 ms</td><td>0.2201 ms</td><td>0.2162 ms</td><td>11.010 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_GetComponent</td><td>GetComponents_Entities</td><td>1000000</td><td>?</td><td>?</td><td>1,071.483 ms</td><td>9.5214 ms</td><td>8.4405 ms</td><td>1,070.060 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_GetComponent</td><td>GetComponents_EntityArcheType</td><td>10000</td><td>?</td><td>?</td><td>8.631 ms</td><td>0.1670 ms</td><td>0.2051 ms</td><td>8.679 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_GetComponent</td><td>GetComponents_EntityArcheType</td><td>1000000</td><td>?</td><td>?</td><td>833.353 ms</td><td>3.1485 ms</td><td>2.9451 ms</td><td>833.195 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_GetComponent</td><td>GetComponents_EntityQuery</td><td>10000</td><td>?</td><td>?</td><td>8.517 ms</td><td>0.1683 ms</td><td>0.2247 ms</td><td>8.547 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_GetComponent</td><td>GetComponents_EntityQuery</td><td>1000000</td><td>?</td><td>?</td><td>834.317 ms</td><td>4.5464 ms</td><td>4.2527 ms</td><td>833.370 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntities</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>39.871 ms</td><td>0.7839 ms</td><td>1.2434 ms</td><td>39.684 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntities</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>38.287 ms</td><td>0.1698 ms</td><td>0.1505 ms</td><td>38.253 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntities</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>39.296 ms</td><td>0.3410 ms</td><td>0.3022 ms</td><td>39.366 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntities</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>38.997 ms</td><td>0.7609 ms</td><td>1.5371 ms</td><td>39.339 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntities</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>38.005 ms</td><td>0.7594 ms</td><td>1.5684 ms</td><td>38.519 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntities</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>38.356 ms</td><td>0.7641 ms</td><td>1.7091 ms</td><td>39.087 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntities_Reuse</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>29.305 ms</td><td>0.5680 ms</td><td>0.8673 ms</td><td>29.280 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntities_Reuse</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>29.194 ms</td><td>0.5751 ms</td><td>0.6154 ms</td><td>29.166 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntities_Reuse</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>28.724 ms</td><td>0.5483 ms</td><td>0.5129 ms</td><td>28.965 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntities_Reuse</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>28.875 ms</td><td>0.5164 ms</td><td>0.4830 ms</td><td>29.013 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntities_Reuse</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>28.799 ms</td><td>0.5536 ms</td><td>0.6153 ms</td><td>29.038 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntities_Reuse</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>28.791 ms</td><td>0.5741 ms</td><td>0.5639 ms</td><td>28.804 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntity</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>544.817 ms</td><td>3.0939 ms</td><td>2.8940 ms</td><td>545.026 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntity</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>541.313 ms</td><td>2.1915 ms</td><td>1.9427 ms</td><td>541.728 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntity</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>542.275 ms</td><td>2.4889 ms</td><td>2.2064 ms</td><td>542.469 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntity</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>544.245 ms</td><td>5.3069 ms</td><td>4.7045 ms</td><td>542.735 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntity</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>542.583 ms</td><td>4.2439 ms</td><td>3.7621 ms</td><td>541.201 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntity</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>540.793 ms</td><td>1.6764 ms</td><td>1.5681 ms</td><td>540.749 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntity_Reuse</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>514.341 ms</td><td>2.1297 ms</td><td>1.9922 ms</td><td>514.487 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntity_Reuse</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>518.894 ms</td><td>1.5267 ms</td><td>1.3534 ms</td><td>518.830 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntity_Reuse</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>509.079 ms</td><td>1.3466 ms</td><td>1.2596 ms</td><td>509.267 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntity_Reuse</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>519.241 ms</td><td>1.1306 ms</td><td>1.0576 ms</td><td>519.337 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntity_Reuse</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>506.028 ms</td><td>1.4524 ms</td><td>1.3586 ms</td><td>506.037 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntity_Reuse</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>518.719 ms</td><td>1.0252 ms</td><td>0.9590 ms</td><td>518.837 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntities</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>64.790 ms</td><td>0.7620 ms</td><td>0.7127 ms</td><td>65.086 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntities</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>64.663 ms</td><td>1.1587 ms</td><td>1.0838 ms</td><td>64.403 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntities</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>64.611 ms</td><td>0.8276 ms</td><td>0.7742 ms</td><td>64.659 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntities</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>64.716 ms</td><td>1.0949 ms</td><td>1.0242 ms</td><td>64.997 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntities</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>64.428 ms</td><td>0.9540 ms</td><td>0.8924 ms</td><td>64.156 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntities</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>64.656 ms</td><td>0.9043 ms</td><td>0.8459 ms</td><td>64.605 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntities_Reuse</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>59.795 ms</td><td>0.2562 ms</td><td>0.2139 ms</td><td>59.720 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntities_Reuse</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>59.947 ms</td><td>0.4061 ms</td><td>0.3600 ms</td><td>59.897 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntities_Reuse</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>60.215 ms</td><td>0.2898 ms</td><td>0.2569 ms</td><td>60.199 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntities_Reuse</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>59.807 ms</td><td>0.2360 ms</td><td>0.2092 ms</td><td>59.753 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntities_Reuse</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>59.836 ms</td><td>0.2565 ms</td><td>0.2142 ms</td><td>59.847 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntities_Reuse</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>60.058 ms</td><td>0.2339 ms</td><td>0.2188 ms</td><td>60.042 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntity</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>76.434 ms</td><td>1.1284 ms</td><td>1.0555 ms</td><td>76.555 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntity</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>77.301 ms</td><td>1.0991 ms</td><td>1.0281 ms</td><td>77.307 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntity</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>76.270 ms</td><td>0.9116 ms</td><td>0.8528 ms</td><td>76.179 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntity</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>76.859 ms</td><td>0.8523 ms</td><td>0.7972 ms</td><td>76.833 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntity</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>76.380 ms</td><td>1.0640 ms</td><td>0.9953 ms</td><td>76.339 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntity</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>78.807 ms</td><td>1.4949 ms</td><td>1.3983 ms</td><td>78.452 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntity_Reuse</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>72.515 ms</td><td>0.4035 ms</td><td>0.3774 ms</td><td>72.512 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntity_Reuse</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>71.614 ms</td><td>0.1262 ms</td><td>0.0985 ms</td><td>71.631 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntity_Reuse</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>72.768 ms</td><td>0.5723 ms</td><td>0.4779 ms</td><td>72.578 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntity_Reuse</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>71.083 ms</td><td>0.2466 ms</td><td>0.2186 ms</td><td>71.029 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntity_Reuse</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>73.052 ms</td><td>0.3952 ms</td><td>0.3697 ms</td><td>72.937 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntity_Reuse</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>72.854 ms</td><td>0.7226 ms</td><td>0.6759 ms</td><td>73.057 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntities_Destroy</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>177.711 ms</td><td>3.5363 ms</td><td>6.4664 ms</td><td>175.758 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntities_Destroy</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>173.168 ms</td><td>3.4506 ms</td><td>6.0434 ms</td><td>169.033 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntities_Destroy</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>177.406 ms</td><td>3.4983 ms</td><td>6.2182 ms</td><td>179.022 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntities_Destroy</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>178.510 ms</td><td>3.5641 ms</td><td>6.9515 ms</td><td>178.456 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntities_Destroy</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>179.019 ms</td><td>3.5522 ms</td><td>6.4054 ms</td><td>179.097 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntities_Destroy</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>173.569 ms</td><td>3.4292 ms</td><td>6.6883 ms</td><td>175.157 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntities_NoDestroy</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>119.035 ms</td><td>2.3704 ms</td><td>5.2527 ms</td><td>118.964 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntities_NoDestroy</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>116.670 ms</td><td>2.3230 ms</td><td>5.9549 ms</td><td>114.167 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntities_NoDestroy</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>119.522 ms</td><td>2.3801 ms</td><td>5.7025 ms</td><td>119.322 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntities_NoDestroy</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>118.096 ms</td><td>2.3392 ms</td><td>5.8686 ms</td><td>118.000 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntities_NoDestroy</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>119.704 ms</td><td>2.3772 ms</td><td>6.2626 ms</td><td>120.455 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntities_NoDestroy</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>117.373 ms</td><td>2.3292 ms</td><td>6.0540 ms</td><td>118.428 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityArcheType_Destroy</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>38.158 ms</td><td>0.5547 ms</td><td>0.4917 ms</td><td>37.849 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityArcheType_Destroy</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>40.038 ms</td><td>0.5775 ms</td><td>0.5402 ms</td><td>39.798 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityArcheType_Destroy</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>40.473 ms</td><td>0.6425 ms</td><td>0.5696 ms</td><td>40.192 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityArcheType_Destroy</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>39.553 ms</td><td>0.5959 ms</td><td>0.5574 ms</td><td>39.250 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityArcheType_Destroy</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>40.361 ms</td><td>0.7688 ms</td><td>0.8545 ms</td><td>39.910 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityArcheType_Destroy</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>41.876 ms</td><td>0.8076 ms</td><td>0.8641 ms</td><td>41.362 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityArcheType_NoDestroy</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>31.077 ms</td><td>0.5957 ms</td><td>0.5851 ms</td><td>30.736 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityArcheType_NoDestroy</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>31.114 ms</td><td>0.6004 ms</td><td>0.7807 ms</td><td>30.668 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityArcheType_NoDestroy</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>31.368 ms</td><td>0.6237 ms</td><td>0.7183 ms</td><td>30.968 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityArcheType_NoDestroy</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>30.940 ms</td><td>0.6075 ms</td><td>0.6500 ms</td><td>30.555 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityArcheType_NoDestroy</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>30.927 ms</td><td>0.5939 ms</td><td>0.6355 ms</td><td>30.581 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityArcheType_NoDestroy</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>31.855 ms</td><td>0.6365 ms</td><td>1.0096 ms</td><td>31.850 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityQuery_Destroy</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>40.028 ms</td><td>0.5330 ms</td><td>0.4985 ms</td><td>39.848 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityQuery_Destroy</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>39.933 ms</td><td>0.4930 ms</td><td>0.4612 ms</td><td>39.666 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityQuery_Destroy</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>40.691 ms</td><td>0.7848 ms</td><td>0.9038 ms</td><td>40.248 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityQuery_Destroy</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>39.426 ms</td><td>0.5128 ms</td><td>0.4797 ms</td><td>39.194 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityQuery_Destroy</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>40.466 ms</td><td>0.5482 ms</td><td>0.5128 ms</td><td>40.280 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityQuery_Destroy</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>40.326 ms</td><td>0.7820 ms</td><td>0.7680 ms</td><td>39.922 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityQuery_NoDestroy</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>30.932 ms</td><td>0.6019 ms</td><td>0.5911 ms</td><td>30.637 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityQuery_NoDestroy</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>30.800 ms</td><td>0.6117 ms</td><td>0.6008 ms</td><td>30.496 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityQuery_NoDestroy</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>31.281 ms</td><td>0.5988 ms</td><td>0.7128 ms</td><td>30.899 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityQuery_NoDestroy</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>31.441 ms</td><td>0.6075 ms</td><td>0.7232 ms</td><td>31.064 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityQuery_NoDestroy</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>31.059 ms</td><td>0.6127 ms</td><td>0.9718 ms</td><td>30.574 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityQuery_NoDestroy</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>31.257 ms</td><td>0.6066 ms</td><td>0.5958 ms</td><td>30.964 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntity_Destroy</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>271.472 ms</td><td>0.4769 ms</td><td>0.4227 ms</td><td>271.395 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntity_Destroy</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>307.423 ms</td><td>0.7617 ms</td><td>0.6753 ms</td><td>307.408 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntity_Destroy</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>272.102 ms</td><td>0.9107 ms</td><td>0.8519 ms</td><td>271.797 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntity_Destroy</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>309.069 ms</td><td>1.4379 ms</td><td>1.3450 ms</td><td>309.029 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntity_Destroy</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>272.607 ms</td><td>0.4635 ms</td><td>0.4109 ms</td><td>272.601 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntity_Destroy</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>307.666 ms</td><td>0.6539 ms</td><td>0.6117 ms</td><td>307.666 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntity_NoDestroy</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>216.918 ms</td><td>0.8025 ms</td><td>0.7507 ms</td><td>216.725 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntity_NoDestroy</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>253.847 ms</td><td>0.6745 ms</td><td>0.6310 ms</td><td>253.749 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntity_NoDestroy</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>216.378 ms</td><td>0.7382 ms</td><td>0.6905 ms</td><td>216.382 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntity_NoDestroy</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>254.488 ms</td><td>0.4910 ms</td><td>0.4592 ms</td><td>254.379 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntity_NoDestroy</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>215.972 ms</td><td>0.4842 ms</td><td>0.4529 ms</td><td>216.086 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntity_NoDestroy</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>253.892 ms</td><td>0.5466 ms</td><td>0.4846 ms</td><td>253.668 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent_Entity</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>660.597 ms</td><td>1.5965 ms</td><td>1.4153 ms</td><td>660.366 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent_Entity</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>1,684.991 ms</td><td>4.3855 ms</td><td>4.1022 ms</td><td>1,685.989 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent_Entity</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>661.471 ms</td><td>1.4619 ms</td><td>1.3674 ms</td><td>660.829 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent_Entity</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>1,684.094 ms</td><td>4.1726 ms</td><td>3.6989 ms</td><td>1,683.766 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent_Entity</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>665.952 ms</td><td>3.5415 ms</td><td>3.1394 ms</td><td>664.520 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent_Entity</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>1,682.737 ms</td><td>7.4123 ms</td><td>6.1896 ms</td><td>1,682.983 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponents_Entities</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>558.654 ms</td><td>1.6083 ms</td><td>1.4257 ms</td><td>558.583 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponents_Entities</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>808.416 ms</td><td>2.2300 ms</td><td>2.0859 ms</td><td>808.644 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponents_Entities</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>559.488 ms</td><td>1.3776 ms</td><td>1.2886 ms</td><td>559.845 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponents_Entities</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>808.962 ms</td><td>2.1660 ms</td><td>1.9201 ms</td><td>808.293 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponents_Entities</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>558.738 ms</td><td>1.7126 ms</td><td>1.5182 ms</td><td>559.066 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponents_Entities</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>807.771 ms</td><td>1.6856 ms</td><td>1.5767 ms</td><td>807.959 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponents_EntityArcheType</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>79.161 ms</td><td>0.6643 ms</td><td>0.6214 ms</td><td>78.786 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponents_EntityArcheType</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>49.469 ms</td><td>0.5779 ms</td><td>0.7098 ms</td><td>49.243 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponents_EntityArcheType</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>78.536 ms</td><td>0.1299 ms</td><td>0.1084 ms</td><td>78.518 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponents_EntityArcheType</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>49.372 ms</td><td>0.4700 ms</td><td>0.4396 ms</td><td>49.337 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponents_EntityArcheType</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>79.016 ms</td><td>0.1863 ms</td><td>0.1743 ms</td><td>79.027 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponents_EntityArcheType</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>49.462 ms</td><td>0.2544 ms</td><td>0.2124 ms</td><td>49.402 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponents_EntityQuery</td><td>?</td><td>Normal_Bx4</td><td>?</td><td>79.279 ms</td><td>0.9210 ms</td><td>0.8165 ms</td><td>79.300 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponents_EntityQuery</td><td>?</td><td>Shared_Bx4</td><td>?</td><td>180.202 ms</td><td>1.9048 ms</td><td>1.7817 ms</td><td>179.897 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponents_EntityQuery</td><td>?</td><td>Normal_Mx4</td><td>?</td><td>78.702 ms</td><td>0.1856 ms</td><td>0.1736 ms</td><td>78.686 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponents_EntityQuery</td><td>?</td><td>Shared_Mx4</td><td>?</td><td>179.469 ms</td><td>1.2688 ms</td><td>1.1869 ms</td><td>179.524 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponents_EntityQuery</td><td>?</td><td>Normal_Bx2_Mx2</td><td>?</td><td>78.868 ms</td><td>0.2801 ms</td><td>0.2620 ms</td><td>78.865 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponents_EntityQuery</td><td>?</td><td>Shared_Bx2_Mx2</td><td>?</td><td>179.156 ms</td><td>1.8299 ms</td><td>1.7117 ms</td><td>178.790 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>?</td><td>?</td><td>R0W0</td><td>76.782 ms</td><td>1.1696 ms</td><td>1.0941 ms</td><td>76.146 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>?</td><td>?</td><td>R0W4_Normal_Bx4</td><td>1,187.509 ms</td><td>5.9764 ms</td><td>5.5903 ms</td><td>1,186.015 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>?</td><td>?</td><td>R4W0_Normal_Bx4</td><td>990.932 ms</td><td>6.1277 ms</td><td>5.7319 ms</td><td>991.477 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>?</td><td>?</td><td>R0W4_Normal_Mx4</td><td>1,188.936 ms</td><td>6.0723 ms</td><td>5.6800 ms</td><td>1,187.651 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>?</td><td>?</td><td>R4W0_Normal_Mx4</td><td>987.359 ms</td><td>2.9457 ms</td><td>2.7554 ms</td><td>987.188 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>?</td><td>?</td><td>R0W4_Shared_Bx4</td><td>1,779.748 ms</td><td>4.6005 ms</td><td>4.3033 ms</td><td>1,779.969 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>?</td><td>?</td><td>R4W0_Shared_Bx4</td><td>1,001.899 ms</td><td>8.3441 ms</td><td>7.8051 ms</td><td>1,003.395 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>?</td><td>?</td><td>R0W4_Shared_Mx4</td><td>1,782.334 ms</td><td>6.1241 ms</td><td>5.4289 ms</td><td>1,780.881 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>?</td><td>?</td><td>R4W0_Shared_Mx4</td><td>1,004.247 ms</td><td>7.2782 ms</td><td>6.8081 ms</td><td>1,006.153 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>?</td><td>?</td><td>R0W4_Normal_Bx2_Mx2</td><td>1,194.163 ms</td><td>4.1537 ms</td><td>3.6821 ms</td><td>1,194.030 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>?</td><td>?</td><td>R4W0_Normal_Bx2_Mx2</td><td>991.572 ms</td><td>3.4333 ms</td><td>3.2115 ms</td><td>992.394 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>?</td><td>?</td><td>R0W4_Shared_Bx2_Mx2</td><td>1,767.380 ms</td><td>9.3711 ms</td><td>7.8253 ms</td><td>1,770.599 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>?</td><td>?</td><td>R4W0_Shared_Bx2_Mx2</td><td>1,003.156 ms</td><td>6.5127 ms</td><td>6.0919 ms</td><td>1,004.188 ms</td>
+</tr></tbody></table>
+</body>
+</html>

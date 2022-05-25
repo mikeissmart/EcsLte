@@ -37,7 +37,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         public void IterationCleanup() => _context.DestroyEntities(_entities);
 
         [Benchmark]
-        public void GetComponent_Entity_Small()
+        public void GetComponent_Entity()
         {
             for (var i = 0; i < _entities.Length; i++)
             {

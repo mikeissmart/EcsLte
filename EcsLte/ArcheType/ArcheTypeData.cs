@@ -147,7 +147,7 @@ namespace EcsLte
                 {
                     GetComponentConfigOffset(ManagedConfigs[i], out var configOffset);
                     managedPools.GetPool(configOffset.Config).ClearComponent(
-                        *(int*)(entityComponentsPtr + configOffset.OffsetInBytes));
+                        ConvertToIndex(entityComponentsPtr + configOffset.OffsetInBytes));
                 }
 
                 *(Entity*)DataBufferToEntity(entityData.EntityIndex) = lastEntity;
@@ -166,7 +166,7 @@ namespace EcsLte
                 {
                     GetComponentConfigOffset(ManagedConfigs[i], out var configOffset);
                     managedPools.GetPool(configOffset.Config).ClearComponent(
-                        *(int*)(entityComponentsPtr + configOffset.OffsetInBytes));
+                        ConvertToIndex(entityComponentsPtr + configOffset.OffsetInBytes));
                 }
             }
             EntityCount--;
@@ -191,37 +191,18 @@ namespace EcsLte
             where TComponent : IComponent => Marshal.PtrToStructure<TComponent>((IntPtr)DataBufferToComponent(entityData.EntityIndex, config));
 
         internal TComponent GetComponent<TComponent>(EntityData entityData, ComponentConfig config, ManagedComponentPool<TComponent> managedPool)
-            where TComponent : IComponent
-        {
-            var ptr = DataBufferToComponent(entityData.EntityIndex, config);
-            var componentIndex = *(int*)ptr;
-            return managedPool.GetComponent(componentIndex);
-        }
+            where TComponent : IComponent =>
+            managedPool.GetComponent(ConvertToIndex(DataBufferToComponent(entityData.EntityIndex, config)));
 
-        internal IComponent GetComponent(EntityData entityData, ComponentConfig config, IManagedComponentPool managedPool)
-        {
-            var ptr = DataBufferToComponent(entityData.EntityIndex, config);
-            var componentIndex = *(int*)ptr;
-            return managedPool.GetComponent(componentIndex);
-        }
+        internal IComponent GetComponent(EntityData entityData, ComponentConfig config, IManagedComponentPool managedPool) =>
+            managedPool.GetComponent(ConvertToIndex(DataBufferToComponent(entityData.EntityIndex, config)));
 
         internal TComponent GetComponentOffset<TComponent>(EntityData entityData, ComponentConfigOffset configOffset)
             where TComponent : IComponent => Marshal.PtrToStructure<TComponent>((IntPtr)DataBufferToComponents(entityData.EntityIndex) + configOffset.OffsetInBytes);
 
         internal TComponent GetComponentOffset<TComponent>(EntityData entityData, ComponentConfigOffset configOffset, ManagedComponentPool<TComponent> managedPool)
-            where TComponent : IComponent
-        {
-            var ptr = DataBufferToComponents(entityData.EntityIndex) + configOffset.OffsetInBytes;
-            var componentIndex = *(int*)ptr;
-            return managedPool.GetComponent(componentIndex);
-        }
-
-        internal IComponent GetComponentOffset(EntityData entityData, ComponentConfigOffset configOffset, IManagedComponentPool managedPool)
-        {
-            var ptr = DataBufferToComponents(entityData.EntityIndex) + configOffset.OffsetInBytes;
-            var componentIndex = *(int*)ptr;
-            return managedPool.GetComponent(componentIndex);
-        }
+            where TComponent : IComponent =>
+            managedPool.GetComponent(ConvertToIndex(DataBufferToComponents(entityData.EntityIndex) + configOffset.OffsetInBytes));
 
         internal byte* GetComponentsPtr(EntityData entityData) => DataBufferToComponents(entityData.EntityIndex);
 
@@ -240,7 +221,7 @@ namespace EcsLte
             GetComponentConfigOffset(config, out var configOffset);
             var dataBuffer = DataBufferToComponents(0);
             for (int i = 0, componentOffset = configOffset.OffsetInBytes; i < EntityCount; i++, componentOffset += ComponentsSizeInBytes)
-                components[i + startingIndex] = managedPool.GetComponent(*(int*)(dataBuffer + componentOffset));
+                components[i + startingIndex] = managedPool.GetComponent(ConvertToIndex(dataBuffer + componentOffset));
         }
 
         internal IComponent[] GetAllComponents(EntityData entityData, ManagedComponentPools managedPools)
@@ -255,23 +236,27 @@ namespace EcsLte
                         (IntPtr)(dataBuffer + configOffset.OffsetInBytes),
                         ComponentConfigs.Instance.AllComponentTypes[configOffset.Config.ComponentIndex])
                     : managedPools.GetPool(configOffset.Config)
-                        .GetComponent(*(int*)(dataBuffer + configOffset.OffsetInBytes));
+                        .GetComponent(ConvertToIndex(dataBuffer + configOffset.OffsetInBytes));
             }
 
             return components;
         }
 
         internal void SetComponent<TComponent>(EntityData entityData, TComponent component, ComponentConfig config)
-            where TComponent : IComponent => Marshal.StructureToPtr(component, (IntPtr)DataBufferToComponent(entityData.EntityIndex, config), false);
+            where TComponent : IComponent =>
+            Marshal.StructureToPtr(component, (IntPtr)DataBufferToComponent(entityData.EntityIndex, config), false);
 
         internal void SetComponent<TComponent>(EntityData entityData, TComponent component, ComponentConfig config, ManagedComponentPool<TComponent> managedPool)
-            where TComponent : IComponent => managedPool.SetComponent(*(int*)DataBufferToComponent(entityData.EntityIndex, config), component);
+            where TComponent : IComponent =>
+            managedPool.SetComponent(ConvertToIndex(DataBufferToComponent(entityData.EntityIndex, config)), component);
 
-        internal void SetComponent(EntityData entityData, IComponent component, ComponentConfig config, IManagedComponentPool managedPool) => managedPool.SetComponent(*(int*)DataBufferToComponent(entityData.EntityIndex, config), component);
+        internal void SetComponentOffset<TComponent>(EntityData entityData, TComponent component, ComponentConfigOffset configOffset)
+            where TComponent : IComponent =>
+            Marshal.StructureToPtr(component, (IntPtr)(DataBufferToComponents(entityData.EntityIndex) + configOffset.OffsetInBytes), false);
 
-        internal void SetComponentOffset(EntityData entityData, IComponent component, ComponentConfigOffset configOffset) => Marshal.StructureToPtr(component, (IntPtr)(DataBufferToComponents(entityData.EntityIndex) + configOffset.OffsetInBytes), false);
-
-        internal void SetComponentOffset(EntityData entityData, IComponent component, ComponentConfigOffset configOffset, IManagedComponentPool managedPool) => managedPool.SetComponent(*(int*)DataBufferToComponents(entityData.EntityIndex) + configOffset.OffsetInBytes, component);
+        internal void SetComponentOffset<TComponent>(EntityData entityData, TComponent component, ComponentConfigOffset configOffset, ManagedComponentPool<TComponent> managedPool)
+            where TComponent : IComponent =>
+            managedPool.SetComponent(ConvertToIndex(DataBufferToComponents(entityData.EntityIndex) + configOffset.OffsetInBytes), component);
 
         internal void SetAllComponents<TComponent>(TComponent component, ComponentConfig config)
             where TComponent : IComponent
@@ -286,7 +271,7 @@ namespace EcsLte
         {
             var dataBuffer = DataBufferToComponent(0, config);
             for (int i = 0, componentOffset = 0; i < EntityCount; i++, componentOffset += ComponentsSizeInBytes)
-                managedPool.SetComponent(*(int*)(dataBuffer + componentOffset), component);
+                managedPool.SetComponent(ConvertToIndex(dataBuffer + componentOffset), component);
         }
 
         internal void SetComponentAndIndex<TComponent>(EntityData entityData, TComponent component, ComponentConfig config, int componentIndex, ManagedComponentPool<TComponent> managedPool)
@@ -294,14 +279,14 @@ namespace EcsLte
         {
             var ptr = DataBufferToComponent(entityData.EntityIndex, config);
             managedPool.SetComponent(componentIndex, component);
-            *(int*)ptr = componentIndex;
+            Marshal.StructureToPtr(componentIndex, (IntPtr)ptr, false);
         }
 
         internal void SetComponentAndIndex(EntityData entityData, IComponent component, ComponentConfig config, int componentIndex, IManagedComponentPool managedPool)
         {
             var ptr = DataBufferToComponent(entityData.EntityIndex, config);
             managedPool.SetComponent(componentIndex, component);
-            *(int*)ptr = componentIndex;
+            Marshal.StructureToPtr(componentIndex, (IntPtr)ptr, false);
         }
 
         internal void SetComponentsBuffer(EntityData entityData, byte* componentBuffer) => MemoryHelper.Copy(
@@ -426,7 +411,7 @@ namespace EcsLte
                 var lastEntity = *(Entity*)DataBufferToEntity(EntityCount - 1);
                 var lastEntityData = allEntityDatas[lastEntity.Id];
 
-                *(Entity*)DataBufferToEntity(entityData.EntityIndex) = lastEntity;
+                Marshal.StructureToPtr(lastEntity, (IntPtr)DataBufferToEntity(entityData.EntityIndex), false);
                 MemoryHelper.Copy(
                     DataBufferToComponents(lastEntityData.EntityIndex),
                     DataBufferToComponents(entityData.EntityIndex),
@@ -437,5 +422,8 @@ namespace EcsLte
             }
             EntityCount--;
         }
+
+        private int ConvertToIndex(byte* ptr) =>
+            Marshal.PtrToStructure<int>((IntPtr)ptr);
     }
 }

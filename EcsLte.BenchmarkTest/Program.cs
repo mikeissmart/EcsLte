@@ -1,6 +1,7 @@
 ﻿using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Running;
+using System;
 
 namespace EcsLte.BenchmarkTest
 {
@@ -23,12 +24,13 @@ namespace EcsLte.BenchmarkTest
             ;
 #if DEBUG
             //BenchmarkRunner.Run(typeof(Program).Assembly, config);
-            BenchmarkRunner.Run<EntityQueryTests.EntityQuery_ForEach>(config);
+            BenchmarkRunner.Run<EcsContextTests.EcsContext_UpdateComponent>(config);
             Console.WriteLine("done");
             Console.ReadLine();
 #else
             BenchmarkRunner.Run(typeof(Program).Assembly, config);
-            //BenchmarkRunner.Run<EcsContextTests.EcsContext_GetComponent>(config);
+            //BenchmarkRunner.Run<EcsContextTests.EcsContext_UpdateComponent>(config);
+            Console.WriteLine("done");
 #endif
         }
     }

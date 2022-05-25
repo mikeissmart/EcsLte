@@ -1,5 +1,6 @@
 ﻿using EcsLte.Data;
 using System;
+using System.Collections.Generic;
 
 namespace EcsLte
 {
@@ -11,6 +12,9 @@ namespace EcsLte
     internal class SharedComponentIndexDictionary<TComponent> : IndexDictionary<TComponent>, ISharedComponentIndexDictionary
             where TComponent : IComponent
     {
+        public SharedComponentIndexDictionary() : base()
+        { }
+
         public ComponentData<TComponent> GetComponentData(SharedComponentDataIndex dataIndex) =>
             new ComponentData<TComponent>(GetKey(dataIndex.SharedDataIndex));
 
@@ -28,9 +32,10 @@ namespace EcsLte
             var indexDicType = typeof(SharedComponentIndexDictionary<>);
             for (var i = 0; i < _sharedComponentIndexes.Length; i++)
             {
+                var componentType = ComponentConfigs.Instance.AllSharedTypes[i];
+                var genIndexDicType = indexDicType.MakeGenericType(componentType);
                 _sharedComponentIndexes[i] = (ISharedComponentIndexDictionary)Activator
-                    .CreateInstance(indexDicType
-                        .MakeGenericType(ComponentConfigs.Instance.AllSharedTypes[i]));
+                    .CreateInstance(genIndexDicType);
             }
         }
 
@@ -40,17 +45,6 @@ namespace EcsLte
 
         internal ISharedComponentIndexDictionary GetSharedIndexDic(ComponentConfig config) =>
             _sharedComponentIndexes[config.SharedIndex];
-
-        internal SharedComponentDataIndex GetDataIndex(ComponentConfig config, IComponent component)
-        {
-            var indexDic = GetSharedIndexDic(config);
-
-            return new SharedComponentDataIndex
-            {
-                SharedIndex = config.SharedIndex,
-                SharedDataIndex = indexDic.GetOrAdd(component)
-            };
-        }
 
         internal SharedComponentDataIndex GetDataIndex<TComponent>(TComponent component)
             where TComponent : IComponent
