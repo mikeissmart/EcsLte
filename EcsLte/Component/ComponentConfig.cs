@@ -29,9 +29,6 @@ namespace EcsLte
         public bool Equals(ComponentConfig other)
             => this == other;
 
-        public override bool Equals(object other)
-            => other is ComponentConfig obj && this == obj;
-
         public override int GetHashCode() => ComponentIndex.GetHashCode();
     }
 

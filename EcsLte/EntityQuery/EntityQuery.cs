@@ -10,7 +10,6 @@ namespace EcsLte
     public class EntityQuery : IEquatable<EntityQuery>
     {
         private static readonly int _threadCount = (int)(Environment.ProcessorCount * 0.75);
-        private static readonly bool _oneUpdate = true;
 
         public Type[] AllComponentTypes => QueryData.AllComponentTypes;
         public Type[] AnyComponentTypes => QueryData.AnyComponentTypes;

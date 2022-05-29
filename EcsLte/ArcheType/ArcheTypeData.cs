@@ -24,6 +24,8 @@ namespace EcsLte
         internal int ComponentsSizeInBytes { get; private set; }
         internal ComponentConfig* ManagedConfigs { get; private set; }
         internal int ManagedConfigsLength { get; private set; }
+        internal ComponentConfig* UniqueConfigs { get; private set; }
+        internal int UniqueConfigsLength { get; private set; }
 
         internal static ArcheTypeData* Alloc(ArcheType archeType, ArcheTypeIndex archeTypeIndex)
         {
@@ -36,7 +38,7 @@ namespace EcsLte
         internal static EntityData TransferEntity(
             Entity entity,
             ArcheTypeData* nextArcheTypeData,
-            ref EntityData[] allEntityDatas)
+            EntityData* allEntityDatas)
         {
             var prevEntityData = allEntityDatas[entity.Id];
             var prevArcheTypeData = prevEntityData.ArcheTypeData;
@@ -50,7 +52,7 @@ namespace EcsLte
                 nextComponentsBuffer,
                 nextArcheTypeData->ComponentsSizeInBytes);
 
-            prevArcheTypeData->RemoveTransferedEntity(entity, ref allEntityDatas);
+            prevArcheTypeData->RemoveTransferedEntity(entity, allEntityDatas);
             allEntityDatas[entity.Id] = nextEntityData;
 
             return nextEntityData;
@@ -59,7 +61,7 @@ namespace EcsLte
         internal static void TransferAllEntities(
             ArcheTypeData* prevArcheTypeData,
             ArcheTypeData* nextArcheTypeData,
-            ref EntityData[] allEntityDatas)
+            EntityData* allEntityDatas)
         {
             if (prevArcheTypeData->EntityCount == 0)
                 return;
@@ -132,7 +134,7 @@ namespace EcsLte
             return entityData;
         }
 
-        internal void RemoveEntity(Entity entity, ref EntityData[] allEntityDatas, ManagedComponentPools managedPools)
+        internal void RemoveEntity(Entity entity, EntityData* allEntityDatas, ManagedComponentPools managedPools)
         {
             var entityData = allEntityDatas[entity.Id];
             if (EntityCount > 1)
@@ -307,16 +309,10 @@ namespace EcsLte
             return false;
         }
 
-        public void Dispose()
+        internal void InternalDestroy()
         {
             MemoryHelper.Free(_configOffsets);
             _configOffsets = null;
-            if (ManagedConfigsLength > 0)
-            {
-                MemoryHelper.Free(ManagedConfigs);
-                ManagedConfigs = null;
-                ManagedConfigsLength = 0;
-            }
             if (_dataBuffer != null)
                 MemoryHelper.Free(_dataBuffer);
             _dataBuffer = null;
@@ -325,6 +321,18 @@ namespace EcsLte
             EntityCount = 0;
             EntityCapacity = 0;
             ComponentsSizeInBytes = 0;
+            if (ManagedConfigsLength > 0)
+            {
+                MemoryHelper.Free(ManagedConfigs);
+                ManagedConfigs = null;
+                ManagedConfigsLength = 0;
+            }
+            if (UniqueConfigsLength > 0)
+            {
+                MemoryHelper.Free(UniqueConfigs);
+                UniqueConfigs = null;
+                UniqueConfigsLength = 0;
+            }
         }
 
         private void Initialize(ArcheType archeType, ArcheTypeIndex archeTypeIndex)
@@ -332,11 +340,14 @@ namespace EcsLte
             _configOffsets = MemoryHelper.Alloc<ComponentConfigOffset>(archeType.ComponentConfigLength);
 
             var managedConfigs = new List<ComponentConfig>();
+            var uniqueConfigs = new List<ComponentConfig>();
             for (var i = 0; i < archeType.ComponentConfigLength; i++)
             {
                 var config = archeType.ComponentConfigs[i];
                 if (config.IsManaged)
                     managedConfigs.Add(config);
+                if (config.IsUnique)
+                    uniqueConfigs.Add(config);
 
                 _configOffsets[i] = new ComponentConfigOffset
                 {
@@ -354,6 +365,13 @@ namespace EcsLte
                 ManagedConfigsLength = managedConfigs.Count;
                 for (var i = 0; i < ManagedConfigsLength; i++)
                     ManagedConfigs[i] = managedConfigs[i];
+            }
+            if (uniqueConfigs.Count > 0)
+            {
+                UniqueConfigs = MemoryHelper.Alloc<ComponentConfig>(uniqueConfigs.Count);
+                UniqueConfigsLength = uniqueConfigs.Count;
+                for (var i = 0; i < UniqueConfigsLength; i++)
+                    UniqueConfigs[i] = uniqueConfigs[i];
             }
             ArcheType = archeType;
             ArcheTypeIndex = archeTypeIndex;
@@ -402,7 +420,7 @@ namespace EcsLte
             return DataBufferToComponents(entityIndex) + configOffset.OffsetInBytes;
         }
 
-        internal void RemoveTransferedEntity(Entity entity, ref EntityData[] allEntityDatas)
+        internal void RemoveTransferedEntity(Entity entity, EntityData* allEntityDatas)
         {
             var entityData = allEntityDatas[entity.Id];
             if (EntityCount > 1)
