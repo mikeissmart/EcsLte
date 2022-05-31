@@ -11,7 +11,6 @@ namespace EcsLte
     {
         private List<IndexDictionary<EntityQueryData>> _queryDataIndexes;
         private List<List<EntityQueryData>> _queryDatas;
-        private int _archeTypeDataVersion;
         private Entity* _entities;
         private Entity[] _cachedEntities;
         private bool _isCachedEntitiesDirty;
@@ -1064,8 +1063,10 @@ namespace EcsLte
                     var adapter = writeAdapters[i];
                     adapter.UpdateComponent(entityData, entityData.ArcheTypeData);
                     if (adapter.Config.IsShared && adapter.IsUpdated)
+                    {
                         anyChangeArcheType |= ArcheTypeManager.CachedArcheTypeReplaceSharedDataIndex(
                             adapter.GetSharedDataIndex());
+                    }
                 }
 
                 if (anyChangeArcheType)

@@ -1,7 +1,5 @@
-﻿using EcsLte.Utilities;
-using System;
-
-namespace EcsLte
+﻿
+/*namespace EcsLte
 {
     internal struct ArcheTypeIndex : IEquatable<ArcheTypeIndex>, IComparable<ArcheTypeIndex>
     {
@@ -33,4 +31,4 @@ namespace EcsLte
             .AppendHashCode(Index)
             .GetHashCode();
     }
-}
+}*/

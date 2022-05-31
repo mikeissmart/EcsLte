@@ -1,8 +1,6 @@
 ﻿using EcsLte.Data;
 using EcsLte.Utilities;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte
 {
@@ -11,22 +9,27 @@ namespace EcsLte
         /// <summary>
         /// ArcheTypeData*
         /// </summary>
-        private List<List<PtrWrapper>> _archeTypeDatas;
-        private List<IndexDictionary<ArcheType>> _archeTypeIndexes;
+        private List<List<PtrWrapper>> _archeTypeIndexes;
+        private readonly DataPoint[] _rootPoints;
         private int _archeTypeDataVersion;
         private ArcheType _cachedArcheType;
         private readonly EcsContext _context;
-
-        internal ArcheType CachedArcheType { get => _cachedArcheType; }
+        internal ArcheType CachedArcheType => _cachedArcheType;
 
         internal ArcheTypeDataManager(EcsContext context)
         {
-            _archeTypeDatas = new List<List<PtrWrapper>>();
-            _archeTypeIndexes = new List<IndexDictionary<ArcheType>>();
+            _archeTypeIndexes = new List<List<PtrWrapper>>();
             _cachedArcheType = ArcheType.Alloc(
                 ComponentConfigs.Instance.AllComponentCount,
                 ComponentConfigs.Instance.AllSharedCount);
             _context = context;
+
+
+            var allConfigCount = ComponentConfigs.Instance.AllComponentCount;
+            _rootPoints = new DataPoint[allConfigCount];
+
+            for (var i = 0; i < allConfigCount; i++)
+                _rootPoints[i] = new DataPoint(i);
         }
 
         internal void CachedArcheTypeCopyTo(ArcheType source)
@@ -55,37 +58,10 @@ namespace EcsLte
                 ? GetCachedArcheTypeData()
                 : prevArcheTypeData;
 
-        internal ArcheTypeData* GetCachedArcheTypeData()
-        {
-            GetArcheTypeIndexDic(_cachedArcheType.ComponentConfigLength, out var indexDic, out var dataList);
-            ArcheTypeData* archeTypeData = null;
-
-            var wasAdded = false;
-            var index = indexDic.GetOrAdd(_cachedArcheType,
-                (newIndex) =>
-                {
-                    var archeType = ArcheType.AllocClone(_cachedArcheType);
-                    archeTypeData = ArcheTypeData.Alloc(archeType, new ArcheTypeIndex
-                    {
-                        ComponentConfigLength = _cachedArcheType.ComponentConfigLength,
-                        Index = newIndex
-                    });
-                    dataList.Add(new PtrWrapper { Ptr = archeTypeData });
-                    _archeTypeDataVersion++;
-                    wasAdded = true;
-
-                    return archeType;
-                });
-            if (!wasAdded)
-                archeTypeData = (ArcheTypeData*)dataList[index].Ptr;
-
-            return archeTypeData;
-        }
-
         internal ArcheTypeData* GetArcheTypeData(EntityArcheType entityArcheType)
         {
-            if (entityArcheType.ArcheTypeData.TryGetArcheTypeIndex(_context, out var archeTypeIndex))
-                return GetArcheTypeData(archeTypeIndex);
+            if (entityArcheType.ArcheTypeData.TryGetArcheTypeIndex(_context, out var archeTypeData))
+                return archeTypeData;
 
             var entityArcheTypeData = entityArcheType.ArcheTypeData;
             _cachedArcheType.ComponentConfigLength = entityArcheTypeData.ComponentConfigs.Length;
@@ -100,16 +76,11 @@ namespace EcsLte
                     _context.SharedIndexDics);
             }
 
-            var archeTypeData = GetCachedArcheTypeData();
-            entityArcheType.ArcheTypeData.AddArcheTypeIndex(_context, archeTypeData->ArcheTypeIndex);
+            archeTypeData = GetCachedArcheTypeData();
+            entityArcheType.ArcheTypeData.AddArcheTypeIndex(_context, archeTypeData);
 
             return archeTypeData;
         }
-
-        internal ArcheTypeData* GetArcheTypeData(ArcheTypeIndex archeTypeIndex) =>
-            (ArcheTypeData*)_archeTypeDatas
-                [archeTypeIndex.ComponentConfigLength]
-                [archeTypeIndex.Index].Ptr;
 
         internal void UpdateEntityQuery(EntityQuery query)
         {
@@ -117,12 +88,10 @@ namespace EcsLte
             if (contextQueryData.ArcheTypeChangeVersion != _archeTypeDataVersion)
             {
                 var archeTypeDatas = new List<PtrWrapper>();
-                for (var i = query.QueryData.ConfigCount; i < _archeTypeDatas.Count; i++)
+                for (var i = query.QueryData.ConfigCount; i < _archeTypeIndexes.Count; i++)
                 {
-                    var dataList = _archeTypeDatas[i];
-                    for (var j = 0; j < dataList.Count; j++)
+                    foreach (var ptr in _archeTypeIndexes[i])
                     {
-                        var ptr = dataList[j];
                         var archeTypePData = (ArcheTypeData*)ptr.Ptr;
                         if (query.QueryData.IsFiltered(archeTypePData->ArcheType))
                             archeTypeDatas.Add(ptr);
@@ -136,32 +105,101 @@ namespace EcsLte
 
         internal void InternalDestroy()
         {
-            foreach (var indexDic in _archeTypeIndexes)
+            foreach (var list in _archeTypeIndexes)
             {
-                while (indexDic.PopKey(out var archeType))
-                    archeType.Dispose();
+                foreach (var item in list)
+                    ((ArcheTypeData*)item.Ptr)->InternalDestroy();
             }
             _archeTypeIndexes = null;
-            foreach (var dataList in _archeTypeDatas)
-            {
-                foreach (var archeTypeData in dataList)
-                    ((ArcheTypeData*)archeTypeData.Ptr)->InternalDestroy();
-            }
-            _archeTypeDatas = null;
             _cachedArcheType.Dispose();
         }
 
-        private void GetArcheTypeIndexDic(int configCount,
-            out IndexDictionary<ArcheType> indexDic, out List<PtrWrapper> dataList)
+        private void GetArcheTypeIndexDic(int configCount, out List<PtrWrapper> indexDic)
         {
             while (_archeTypeIndexes.Count <= configCount)
-            {
-                _archeTypeIndexes.Add(new IndexDictionary<ArcheType>(ArcheTypeEqualityComparer.Comparer));
-                _archeTypeDatas.Add(new List<PtrWrapper>());
-            }
+                _archeTypeIndexes.Add(new List<PtrWrapper>());
 
             indexDic = _archeTypeIndexes[configCount];
-            dataList = _archeTypeDatas[configCount];
+        }
+
+        internal ArcheTypeData* GetCachedArcheTypeData()
+        {
+            GetArcheTypeIndexDic(_cachedArcheType.ComponentConfigLength, out var dataList);
+            var point = _rootPoints[_cachedArcheType.ComponentConfigs[0].ComponentIndex];
+            for (var i = 1; i < _cachedArcheType.ComponentConfigLength; i++)
+                point = point.GetChild(_cachedArcheType.ComponentConfigs[i].ComponentIndex);
+
+            ArcheTypeData* archeTypeData;
+            if (!point.ArcheTypeDatas.TryGetValue(_cachedArcheType, out var ptr))
+            {
+                archeTypeData = ArcheTypeData.Alloc(ArcheType.AllocClone(_cachedArcheType));
+                point.ArcheTypeDatas.Add(archeTypeData->ArcheType, new PtrWrapper { Ptr = archeTypeData });
+                dataList.Add(new PtrWrapper { Ptr = archeTypeData });
+                _archeTypeDataVersion++;
+            }
+            else
+                archeTypeData = (ArcheTypeData*)ptr.Ptr;
+
+            return archeTypeData;
+        }
+
+        private class DataPoint
+        {
+            public int ComponentIndex { get; set; }
+            public DataPoint[] Children { get; set; }
+            /// <summary>
+            /// ArcheTypeData*
+            /// </summary>
+            public Dictionary<ArcheType, PtrWrapper> ArcheTypeDatas { get; set; }
+
+            public DataPoint(int componentIndex)
+            {
+                var allConfigCount = ComponentConfigs.Instance.AllComponentCount;
+                ComponentIndex = componentIndex;
+                ArcheTypeDatas = new Dictionary<ArcheType, PtrWrapper>(ArcheTypeSharedDataIndexComparer.Comparer);
+                Children = new DataPoint[allConfigCount];
+            }
+
+            public DataPoint GetChild(int componentIndex)
+            {
+                if (Children[componentIndex] == null)
+                {
+                    var dataPoint = new DataPoint(componentIndex);
+                    Children[componentIndex] = dataPoint;
+
+                    return dataPoint;
+                }
+                return Children[componentIndex];
+            }
+        }
+
+        private class ArcheTypeSharedDataIndexComparer : IEqualityComparer<ArcheType>
+        {
+            internal static ArcheTypeSharedDataIndexComparer Comparer => new ArcheTypeSharedDataIndexComparer();
+
+            public bool Equals(ArcheType x, ArcheType y)
+            {
+                if (x.SharedComponentDataLength == y.SharedComponentDataLength)
+                {
+                    for (var i = 0; i < x.SharedComponentDataLength; i++)
+                    {
+                        if (x.SharedComponentDataIndexes[i] != y.SharedComponentDataIndexes[i])
+                            return false;
+                    }
+                }
+
+                return true;
+            }
+
+            public int GetHashCode(ArcheType obj)
+            {
+                var hashCode = HashCodeHelper.StartHashCode()
+                    .AppendHashCode(obj.SharedComponentDataLength);
+                for (var i = 0; i < obj.SharedComponentDataLength; i++)
+                    hashCode = hashCode.AppendHashCode(obj.SharedComponentDataIndexes[i]);
+
+                return hashCode.GetHashCode();
+            }
         }
     }
 }

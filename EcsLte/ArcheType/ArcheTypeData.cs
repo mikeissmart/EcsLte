@@ -18,7 +18,6 @@ namespace EcsLte
         private int _dataBufferComponentsOffset;
 
         internal ArcheType ArcheType { get; private set; }
-        internal ArcheTypeIndex ArcheTypeIndex { get; private set; }
         internal int EntityCount { get; private set; }
         internal int EntityCapacity { get; private set; }
         internal int ComponentsSizeInBytes { get; private set; }
@@ -27,10 +26,10 @@ namespace EcsLte
         internal ComponentConfig* UniqueConfigs { get; private set; }
         internal int UniqueConfigsLength { get; private set; }
 
-        internal static ArcheTypeData* Alloc(ArcheType archeType, ArcheTypeIndex archeTypeIndex)
+        internal static ArcheTypeData* Alloc(ArcheType archeType)
         {
             var data = MemoryHelper.Alloc<ArcheTypeData>(1);
-            data->Initialize(archeType, archeTypeIndex);
+            data->Initialize(archeType);
 
             return data;
         }
@@ -316,8 +315,8 @@ namespace EcsLte
             if (_dataBuffer != null)
                 MemoryHelper.Free(_dataBuffer);
             _dataBuffer = null;
+            ArcheType.Dispose();
             ArcheType = new ArcheType();
-            ArcheTypeIndex = new ArcheTypeIndex();
             EntityCount = 0;
             EntityCapacity = 0;
             ComponentsSizeInBytes = 0;
@@ -335,7 +334,7 @@ namespace EcsLte
             }
         }
 
-        private void Initialize(ArcheType archeType, ArcheTypeIndex archeTypeIndex)
+        private void Initialize(ArcheType archeType)
         {
             _configOffsets = MemoryHelper.Alloc<ComponentConfigOffset>(archeType.ComponentConfigLength);
 
@@ -374,7 +373,6 @@ namespace EcsLte
                     UniqueConfigs[i] = uniqueConfigs[i];
             }
             ArcheType = archeType;
-            ArcheTypeIndex = archeTypeIndex;
         }
 
         private void CheckResize(int count)

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\mtaylor\\Documents\\Projects\\VisualStudio\\EcsLte\\Git\\EcsLte-main\\EcsLte-main\\EcsLte\\EcsLte.csproj": {}
+    "C:\\Users\\mtaylor\\Documents\\Projects\\VisualStudio\\EcsLte\\EcsLte\\EcsLte\\EcsLte.csproj": {}
   },
   "projects": {
-    "C:\\Users\\mtaylor\\Documents\\Projects\\VisualStudio\\EcsLte\\Git\\EcsLte-main\\EcsLte-main\\EcsLte\\EcsLte.csproj": {
+    "C:\\Users\\mtaylor\\Documents\\Projects\\VisualStudio\\EcsLte\\EcsLte\\EcsLte\\EcsLte.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\mtaylor\\Documents\\Projects\\VisualStudio\\EcsLte\\Git\\EcsLte-main\\EcsLte-main\\EcsLte\\EcsLte.csproj",
+        "projectUniqueName": "C:\\Users\\mtaylor\\Documents\\Projects\\VisualStudio\\EcsLte\\EcsLte\\EcsLte\\EcsLte.csproj",
         "projectName": "EcsLte",
-        "projectPath": "C:\\Users\\mtaylor\\Documents\\Projects\\VisualStudio\\EcsLte\\Git\\EcsLte-main\\EcsLte-main\\EcsLte\\EcsLte.csproj",
+        "projectPath": "C:\\Users\\mtaylor\\Documents\\Projects\\VisualStudio\\EcsLte\\EcsLte\\EcsLte\\EcsLte.csproj",
         "packagesPath": "C:\\Users\\mtaylor\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\mtaylor\\Documents\\Projects\\VisualStudio\\EcsLte\\Git\\EcsLte-main\\EcsLte-main\\EcsLte\\obj\\",
+        "outputPath": "C:\\Users\\mtaylor\\Documents\\Projects\\VisualStudio\\EcsLte\\EcsLte\\EcsLte\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

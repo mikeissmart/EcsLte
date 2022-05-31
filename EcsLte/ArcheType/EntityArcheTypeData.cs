@@ -1,4 +1,5 @@
-﻿using EcsLte.Utilities;
+﻿using EcsLte.Data;
+using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,10 @@ namespace EcsLte
     internal class EntityArcheTypeData : IEquatable<EntityArcheTypeData>
     {
         private int _hashCode;
-        private readonly Dictionary<EcsContext, ArcheTypeIndex> _archeTypeIndexes;
+        /// <summary>
+        /// ArcheTypeData*
+        /// </summary>
+        private readonly Dictionary<EcsContext, PtrWrapper> _archeTypeIndexes;
         private readonly object _lockObj;
 
         internal Type[] ComponentTypes { get; private set; }
@@ -18,7 +22,7 @@ namespace EcsLte
 
         internal EntityArcheTypeData()
         {
-            _archeTypeIndexes = new Dictionary<EcsContext, ArcheTypeIndex>();
+            _archeTypeIndexes = new Dictionary<EcsContext, PtrWrapper>();
             _lockObj = new object();
             ComponentTypes = new Type[0];
             SharedComponents = new ISharedComponent[0];
@@ -28,7 +32,7 @@ namespace EcsLte
 
         internal EntityArcheTypeData(IComponentData[] allComponentDatas, IComponentData[] sharedComponentDatas)
         {
-            _archeTypeIndexes = new Dictionary<EcsContext, ArcheTypeIndex>();
+            _archeTypeIndexes = new Dictionary<EcsContext, PtrWrapper>();
             _lockObj = new object();
             ComponentConfigs = allComponentDatas
                 .Select(x => x.Config)
@@ -44,9 +48,9 @@ namespace EcsLte
 
         internal unsafe EntityArcheTypeData(EcsContext context, ArcheTypeData* archeTypeData)
         {
-            _archeTypeIndexes = new Dictionary<EcsContext, ArcheTypeIndex>
+            _archeTypeIndexes = new Dictionary<EcsContext, PtrWrapper>
             {
-                { context, archeTypeData->ArcheTypeIndex }
+                { context, new PtrWrapper { Ptr = archeTypeData } }
             };
             _lockObj = new object();
 
@@ -75,13 +79,23 @@ namespace EcsLte
                 .ToArray();
         }
 
-        internal bool TryGetArcheTypeIndex(EcsContext context, out ArcheTypeIndex archeTypeIndex) => _archeTypeIndexes.TryGetValue(context, out archeTypeIndex);
+        internal unsafe bool TryGetArcheTypeIndex(EcsContext context, out ArcheTypeData* archeTypeData)
+        {
+            if (_archeTypeIndexes.TryGetValue(context, out var ptr))
+            {
+                archeTypeData = (ArcheTypeData*)ptr.Ptr;
+                return true;
+            }
 
-        internal void AddArcheTypeIndex(EcsContext context, ArcheTypeIndex archeTypeIndex)
+            archeTypeData = null;
+            return false;
+        }
+
+        internal unsafe void AddArcheTypeIndex(EcsContext context, ArcheTypeData* archeTypeData)
         {
             lock (_lockObj)
             {
-                _archeTypeIndexes.Add(context, archeTypeIndex);
+                _archeTypeIndexes.Add(context, new PtrWrapper { Ptr = archeTypeData });
             }
         }
 

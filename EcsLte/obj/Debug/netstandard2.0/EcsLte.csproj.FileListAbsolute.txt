@@ -17,3 +17,4 @@ C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\Git\EcsLte-main\EcsLte-m
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\Git\EcsLte-main\EcsLte-main\EcsLte\obj\Debug\netstandard2.0\EcsLte.csproj.CoreCompileInputs.cache
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\Git\EcsLte-main\EcsLte-main\EcsLte\obj\Debug\netstandard2.0\EcsLte.dll
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\Git\EcsLte-main\EcsLte-main\EcsLte\obj\Debug\netstandard2.0\EcsLte.pdb
+C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\obj\Debug\netstandard2.0\EcsLte.csproj.AssemblyReference.cache
