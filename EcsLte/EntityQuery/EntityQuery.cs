@@ -51,7 +51,16 @@ namespace EcsLte
 
         public bool HasWhereAllOf<TComponent>()
             where TComponent : IComponent
-            => QueryData.AllComponentConfigs.Contains(ComponentConfig<TComponent>.Config);
+        {
+            var config = ComponentConfig<TComponent>.Config;
+            for (var i = 0; i < QueryData.AllComponentConfigs.Length; i++)
+            {
+                if (QueryData.AllComponentConfigs[i] == config)
+                    return true;
+            }
+
+            return false;
+        }
 
         public EntityQuery WhereAllOf(EntityArcheType entityArcheType)
         {

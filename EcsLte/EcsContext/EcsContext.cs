@@ -219,11 +219,18 @@ namespace EcsLte
                 _entityDatas[entity.Id] = entityData;
                 CheckAndSetUniqueComponents(entity, archeTypeData);
 
+                var tempVersionsBuffer = stackalloc int[archeTypeData->ArcheType.ComponentConfigLength];
                 var tempComponentBuffer = stackalloc byte[archeTypeData->ComponentsSizeInBytes];
-                archeTypeData->CopyBlittableComponentDatasToBuffer(blueprint.BlittableComponentDatas, tempComponentBuffer);
+                archeTypeData->CopyBlittableComponentDatasToBuffer(blueprint.BlittableComponentDatas,
+                    tempVersionsBuffer,
+                    tempComponentBuffer);
 
                 if (blueprint.BlittableComponentDatas.Length > 0)
-                    archeTypeData->SetComponentsBuffer(entityData, tempComponentBuffer);
+                {
+                    archeTypeData->SetComponentsBuffer(entityData,
+                        tempVersionsBuffer,
+                        tempComponentBuffer);
+                }
                 if (blueprint.ManagedComponentDatas.Length > 0)
                 {
                     for (var j = 0; j < blueprint.ManagedComponentDatas.Length; j++)
@@ -266,8 +273,11 @@ namespace EcsLte
                 archeTypeData->PreCheckEntityAllocation(count);
                 CheckUniqueComponents(archeTypeData);
 
+                var tempVersionsBuffer = stackalloc int[archeTypeData->ArcheType.ComponentConfigLength];
                 var tempComponentBuffer = stackalloc byte[archeTypeData->ComponentsSizeInBytes];
-                archeTypeData->CopyBlittableComponentDatasToBuffer(blueprint.BlittableComponentDatas, tempComponentBuffer);
+                archeTypeData->CopyBlittableComponentDatasToBuffer(blueprint.BlittableComponentDatas,
+                    tempVersionsBuffer,
+                    tempComponentBuffer);
 
                 var componentIndexes = new int[blueprint.ManagedComponentDatas.Length][];
                 for (var i = 0; i < blueprint.ManagedComponentDatas.Length; i++)
@@ -285,7 +295,11 @@ namespace EcsLte
                     _entityDatas[entity.Id] = entityData;
 
                     if (blueprint.BlittableComponentDatas.Length > 0)
-                        archeTypeData->SetComponentsBuffer(entityData, tempComponentBuffer);
+                    {
+                        archeTypeData->SetComponentsBuffer(entityData,
+                            tempVersionsBuffer,
+                            tempComponentBuffer);
+                    }
                     if (blueprint.ManagedComponentDatas.Length > 0)
                     {
                         for (var j = 0; j < blueprint.ManagedComponentDatas.Length; j++)
@@ -402,7 +416,9 @@ namespace EcsLte
                 _entityDatas[nextEntity.Id] = nextEntityData;
                 CheckAndSetUniqueComponents(nextEntity, nextArcheTypeData);
 
-                nextArcheTypeData->SetComponentsBuffer(nextEntityData, prevArcheTypeData->GetComponentsPtr(prevEntityData));
+                nextArcheTypeData->SetComponentsBuffer(nextEntityData,
+                    prevArcheTypeData->GetVersionsPtr(prevEntityData),
+                    prevArcheTypeData->GetComponentsPtr(prevEntityData));
                 for (var j = 0; j < nextArcheTypeData->ManagedConfigsLength; j++)
                 {
                     var config = nextArcheTypeData->ManagedConfigs[j];
@@ -480,7 +496,9 @@ namespace EcsLte
                     nextEntities[nextEntityIndex++] = nextEntity;
                     CheckAndSetUniqueComponents(nextEntity, nextArcheTypeData);
 
-                    nextArcheTypeData->SetComponentsBuffer(nextEntityData, prevArcheTypeData->GetComponentsPtr(prevEntityData));
+                    nextArcheTypeData->SetComponentsBuffer(nextEntityData,
+                        prevArcheTypeData->GetVersionsPtr(prevEntityData),
+                        prevArcheTypeData->GetComponentsPtr(prevEntityData));
                     for (var j = 0; j < nextArcheTypeData->ManagedConfigsLength; j++)
                     {
                         var config = nextArcheTypeData->ManagedConfigs[j];
@@ -533,7 +551,7 @@ namespace EcsLte
                     var nextEntities = new Entity[entitiesLength];
 
                     CheckCapacity(entitiesLength);
-                    TransferArcheType(sourceContext, prevArcheTypeData, ref nextEntities, 0);
+                    TransferArcheTypeDiffContext(sourceContext, prevArcheTypeData, ref nextEntities, 0);
                     if (destroyEntities)
                         sourceContext.DestroyEntities(entityArcheType);
 
@@ -580,7 +598,7 @@ namespace EcsLte
                     else
                     {
                         CheckUniqueComponents(prevArcheTypeData);
-                        TransferArcheType(sourceContext, prevArcheTypeData, ref nextEntities, entityIndex);
+                        TransferArcheTypeDiffContext(sourceContext, prevArcheTypeData, ref nextEntities, entityIndex);
                         entityIndex += prevArcheTypeData->EntityCount;
                     }
                 }
@@ -937,34 +955,7 @@ namespace EcsLte
 
             lock (LockObj)
             {
-                var config = ComponentConfig<TComponent>.Config;
-                if (config.IsShared)
-                {
-                    var prevArcheTypeData = ArcheTypeManager.GetArcheTypeData(entityArcheType);
-                    ArcheTypeManager.CachedArcheTypeCopyTo(prevArcheTypeData->ArcheType);
-                    var nextArcheTypeData = ArcheTypeManager.CachedArcheTypeGetNextArcheTypeData(prevArcheTypeData,
-                        SharedIndexDics.GetDataIndex(component));
-
-                    if (nextArcheTypeData != prevArcheTypeData)
-                        ArcheTypeData.TransferAllEntities(prevArcheTypeData, nextArcheTypeData, _entityDatas);
-
-                    if (config.IsBlittable)
-                    {
-                        nextArcheTypeData->SetAllComponents(component, config);
-                    }
-                    else
-                    {
-                        nextArcheTypeData->SetAllComponents(component, config, ManagePools.GetPool<TComponent>());
-                    }
-                }
-                else
-                {
-                    var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityArcheType);
-                    if (config.IsBlittable)
-                        archeTypeData->SetAllComponents(component, config);
-                    else
-                        archeTypeData->SetAllComponents(component, config, ManagePools.GetPool<TComponent>());
-                }
+                UpdateComponentsArcheType(ArcheTypeManager.GetArcheTypeData(entityArcheType), component);
             }
         }
 
@@ -981,69 +972,9 @@ namespace EcsLte
             {
                 UpdateEntityQuery(entityQuery, true);
                 var contextQueryData = entityQuery.QueryData.ContextQueryData[this];
-                var config = ComponentConfig<TComponent>.Config;
-                if (config.IsShared)
+                for (var i = 0; i < contextQueryData.ArcheTypeDatas.Length; i++)
                 {
-                    var sharedIndexDic = SharedIndexDics.GetSharedIndexDic<TComponent>();
-                    if (config.IsBlittable)
-                    {
-                        for (var i = 0; i < contextQueryData.ArcheTypeDatas.Length; i++)
-                        {
-                            var prevArcheTypeData = (ArcheTypeData*)contextQueryData.ArcheTypeDatas[i].Ptr;
-                            ArcheTypeManager.CachedArcheTypeCopyTo(prevArcheTypeData->ArcheType);
-                            var nextSharedDataIndex = new SharedComponentDataIndex
-                            {
-                                SharedIndex = config.SharedIndex,
-                                SharedDataIndex = sharedIndexDic.GetOrAdd(component),
-                            };
-                            var nextArcheTypeData = ArcheTypeManager.CachedArcheTypeGetNextArcheTypeData(prevArcheTypeData,
-                                nextSharedDataIndex);
-                            if (nextArcheTypeData != prevArcheTypeData)
-                                ArcheTypeData.TransferAllEntities(prevArcheTypeData, nextArcheTypeData, _entityDatas);
-
-                            nextArcheTypeData->SetAllComponents(component, config);
-                        }
-                    }
-                    else
-                    {
-                        var managePool = ManagePools.GetPool<TComponent>();
-                        for (var i = 0; i < contextQueryData.ArcheTypeDatas.Length; i++)
-                        {
-                            var prevArcheTypeData = (ArcheTypeData*)contextQueryData.ArcheTypeDatas[i].Ptr;
-                            ArcheTypeManager.CachedArcheTypeCopyTo(prevArcheTypeData->ArcheType);
-                            var nextSharedDataIndex = new SharedComponentDataIndex
-                            {
-                                SharedIndex = config.SharedIndex,
-                                SharedDataIndex = sharedIndexDic.GetOrAdd(component),
-                            };
-                            var nextArcheTypeData = ArcheTypeManager.CachedArcheTypeGetNextArcheTypeData(prevArcheTypeData,
-                                nextSharedDataIndex);
-                            if (nextArcheTypeData != prevArcheTypeData)
-                                ArcheTypeData.TransferAllEntities(prevArcheTypeData, nextArcheTypeData, _entityDatas);
-
-                            nextArcheTypeData->SetAllComponents(component, config, managePool);
-                        }
-                    }
-                }
-                else
-                {
-                    if (config.IsBlittable)
-                    {
-                        for (var i = 0; i < contextQueryData.ArcheTypeDatas.Length; i++)
-                        {
-                            ((ArcheTypeData*)contextQueryData.ArcheTypeDatas[i].Ptr)
-                                ->SetAllComponents(component, config);
-                        }
-                    }
-                    else
-                    {
-                        var managePool = ManagePools.GetPool<TComponent>();
-                        for (var i = 0; i < contextQueryData.ArcheTypeDatas.Length; i++)
-                        {
-                            ((ArcheTypeData*)contextQueryData.ArcheTypeDatas[i].Ptr)
-                                ->SetAllComponents(component, config, managePool);
-                        }
-                    }
+                    UpdateComponentsArcheType((ArcheTypeData*)contextQueryData.ArcheTypeDatas[i].Ptr, component);
                 }
             }
         }
@@ -1213,7 +1144,7 @@ namespace EcsLte
                 _uniqueComponentEntities[archeTypeData->UniqueConfigs[i].UniqueIndex] = Entity.Null;
         }
 
-        private void TransferArcheType(EcsContext sourceContext, ArcheTypeData* prevArcheTypeData, ref Entity[] nextEntities, int startEntityIndex)
+        private void TransferArcheTypeDiffContext(EcsContext sourceContext, ArcheTypeData* prevArcheTypeData, ref Entity[] nextEntities, int startEntityIndex)
         {
             var entitiesLength = prevArcheTypeData->EntityCount;
             CheckCapacity(entitiesLength);
@@ -1240,7 +1171,9 @@ namespace EcsLte
                 _entityDatas[nextEntity.Id] = nextEntityData;
                 nextEntities[i + startEntityIndex] = nextEntity;
 
-                nextArcheTypeData->SetComponentsBuffer(nextEntityData, prevArcheTypeData->GetComponentsPtr(prevEntityData));
+                nextArcheTypeData->SetComponentsBuffer(nextEntityData,
+                    prevArcheTypeData->GetVersionsPtr(prevEntityData),
+                    prevArcheTypeData->GetComponentsPtr(prevEntityData));
                 for (var j = 0; j < nextArcheTypeData->ManagedConfigsLength; j++)
                 {
                     var config = nextArcheTypeData->ManagedConfigs[j];
@@ -1254,6 +1187,36 @@ namespace EcsLte
                         componentIndexes[j][i],
                         ManagePools.GetPool(config));
                 }
+            }
+        }
+
+        private void UpdateComponentsArcheType<TComponent>(ArcheTypeData* prevArcheTypeData, TComponent component) where TComponent : IComponent
+        {
+            var config = ComponentConfig<TComponent>.Config;
+            if (config.IsShared)
+            {
+                ArcheTypeManager.CachedArcheTypeCopyTo(prevArcheTypeData->ArcheType);
+                var nextArcheTypeData = ArcheTypeManager.CachedArcheTypeGetNextArcheTypeData(prevArcheTypeData,
+                    SharedIndexDics.GetDataIndex(component));
+
+                if (nextArcheTypeData != prevArcheTypeData)
+                    ArcheTypeData.TransferAllEntities(prevArcheTypeData, nextArcheTypeData, _entityDatas);
+
+                if (config.IsBlittable)
+                {
+                    nextArcheTypeData->SetAllComponents(component, config);
+                }
+                else
+                {
+                    nextArcheTypeData->SetAllComponents(component, config, ManagePools.GetPool<TComponent>());
+                }
+            }
+            else
+            {
+                if (config.IsBlittable)
+                    prevArcheTypeData->SetAllComponents(component, config);
+                else
+                    prevArcheTypeData->SetAllComponents(component, config, ManagePools.GetPool<TComponent>());
             }
         }
 

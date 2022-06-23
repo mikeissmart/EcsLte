@@ -4,5 +4,6 @@
     {
         public ComponentConfig Config;
         public int OffsetInBytes;
+        public int ConfigIndex;
     }
 }
