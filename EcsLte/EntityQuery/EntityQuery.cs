@@ -1,5 +1,4 @@
-﻿using EcsLte.Data;
-using EcsLte.Exceptions;
+﻿using EcsLte.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -1893,7 +1892,7 @@ namespace EcsLte
             public EcsContext Context { get; set; }
             public Entity[] Entities { get; set; }
             public ComponentConfig[] Configs { get; set; }
-            public PtrWrapper[] ArcheTypeDatas { get; set; }
+            public ArcheTypeData[] ArcheTypeDatas { get; set; }
             public ForEachRunAction Action { get; set; }
         }
 
@@ -1901,14 +1900,14 @@ namespace EcsLte
         {
             public int Index { get; private set; }
             public Entity CurrentEntity { get; private set; }
-            public HashSet<PtrWrapper> ArcheTypeDataHash { get; private set; }
-            public unsafe ArcheTypeData* PrevArcheTypeData { get; private set; }
+            public HashSet<ArcheTypeIndex> ArcheTypeDataHash { get; private set; }
+            public ArcheTypeData PrevArcheTypeData { get; private set; }
             public IComponentAdapter[] ComponentAdapters { get; private set; }
             public IComponentAdapter[] WriteComponentAdapters { get; private set; }
 
-            public ForEachOptions(PtrWrapper[] archeTypeDatas, IComponentAdapter[] componentAdapters, int writeCount)
+            public ForEachOptions(ArcheTypeData[] archeTypeDatas, IComponentAdapter[] componentAdapters, int writeCount)
             {
-                ArcheTypeDataHash = new HashSet<PtrWrapper>(archeTypeDatas);
+                ArcheTypeDataHash = new HashSet<ArcheTypeIndex>(archeTypeDatas.Select(x => x.ArcheTypeIndex));
                 ComponentAdapters = componentAdapters;
                 WriteComponentAdapters = componentAdapters.Take(writeCount).ToArray();
             }
@@ -1924,24 +1923,22 @@ namespace EcsLte
                     CurrentEntity = entity;
 
                     var entityData = context.EntityDatas[CurrentEntity.Id];
-                    if (!ArcheTypeDataHash.Contains(new PtrWrapper { Ptr = entityData.ArcheTypeData }))
-                        return false;
+                    var archeTypeData = context.ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
 
-                    var componentsPtr = entityData.ArcheTypeData->GetComponentsPtr(entityData);
-                    if (PrevArcheTypeData != entityData.ArcheTypeData)
+                    if (PrevArcheTypeData != archeTypeData)
                     {
-                        PrevArcheTypeData = entityData.ArcheTypeData;
+                        PrevArcheTypeData = archeTypeData;
                         for (var i = 0; i < ComponentAdapters.Length; i++)
                         {
-                            entityData.ArcheTypeData->GetComponentConfigOffset(ComponentAdapters[i].Config, out var configOffset);
+                            var configOffset = archeTypeData.GetComponentConfigOffset(ComponentAdapters[i].Config);
                             ComponentAdapters[i].SetComponentConfigOffset(configOffset);
-                            ComponentAdapters[i].StoreComponent(componentsPtr, entityData.ArcheTypeData);
+                            ComponentAdapters[i].StoreComponent(entityData, archeTypeData);
                         }
                     }
                     else
                     {
                         for (var i = 0; i < ComponentAdapters.Length; i++)
-                            ComponentAdapters[i].StoreComponent(componentsPtr, entityData.ArcheTypeData);
+                            ComponentAdapters[i].StoreComponent(entityData, archeTypeData);
                     }
                 }
 

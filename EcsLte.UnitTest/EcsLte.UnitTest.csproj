@@ -58,6 +58,7 @@
     <Compile Include="EntityQueryTests\EntityQueryTest_ForEach_MultiThread.cs" />
     <Compile Include="EntityQueryTests\EntityQueryTest_ForEach_SingleThread.cs" />
     <Compile Include="EntityQueryTests\EntityQueryTest_WhereOf.cs" />
+    <Compile Include="EntityTrackerTests\EntityTrackerTests.cs" />
     <Compile Include="ManagerTests\EntityCommandManagerTest.cs" />
     <Compile Include="ManagerTests\EntityManagerTest_GetComponent.cs" />
     <Compile Include="ManagerTests\EntityManagerTest_GetComponents.cs" />
@@ -81,6 +82,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

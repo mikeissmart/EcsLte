@@ -561,6 +561,86 @@ namespace EcsLte.UnitTest.ManagerTests
             Components_Blittable_Normal(AssertUpdateComponent_EntityQuery);
 
         [TestMethod]
+        public void UpdateComponent_EntityQuery_Blittable_Normal_PrePopulated_Large()
+        {
+            var sharedComponent1 = new TestSharedComponent1 { Prop = 1 };
+            var sharedComponent2 = new TestSharedComponent1 { Prop = 2 };
+            var archeType1 = new EntityArcheType()
+                .AddSharedComponent(sharedComponent1)
+                .AddComponentType<TestComponent1>();
+            var archeType2 = new EntityArcheType()
+                .AddSharedComponent(sharedComponent2)
+                .AddComponentType<TestComponent1>();
+            var blueprint1 = new EntityBlueprint()
+                .AddComponent(sharedComponent1);
+            var blueprint2 = new EntityBlueprint()
+                .AddComponent(sharedComponent2);
+            for (var i = 0; i < UnitTestConsts.LargeCount / 2; i++)
+            {
+                blueprint1 = blueprint1.UpdateComponent(new TestComponent1 { Prop = i + 1 });
+                Context.CreateEntity(blueprint1);
+            }
+            for (var i = 0; i < UnitTestConsts.LargeCount / 2; i++)
+            {
+                blueprint2 = blueprint2.UpdateComponent(new TestComponent1 { Prop = i + 1 + UnitTestConsts.LargeCount / 2 });
+                Context.CreateEntity(blueprint2);
+            }
+            Context.UpdateComponents(archeType1, sharedComponent2);
+
+            var components = Context.GetComponents<TestSharedComponent1>(archeType2);
+            var entities = Context.GetEntities(archeType2);
+            Assert.IsTrue(components.Length == UnitTestConsts.LargeCount);
+            Assert.IsTrue(entities.Length == UnitTestConsts.LargeCount);
+            for (var i = 0; i < entities.Length; i++)
+            {
+                var component = Context.GetComponent<TestComponent1>(entities[i]);
+                Assert.IsTrue(component.Prop == entities[i].Id,
+                    $"Enity.Id {entities[i].Id}");
+            }
+        }
+
+        [TestMethod]
+        public void UpdateComponent_EntityQuery_Blittable_Normal_PrePopulated_Small()
+        {
+            var sharedComponent1 = new TestSharedComponent1 { Prop = 1 };
+            var sharedComponent2 = new TestSharedComponent1 { Prop = 2 };
+            var archeType1 = new EntityArcheType()
+                .AddSharedComponent(sharedComponent1)
+                .AddComponentType<TestComponent1>();
+            var archeType2 = new EntityArcheType()
+                .AddSharedComponent(sharedComponent2)
+                .AddComponentType<TestComponent1>();
+            var blueprint1 = new EntityBlueprint()
+                .AddComponent(sharedComponent1);
+            var blueprint2 = new EntityBlueprint()
+                .AddComponent(sharedComponent2);
+            for (var i = 0; i < UnitTestConsts.SmallCount / 2; i++)
+            {
+                blueprint1 = blueprint1.UpdateComponent(new TestComponent1 { Prop = i + 1 });
+                Context.CreateEntity(blueprint1);
+            }
+            for (var i = 0; i < UnitTestConsts.SmallCount / 2; i++)
+            {
+                blueprint2 = blueprint2.UpdateComponent(new TestComponent1 { Prop = i + 1 + UnitTestConsts.SmallCount / 2 });
+                var entity = Context.CreateEntity(blueprint2);
+                var comp = Context.GetComponent<TestComponent1>(entity);
+                ;
+            }
+            Context.UpdateComponents(archeType1, sharedComponent2);
+
+            var components = Context.GetComponents<TestSharedComponent1>(archeType2);
+            var entities = Context.GetEntities(archeType2);
+            Assert.IsTrue(components.Length == UnitTestConsts.SmallCount);
+            Assert.IsTrue(entities.Length == UnitTestConsts.SmallCount);
+            for (var i = 0; i < entities.Length; i++)
+            {
+                var component = Context.GetComponent<TestComponent1>(entities[i]);
+                Assert.IsTrue(component.Prop == entities[i].Id,
+                    $"Enity.Id {entities[i].Id}");
+            }
+        }
+
+        [TestMethod]
         public void UpdateComponent_EntityQuery_Blittable_NormalShared() =>
             Components_Blittable_NormalShared(AssertUpdateComponent_EntityQuery);
 

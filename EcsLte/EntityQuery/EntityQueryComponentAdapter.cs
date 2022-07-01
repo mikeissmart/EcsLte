@@ -1,18 +1,15 @@
 ﻿using EcsLte.Data;
 using System;
-using System.Runtime.InteropServices;
 
 namespace EcsLte
 {
     internal interface IComponentAdapter
     {
         ComponentConfig Config { get; }
-        SharedComponentDataIndex SharedDataIndex { get; }
-        bool IsUpdated { get; }
 
         void SetComponentConfigOffset(ComponentConfigOffset configOffset);
-        unsafe void StoreComponent(byte* componentsPtr, ArcheTypeData* archeTypeData);
-        unsafe void UpdateComponent(EntityData entityData, ArcheTypeData* archeTypeData);
+        unsafe void StoreComponent(EntityData entityData, ArcheTypeData archeTypeData);
+        unsafe void UpdateComponent(EntityData entityData, ArcheTypeData archeTypeData);
         SharedComponentDataIndex GetSharedDataIndex();
     }
 
@@ -26,23 +23,20 @@ namespace EcsLte
          where TComponent : IComponent
     {
         public ComponentConfig Config { get; private set; }
-        public ComponentConfigOffset ConfigOffset { get; private set; }
-        public SharedComponentDataIndex SharedDataIndex { get; protected set; }
-        public bool IsUpdated => !OrignalComponent.Equals(Component);
 
+        protected ComponentConfigOffset ConfigOffset;
         protected TComponent Component;
         protected TComponent OrignalComponent;
-        protected unsafe ArcheTypeData* CurrentArcheTypeData;
+        protected unsafe ArcheTypeData CurrentArcheTypeData;
 
         protected ComponentAdapter(ComponentConfig config) => Config = config;
 
-        public void SetComponentConfigOffset(ComponentConfigOffset configOffset) => ConfigOffset = configOffset;
-
         public ref TComponent GetComponentRef() => ref Component;
         public virtual SharedComponentDataIndex GetSharedDataIndex() => throw new NotImplementedException();
+        public void SetComponentConfigOffset(ComponentConfigOffset configOffset) => ConfigOffset = configOffset;
 
-        public abstract unsafe void StoreComponent(byte* componentsPtr, ArcheTypeData* archeTypeData);
-        public abstract unsafe void UpdateComponent(EntityData entityData, ArcheTypeData* archeTypeData);
+        public abstract unsafe void StoreComponent(EntityData entityData, ArcheTypeData archeTypeData);
+        public abstract unsafe void UpdateComponent(EntityData entityData, ArcheTypeData archeTypeData);
     }
 
     internal class BlittableComponentAdapter<TComponent> : ComponentAdapter<TComponent>
@@ -53,20 +47,14 @@ namespace EcsLte
         {
         }
 
-        public override unsafe void StoreComponent(byte* componentsPtr, ArcheTypeData* archeTypeData)
+        public override unsafe void StoreComponent(EntityData entityData, ArcheTypeData archeTypeData)
         {
             CurrentArcheTypeData = archeTypeData;
-            Component = Marshal.PtrToStructure<TComponent>((IntPtr)(componentsPtr + ConfigOffset.OffsetInBytes));
+            Component = archeTypeData.GetComponentOffset<TComponent>(entityData, ConfigOffset);
             OrignalComponent = Component;
         }
 
-        public override unsafe void UpdateComponent(EntityData entityData, ArcheTypeData* archeTypeData)
-        {
-            if (CurrentArcheTypeData != archeTypeData)
-                archeTypeData->SetComponent(entityData, Component, Config);
-            else
-                archeTypeData->SetComponentOffset(entityData, Component, ConfigOffset);
-        }
+        public override unsafe void UpdateComponent(EntityData entityData, ArcheTypeData archeTypeData) => archeTypeData.SetComponentOffset(entityData, Component, ConfigOffset);
     }
 
     internal class BlittableSharedComponentAdapter<TComponent> : BlittableComponentAdapter<TComponent>
@@ -93,21 +81,14 @@ namespace EcsLte
         public ManageComponentAdapter(ComponentConfig config, ManagedComponentPools managePools)
             : base(config) => _managePool = managePools.GetPool<TComponent>();
 
-        public override unsafe void StoreComponent(byte* componentsPtr, ArcheTypeData* archeTypeData)
+        public override unsafe void StoreComponent(EntityData entityData, ArcheTypeData archeTypeData)
         {
             CurrentArcheTypeData = archeTypeData;
-            var componentIndex = Marshal.PtrToStructure<int>((IntPtr)(componentsPtr + ConfigOffset.OffsetInBytes));
-            Component = _managePool.GetComponent(componentIndex);
+            Component = archeTypeData.GetComponentOffset(entityData, ConfigOffset, _managePool);
             OrignalComponent = Component;
         }
 
-        public override unsafe void UpdateComponent(EntityData entityData, ArcheTypeData* archeTypeData)
-        {
-            if (CurrentArcheTypeData != archeTypeData)
-                archeTypeData->SetComponent(entityData, Component, Config, _managePool);
-            else
-                archeTypeData->SetComponentOffset(entityData, Component, ConfigOffset, _managePool);
-        }
+        public override unsafe void UpdateComponent(EntityData entityData, ArcheTypeData archeTypeData) => archeTypeData.SetComponentOffset(entityData, Component, ConfigOffset, _managePool);
     }
 
     internal class ManageSharedComponentAdapter<TComponent> : ManageComponentAdapter<TComponent>

@@ -10,7 +10,7 @@ namespace EcsLte
 
         unsafe void CopyBlittableComponentData(byte* componentPtr);
 
-        unsafe void CopyManagedComponentData(ArcheTypeData* archeTypeData, EntityData entityData, int componentIndex, IManagedComponentPool managedPool);
+        unsafe void CopyManagedComponentData(ArcheTypeData archeTypeData, EntityData entityData, int componentIndex, IManagedComponentPool managedPool);
 
         bool ComponentEquals<TComponentEqual>(TComponentEqual component) where TComponentEqual : IComponent;
 
@@ -33,8 +33,8 @@ namespace EcsLte
 
         public unsafe void CopyBlittableComponentData(byte* componentPtr) => Marshal.StructureToPtr(_component, (IntPtr)componentPtr, false);
 
-        public unsafe void CopyManagedComponentData(ArcheTypeData* archeTypeData, EntityData entityData, int componentIndex, IManagedComponentPool managedPool) =>
-            archeTypeData->SetComponentAndIndex(entityData, _component, Config, componentIndex, (ManagedComponentPool<TComponent>)managedPool);
+        public unsafe void CopyManagedComponentData(ArcheTypeData archeTypeData, EntityData entityData, int componentIndex, IManagedComponentPool managedPool) =>
+            archeTypeData.SetComponentAndIndex(entityData, _component, Config, componentIndex, (ManagedComponentPool<TComponent>)managedPool);
 
         public bool ComponentEquals<TComponentEqual>(TComponentEqual component)
              where TComponentEqual : IComponent => Config == ComponentConfig<TComponentEqual>.Config &&

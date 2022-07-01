@@ -17,7 +17,7 @@ namespace EcsLte
             get
             {
                 if (_allComponentTypes == null)
-                    _allComponentTypes = GetComponentConfigTypes(AllComponentConfigs);
+                    _allComponentTypes = Helper.GetComponentConfigTypes(AllComponentConfigs);
                 return _allComponentTypes;
             }
         }
@@ -27,7 +27,7 @@ namespace EcsLte
             get
             {
                 if (_anyComponentTypes == null)
-                    _anyComponentTypes = GetComponentConfigTypes(AnyComponentConfigs);
+                    _anyComponentTypes = Helper.GetComponentConfigTypes(AnyComponentConfigs);
                 return _anyComponentTypes;
             }
         }
@@ -37,7 +37,7 @@ namespace EcsLte
             get
             {
                 if (_noneComponentTypes == null)
-                    _noneComponentTypes = GetComponentConfigTypes(NoneComponentConfigs);
+                    _noneComponentTypes = Helper.GetComponentConfigTypes(NoneComponentConfigs);
                 return _noneComponentTypes;
             }
         }
@@ -205,15 +205,6 @@ namespace EcsLte
             }
 
             return _hashCode;
-        }
-
-        private static Type[] GetComponentConfigTypes(ComponentConfig[] configs)
-        {
-            var types = new Type[configs.Length];
-            for (var i = 0; i < configs.Length; i++)
-                types[i] = ComponentConfigs.Instance.AllComponentTypes[configs[i].ComponentIndex];
-
-            return types;
         }
     }
 }

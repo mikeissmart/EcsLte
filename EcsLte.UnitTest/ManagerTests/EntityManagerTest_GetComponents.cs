@@ -725,7 +725,7 @@ namespace EcsLte.UnitTest.ManagerTests
                     component is ISharedComponent
                         ? components[i].Prop == component.Prop
                         : components[i].Prop == entities[i].Id,
-                    $"Enity.Id {entities[i].Id}");
+                    $"Enity.Id {entities[i].Id}, {component.GetType()}");
             }
         }
 

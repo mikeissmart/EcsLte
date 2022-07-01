@@ -1,10 +1,18 @@
-﻿
-/*namespace EcsLte
+﻿using EcsLte.Utilities;
+using System;
+
+namespace EcsLte
 {
     internal struct ArcheTypeIndex : IEquatable<ArcheTypeIndex>, IComparable<ArcheTypeIndex>
     {
-        public int ComponentConfigLength { get; set; }
-        public int Index { get; set; }
+        internal int ComponentConfigLength { get; set; }
+        internal int Index { get; set; }
+
+        internal ArcheTypeIndex(int componentConfigLength, int index)
+        {
+            ComponentConfigLength = componentConfigLength;
+            Index = index;
+        }
 
         public static bool operator !=(ArcheTypeIndex lhs, ArcheTypeIndex rhs)
             => !(lhs == rhs);
@@ -17,7 +25,7 @@
         {
             var compareTo = ComponentConfigLength.CompareTo(other.ComponentConfigLength);
             if (compareTo == 0)
-                Index.CompareTo(other.Index);
+                compareTo = Index.CompareTo(other.Index);
 
             return compareTo;
         }
@@ -30,5 +38,9 @@
             .AppendHashCode(ComponentConfigLength)
             .AppendHashCode(Index)
             .GetHashCode();
+
+        public override bool Equals(object obj) => obj is ArcheTypeIndex archeTypeIndex && archeTypeIndex == this;
+
+        public override string ToString() => $"{ComponentConfigLength}, {Index}";
     }
-}*/
+}

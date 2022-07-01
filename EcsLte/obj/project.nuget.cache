@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "A1csc8MiyjWzsbgCY2WTbAq8xEQJ4ptdJeEa4R96O/FHndPqYBPIJeEBcNZsIeoF+Oguo/3AOPtDN2ZLLnm9ng==",
+  "dgSpecHash": "xTHUrhj0/2ZbS5NEslfSkE9hYrDT1P8Qj4znS4/Y8s3whX1cyf/HJj6XomUErfL/fcK/mV07PjlTYXSLXh7rTA==",
   "success": true,
-  "projectFilePath": "C:\\Users\\mtaylor\\Documents\\Projects\\VisualStudio\\EcsLte\\EcsLte\\EcsLte\\EcsLte.csproj",
+  "projectFilePath": "C:\\Users\\mtaylor\\Documents\\Projects\\VisualStudio\\EcsLte\\EcsLte - step 05 ComponentConfigs\\EcsLte\\EcsLte.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\mtaylor\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
     "C:\\Users\\mtaylor\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512",

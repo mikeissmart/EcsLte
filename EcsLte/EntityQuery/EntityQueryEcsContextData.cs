@@ -1,13 +1,11 @@
-﻿using EcsLte.Data;
-
-namespace EcsLte
+﻿namespace EcsLte
 {
     internal class EntityQueryEcsContextData
     {
         /// <summary>
         /// ArcheTypeData*
         /// </summary>
-        internal PtrWrapper[] ArcheTypeDatas { get; set; } = new PtrWrapper[0];
+        internal ArcheTypeData[] ArcheTypeDatas { get; set; } = new ArcheTypeData[0];
 
         internal int? ArcheTypeChangeVersion { get; set; }
         internal int EntityQueryDataIndex { get; set; }

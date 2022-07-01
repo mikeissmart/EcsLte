@@ -23,7 +23,7 @@ namespace EcsLte
         private readonly EntityCommandManager _commands;
         private readonly SystemManager _systems;
 
-        public string Name { get; }
+        public string Name { get; private set; }
         public bool IsDestroyed { get; private set; }
         public ICommands Commands => _commands;
         public ISystems Systems => _systems;
@@ -31,6 +31,8 @@ namespace EcsLte
         internal SharedComponentIndexDictionaries SharedIndexDics { get; private set; }
         internal ManagedComponentPools ManagePools { get; private set; }
         internal ArcheTypeDataManager ArcheTypeManager { get; private set; }
+        internal EntityTrackerManager TrackerManager { get; private set; }
+        internal MemoryBookManager BookManager { get; private set; }
 
         internal object LockObj;
 
@@ -55,6 +57,8 @@ namespace EcsLte
             SharedIndexDics = new SharedComponentIndexDictionaries();
             ManagePools = new ManagedComponentPools();
             ArcheTypeManager = new ArcheTypeDataManager(this);
+            TrackerManager = new EntityTrackerManager(this);
+            BookManager = new MemoryBookManager();
             LockObj = new object();
         }
 
@@ -76,7 +80,7 @@ namespace EcsLte
             lock (LockObj)
             {
                 var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityArcheType);
-                return archeTypeData->EntityCount;
+                return archeTypeData.EntityCount;
             }
         }
 
@@ -91,9 +95,27 @@ namespace EcsLte
             var contextQueryData = entityQuery.QueryData.ContextQueryData[this];
             var entityCount = 0;
             for (var i = 0; i < contextQueryData.ArcheTypeDatas.Length; i++)
-                entityCount += ((ArcheTypeData*)contextQueryData.ArcheTypeDatas[i].Ptr)->EntityCount;
+                entityCount += contextQueryData.ArcheTypeDatas[i].EntityCount;
 
             return entityCount;
+        }
+
+        public int EntityCount(EntityTracker tracker)
+        {
+            if (IsDestroyed)
+                throw new EcsContextIsDestroyedException(this);
+            if (tracker == null)
+                throw new ArgumentNullException(nameof(tracker));
+
+            return tracker.CahcedEntities.Length;
+        }
+
+        public int EntityCapacity()
+        {
+            if (IsDestroyed)
+                throw new EcsContextIsDestroyedException(this);
+
+            return _entityLength;
         }
 
         public bool HasEntity(Entity entity)
@@ -119,7 +141,7 @@ namespace EcsLte
             lock (LockObj)
             {
                 var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityArcheType);
-                return _entityDatas[entity.Id].ArcheTypeData == archeTypeData;
+                return ArcheTypeManager.GetArcheTypeData(_entityDatas[entity.Id].ArcheTypeIndex) == archeTypeData;
             }
         }
 
@@ -135,14 +157,27 @@ namespace EcsLte
 
             UpdateEntityQuery(entityQuery, false);
             var contextQueryData = entityQuery.QueryData.ContextQueryData[this];
-            var archeTypeData = _entityDatas[entity.Id].ArcheTypeData;
+            var archeTypeData = ArcheTypeManager.GetArcheTypeData(_entityDatas[entity.Id].ArcheTypeIndex);
             for (var i = 0; i < contextQueryData.ArcheTypeDatas.Length; i++)
             {
-                if (archeTypeData == (ArcheTypeData*)contextQueryData.ArcheTypeDatas[i].Ptr)
+                if (archeTypeData == contextQueryData.ArcheTypeDatas[i])
                     return true;
             }
 
             return false;
+        }
+
+        public bool HasEntity(Entity entity, EntityTracker tracker)
+        {
+            if (IsDestroyed)
+                throw new EcsContextIsDestroyedException(this);
+            if (tracker == null)
+                throw new ArgumentNullException(nameof(tracker));
+
+            if (!HasEntity(entity))
+                return false;
+
+            return tracker.Entities[entity.Id] == entity;
         }
 
         public Entity[] GetEntities()
@@ -177,8 +212,8 @@ namespace EcsLte
             lock (LockObj)
             {
                 var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityArcheType);
-                entities = new Entity[archeTypeData->EntityCount];
-                archeTypeData->CopyEntities(ref entities, 0);
+                entities = new Entity[archeTypeData.EntityCount];
+                archeTypeData.CopyEntities(ref entities, 0);
             }
 
             return entities;
@@ -192,12 +227,22 @@ namespace EcsLte
             var entitiesOffset = 0;
             for (var i = 0; i < contextQueryData.ArcheTypeDatas.Length; i++)
             {
-                var archeTypeData = (ArcheTypeData*)contextQueryData.ArcheTypeDatas[i].Ptr;
-                archeTypeData->CopyEntities(ref entities, entitiesOffset);
-                entitiesOffset += archeTypeData->EntityCount;
+                var archeTypeData = contextQueryData.ArcheTypeDatas[i];
+                archeTypeData.CopyEntities(ref entities, entitiesOffset);
+                entitiesOffset += archeTypeData.EntityCount;
             }
 
             return entities;
+        }
+
+        public Entity[] GetEntities(EntityTracker tracker)
+        {
+            if (IsDestroyed)
+                throw new EcsContextIsDestroyedException(this);
+            if (tracker == null)
+                throw new ArgumentNullException(nameof(tracker));
+
+            return tracker.CahcedEntities;
         }
 
         public Entity CreateEntity(EntityBlueprint blueprint)
@@ -215,20 +260,19 @@ namespace EcsLte
 
                 var archeTypeData = ArcheTypeManager.GetArcheTypeData(blueprint.GetEntityArcheType());
                 var entity = AllocateEntity();
-                var entityData = archeTypeData->AddEntity(entity);
+                var entityData = archeTypeData.AddEntity(entity, BookManager);
                 _entityDatas[entity.Id] = entityData;
                 CheckAndSetUniqueComponents(entity, archeTypeData);
+                for (var i = 0; i < archeTypeData.ArcheType.ComponentConfigLength; i++)
+                    TrackerManager.TrackAdd(entity, archeTypeData.ArcheType.ComponentConfigs[i]);
 
-                var tempVersionsBuffer = stackalloc int[archeTypeData->ArcheType.ComponentConfigLength];
-                var tempComponentBuffer = stackalloc byte[archeTypeData->ComponentsSizeInBytes];
-                archeTypeData->CopyBlittableComponentDatasToBuffer(blueprint.BlittableComponentDatas,
-                    tempVersionsBuffer,
+                var tempComponentBuffer = stackalloc byte[archeTypeData.ComponentsSizeInBytes];
+                archeTypeData.CopyBlittableComponentDatasToBuffer(blueprint.BlittableComponentDatas,
                     tempComponentBuffer);
 
                 if (blueprint.BlittableComponentDatas.Length > 0)
                 {
-                    archeTypeData->SetComponentsBuffer(entityData,
-                        tempVersionsBuffer,
+                    archeTypeData.SetComponentsBuffer(entityData,
                         tempComponentBuffer);
                 }
                 if (blueprint.ManagedComponentDatas.Length > 0)
@@ -270,13 +314,11 @@ namespace EcsLte
                 CheckCapacity(count);
 
                 var archeTypeData = ArcheTypeManager.GetArcheTypeData(blueprint.GetEntityArcheType());
-                archeTypeData->PreCheckEntityAllocation(count);
+                archeTypeData.PrecheckEntityAllocation(count, BookManager);
                 CheckUniqueComponents(archeTypeData);
 
-                var tempVersionsBuffer = stackalloc int[archeTypeData->ArcheType.ComponentConfigLength];
-                var tempComponentBuffer = stackalloc byte[archeTypeData->ComponentsSizeInBytes];
-                archeTypeData->CopyBlittableComponentDatasToBuffer(blueprint.BlittableComponentDatas,
-                    tempVersionsBuffer,
+                var tempComponentBuffer = stackalloc byte[archeTypeData.ComponentsSizeInBytes];
+                archeTypeData.CopyBlittableComponentDatasToBuffer(blueprint.BlittableComponentDatas,
                     tempComponentBuffer);
 
                 var componentIndexes = new int[blueprint.ManagedComponentDatas.Length][];
@@ -290,14 +332,16 @@ namespace EcsLte
                 for (var i = 0; i < count; i++)
                 {
                     var entity = AllocateEntity();
-                    var entityData = archeTypeData->AddEntity(entity);
+                    for (var j = 0; j < archeTypeData.ArcheType.ComponentConfigLength; j++)
+                        TrackerManager.TrackAdd(entity, archeTypeData.ArcheType.ComponentConfigs[j]);
+
+                    var entityData = archeTypeData.AddEntity(entity, BookManager);
                     entities[i] = entity;
                     _entityDatas[entity.Id] = entityData;
 
                     if (blueprint.BlittableComponentDatas.Length > 0)
                     {
-                        archeTypeData->SetComponentsBuffer(entityData,
-                            tempVersionsBuffer,
+                        archeTypeData.SetComponentsBuffer(entityData,
                             tempComponentBuffer);
                     }
                     if (blueprint.ManagedComponentDatas.Length > 0)
@@ -358,11 +402,7 @@ namespace EcsLte
 
             lock (LockObj)
             {
-                var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityArcheType);
-                ClearUniqueComponents(archeTypeData);
-                for (var i = 0; i < archeTypeData->EntityCount; i++)
-                    DeallocateEntity(archeTypeData->GetEntity(i));
-                archeTypeData->ClearAllEntities();
+                DestroyEntities(ArcheTypeManager.GetArcheTypeData(entityArcheType));
             }
         }
 
@@ -379,11 +419,7 @@ namespace EcsLte
                 var contextQueryData = entityQuery.QueryData.ContextQueryData[this];
                 for (var entityQueryIndex = 0; entityQueryIndex < contextQueryData.ArcheTypeDatas.Length; entityQueryIndex++)
                 {
-                    var archeTypeData = (ArcheTypeData*)contextQueryData.ArcheTypeDatas[entityQueryIndex].Ptr;
-                    ClearUniqueComponents(archeTypeData);
-                    for (var i = 0; i < archeTypeData->EntityCount; i++)
-                        DeallocateEntity(archeTypeData->GetEntity(i));
-                    archeTypeData->ClearAllEntities();
+                    DestroyEntities(contextQueryData.ArcheTypeDatas[entityQueryIndex]);
                 }
             }
         }
@@ -407,25 +443,26 @@ namespace EcsLte
                 CheckCapacity(1);
 
                 var prevEntityData = sourceContext._entityDatas[entity.Id];
-                var prevArcheTypeData = prevEntityData.ArcheTypeData;
-                ArcheTypeManager.CachedArcheTypeCopyTo(prevArcheTypeData->ArcheType);
+                var prevArcheTypeData = sourceContext.ArcheTypeManager.GetArcheTypeData(prevEntityData.ArcheTypeIndex);
+                ArcheTypeManager.CachedArcheTypeCopyTo(prevArcheTypeData.ArcheType);
 
                 var nextArcheTypeData = ArcheTypeManager.GetCachedArcheTypeData();
                 nextEntity = AllocateEntity();
-                var nextEntityData = nextArcheTypeData->AddEntity(entity);
+                for (var i = 0; i < prevArcheTypeData.ArcheType.ComponentConfigLength; i++)
+                    TrackerManager.TrackAdd(nextEntity, prevArcheTypeData.ArcheType.ComponentConfigs[i]);
+
+                var nextEntityData = nextArcheTypeData.AddEntity(nextEntity, BookManager);
                 _entityDatas[nextEntity.Id] = nextEntityData;
                 CheckAndSetUniqueComponents(nextEntity, nextArcheTypeData);
 
-                nextArcheTypeData->SetComponentsBuffer(nextEntityData,
-                    prevArcheTypeData->GetVersionsPtr(prevEntityData),
-                    prevArcheTypeData->GetComponentsPtr(prevEntityData));
-                for (var j = 0; j < nextArcheTypeData->ManagedConfigsLength; j++)
+                nextArcheTypeData.SetComponentsBuffer(nextEntityData, prevEntityData.Slot.Buffer);
+                for (var j = 0; j < nextArcheTypeData.ManagedConfigsLength; j++)
                 {
-                    var config = nextArcheTypeData->ManagedConfigs[j];
+                    var config = nextArcheTypeData.ManagedConfigs[j];
                     var managedPool = ManagePools.GetPool(config);
-                    nextArcheTypeData->SetComponentAndIndex(
+                    nextArcheTypeData.SetComponentAndIndex(
                         nextEntityData,
-                        prevArcheTypeData->GetComponent(
+                        prevArcheTypeData.GetComponent(
                             prevEntityData,
                             config,
                             sourceContext.ManagePools.GetPool(config)),
@@ -458,8 +495,7 @@ namespace EcsLte
                 throw new EntityTransferSameEcsContextException(this);
 
             var transferedEntities = new HashSet<Entity>();
-            var cachedArcheTypeDatas = new Dictionary<PtrWrapper, PtrWrapper>();
-            var prevArcheTypeDataPtr = new PtrWrapper();
+            var cachedArcheTypeDatas = new Dictionary<ArcheTypeIndex, ArcheTypeData>();
             var nextEntities = new Entity[entities.Count()];
             lock (LockObj)
             {
@@ -474,38 +510,32 @@ namespace EcsLte
                         throw new EntityTransferAlreadyException(this, prevEntity);
 
                     var prevEntityData = sourceContext._entityDatas[prevEntity.Id];
-                    var prevArcheTypeData = prevEntityData.ArcheTypeData;
-                    prevArcheTypeDataPtr.Ptr = prevArcheTypeData;
+                    var prevArcheTypeData = sourceContext.ArcheTypeManager.GetArcheTypeData(prevEntityData.ArcheTypeIndex);
 
-                    ArcheTypeData* nextArcheTypeData;
-                    if (!cachedArcheTypeDatas.TryGetValue(prevArcheTypeDataPtr, out var nextArcheTypeDataPtr))
+                    if (!cachedArcheTypeDatas.TryGetValue(prevArcheTypeData.ArcheTypeIndex, out var nextArcheTypeData))
                     {
-                        ArcheTypeManager.CachedArcheTypeCopyTo(prevArcheTypeData->ArcheType);
+                        ArcheTypeManager.CachedArcheTypeCopyTo(prevArcheTypeData.ArcheType);
                         nextArcheTypeData = ArcheTypeManager.GetCachedArcheTypeData();
-                        nextArcheTypeDataPtr.Ptr = nextArcheTypeData;
-                        cachedArcheTypeDatas.Add(prevArcheTypeDataPtr, nextArcheTypeDataPtr);
-                    }
-                    else
-                    {
-                        nextArcheTypeData = (ArcheTypeData*)nextArcheTypeDataPtr.Ptr;
+                        cachedArcheTypeDatas.Add(prevArcheTypeData.ArcheTypeIndex, nextArcheTypeData);
                     }
 
                     var nextEntity = AllocateEntity();
-                    var nextEntityData = nextArcheTypeData->AddEntity(nextEntity);
+                    for (var i = 0; i < prevArcheTypeData.ArcheType.ComponentConfigLength; i++)
+                        TrackerManager.TrackAdd(nextEntity, prevArcheTypeData.ArcheType.ComponentConfigs[i]);
+
+                    var nextEntityData = nextArcheTypeData.AddEntity(nextEntity, BookManager);
                     _entityDatas[nextEntity.Id] = nextEntityData;
                     nextEntities[nextEntityIndex++] = nextEntity;
                     CheckAndSetUniqueComponents(nextEntity, nextArcheTypeData);
 
-                    nextArcheTypeData->SetComponentsBuffer(nextEntityData,
-                        prevArcheTypeData->GetVersionsPtr(prevEntityData),
-                        prevArcheTypeData->GetComponentsPtr(prevEntityData));
-                    for (var j = 0; j < nextArcheTypeData->ManagedConfigsLength; j++)
+                    nextArcheTypeData.SetComponentsBuffer(nextEntityData, prevEntityData.Slot.Buffer);
+                    for (var j = 0; j < nextArcheTypeData.ManagedConfigsLength; j++)
                     {
-                        var config = nextArcheTypeData->ManagedConfigs[j];
+                        var config = nextArcheTypeData.ManagedConfigs[j];
                         var managedPool = ManagePools.GetPool(config);
-                        nextArcheTypeData->SetComponentAndIndex(
+                        nextArcheTypeData.SetComponentAndIndex(
                             nextEntityData,
-                            prevArcheTypeData->GetComponent(
+                            prevArcheTypeData.GetComponent(
                                 prevEntityData,
                                 config,
                                 sourceContext.ManagePools.GetPool(config)),
@@ -538,14 +568,17 @@ namespace EcsLte
             if (this == sourceContext)
                 throw new EntityTransferSameEcsContextException(this);
 
-            ArcheTypeData* prevArcheTypeData = null;
             lock (LockObj)
             {
-                prevArcheTypeData = sourceContext.ArcheTypeManager.GetArcheTypeData(entityArcheType);
-                var entitiesLength = prevArcheTypeData->EntityCount;
+                var prevArcheTypeData = sourceContext.ArcheTypeManager.GetArcheTypeData(entityArcheType);
+                var entitiesLength = prevArcheTypeData.EntityCount;
                 if (entitiesLength == 0)
                     return new Entity[0];
-                if (entitiesLength > 1)
+                else if (entitiesLength == 1)
+                {
+                    return new Entity[] { TransferEntity(sourceContext, prevArcheTypeData.GetEntity(0), destroyEntities) };
+                }
+                else
                 {
                     CheckUniqueComponents(prevArcheTypeData);
                     var nextEntities = new Entity[entitiesLength];
@@ -558,8 +591,6 @@ namespace EcsLte
                     return nextEntities;
                 }
             }
-
-            return new Entity[] { TransferEntity(sourceContext, prevArcheTypeData->GetEntity(0), destroyEntities) };
         }
 
         public Entity[] TransferEntities(EcsContext sourceContext, EntityQuery entityQuery, bool destroyEntities)
@@ -590,16 +621,16 @@ namespace EcsLte
 
                 for (var queryIndex = 0; queryIndex < sourceContextQueryData.ArcheTypeDatas.Length; queryIndex++)
                 {
-                    var prevArcheTypeData = (ArcheTypeData*)sourceContextQueryData.ArcheTypeDatas[queryIndex].Ptr;
-                    if (prevArcheTypeData->EntityCount == 1)
+                    var prevArcheTypeData = sourceContextQueryData.ArcheTypeDatas[queryIndex];
+                    if (prevArcheTypeData.EntityCount == 1)
                     {
-                        nextEntities[entityIndex++] = TransferEntity(sourceContext, prevArcheTypeData->GetEntity(0), false);
+                        nextEntities[entityIndex++] = TransferEntity(sourceContext, prevArcheTypeData.GetEntity(0), false);
                     }
                     else
                     {
                         CheckUniqueComponents(prevArcheTypeData);
                         TransferArcheTypeDiffContext(sourceContext, prevArcheTypeData, ref nextEntities, entityIndex);
-                        entityIndex += prevArcheTypeData->EntityCount;
+                        entityIndex += prevArcheTypeData.EntityCount;
                     }
                 }
                 if (destroyEntities)
@@ -614,8 +645,7 @@ namespace EcsLte
             if (!HasEntity(entity))
                 throw new EntityDoesNotExistException(entity);
 
-            var archeTypeData = _entityDatas[entity.Id].ArcheTypeData;
-            return new EntityArcheType(this, archeTypeData);
+            return new EntityArcheType(this, ArcheTypeManager.GetArcheTypeData(_entityDatas[entity.Id].ArcheTypeIndex));
         }
 
         public EntityArcheType[] GetEntityArcheTypes(EntityQuery entityQuery)
@@ -629,7 +659,7 @@ namespace EcsLte
             var contextQueryData = entityQuery.QueryData.ContextQueryData[this];
             var entityArcheTypes = new EntityArcheType[contextQueryData.ArcheTypeDatas.Length];
             for (var i = 0; i < contextQueryData.ArcheTypeDatas.Length; i++)
-                entityArcheTypes[i] = new EntityArcheType(this, (ArcheTypeData*)contextQueryData.ArcheTypeDatas[i].Ptr);
+                entityArcheTypes[i] = new EntityArcheType(this, contextQueryData.ArcheTypeDatas[i]);
 
             return entityArcheTypes;
         }
@@ -639,8 +669,8 @@ namespace EcsLte
             if (!HasEntity(entity))
                 throw new EntityDoesNotExistException(entity);
 
-            var entityData = _entityDatas[entity.Id];
-            return entityData.ArcheTypeData->ArcheType.HasComponentConfig(ComponentConfig<TComponent>.Config);
+            return ArcheTypeManager.GetArcheTypeData(_entityDatas[entity.Id].ArcheTypeIndex)
+                .ArcheType.HasComponentConfig(ComponentConfig<TComponent>.Config);
         }
 
         public TComponent GetComponent<TComponent>(Entity entity) where TComponent : IComponent
@@ -651,8 +681,11 @@ namespace EcsLte
             var config = ComponentConfig<TComponent>.Config;
             var entityData = _entityDatas[entity.Id];
             if (config.IsBlittable)
-                return entityData.ArcheTypeData->GetComponent<TComponent>(entityData, config);
-            return entityData.ArcheTypeData->GetComponent(entityData, config, ManagePools.GetPool<TComponent>());
+                return ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex)
+                    .GetComponent<TComponent>(entityData, config);
+            else
+                return ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex)
+                    .GetComponent(entityData, config, ManagePools.GetPool<TComponent>());
         }
 
         public TComponent[] GetComponents<TComponent>(IEnumerable<Entity> entities) where TComponent : IComponent
@@ -668,9 +701,8 @@ namespace EcsLte
 
             var components = new TComponent[entities.Count()];
             var componentIndex = 0;
-            var cachedArcheTypeDatas = new Dictionary<PtrWrapper, ComponentConfigOffset>();
+            var cachedArcheTypeDatas = new Dictionary<ArcheTypeIndex, ComponentConfigOffset>();
             var config = ComponentConfig<TComponent>.Config;
-            var archeTypeDataPtr = new PtrWrapper();
             if (config.IsBlittable)
             {
                 foreach (var entity in entities)
@@ -679,15 +711,14 @@ namespace EcsLte
                         throw new EntityNotHaveComponentException(entity, typeof(TComponent));
 
                     var entityData = _entityDatas[entity.Id];
-                    var archeTypeData = entityData.ArcheTypeData;
-                    archeTypeDataPtr.Ptr = archeTypeData;
-                    if (!cachedArcheTypeDatas.TryGetValue(archeTypeDataPtr, out var configOffset))
+                    var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+                    if (!cachedArcheTypeDatas.TryGetValue(archeTypeData.ArcheTypeIndex, out var configOffset))
                     {
-                        archeTypeData->GetComponentConfigOffset(config, out configOffset);
-                        cachedArcheTypeDatas.Add(archeTypeDataPtr, configOffset);
+                        configOffset = archeTypeData.GetComponentConfigOffset(config);
+                        cachedArcheTypeDatas.Add(archeTypeData.ArcheTypeIndex, configOffset);
                     }
 
-                    components[componentIndex++] = archeTypeData->GetComponentOffset<TComponent>(entityData, configOffset);
+                    components[componentIndex++] = archeTypeData.GetComponentOffset<TComponent>(entityData, configOffset);
                 }
             }
             else
@@ -699,15 +730,14 @@ namespace EcsLte
                         throw new EntityNotHaveComponentException(entity, typeof(TComponent));
 
                     var entityData = _entityDatas[entity.Id];
-                    var archeTypeData = entityData.ArcheTypeData;
-                    archeTypeDataPtr.Ptr = archeTypeData;
-                    if (!cachedArcheTypeDatas.TryGetValue(archeTypeDataPtr, out var configOffset))
+                    var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+                    if (!cachedArcheTypeDatas.TryGetValue(archeTypeData.ArcheTypeIndex, out var configOffset))
                     {
-                        archeTypeData->GetComponentConfigOffset(config, out configOffset);
-                        cachedArcheTypeDatas.Add(archeTypeDataPtr, configOffset);
+                        configOffset = archeTypeData.GetComponentConfigOffset(config);
+                        cachedArcheTypeDatas.Add(archeTypeData.ArcheTypeIndex, configOffset);
                     }
 
-                    components[componentIndex++] = archeTypeData->GetComponentOffset(entityData, configOffset, managePool);
+                    components[componentIndex++] = archeTypeData.GetComponentOffset(entityData, configOffset, managePool);
                 }
             }
 
@@ -727,11 +757,11 @@ namespace EcsLte
             {
                 var config = ComponentConfig<TComponent>.Config;
                 var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityArcheType);
-                var components = new TComponent[archeTypeData->EntityCount];
+                var components = new TComponent[archeTypeData.EntityCount];
                 if (config.IsBlittable)
-                    archeTypeData->GetComponents(ref components, 0, config);
+                    archeTypeData.GetComponents(ref components, 0, config);
                 else
-                    archeTypeData->GetComponents(ref components, 0, config, ManagePools.GetPool<TComponent>());
+                    archeTypeData.GetComponents(ref components, 0, config, ManagePools.GetPool<TComponent>());
 
                 return components;
             }
@@ -747,17 +777,16 @@ namespace EcsLte
             UpdateEntityQuery(entityQuery, false);
             var contextQueryData = entityQuery.QueryData.ContextQueryData[this];
 
-            var archeTypeDatas = new List<PtrWrapper>();
+            var archeTypeDatas = new List<ArcheTypeData>();
             var config = ComponentConfig<TComponent>.Config;
             var entitiesLength = 0;
             for (var i = 0; i < contextQueryData.ArcheTypeDatas.Length; i++)
             {
-                var archeTypeDataPtr = contextQueryData.ArcheTypeDatas[i];
-                var archeTypeData = (ArcheTypeData*)archeTypeDataPtr.Ptr;
-                if (archeTypeData->ArcheType.HasComponentConfig(config))
+                var archeTypeData = contextQueryData.ArcheTypeDatas[i];
+                if (archeTypeData.ArcheType.HasComponentConfig(config))
                 {
-                    archeTypeDatas.Add(archeTypeDataPtr);
-                    entitiesLength += archeTypeData->EntityCount;
+                    archeTypeDatas.Add(archeTypeData);
+                    entitiesLength += archeTypeData.EntityCount;
                 }
             }
 
@@ -767,9 +796,9 @@ namespace EcsLte
             {
                 for (var i = 0; i < archeTypeDatas.Count; i++)
                 {
-                    var archeTypeData = (ArcheTypeData*)archeTypeDatas[i].Ptr;
-                    archeTypeData->GetComponents(ref components, componentIndex, config);
-                    componentIndex += archeTypeData->EntityCount;
+                    var archeTypeData = archeTypeDatas[i];
+                    archeTypeData.GetComponents(ref components, componentIndex, config);
+                    componentIndex += archeTypeData.EntityCount;
                 }
             }
             else
@@ -777,9 +806,9 @@ namespace EcsLte
                 var managePool = ManagePools.GetPool<TComponent>();
                 for (var i = 0; i < archeTypeDatas.Count; i++)
                 {
-                    var archeTypeData = (ArcheTypeData*)archeTypeDatas[i].Ptr;
-                    archeTypeData->GetComponents(ref components, componentIndex, config, managePool);
-                    componentIndex += archeTypeData->EntityCount;
+                    var archeTypeData = archeTypeDatas[i];
+                    archeTypeData.GetComponents(ref components, componentIndex, config, managePool);
+                    componentIndex += archeTypeData.EntityCount;
                 }
             }
 
@@ -792,7 +821,8 @@ namespace EcsLte
                 throw new EntityDoesNotExistException(entity);
 
             var entityData = _entityDatas[entity.Id];
-            return entityData.ArcheTypeData->GetAllComponents(entityData, ManagePools);
+            return ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex)
+                .GetAllComponents(entityData, ManagePools);
         }
 
         public bool HasUniqueComponent<TComponentUnique>() where TComponentUnique : IUniqueComponent
@@ -837,20 +867,29 @@ namespace EcsLte
             {
                 var config = ComponentConfig<TComponent>.Config;
                 var entityData = _entityDatas[entity.Id];
+                var prevArcheTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
                 if (config.IsShared)
                 {
-                    ArcheTypeManager.CachedArcheTypeCopyTo(entityData.ArcheTypeData->ArcheType);
+                    ArcheTypeManager.CachedArcheTypeCopyTo(prevArcheTypeData.ArcheType);
 
-                    var nextArcheTypeData = ArcheTypeManager.CachedArcheTypeGetNextArcheTypeData(entityData.ArcheTypeData,
+                    var nextArcheTypeData = ArcheTypeManager.CachedArcheTypeGetNextArcheTypeData(prevArcheTypeData,
                         SharedIndexDics.GetDataIndex(component));
-                    if (entityData.ArcheTypeData != nextArcheTypeData)
-                        entityData = ArcheTypeData.TransferEntity(entity, nextArcheTypeData, _entityDatas);
+                    if (prevArcheTypeData != nextArcheTypeData)
+                    {
+                        entityData = ArcheTypeData.TransferEntity(
+                            entity,
+                            prevArcheTypeData,
+                            nextArcheTypeData,
+                            _entityDatas,
+                            BookManager);
+                    }
                 }
 
                 if (config.IsBlittable)
-                    entityData.ArcheTypeData->SetComponent(entityData, component, config);
+                    prevArcheTypeData.SetComponent(entityData, component, config);
                 else
-                    entityData.ArcheTypeData->SetComponent(entityData, component, config, ManagePools.GetPool<TComponent>());
+                    prevArcheTypeData.SetComponent(entityData, component, config, ManagePools.GetPool<TComponent>());
+                TrackerManager.TrackUpdate(entity, config);
             }
         }
 
@@ -871,11 +910,10 @@ namespace EcsLte
             lock (LockObj)
             {
                 var config = ComponentConfig<TComponent>.Config;
-                var cachedConfigOffsets = new Dictionary<PtrWrapper, ComponentConfigOffset>();
+                var cachedConfigOffsets = new Dictionary<ArcheTypeIndex, ComponentConfigOffset>();
                 if (config.IsShared)
                 {
-                    var cachedArcheTypeDatas = new Dictionary<PtrWrapper, PtrWrapper>();
-                    var prevArcheTypePtr = new PtrWrapper();
+                    var cachedArcheTypeDatas = new Dictionary<ArcheTypeIndex, ArcheTypeData>();
                     var sharedIndexDic = SharedIndexDics.GetSharedIndexDic<TComponent>();
                     foreach (var entity in entities)
                     {
@@ -883,62 +921,62 @@ namespace EcsLte
                             throw new EntityNotHaveComponentException(entity, typeof(TComponent));
 
                         var entityData = _entityDatas[entity.Id];
-                        var prevArcheTypeData = entityData.ArcheTypeData;
-                        ArcheTypeData* nextArcheTypeData;
-                        prevArcheTypePtr.Ptr = entityData.ArcheTypeData;
-                        if (!cachedArcheTypeDatas.TryGetValue(prevArcheTypePtr, out var nextArcheTypeDataPtr))
+                        var prevArcheTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+                        if (!cachedArcheTypeDatas.TryGetValue(prevArcheTypeData.ArcheTypeIndex, out var nextArcheTypeData))
                         {
-                            ArcheTypeManager.CachedArcheTypeCopyTo(prevArcheTypeData->ArcheType);
+                            ArcheTypeManager.CachedArcheTypeCopyTo(prevArcheTypeData.ArcheType);
                             var nextSharedDataIndex = new SharedComponentDataIndex
                             {
                                 SharedIndex = config.SharedIndex,
                                 SharedDataIndex = sharedIndexDic.GetOrAdd(component),
                             };
                             nextArcheTypeData = ArcheTypeManager.CachedArcheTypeGetNextArcheTypeData(prevArcheTypeData, nextSharedDataIndex);
-
-                            nextArcheTypeDataPtr.Ptr = nextArcheTypeData;
-                            cachedArcheTypeDatas.Add(prevArcheTypePtr, nextArcheTypeDataPtr);
-                        }
-                        else
-                        {
-                            nextArcheTypeData = (ArcheTypeData*)nextArcheTypeDataPtr.Ptr;
+                            cachedArcheTypeDatas.Add(prevArcheTypeData.ArcheTypeIndex, nextArcheTypeData);
                         }
 
                         if (prevArcheTypeData != nextArcheTypeData)
-                            entityData = ArcheTypeData.TransferEntity(entity, nextArcheTypeData, _entityDatas);
-
-                        if (!cachedConfigOffsets.TryGetValue(nextArcheTypeDataPtr, out var configOffset))
                         {
-                            nextArcheTypeData->GetComponentConfigOffset(config, out configOffset);
-                            cachedConfigOffsets.Add(nextArcheTypeDataPtr, configOffset);
+                            entityData = ArcheTypeData.TransferEntity(
+                                entity,
+                                prevArcheTypeData,
+                                nextArcheTypeData,
+                                _entityDatas,
+                                BookManager);
+                        }
+
+                        if (!cachedConfigOffsets.TryGetValue(nextArcheTypeData.ArcheTypeIndex, out var configOffset))
+                        {
+                            cachedConfigOffsets.Add(nextArcheTypeData.ArcheTypeIndex,
+                                nextArcheTypeData.GetComponentConfigOffset(config));
                         }
 
                         if (config.IsBlittable)
-                            nextArcheTypeData->SetComponent(entityData, component, config);
+                            nextArcheTypeData.SetComponent(entityData, component, config);
                         else
-                            nextArcheTypeData->SetComponent(entityData, component, config, ManagePools.GetPool<TComponent>());
+                            nextArcheTypeData.SetComponent(entityData, component, config, ManagePools.GetPool<TComponent>());
+                        TrackerManager.TrackUpdate(entity, config);
                     }
                 }
                 else
                 {
-                    var archeTypePtr = new PtrWrapper();
                     foreach (var entity in entities)
                     {
                         if (!HasComponent<TComponent>(entity))
                             throw new EntityNotHaveComponentException(entity, typeof(TComponent));
 
                         var entityData = _entityDatas[entity.Id];
-                        archeTypePtr.Ptr = entityData.ArcheTypeData;
-                        if (!cachedConfigOffsets.TryGetValue(archeTypePtr, out var configOffset))
+                        var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+                        if (!cachedConfigOffsets.TryGetValue(archeTypeData.ArcheTypeIndex, out var configOffset))
                         {
-                            entityData.ArcheTypeData->GetComponentConfigOffset(config, out configOffset);
-                            cachedConfigOffsets.Add(archeTypePtr, configOffset);
+                            cachedConfigOffsets.Add(archeTypeData.ArcheTypeIndex,
+                                archeTypeData.GetComponentConfigOffset(config));
                         }
 
                         if (config.IsBlittable)
-                            entityData.ArcheTypeData->SetComponent(entityData, component, config);
+                            archeTypeData.SetComponent(entityData, component, config);
                         else
-                            entityData.ArcheTypeData->SetComponent(entityData, component, config, ManagePools.GetPool<TComponent>());
+                            archeTypeData.SetComponent(entityData, component, config, ManagePools.GetPool<TComponent>());
+                        TrackerManager.TrackUpdate(entity, config);
                     }
                 }
             }
@@ -974,7 +1012,7 @@ namespace EcsLte
                 var contextQueryData = entityQuery.QueryData.ContextQueryData[this];
                 for (var i = 0; i < contextQueryData.ArcheTypeDatas.Length; i++)
                 {
-                    UpdateComponentsArcheType((ArcheTypeData*)contextQueryData.ArcheTypeDatas[i].Ptr, component);
+                    UpdateComponentsArcheType(contextQueryData.ArcheTypeDatas[i], component);
                 }
             }
         }
@@ -988,28 +1026,859 @@ namespace EcsLte
 
                 var entityData = _entityDatas[entity.Id];
                 var anyChangeArcheType = false;
-                ArcheTypeManager.CachedArcheTypeCopyTo(entityData.ArcheTypeData->ArcheType);
+                var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+                ArcheTypeManager.CachedArcheTypeCopyTo(archeTypeData.ArcheType);
                 for (var i = 0; i < writeAdapters.Length; i++)
                 {
                     var adapter = writeAdapters[i];
-                    adapter.UpdateComponent(entityData, entityData.ArcheTypeData);
-                    if (adapter.Config.IsShared && adapter.IsUpdated)
+                    adapter.UpdateComponent(entityData, archeTypeData);
+                    if (adapter.Config.IsShared)
                     {
                         anyChangeArcheType |= ArcheTypeManager.CachedArcheTypeReplaceSharedDataIndex(
                             adapter.GetSharedDataIndex());
                     }
+                    TrackerManager.TrackUpdate(entity, adapter.Config);
                 }
 
                 if (anyChangeArcheType)
                 {
                     entityData = ArcheTypeData.TransferEntity(
                         entity,
+                        archeTypeData,
                         ArcheTypeManager.GetCachedArcheTypeData(),
-                        _entityDatas);
+                        _entityDatas,
+                        BookManager);
                 }
 
             }
         }
+
+        #region InternalForEachGetComponents
+
+        public void GetComponentsNoCheck<T1>(Entity entity,
+            out T1 component1)
+            where T1 : IComponent
+        {
+            lock (LockObj)
+            {
+                if (!HasEntity(entity))
+                    throw new EntityDoesNotExistException(entity);
+
+                var entityData = _entityDatas[entity.Id];
+                var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T1>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T1));
+
+                component1 = GetForEachComponent<T1>(entityData, archeTypeData);
+            }
+        }
+
+        public void GetComponentsNoCheck<T1, T2>(
+            Entity entity,
+            out T1 component1,
+            out T2 component2)
+            where T1 : IComponent
+            where T2 : IComponent
+        {
+            lock (LockObj)
+            {
+                if (!HasEntity(entity))
+                    throw new EntityDoesNotExistException(entity);
+
+                var entityData = _entityDatas[entity.Id];
+                var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T1>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T1));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T2>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T2));
+
+                CheckDuplicateConfigs(new[]
+                {
+                    ComponentConfig<T1>.Config,
+                    ComponentConfig<T2>.Config
+                });
+
+                component1 = GetForEachComponent<T1>(entityData, archeTypeData);
+                component2 = GetForEachComponent<T2>(entityData, archeTypeData);
+            }
+        }
+
+        public void GetComponentsNoCheck<T1, T2, T3>(
+            Entity entity,
+            out T1 component1,
+            out T2 component2,
+            out T3 component3)
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
+        {
+            lock (LockObj)
+            {
+                if (!HasEntity(entity))
+                    throw new EntityDoesNotExistException(entity);
+
+                var entityData = _entityDatas[entity.Id];
+                var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T1>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T1));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T2>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T2));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T3>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T3));
+
+                CheckDuplicateConfigs(new[]
+                {
+                    ComponentConfig<T1>.Config,
+                    ComponentConfig<T2>.Config,
+                    ComponentConfig<T3>.Config
+                });
+
+                component1 = GetForEachComponent<T1>(entityData, archeTypeData);
+                component2 = GetForEachComponent<T2>(entityData, archeTypeData);
+                component3 = GetForEachComponent<T3>(entityData, archeTypeData);
+            }
+        }
+
+        public void GetComponentsNoCheck<T1, T2, T3, T4>(
+            Entity entity,
+            out T1 component1,
+            out T2 component2,
+            out T3 component3,
+            out T4 component4)
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
+            where T4 : IComponent
+        {
+            lock (LockObj)
+            {
+                if (!HasEntity(entity))
+                    throw new EntityDoesNotExistException(entity);
+
+                var entityData = _entityDatas[entity.Id];
+                var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T1>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T1));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T2>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T2));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T3>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T3));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T4>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T4));
+
+                /*CheckDuplicateConfigs(new[]
+                {
+                    ComponentConfig<T1>.Config,
+                    ComponentConfig<T2>.Config,
+                    ComponentConfig<T3>.Config,
+                    ComponentConfig<T4>.Config
+                });*/
+
+                component1 = GetForEachComponent<T1>(entityData, archeTypeData);
+                component2 = GetForEachComponent<T2>(entityData, archeTypeData);
+                component3 = GetForEachComponent<T3>(entityData, archeTypeData);
+                component4 = GetForEachComponent<T4>(entityData, archeTypeData);
+            }
+        }
+
+        public void GetComponentsNoCheck<T1, T2, T3, T4, T5>(
+            Entity entity,
+            out T1 component1,
+            out T2 component2,
+            out T3 component3,
+            out T4 component4,
+            out T5 component5)
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
+            where T4 : IComponent
+            where T5 : IComponent
+        {
+            lock (LockObj)
+            {
+                if (!HasEntity(entity))
+                    throw new EntityDoesNotExistException(entity);
+
+                var entityData = _entityDatas[entity.Id];
+                var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T1>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T1));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T2>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T2));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T3>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T3));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T4>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T4));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T5>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T5));
+
+                CheckDuplicateConfigs(new[]
+                {
+                    ComponentConfig<T1>.Config,
+                    ComponentConfig<T2>.Config,
+                    ComponentConfig<T3>.Config,
+                    ComponentConfig<T4>.Config,
+                    ComponentConfig<T5>.Config
+                });
+
+                component1 = GetForEachComponent<T1>(entityData, archeTypeData);
+                component2 = GetForEachComponent<T2>(entityData, archeTypeData);
+                component3 = GetForEachComponent<T3>(entityData, archeTypeData);
+                component4 = GetForEachComponent<T4>(entityData, archeTypeData);
+                component5 = GetForEachComponent<T5>(entityData, archeTypeData);
+            }
+        }
+
+        public void GetComponentsNoCheck<T1, T2, T3, T4, T5, T6>(
+            Entity entity,
+            out T1 component1,
+            out T2 component2,
+            out T3 component3,
+            out T4 component4,
+            out T5 component5,
+            out T6 component6)
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
+            where T4 : IComponent
+            where T5 : IComponent
+            where T6 : IComponent
+        {
+            lock (LockObj)
+            {
+                if (!HasEntity(entity))
+                    throw new EntityDoesNotExistException(entity);
+
+                var entityData = _entityDatas[entity.Id];
+                var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T1>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T1));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T2>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T2));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T3>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T3));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T4>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T4));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T5>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T5));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T6>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T6));
+
+                CheckDuplicateConfigs(new[]
+                {
+                    ComponentConfig<T1>.Config,
+                    ComponentConfig<T2>.Config,
+                    ComponentConfig<T3>.Config,
+                    ComponentConfig<T4>.Config,
+                    ComponentConfig<T5>.Config,
+                    ComponentConfig<T6>.Config
+                });
+
+                component1 = GetForEachComponent<T1>(entityData, archeTypeData);
+                component2 = GetForEachComponent<T2>(entityData, archeTypeData);
+                component3 = GetForEachComponent<T3>(entityData, archeTypeData);
+                component4 = GetForEachComponent<T4>(entityData, archeTypeData);
+                component5 = GetForEachComponent<T5>(entityData, archeTypeData);
+                component6 = GetForEachComponent<T6>(entityData, archeTypeData);
+            }
+        }
+
+        public void GetComponentsNoCheck<T1, T2, T3, T4, T5, T6, T7>(
+            Entity entity,
+            out T1 component1,
+            out T2 component2,
+            out T3 component3,
+            out T4 component4,
+            out T5 component5,
+            out T6 component6,
+            out T7 component7)
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
+            where T4 : IComponent
+            where T5 : IComponent
+            where T6 : IComponent
+            where T7 : IComponent
+        {
+            lock (LockObj)
+            {
+                if (!HasEntity(entity))
+                    throw new EntityDoesNotExistException(entity);
+
+                var entityData = _entityDatas[entity.Id];
+                var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T1>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T1));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T2>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T2));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T3>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T3));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T4>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T4));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T5>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T5));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T6>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T6));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T7>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T7));
+
+                CheckDuplicateConfigs(new[]
+                {
+                    ComponentConfig<T1>.Config,
+                    ComponentConfig<T2>.Config,
+                    ComponentConfig<T3>.Config,
+                    ComponentConfig<T4>.Config,
+                    ComponentConfig<T5>.Config,
+                    ComponentConfig<T6>.Config,
+                    ComponentConfig<T7>.Config
+                });
+
+                component1 = GetForEachComponent<T1>(entityData, archeTypeData);
+                component2 = GetForEachComponent<T2>(entityData, archeTypeData);
+                component3 = GetForEachComponent<T3>(entityData, archeTypeData);
+                component4 = GetForEachComponent<T4>(entityData, archeTypeData);
+                component5 = GetForEachComponent<T5>(entityData, archeTypeData);
+                component6 = GetForEachComponent<T6>(entityData, archeTypeData);
+                component7 = GetForEachComponent<T7>(entityData, archeTypeData);
+            }
+        }
+
+        public void GetComponentsNoCheck<T1, T2, T3, T4, T5, T6, T7, T8>(
+            Entity entity,
+            out T1 component1,
+            out T2 component2,
+            out T3 component3,
+            out T4 component4,
+            out T5 component5,
+            out T6 component6,
+            out T7 component7,
+            out T8 component8)
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
+            where T4 : IComponent
+            where T5 : IComponent
+            where T6 : IComponent
+            where T7 : IComponent
+            where T8 : IComponent
+        {
+            lock (LockObj)
+            {
+                if (!HasEntity(entity))
+                    throw new EntityDoesNotExistException(entity);
+
+                var entityData = _entityDatas[entity.Id];
+                var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T1>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T1));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T2>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T2));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T3>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T3));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T4>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T4));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T5>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T5));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T6>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T6));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T7>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T7));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T8>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T8));
+
+                CheckDuplicateConfigs(new[]
+                {
+                    ComponentConfig<T1>.Config,
+                    ComponentConfig<T2>.Config,
+                    ComponentConfig<T3>.Config,
+                    ComponentConfig<T4>.Config,
+                    ComponentConfig<T5>.Config,
+                    ComponentConfig<T6>.Config,
+                    ComponentConfig<T7>.Config,
+                    ComponentConfig<T8>.Config
+                });
+
+                component1 = GetForEachComponent<T1>(entityData, archeTypeData);
+                component2 = GetForEachComponent<T2>(entityData, archeTypeData);
+                component3 = GetForEachComponent<T3>(entityData, archeTypeData);
+                component4 = GetForEachComponent<T4>(entityData, archeTypeData);
+                component5 = GetForEachComponent<T5>(entityData, archeTypeData);
+                component6 = GetForEachComponent<T6>(entityData, archeTypeData);
+                component7 = GetForEachComponent<T7>(entityData, archeTypeData);
+                component8 = GetForEachComponent<T8>(entityData, archeTypeData);
+            }
+        }
+
+        private TComponent GetForEachComponent<TComponent>(EntityData entityData, ArcheTypeData archeTypeData)
+            where TComponent : IComponent
+        {
+            var config = ComponentConfig<TComponent>.Config;
+            if (config.IsBlittable)
+                return archeTypeData.GetComponent<TComponent>(entityData, config);
+            else
+                return archeTypeData.GetComponent(entityData, config, ManagePools.GetPool<TComponent>());
+        }
+
+        private static void CheckDuplicateConfigs(ComponentConfig[] configs)
+        {
+            for (var i = 0; i < configs.Length; i++)
+            {
+                for (var j = i + 1; j < configs.Length; j++)
+                {
+                    if (configs[i] == configs[j])
+                    {
+                        throw new EntityQueryDuplicateComponentException(
+                            ComponentConfigs.Instance.AllComponentTypes[configs[i].ComponentIndex]);
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+        #region InternalForEachGetComponents
+
+        public void SetComponentsNoCheck<T1>(Entity entity,
+            in T1 component1)
+            where T1 : IComponent
+        {
+            lock (LockObj)
+            {
+                if (!HasEntity(entity))
+                    throw new EntityDoesNotExistException(entity);
+
+                var entityData = _entityDatas[entity.Id];
+                var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+                var sharedIndexes = new List<SharedComponentDataIndex>();
+
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T1>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T1));
+
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component1);
+
+                SetForEachArcheTypeData(entity, sharedIndexes, archeTypeData);
+            }
+        }
+
+        public void SetComponentsNoCheck<T1, T2>(Entity entity,
+            in T1 component1,
+            in T2 component2)
+            where T1 : IComponent
+            where T2 : IComponent
+        {
+            lock (LockObj)
+            {
+                if (!HasEntity(entity))
+                    throw new EntityDoesNotExistException(entity);
+
+                var entityData = _entityDatas[entity.Id];
+                var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+                var sharedIndexes = new List<SharedComponentDataIndex>();
+
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T1>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T1));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T2>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T2));
+
+                CheckDuplicateConfigs(new[]
+                {
+                    ComponentConfig<T1>.Config,
+                    ComponentConfig<T2>.Config
+                });
+
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component1);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component2);
+
+                SetForEachArcheTypeData(entity, sharedIndexes, archeTypeData);
+            }
+        }
+
+        public void SetComponentsNoCheck<T1, T2, T3>(Entity entity,
+            in T1 component1,
+            in T2 component2,
+            in T3 component3)
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
+        {
+            lock (LockObj)
+            {
+                if (!HasEntity(entity))
+                    throw new EntityDoesNotExistException(entity);
+
+                var entityData = _entityDatas[entity.Id];
+                var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+                var sharedIndexes = new List<SharedComponentDataIndex>();
+
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T1>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T1));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T2>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T2));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T3>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T3));
+
+                CheckDuplicateConfigs(new[]
+                {
+                    ComponentConfig<T1>.Config,
+                    ComponentConfig<T2>.Config,
+                    ComponentConfig<T3>.Config
+                });
+
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component1);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component2);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component3);
+
+                SetForEachArcheTypeData(entity, sharedIndexes, archeTypeData);
+            }
+        }
+
+        private readonly List<SharedComponentDataIndex> _cacheSharedIndexes = new List<SharedComponentDataIndex>();
+        public void SetComponentsNoCheck<T1, T2, T3, T4>(Entity entity,
+            in T1 component1,
+            in T2 component2,
+            in T3 component3,
+            in T4 component4)
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
+            where T4 : IComponent
+        {
+            lock (LockObj)
+            {
+                if (!HasEntity(entity))
+                    throw new EntityDoesNotExistException(entity);
+
+                var entityData = _entityDatas[entity.Id];
+                var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+                _cacheSharedIndexes.Clear();
+
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T1>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T1));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T2>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T2));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T3>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T3));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T4>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T4));
+
+                /*CheckDuplicateConfigs(new[]
+                {
+                    ComponentConfig<T1>.Config,
+                    ComponentConfig<T2>.Config,
+                    ComponentConfig<T3>.Config,
+                    ComponentConfig<T4>.Config
+                });*/
+
+                SetForEachComponent(_cacheSharedIndexes, entityData, archeTypeData, component1);
+                SetForEachComponent(_cacheSharedIndexes, entityData, archeTypeData, component2);
+                SetForEachComponent(_cacheSharedIndexes, entityData, archeTypeData, component3);
+                SetForEachComponent(_cacheSharedIndexes, entityData, archeTypeData, component4);
+
+                SetForEachArcheTypeData(entity, _cacheSharedIndexes, archeTypeData);
+            }
+        }
+
+        public void SetComponentsNoCheck<T1, T2, T3, T4, T5>(Entity entity,
+            in T1 component1,
+            in T2 component2,
+            in T3 component3,
+            in T4 component4,
+            in T5 component5)
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
+            where T4 : IComponent
+            where T5 : IComponent
+        {
+            lock (LockObj)
+            {
+                if (!HasEntity(entity))
+                    throw new EntityDoesNotExistException(entity);
+
+                var entityData = _entityDatas[entity.Id];
+                var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+                var sharedIndexes = new List<SharedComponentDataIndex>();
+
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T1>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T1));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T2>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T2));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T3>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T3));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T4>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T4));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T5>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T5));
+
+                CheckDuplicateConfigs(new[]
+                {
+                    ComponentConfig<T1>.Config,
+                    ComponentConfig<T2>.Config,
+                    ComponentConfig<T3>.Config,
+                    ComponentConfig<T4>.Config,
+                    ComponentConfig<T5>.Config
+                });
+
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component1);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component2);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component3);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component4);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component5);
+
+                SetForEachArcheTypeData(entity, sharedIndexes, archeTypeData);
+            }
+        }
+
+        public void SetComponentsNoCheck<T1, T2, T3, T4, T5, T6>(Entity entity,
+            in T1 component1,
+            in T2 component2,
+            in T3 component3,
+            in T4 component4,
+            in T5 component5,
+            in T6 component6)
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
+            where T4 : IComponent
+            where T5 : IComponent
+            where T6 : IComponent
+        {
+            lock (LockObj)
+            {
+                if (!HasEntity(entity))
+                    throw new EntityDoesNotExistException(entity);
+
+                var entityData = _entityDatas[entity.Id];
+                var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+                var sharedIndexes = new List<SharedComponentDataIndex>();
+
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T1>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T1));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T2>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T2));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T3>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T3));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T4>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T4));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T5>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T5));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T6>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T6));
+
+                CheckDuplicateConfigs(new[]
+                {
+                    ComponentConfig<T1>.Config,
+                    ComponentConfig<T2>.Config,
+                    ComponentConfig<T3>.Config,
+                    ComponentConfig<T4>.Config,
+                    ComponentConfig<T5>.Config,
+                    ComponentConfig<T6>.Config
+                });
+
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component1);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component2);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component3);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component4);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component5);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component6);
+
+                SetForEachArcheTypeData(entity, sharedIndexes, archeTypeData);
+            }
+        }
+
+        public void SetComponentsNoCheck<T1, T2, T3, T4, T5, T6, T7>(Entity entity,
+            in T1 component1,
+            in T2 component2,
+            in T3 component3,
+            in T4 component4,
+            in T5 component5,
+            in T6 component6,
+            in T7 component7)
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
+            where T4 : IComponent
+            where T5 : IComponent
+            where T6 : IComponent
+            where T7 : IComponent
+        {
+            lock (LockObj)
+            {
+                if (!HasEntity(entity))
+                    throw new EntityDoesNotExistException(entity);
+
+                var entityData = _entityDatas[entity.Id];
+                var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+                var sharedIndexes = new List<SharedComponentDataIndex>();
+
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T1>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T1));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T2>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T2));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T3>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T3));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T4>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T4));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T5>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T5));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T6>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T6));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T7>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T7));
+
+                CheckDuplicateConfigs(new[]
+                {
+                    ComponentConfig<T1>.Config,
+                    ComponentConfig<T2>.Config,
+                    ComponentConfig<T3>.Config,
+                    ComponentConfig<T4>.Config,
+                    ComponentConfig<T5>.Config,
+                    ComponentConfig<T6>.Config,
+                    ComponentConfig<T7>.Config
+                });
+
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component1);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component2);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component3);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component4);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component5);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component6);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component7);
+
+                SetForEachArcheTypeData(entity, sharedIndexes, archeTypeData);
+            }
+        }
+
+        public void SetComponentsNoCheck<T1, T2, T3, T4, T5, T6, T7, T8>(Entity entity,
+            in T1 component1,
+            in T2 component2,
+            in T3 component3,
+            in T4 component4,
+            in T5 component5,
+            in T6 component6,
+            in T7 component7,
+            in T8 component8)
+            where T1 : IComponent
+            where T2 : IComponent
+            where T3 : IComponent
+            where T4 : IComponent
+            where T5 : IComponent
+            where T6 : IComponent
+            where T7 : IComponent
+            where T8 : IComponent
+        {
+            lock (LockObj)
+            {
+                if (!HasEntity(entity))
+                    throw new EntityDoesNotExistException(entity);
+
+                var entityData = _entityDatas[entity.Id];
+                var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+                var sharedIndexes = new List<SharedComponentDataIndex>();
+
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T1>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T1));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T2>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T2));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T3>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T3));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T4>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T4));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T5>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T5));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T6>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T6));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T7>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T7));
+                if (!archeTypeData.ArcheType.HasComponentConfig(ComponentConfig<T8>.Config))
+                    throw new EntityNotHaveComponentException(entity, typeof(T8));
+
+                CheckDuplicateConfigs(new[]
+                {
+                    ComponentConfig<T1>.Config,
+                    ComponentConfig<T2>.Config,
+                    ComponentConfig<T3>.Config,
+                    ComponentConfig<T4>.Config,
+                    ComponentConfig<T5>.Config,
+                    ComponentConfig<T6>.Config,
+                    ComponentConfig<T7>.Config,
+                    ComponentConfig<T8>.Config
+                });
+
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component1);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component2);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component3);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component4);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component5);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component6);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component7);
+                SetForEachComponent(sharedIndexes, entityData, archeTypeData, component8);
+
+                SetForEachArcheTypeData(entity, sharedIndexes, archeTypeData);
+            }
+        }
+
+        private void SetForEachComponent<TComponent>(
+            List<SharedComponentDataIndex> sharedIndexes,
+            EntityData entityData,
+            ArcheTypeData archeTypeData,
+            in TComponent component)
+            where TComponent : IComponent
+        {
+            var config = ComponentConfig<TComponent>.Config;
+            if (config.IsShared)
+            {
+                sharedIndexes.Add(new SharedComponentDataIndex
+                {
+                    SharedIndex = config.SharedIndex,
+                    SharedDataIndex = SharedIndexDics.GetSharedIndexDic<TComponent>()
+                        .GetOrAdd(component)
+                });
+            }
+            if (config.IsManaged)
+            {
+                archeTypeData.SetComponent(entityData, component, config,
+                    ManagePools.GetPool<TComponent>());
+            }
+            else
+            {
+                archeTypeData.SetComponent(entityData, component, config);
+            }
+        }
+
+        private void SetForEachArcheTypeData(
+            Entity entity,
+            List<SharedComponentDataIndex> sharedIndexes,
+            ArcheTypeData archeTypeData)
+        {
+            if (sharedIndexes.Count == 0)
+                return;
+
+            ArcheTypeManager.CachedArcheTypeCopyTo(archeTypeData.ArcheType);
+            for (var i = 0; i < sharedIndexes.Count; i++)
+                ArcheTypeManager.CachedArcheTypeReplaceSharedDataIndex(sharedIndexes[i]);
+
+            var nextArcheTypeData = ArcheTypeManager.GetCachedArcheTypeData();
+            if (archeTypeData != nextArcheTypeData)
+            {
+                ArcheTypeData.TransferEntity(
+                    entity,
+                    archeTypeData,
+                    nextArcheTypeData,
+                    _entityDatas,
+                    BookManager);
+            }
+        }
+
+        #endregion
 
         internal void InternalDestroy()
         {
@@ -1037,6 +1906,8 @@ namespace EcsLte
                 SharedIndexDics = null;
                 ManagePools = null;
                 ArcheTypeManager.InternalDestroy();
+                TrackerManager.InternalDestroy();
+                BookManager.InternalDestroy();
             }
         }
 
@@ -1064,6 +1935,7 @@ namespace EcsLte
                 _entityDatas = newEntityDatas;
 
                 _entityLength = newCapacity;
+                TrackerManager.ResizeTrackers(newCapacity);
             }
         }
 
@@ -1101,17 +1973,37 @@ namespace EcsLte
 
         private void DestroyEntityNoCheck(Entity entity)
         {
-            var archeTypeData = _entityDatas[entity.Id].ArcheTypeData;
+            var archeTypeData = ArcheTypeManager.GetArcheTypeData(_entityDatas[entity.Id].ArcheTypeIndex);
             ClearUniqueComponents(archeTypeData);
-            archeTypeData->RemoveEntity(entity, _entityDatas, ManagePools);
+            archeTypeData.RemoveEntity(entity, _entityDatas, ManagePools, BookManager);
+            for (var i = 0; i < archeTypeData.ArcheType.ComponentConfigLength; i++)
+                TrackerManager.TrackDestroy(entity, archeTypeData.ArcheType.ComponentConfigs[i]);
             DeallocateEntity(entity);
         }
 
-        private void CheckAndSetUniqueComponents(Entity entity, ArcheTypeData* archeTypeData)
+        private void DestroyEntities(ArcheTypeData archeTypeData)
         {
-            for (var i = 0; i < archeTypeData->UniqueConfigsLength; i++)
+            ClearUniqueComponents(archeTypeData);
+            var entities = archeTypeData.RemoveAllEntities(_entityDatas,
+                ManagePools,
+                BookManager);
+            for (var i = 0; i < entities.Length; i++)
             {
-                var config = archeTypeData->UniqueConfigs[i];
+                var entity = entities[i];
+                for (var j = 0; j < archeTypeData.ArcheType.ComponentConfigLength; j++)
+                {
+                    TrackerManager.TrackDestroy(entity,
+                        archeTypeData.ArcheType.ComponentConfigs[j]);
+                }
+                DeallocateEntity(entity);
+            }
+        }
+
+        private void CheckAndSetUniqueComponents(Entity entity, ArcheTypeData archeTypeData)
+        {
+            for (var i = 0; i < archeTypeData.UniqueConfigsLength; i++)
+            {
+                var config = archeTypeData.UniqueConfigs[i];
                 if (_uniqueComponentEntities[config.UniqueIndex] != Entity.Null)
                 {
                     throw new EntityAlreadyHasComponentException(
@@ -1123,11 +2015,11 @@ namespace EcsLte
             }
         }
 
-        private void CheckUniqueComponents(ArcheTypeData* archeTypeData)
+        private void CheckUniqueComponents(ArcheTypeData archeTypeData)
         {
-            for (var i = 0; i < archeTypeData->UniqueConfigsLength; i++)
+            for (var i = 0; i < archeTypeData.UniqueConfigsLength; i++)
             {
-                var config = archeTypeData->UniqueConfigs[i];
+                var config = archeTypeData.UniqueConfigs[i];
                 var uniqueEntity = _uniqueComponentEntities[config.UniqueIndex];
                 if (uniqueEntity == Entity.Null)
                     uniqueEntity = AllocateEntity();
@@ -1138,48 +2030,48 @@ namespace EcsLte
             }
         }
 
-        private void ClearUniqueComponents(ArcheTypeData* archeTypeData)
+        private void ClearUniqueComponents(ArcheTypeData archeTypeData)
         {
-            for (var i = 0; i < archeTypeData->UniqueConfigsLength; i++)
-                _uniqueComponentEntities[archeTypeData->UniqueConfigs[i].UniqueIndex] = Entity.Null;
+            for (var i = 0; i < archeTypeData.UniqueConfigsLength; i++)
+                _uniqueComponentEntities[archeTypeData.UniqueConfigs[i].UniqueIndex] = Entity.Null;
         }
 
-        private void TransferArcheTypeDiffContext(EcsContext sourceContext, ArcheTypeData* prevArcheTypeData, ref Entity[] nextEntities, int startEntityIndex)
+        private void TransferArcheTypeDiffContext(EcsContext sourceContext, ArcheTypeData prevArcheTypeData, ref Entity[] nextEntities, int startEntityIndex)
         {
-            var entitiesLength = prevArcheTypeData->EntityCount;
+            var entitiesLength = prevArcheTypeData.EntityCount;
             CheckCapacity(entitiesLength);
 
-            ArcheTypeManager.CachedArcheTypeCopyTo(prevArcheTypeData->ArcheType);
+            ArcheTypeManager.CachedArcheTypeCopyTo(prevArcheTypeData.ArcheType);
             var nextArcheTypeData = ArcheTypeManager.GetCachedArcheTypeData();
 
-            var componentIndexes = new int[nextArcheTypeData->ManagedConfigsLength][];
-            for (var i = 0; i < nextArcheTypeData->ManagedConfigsLength; i++)
+            var componentIndexes = new int[nextArcheTypeData.ManagedConfigsLength][];
+            for (var i = 0; i < nextArcheTypeData.ManagedConfigsLength; i++)
             {
-                componentIndexes[i] = ManagePools.GetPool(nextArcheTypeData->ManagedConfigs[i])
+                componentIndexes[i] = ManagePools.GetPool(nextArcheTypeData.ManagedConfigs[i])
                     .AllocateComponents(entitiesLength);
             }
 
-            nextArcheTypeData->PreCheckEntityAllocation(entitiesLength);
+            nextArcheTypeData.PrecheckEntityAllocation(entitiesLength, BookManager);
             for (var i = 0; i < entitiesLength; i++)
             {
-                var prevEntity = prevArcheTypeData->GetEntity(i);
+                var prevEntity = prevArcheTypeData.GetEntity(i);
                 var prevEntityData = sourceContext._entityDatas[prevEntity.Id];
-                var prevComponentsPtr = prevArcheTypeData->GetComponentsPtr(sourceContext._entityDatas[prevEntity.Id]);
 
                 var nextEntity = AllocateEntity();
-                var nextEntityData = nextArcheTypeData->AddEntity(nextEntity);
+                for (var j = 0; j < prevArcheTypeData.ArcheType.ComponentConfigLength; j++)
+                    TrackerManager.TrackAdd(nextEntity, prevArcheTypeData.ArcheType.ComponentConfigs[j]);
+
+                var nextEntityData = nextArcheTypeData.AddEntity(nextEntity, BookManager);
                 _entityDatas[nextEntity.Id] = nextEntityData;
                 nextEntities[i + startEntityIndex] = nextEntity;
 
-                nextArcheTypeData->SetComponentsBuffer(nextEntityData,
-                    prevArcheTypeData->GetVersionsPtr(prevEntityData),
-                    prevArcheTypeData->GetComponentsPtr(prevEntityData));
-                for (var j = 0; j < nextArcheTypeData->ManagedConfigsLength; j++)
+                nextArcheTypeData.SetComponentsBuffer(nextEntityData, prevEntityData.Slot.Buffer);
+                for (var j = 0; j < nextArcheTypeData.ManagedConfigsLength; j++)
                 {
-                    var config = nextArcheTypeData->ManagedConfigs[j];
-                    nextArcheTypeData->SetComponentAndIndex(
+                    var config = nextArcheTypeData.ManagedConfigs[j];
+                    nextArcheTypeData.SetComponentAndIndex(
                         nextEntityData,
-                        prevArcheTypeData->GetComponent(
+                        prevArcheTypeData.GetComponent(
                             prevEntityData,
                             config,
                             sourceContext.ManagePools.GetPool(config)),
@@ -1190,34 +2082,41 @@ namespace EcsLte
             }
         }
 
-        private void UpdateComponentsArcheType<TComponent>(ArcheTypeData* prevArcheTypeData, TComponent component) where TComponent : IComponent
+        private void UpdateComponentsArcheType<TComponent>(ArcheTypeData prevArcheTypeData, TComponent component) where TComponent : IComponent
         {
             var config = ComponentConfig<TComponent>.Config;
             if (config.IsShared)
             {
-                ArcheTypeManager.CachedArcheTypeCopyTo(prevArcheTypeData->ArcheType);
+                ArcheTypeManager.CachedArcheTypeCopyTo(prevArcheTypeData.ArcheType);
                 var nextArcheTypeData = ArcheTypeManager.CachedArcheTypeGetNextArcheTypeData(prevArcheTypeData,
                     SharedIndexDics.GetDataIndex(component));
 
                 if (nextArcheTypeData != prevArcheTypeData)
-                    ArcheTypeData.TransferAllEntities(prevArcheTypeData, nextArcheTypeData, _entityDatas);
+                    ArcheTypeData.TransferAllEntities(
+                        prevArcheTypeData,
+                        nextArcheTypeData,
+                        _entityDatas,
+                        BookManager);
 
                 if (config.IsBlittable)
                 {
-                    nextArcheTypeData->SetAllComponents(component, config);
+                    nextArcheTypeData.SetAllComponents(component, config);
                 }
                 else
                 {
-                    nextArcheTypeData->SetAllComponents(component, config, ManagePools.GetPool<TComponent>());
+                    nextArcheTypeData.SetAllComponents(component, config, ManagePools.GetPool<TComponent>());
                 }
+                prevArcheTypeData = nextArcheTypeData;
             }
             else
             {
                 if (config.IsBlittable)
-                    prevArcheTypeData->SetAllComponents(component, config);
+                    prevArcheTypeData.SetAllComponents(component, config);
                 else
-                    prevArcheTypeData->SetAllComponents(component, config, ManagePools.GetPool<TComponent>());
+                    prevArcheTypeData.SetAllComponents(component, config, ManagePools.GetPool<TComponent>());
             }
+            for (var i = 0; i < prevArcheTypeData.EntityCount; i++)
+                TrackerManager.TrackUpdate(prevArcheTypeData.GetEntity(i), config);
         }
 
         #region Query

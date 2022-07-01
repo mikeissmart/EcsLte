@@ -36,5 +36,14 @@ namespace EcsLte.Utilities
 
             return destination;
         }
+
+        internal static Type[] GetComponentConfigTypes(ComponentConfig[] configs)
+        {
+            var types = new Type[configs.Length];
+            for (var i = 0; i < configs.Length; i++)
+                types[i] = ComponentConfigs.Instance.AllComponentTypes[configs[i].ComponentIndex];
+
+            return types;
+        }
     }
 }

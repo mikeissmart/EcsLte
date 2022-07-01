@@ -1,8 +1,9 @@
 ﻿namespace EcsLte
 {
-    internal struct EntityData
+    internal unsafe struct EntityData
     {
-        internal unsafe ArcheTypeData* ArcheTypeData { get; set; }
-        internal int EntityIndex { get; set; }
+        internal ArcheTypeIndex ArcheTypeIndex;
+        internal EntityMemorySlot Slot;
+        internal int EntityIndex;
     }
 }

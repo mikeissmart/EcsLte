@@ -1,5 +1,4 @@
-﻿using EcsLte.Data;
-using EcsLte.Utilities;
+﻿using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +11,7 @@ namespace EcsLte
         /// <summary>
         /// ArcheTypeData*
         /// </summary>
-        private readonly Dictionary<EcsContext, PtrWrapper> _archeTypeIndexes;
+        private readonly Dictionary<EcsContext, ArcheTypeData> _archeTypeIndexes;
         private readonly object _lockObj;
 
         internal Type[] ComponentTypes { get; private set; }
@@ -22,7 +21,7 @@ namespace EcsLte
 
         internal EntityArcheTypeData()
         {
-            _archeTypeIndexes = new Dictionary<EcsContext, PtrWrapper>();
+            _archeTypeIndexes = new Dictionary<EcsContext, ArcheTypeData>();
             _lockObj = new object();
             ComponentTypes = new Type[0];
             SharedComponents = new ISharedComponent[0];
@@ -32,7 +31,7 @@ namespace EcsLte
 
         internal EntityArcheTypeData(IComponentData[] allComponentDatas, IComponentData[] sharedComponentDatas)
         {
-            _archeTypeIndexes = new Dictionary<EcsContext, PtrWrapper>();
+            _archeTypeIndexes = new Dictionary<EcsContext, ArcheTypeData>();
             _lockObj = new object();
             ComponentConfigs = allComponentDatas
                 .Select(x => x.Config)
@@ -46,15 +45,15 @@ namespace EcsLte
                 .ToArray();
         }
 
-        internal unsafe EntityArcheTypeData(EcsContext context, ArcheTypeData* archeTypeData)
+        internal unsafe EntityArcheTypeData(EcsContext context, ArcheTypeData archeTypeData)
         {
-            _archeTypeIndexes = new Dictionary<EcsContext, PtrWrapper>
+            _archeTypeIndexes = new Dictionary<EcsContext, ArcheTypeData>
             {
-                { context, new PtrWrapper { Ptr = archeTypeData } }
+                { context, archeTypeData }
             };
             _lockObj = new object();
 
-            var archeType = archeTypeData->ArcheType;
+            var archeType = archeTypeData.ArcheType;
             ComponentConfigs = new ComponentConfig[archeType.ComponentConfigLength];
             fixed (ComponentConfig* configsPtr = &ComponentConfigs[0])
             {
@@ -79,23 +78,13 @@ namespace EcsLte
                 .ToArray();
         }
 
-        internal unsafe bool TryGetArcheTypeIndex(EcsContext context, out ArcheTypeData* archeTypeData)
-        {
-            if (_archeTypeIndexes.TryGetValue(context, out var ptr))
-            {
-                archeTypeData = (ArcheTypeData*)ptr.Ptr;
-                return true;
-            }
+        internal unsafe bool TryGetArcheTypeIndex(EcsContext context, out ArcheTypeData archeTypeData) => _archeTypeIndexes.TryGetValue(context, out archeTypeData);
 
-            archeTypeData = null;
-            return false;
-        }
-
-        internal unsafe void AddArcheTypeIndex(EcsContext context, ArcheTypeData* archeTypeData)
+        internal unsafe void AddArcheTypeIndex(EcsContext context, ArcheTypeData archeTypeData)
         {
             lock (_lockObj)
             {
-                _archeTypeIndexes.Add(context, new PtrWrapper { Ptr = archeTypeData });
+                _archeTypeIndexes.Add(context, archeTypeData);
             }
         }
 

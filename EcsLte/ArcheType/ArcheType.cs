@@ -62,10 +62,16 @@ namespace EcsLte
         {
             for (var i = 0; i < SharedComponentDataLength; i++)
             {
-                if (SharedComponentDataIndexes[i].SharedIndex == nextSharedDataIndex.SharedIndex)
+                var check = SharedComponentDataIndexes[i];
+                if (check.SharedIndex == nextSharedDataIndex.SharedIndex)
                 {
-                    SharedComponentDataIndexes[i] = nextSharedDataIndex;
-                    return true;
+                    if (check.SharedDataIndex != nextSharedDataIndex.SharedDataIndex)
+                    {
+                        SharedComponentDataIndexes[i] = nextSharedDataIndex;
+                        return true;
+                    }
+                    else
+                        return false;
                 }
             }
 

@@ -70,26 +70,31 @@ public struct TestSharedComponent4 : ISharedComponent, IEquatable<TestSharedComp
 
 public struct TestManageComponent1 : IComponent, ITestComponent
 {
+    public string PropString { get; set; }
     public int Prop { get; set; }
 }
 
 public struct TestManageComponent2 : IComponent, ITestComponent
 {
+    public string PropString { get; set; }
     public int Prop { get; set; }
 }
 
 public struct TestManageComponent3 : IComponent, ITestComponent
 {
+    public string PropString { get; set; }
     public int Prop { get; set; }
 }
 
 public struct TestManageComponent4 : IComponent, ITestComponent
 {
+    public string PropString { get; set; }
     public int Prop { get; set; }
 }
 
 public struct TestManageSharedComponent1 : ISharedComponent, IEquatable<TestManageSharedComponent1>, ITestComponent
 {
+    public string PropString { get; set; }
     public int Prop { get; set; }
 
     public bool Equals(TestManageSharedComponent1 other)
@@ -100,6 +105,7 @@ public struct TestManageSharedComponent1 : ISharedComponent, IEquatable<TestMana
 
 public struct TestManageSharedComponent2 : ISharedComponent, IEquatable<TestManageSharedComponent2>, ITestComponent
 {
+    public string PropString { get; set; }
     public int Prop { get; set; }
 
     public bool Equals(TestManageSharedComponent2 other)
@@ -110,6 +116,7 @@ public struct TestManageSharedComponent2 : ISharedComponent, IEquatable<TestMana
 
 public struct TestManageSharedComponent3 : ISharedComponent, IEquatable<TestManageSharedComponent3>, ITestComponent
 {
+    public string PropString { get; set; }
     public int Prop { get; set; }
 
     public bool Equals(TestManageSharedComponent3 other)
@@ -120,6 +127,7 @@ public struct TestManageSharedComponent3 : ISharedComponent, IEquatable<TestMana
 
 public struct TestManageSharedComponent4 : ISharedComponent, IEquatable<TestManageSharedComponent4>, ITestComponent
 {
+    public string PropString { get; set; }
     public int Prop { get; set; }
 
     public bool Equals(TestManageSharedComponent4 other)
