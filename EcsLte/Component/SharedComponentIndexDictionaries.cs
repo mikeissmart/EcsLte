@@ -9,7 +9,7 @@ namespace EcsLte
     }
 
     internal class SharedComponentIndexDictionary<TComponent> : IndexDictionary<TComponent>, ISharedComponentIndexDictionary
-            where TComponent : IComponent
+            where TComponent : unmanaged, IComponent
     {
         public SharedComponentIndexDictionary() : base()
         { }
@@ -39,14 +39,14 @@ namespace EcsLte
         }
 
         internal SharedComponentIndexDictionary<TComponent> GetSharedIndexDic<TComponent>()
-            where TComponent : IComponent =>
+            where TComponent : unmanaged, IComponent =>
             (SharedComponentIndexDictionary<TComponent>)_sharedComponentIndexes[ComponentConfig<TComponent>.Config.SharedIndex];
 
         internal ISharedComponentIndexDictionary GetSharedIndexDic(ComponentConfig config) =>
             _sharedComponentIndexes[config.SharedIndex];
 
         internal SharedComponentDataIndex GetDataIndex<TComponent>(TComponent component)
-            where TComponent : IComponent
+            where TComponent : unmanaged, IComponent
         {
             var indexDic = GetSharedIndexDic<TComponent>();
 

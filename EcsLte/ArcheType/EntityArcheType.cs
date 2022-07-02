@@ -41,7 +41,7 @@ namespace EcsLte
             return false;
         }
 
-        public EntityArcheType AddComponentType<TComponent>() where TComponent : IComponent
+        public EntityArcheType AddComponentType<TComponent>() where TComponent : unmanaged, IComponent
         {
             if (HasComponentType<TComponent>())
                 throw new EntityArcheTypeAlreadyHasComponentException(typeof(TComponent));
@@ -53,7 +53,7 @@ namespace EcsLte
             return new EntityArcheType(EntityArcheTypeData.AddComponentType(ArcheTypeData, config));
         }
 
-        public EntityArcheType RemoveComponentType<TComponent>() where TComponent : IComponent
+        public EntityArcheType RemoveComponentType<TComponent>() where TComponent : unmanaged, IComponent
         {
             if (!HasComponentType<TComponent>())
                 throw new EntityArcheTypeNotHaveComponentException(typeof(TComponent));
@@ -65,7 +65,7 @@ namespace EcsLte
             return new EntityArcheType(EntityArcheTypeData.RemoveComponentType(ArcheTypeData, config));
         }
 
-        public TSharedComponent GetSharedComponent<TSharedComponent>() where TSharedComponent : ISharedComponent
+        public TSharedComponent GetSharedComponent<TSharedComponent>() where TSharedComponent : unmanaged, ISharedComponent
         {
             if (!HasComponentType<TSharedComponent>())
                 throw new EntityArcheTypeNotHaveComponentException(typeof(TSharedComponent));
@@ -74,7 +74,7 @@ namespace EcsLte
             return (TSharedComponent)ArcheTypeData.SharedComponentDatas.First(x => x.Config == config).Component;
         }
 
-        public EntityArcheType AddSharedComponent<TSharedComponent>(TSharedComponent component) where TSharedComponent : ISharedComponent
+        public EntityArcheType AddSharedComponent<TSharedComponent>(TSharedComponent component) where TSharedComponent : unmanaged, ISharedComponent
         {
             if (HasComponentType<TSharedComponent>())
                 throw new EntityArcheTypeAlreadyHasComponentException(typeof(TSharedComponent));
@@ -82,7 +82,7 @@ namespace EcsLte
             return new EntityArcheType(EntityArcheTypeData.AddSharedComponent(ArcheTypeData, new ComponentData<TSharedComponent>(component)));
         }
 
-        public EntityArcheType ReplaceSharedComponent<TSharedComponent>(TSharedComponent component) where TSharedComponent : ISharedComponent
+        public EntityArcheType ReplaceSharedComponent<TSharedComponent>(TSharedComponent component) where TSharedComponent : unmanaged, ISharedComponent
         {
             if (!HasComponentType<TSharedComponent>())
                 return AddSharedComponent(component);
@@ -98,7 +98,7 @@ namespace EcsLte
             return new EntityArcheType(EntityArcheTypeData.RemoveSharedComponent(ArcheTypeData, ComponentConfig<TSharedComponent>.Config));
         }
 
-        public EntityArcheType AddComponentTypeOrSharedComponent<TComponent>(TComponent component) where TComponent : IComponent
+        public EntityArcheType AddComponentTypeOrSharedComponent<TComponent>(TComponent component) where TComponent : unmanaged, IComponent
         {
             if (HasComponentType<TComponent>())
                 throw new EntityArcheTypeAlreadyHasComponentException(typeof(TComponent));
@@ -108,7 +108,7 @@ namespace EcsLte
                 : AddComponentType<TComponent>();
         }
 
-        public EntityArcheType ReplaceComponentTypeOrSharedComponent<TComponent>(TComponent component) where TComponent : IComponent
+        public EntityArcheType ReplaceComponentTypeOrSharedComponent<TComponent>(TComponent component) where TComponent : unmanaged, IComponent
         {
             if (!HasComponentType<TComponent>())
                 return AddComponentTypeOrSharedComponent(component);

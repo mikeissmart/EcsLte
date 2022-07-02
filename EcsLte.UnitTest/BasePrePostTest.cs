@@ -20,7 +20,7 @@ namespace EcsLte.UnitTest
 
         protected Entity[] TestCreateEntities<T1>(EcsContext context, int entityCount,
             T1 component1)
-            where T1 : IComponent
+            where T1 : unmanaged, IComponent
         {
             var blueprint = new EntityBlueprint()
                 .AddComponent(component1);
@@ -30,8 +30,8 @@ namespace EcsLte.UnitTest
         protected Entity[] TestCreateEntities<T1, T2>(EcsContext context, int entityCount,
             T1 component1,
             T2 component2)
-            where T1 : IComponent
-            where T2 : IComponent
+            where T1 : unmanaged, IComponent
+            where T2 : unmanaged, IComponent
         {
             var blueprint = new EntityBlueprint()
                 .AddComponent(component1)
@@ -43,9 +43,9 @@ namespace EcsLte.UnitTest
             T1 component1,
             T2 component2,
             T3 component3)
-            where T1 : IComponent
-            where T2 : IComponent
-            where T3 : IComponent
+            where T1 : unmanaged, IComponent
+            where T2 : unmanaged, IComponent
+            where T3 : unmanaged, IComponent
         {
             var blueprint = new EntityBlueprint()
                 .AddComponent(component1)

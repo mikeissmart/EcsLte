@@ -249,14 +249,14 @@ namespace EcsLte
         #region FilterBys
 
         public bool HasFilterBy<TSharedComponent>()
-            where TSharedComponent : ISharedComponent
+            where TSharedComponent : unmanaged, ISharedComponent
         {
             var config = ComponentConfig<TSharedComponent>.Config;
             return QueryData.FilterComponentDatas.Any(x => x.Config == config);
         }
 
         public TSharedComponent GetFilterBy<TSharedComponent>()
-            where TSharedComponent : ISharedComponent
+            where TSharedComponent : unmanaged, ISharedComponent
         {
             if (!HasFilterBy<TSharedComponent>())
             {
@@ -280,7 +280,7 @@ namespace EcsLte
 
         public EntityQuery FilterBy<T1>(
             T1 component1)
-            where T1 : ISharedComponent
+            where T1 : unmanaged, ISharedComponent
             => new EntityQuery(this,
                 new ComponentData<T1>(component1),
                 false);
@@ -288,8 +288,8 @@ namespace EcsLte
         public EntityQuery FilterBy<T1, T2>(
             T1 component1,
             T2 component2)
-            where T1 : ISharedComponent
-            where T2 : ISharedComponent
+            where T1 : unmanaged, ISharedComponent
+            where T2 : unmanaged, ISharedComponent
             => new EntityQuery(this,
                 new IComponentData[]
                 {
@@ -302,9 +302,9 @@ namespace EcsLte
             T1 component1,
             T2 component2,
             T3 component3)
-            where T1 : ISharedComponent
-            where T2 : ISharedComponent
-            where T3 : ISharedComponent
+            where T1 : unmanaged, ISharedComponent
+            where T2 : unmanaged, ISharedComponent
+            where T3 : unmanaged, ISharedComponent
             => new EntityQuery(this,
                 new IComponentData[]
                 {
@@ -319,10 +319,10 @@ namespace EcsLte
             T2 component2,
             T3 component3,
             T4 component4)
-            where T1 : ISharedComponent
-            where T2 : ISharedComponent
-            where T3 : ISharedComponent
-            where T4 : ISharedComponent
+            where T1 : unmanaged, ISharedComponent
+            where T2 : unmanaged, ISharedComponent
+            where T3 : unmanaged, ISharedComponent
+            where T4 : unmanaged, ISharedComponent
             => new EntityQuery(this,
                 new IComponentData[]
                 {
@@ -345,7 +345,7 @@ namespace EcsLte
 
         public EntityQuery FilterByReplace<T1>(
             T1 component1)
-            where T1 : ISharedComponent
+            where T1 : unmanaged, ISharedComponent
             => new EntityQuery(this,
                 new ComponentData<T1>(component1),
                 true);
@@ -353,8 +353,8 @@ namespace EcsLte
         public EntityQuery FilterByReplace<T1, T2>(
             T1 component1,
             T2 component2)
-            where T1 : ISharedComponent
-            where T2 : ISharedComponent
+            where T1 : unmanaged, ISharedComponent
+            where T2 : unmanaged, ISharedComponent
             => new EntityQuery(this,
                 new IComponentData[]
                 {
@@ -367,9 +367,9 @@ namespace EcsLte
             T1 component1,
             T2 component2,
             T3 component3)
-            where T1 : ISharedComponent
-            where T2 : ISharedComponent
-            where T3 : ISharedComponent
+            where T1 : unmanaged, ISharedComponent
+            where T2 : unmanaged, ISharedComponent
+            where T3 : unmanaged, ISharedComponent
             => new EntityQuery(this,
                 new IComponentData[]
                 {
@@ -384,10 +384,10 @@ namespace EcsLte
             T2 component2,
             T3 component3,
             T4 component4)
-            where T1 : ISharedComponent
-            where T2 : ISharedComponent
-            where T3 : ISharedComponent
-            where T4 : ISharedComponent
+            where T1 : unmanaged, ISharedComponent
+            where T2 : unmanaged, ISharedComponent
+            where T3 : unmanaged, ISharedComponent
+            where T4 : unmanaged, ISharedComponent
             => new EntityQuery(this,
                 new IComponentData[]
                 {
@@ -1864,7 +1864,7 @@ namespace EcsLte
         private static unsafe void ForEachBatchRun(BatchOptions batchOptions)
         {
             var componentAdapters = EntityQueryComponentAdapters.CreateAdapters(batchOptions.Configs,
-                batchOptions.Context.SharedIndexDics, batchOptions.Context.ManagePools);
+                batchOptions.Context.SharedIndexDics);
             var sharedComponentAdapters = componentAdapters
                 .Where(x => x.Config.IsShared)
                 .ToArray();

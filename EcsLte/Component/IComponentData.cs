@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 
 namespace EcsLte
 {
@@ -8,9 +7,7 @@ namespace EcsLte
         ComponentConfig Config { get; }
         IComponent Component { get; }
 
-        unsafe void CopyBlittableComponentData(byte* componentPtr);
-
-        unsafe void CopyManagedComponentData(ArcheTypeData archeTypeData, EntityData entityData, int componentIndex, IManagedComponentPool managedPool);
+        unsafe void CopyComponentData(byte* componentPtr);
 
         bool ComponentEquals<TComponentEqual>(TComponentEqual component) where TComponentEqual : IComponent;
 
@@ -18,7 +15,7 @@ namespace EcsLte
     }
 
     internal class ComponentData<TComponent> : IComponentData
-        where TComponent : IComponent
+        where TComponent : unmanaged, IComponent
     {
         private readonly TComponent _component;
 
@@ -31,10 +28,7 @@ namespace EcsLte
             Config = ComponentConfig<TComponent>.Config;
         }
 
-        public unsafe void CopyBlittableComponentData(byte* componentPtr) => Marshal.StructureToPtr(_component, (IntPtr)componentPtr, false);
-
-        public unsafe void CopyManagedComponentData(ArcheTypeData archeTypeData, EntityData entityData, int componentIndex, IManagedComponentPool managedPool) =>
-            archeTypeData.SetComponentAndIndex(entityData, _component, Config, componentIndex, (ManagedComponentPool<TComponent>)managedPool);
+        public unsafe void CopyComponentData(byte* componentPtr) => *(TComponent*)componentPtr = _component;
 
         public bool ComponentEquals<TComponentEqual>(TComponentEqual component)
              where TComponentEqual : IComponent => Config == ComponentConfig<TComponentEqual>.Config &&

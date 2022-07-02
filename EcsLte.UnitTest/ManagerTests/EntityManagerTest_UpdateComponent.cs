@@ -108,7 +108,7 @@ namespace EcsLte.UnitTest.ManagerTests
                 Context.UpdateComponent(Entity.Null, new TestComponent1()));
 
         private void AssertUpdateComponent_Entity<T1>(int entityCount, T1 c1)
-            where T1 : IComponent, ITestComponent, new() => AssertUpdateComponents(
+            where T1 : unmanaged, IComponent, ITestComponent => AssertUpdateComponents(
                 entityCount,
                 (Entity[] entities, T1 component) =>
                 {
@@ -117,8 +117,8 @@ namespace EcsLte.UnitTest.ManagerTests
                 });
 
         private void AssertUpdateComponent_Entity<T1, T2>(int entityCount, T1 c1, T2 c2)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new() => AssertUpdateComponents(
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent => AssertUpdateComponents(
                 entityCount,
                 (Entity[] entities, T1 component) =>
                 {
@@ -132,9 +132,9 @@ namespace EcsLte.UnitTest.ManagerTests
                 });
 
         private void AssertUpdateComponent_Entity<T1, T2, T3>(int entityCount, T1 c1, T2 c2, T3 c3)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new() => AssertUpdateComponents(
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent => AssertUpdateComponents(
                 entityCount,
                 (Entity[] entities, T1 component) =>
                 {
@@ -153,10 +153,10 @@ namespace EcsLte.UnitTest.ManagerTests
                 });
 
         private void AssertUpdateComponent_Entity<T1, T2, T3, T4>(int entityCount, T1 c1, T2 c2, T3 c3, T4 c4)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
-            where T4 : IComponent, ITestComponent, new() => AssertUpdateComponents(
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
+            where T4 : unmanaged, IComponent, ITestComponent => AssertUpdateComponents(
                 entityCount,
                 (Entity[] entities, T1 component) =>
                 {
@@ -180,12 +180,12 @@ namespace EcsLte.UnitTest.ManagerTests
                 });
 
         private void AssertUpdateComponent_Entity<T1, T2, T3, T4, T5, T6>(int entityCount, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
-            where T4 : IComponent, ITestComponent, new()
-            where T5 : IComponent, ITestComponent, new()
-            where T6 : IComponent, ITestComponent, new() => AssertUpdateComponents(
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
+            where T4 : unmanaged, IComponent, ITestComponent
+            where T5 : unmanaged, IComponent, ITestComponent
+            where T6 : unmanaged, IComponent, ITestComponent => AssertUpdateComponents(
                 entityCount,
                 (Entity[] entities, T1 component) =>
                 {
@@ -330,31 +330,31 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         private void AssertUpdateComponent_Entities<T1>(int entityCount, T1 c1)
-            where T1 : IComponent, ITestComponent, new() => AssertUpdateComponents(
+            where T1 : unmanaged, IComponent, ITestComponent => AssertUpdateComponents(
                 entityCount,
                 (Entity[] entities, T1 component) => Context.UpdateComponents(entities, component));
 
         private void AssertUpdateComponent_Entities<T1, T2>(int entityCount, T1 c1, T2 c2)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new() => AssertUpdateComponents(
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent => AssertUpdateComponents(
                 entityCount,
                 (Entity[] entities, T1 component) => Context.UpdateComponents(entities, component),
                 (Entity[] entities, T2 component) => Context.UpdateComponents(entities, component));
 
         private void AssertUpdateComponent_Entities<T1, T2, T3>(int entityCount, T1 c1, T2 c2, T3 c3)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new() => AssertUpdateComponents(
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent => AssertUpdateComponents(
                 entityCount,
                 (Entity[] entities, T1 component) => Context.UpdateComponents(entities, component),
                 (Entity[] entities, T2 component) => Context.UpdateComponents(entities, component),
                 (Entity[] entities, T3 component) => Context.UpdateComponents(entities, component));
 
         private void AssertUpdateComponent_Entities<T1, T2, T3, T4>(int entityCount, T1 c1, T2 c2, T3 c3, T4 c4)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
-            where T4 : IComponent, ITestComponent, new() => AssertUpdateComponents(
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
+            where T4 : unmanaged, IComponent, ITestComponent => AssertUpdateComponents(
                 entityCount,
                 (Entity[] entities, T1 component) => Context.UpdateComponents(entities, component),
                 (Entity[] entities, T2 component) => Context.UpdateComponents(entities, component),
@@ -362,12 +362,12 @@ namespace EcsLte.UnitTest.ManagerTests
                 (Entity[] entities, T4 component) => Context.UpdateComponents(entities, component));
 
         private void AssertUpdateComponent_Entities<T1, T2, T3, T4, T5, T6>(int entityCount, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
-            where T4 : IComponent, ITestComponent, new()
-            where T5 : IComponent, ITestComponent, new()
-            where T6 : IComponent, ITestComponent, new() => AssertUpdateComponents(
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
+            where T4 : unmanaged, IComponent, ITestComponent
+            where T5 : unmanaged, IComponent, ITestComponent
+            where T6 : unmanaged, IComponent, ITestComponent => AssertUpdateComponents(
                 entityCount,
                 (Entity[] entities, T1 component) => Context.UpdateComponents(entities, component),
                 (Entity[] entities, T2 component) => Context.UpdateComponents(entities, component),
@@ -485,7 +485,7 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         private void AssertUpdateComponent_EntityArcheType<T1>(int entityCount, T1 c1)
-            where T1 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
         {
             var archeType = new EntityArcheType()
                 .AddComponentTypeOrSharedComponent(c1);
@@ -495,8 +495,8 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         private void AssertUpdateComponent_EntityArcheType<T1, T2>(int entityCount, T1 c1, T2 c2)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
         {
             var archeType = new EntityArcheType()
                 .AddComponentTypeOrSharedComponent(c1)
@@ -508,19 +508,19 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         private void AssertUpdateComponent_EntityArcheType<T1, T2, T3>(int entityCount, T1 c1, T2 c2, T3 c3)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new() => AssertUpdateComponents(
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent => AssertUpdateComponents(
                 entityCount,
                 (Entity[] entities, T1 component) => Context.UpdateComponents(Context.GetEntityArcheType(entities[0]), component),
                 (Entity[] entities, T2 component) => Context.UpdateComponents(Context.GetEntityArcheType(entities[0]), component),
                 (Entity[] entities, T3 component) => Context.UpdateComponents(Context.GetEntityArcheType(entities[0]), component));
 
         private void AssertUpdateComponent_EntityArcheType<T1, T2, T3, T4>(int entityCount, T1 c1, T2 c2, T3 c3, T4 c4)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
-            where T4 : IComponent, ITestComponent, new() => AssertUpdateComponents(
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
+            where T4 : unmanaged, IComponent, ITestComponent => AssertUpdateComponents(
                 entityCount,
                 (Entity[] entities, T1 component) => Context.UpdateComponents(Context.GetEntityArcheType(entities[0]), component),
                 (Entity[] entities, T2 component) => Context.UpdateComponents(Context.GetEntityArcheType(entities[0]), component),
@@ -528,12 +528,12 @@ namespace EcsLte.UnitTest.ManagerTests
                 (Entity[] entities, T4 component) => Context.UpdateComponents(Context.GetEntityArcheType(entities[0]), component));
 
         private void AssertUpdateComponent_EntityArcheType<T1, T2, T3, T4, T5, T6>(int entityCount, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
-            where T4 : IComponent, ITestComponent, new()
-            where T5 : IComponent, ITestComponent, new()
-            where T6 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
+            where T4 : unmanaged, IComponent, ITestComponent
+            where T5 : unmanaged, IComponent, ITestComponent
+            where T6 : unmanaged, IComponent, ITestComponent
         {
             var archeType = new EntityArcheType()
                 .AddComponentTypeOrSharedComponent(c1)
@@ -741,7 +741,7 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         private void AssertUpdateComponent_EntityQuery<T1>(int entityCount, T1 c1)
-            where T1 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
         {
             var query = new EntityQuery()
                 .WhereAllOf<T1>();
@@ -751,8 +751,8 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         private void AssertUpdateComponent_EntityQuery<T1, T2>(int entityCount, T1 c1, T2 c2)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
         {
             var query = new EntityQuery()
                 .WhereAllOf<T1>()
@@ -764,9 +764,9 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         private void AssertUpdateComponent_EntityQuery<T1, T2, T3>(int entityCount, T1 c1, T2 c2, T3 c3)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
         {
             var query = new EntityQuery()
                 .WhereAllOf<T1>()
@@ -780,10 +780,10 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         private void AssertUpdateComponent_EntityQuery<T1, T2, T3, T4>(int entityCount, T1 c1, T2 c2, T3 c3, T4 c4)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
-            where T4 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
+            where T4 : unmanaged, IComponent, ITestComponent
         {
             var query = new EntityQuery()
                 .WhereAllOf<T1>()
@@ -799,12 +799,12 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         private void AssertUpdateComponent_EntityQuery<T1, T2, T3, T4, T5, T6>(int entityCount, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
-            where T4 : IComponent, ITestComponent, new()
-            where T5 : IComponent, ITestComponent, new()
-            where T6 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
+            where T4 : unmanaged, IComponent, ITestComponent
+            where T5 : unmanaged, IComponent, ITestComponent
+            where T6 : unmanaged, IComponent, ITestComponent
         {
             var query = new EntityQuery()
                 .WhereAllOf<T1>()
@@ -829,7 +829,7 @@ namespace EcsLte.UnitTest.ManagerTests
 
         private void AssertUpdateComponents<T1>(int entityCount,
             Action<Entity[], T1> updateAction1)
-            where T1 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
         {
             var entities = Context.CreateEntities(entityCount, new EntityBlueprint()
                 .AddComponent(new T1()));
@@ -839,8 +839,8 @@ namespace EcsLte.UnitTest.ManagerTests
         private void AssertUpdateComponents<T1, T2>(int entityCount,
             Action<Entity[], T1> updateAction1,
             Action<Entity[], T2> updateAction2)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
         {
             var entities = Context.CreateEntities(entityCount, new EntityBlueprint()
                 .AddComponent(new T1())
@@ -853,9 +853,9 @@ namespace EcsLte.UnitTest.ManagerTests
             Action<Entity[], T1> updateAction1,
             Action<Entity[], T2> updateAction2,
             Action<Entity[], T3> updateAction3)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
         {
             var blueprint = new EntityBlueprint()
                 .AddComponent(new T1())
@@ -873,10 +873,10 @@ namespace EcsLte.UnitTest.ManagerTests
             Action<Entity[], T2> updateAction2,
             Action<Entity[], T3> updateAction3,
             Action<Entity[], T4> updateAction4)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
-            where T4 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
+            where T4 : unmanaged, IComponent, ITestComponent
         {
             var blueprint = new EntityBlueprint()
                 .AddComponent(new T1())
@@ -898,12 +898,12 @@ namespace EcsLte.UnitTest.ManagerTests
             Action<Entity[], T4> updateAction4,
             Action<Entity[], T5> updateAction5,
             Action<Entity[], T6> updateAction6)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
-            where T4 : IComponent, ITestComponent, new()
-            where T5 : IComponent, ITestComponent, new()
-            where T6 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
+            where T4 : unmanaged, IComponent, ITestComponent
+            where T5 : unmanaged, IComponent, ITestComponent
+            where T6 : unmanaged, IComponent, ITestComponent
         {
             var blueprint = new EntityBlueprint()
                 .AddComponent(new T1())
@@ -923,7 +923,7 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         private void AssertHelper_EqualsComponent<T>(Entity[] entities, int addNum, Action<Entity[], T> updateAction)
-            where T : IComponent, ITestComponent, new()
+            where T : unmanaged, IComponent, ITestComponent
         {
             for (var i = 0; i < entities.Length; i++)
             {

@@ -50,7 +50,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             CreateArcheTypes();
         }
 
-        private EntityArcheType BlueprintUpdateAndArcheType<T>(T component) where T : IComponent =>
+        private EntityArcheType BlueprintUpdateAndArcheType<T>(T component) where T : unmanaged, IComponent =>
             _blueprint.UpdateComponent(component).GetEntityArcheType();
 
         [GlobalCleanup]

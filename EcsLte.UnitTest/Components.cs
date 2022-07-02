@@ -48,13 +48,11 @@ public struct TestComponent8 : IComponent, ITestComponent
 
 public struct TestManageComponent1 : IComponent, ITestComponent
 {
-    public string PropString { get; set; }
     public int Prop { get; set; }
 }
 
 public struct TestManageComponent2 : IComponent, ITestComponent
 {
-    public string PropString { get; set; }
     public int Prop { get; set; }
 }
 
@@ -70,13 +68,11 @@ public struct TestRecordableComponent2 : IRecordableComponent, ITestComponent
 
 public struct TestManageRecordableComponent1 : IRecordableComponent, ITestComponent
 {
-    public string PropString { get; set; }
     public int Prop { get; set; }
 }
 
 public struct TestManageRecordableComponent2 : IRecordableComponent, ITestComponent
 {
-    public string PropString { get; set; }
     public int Prop { get; set; }
 }
 
@@ -92,13 +88,11 @@ public struct TestUniqueComponent2 : IUniqueComponent, ITestComponent
 
 public struct TestManageUniqueComponent1 : IUniqueComponent, ITestComponent
 {
-    public string PropString { get; set; }
     public int Prop { get; set; }
 }
 
 public struct TestManageUniqueComponent2 : IUniqueComponent, ITestComponent
 {
-    public string PropString { get; set; }
     public int Prop { get; set; }
 }
 
@@ -124,7 +118,6 @@ public struct TestSharedComponent2 : ISharedComponent, IEquatable<TestSharedComp
 
 public struct TestManageSharedComponent1 : ISharedComponent, IEquatable<TestManageSharedComponent1>, ITestComponent
 {
-    public string PropString { get; set; }
     public int Prop { get; set; }
 
     public bool Equals(TestManageSharedComponent1 other)
@@ -135,7 +128,6 @@ public struct TestManageSharedComponent1 : ISharedComponent, IEquatable<TestMana
 
 public struct TestManageSharedComponent2 : ISharedComponent, IEquatable<TestManageSharedComponent2>, ITestComponent
 {
-    public string PropString { get; set; }
     public int Prop { get; set; }
 
     public bool Equals(TestManageSharedComponent2 other)

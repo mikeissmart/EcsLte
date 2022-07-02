@@ -1,5 +1,4 @@
 ﻿using EcsLte.Exceptions;
-using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,29 +28,21 @@ namespace EcsLte
         internal ComponentConfig[] AllRecordableConfigs { get; private set; }
         internal ComponentConfig[] AllUniqueConfigs { get; private set; }
         internal ComponentConfig[] AllSharedConfigs { get; private set; }
-        internal ComponentConfig[] AllBlittableConfigs { get; private set; }
-        internal ComponentConfig[] AllManagedConfigs { get; private set; }
 
         internal Type[] AllComponentTypes { get; private set; }
         internal Type[] AllRecordableTypes { get; private set; }
         internal Type[] AllUniqueTypes { get; private set; }
         internal Type[] AllSharedTypes { get; private set; }
-        internal Type[] AllBlittableTypes { get; private set; }
-        internal Type[] AllManagedTypes { get; private set; }
 
         internal int[] AllComponentIndexes { get; private set; }
         internal int[] AllRecordableIndexes { get; private set; }
         internal int[] AllUniqueIndexes { get; private set; }
         internal int[] AllSharedIndexes { get; private set; }
-        internal int[] AllBlittableIndexes { get; private set; }
-        internal int[] AllManagedIndexes { get; private set; }
 
         internal int AllComponentCount => AllComponentConfigs.Length;
         internal int AllRecordableCount => AllRecordableConfigs.Length;
         internal int AllUniqueCount => AllUniqueConfigs.Length;
         internal int AllSharedCount => AllSharedConfigs.Length;
-        internal int AllBlittableCount => AllBlittableConfigs.Length;
-        internal int AllManagedCount => AllManagedConfigs.Length;
 
         internal ComponentConfig GetConfig(Type componentType)
             => _componentConfigTypes[componentType];
@@ -77,8 +68,6 @@ namespace EcsLte
             var recordableIndex = 0;
             var uniqueIndex = 0;
             var sharedIndex = 0;
-            var blittableIndex = 0;
-            var managedIndex = 0;
             var sharedNoEquatableOrGetHashCode = new List<Type>();
             var sharedUniqueErrorTypes = new List<Type>();
             var configTypes = new List<ConfigType>();
@@ -114,15 +103,11 @@ namespace EcsLte
 
                 if (IsBlittable(type))
                 {
-                    config.BlittableIndex = blittableIndex++;
-                    config.IsBlittable = true;
                     config.UnmanagedSizeInBytes = Marshal.SizeOf(type);
                 }
                 else
                 {
-                    config.ManagedIndex = managedIndex++;
-                    config.IsManaged = true;
-                    config.UnmanagedSizeInBytes = TypeCache<int>.SizeInBytes;
+                    throw new ArgumentException($"{type.Name} is not Blittable");
                 }
 
                 configTypes.Add(new ConfigType
@@ -171,14 +156,6 @@ namespace EcsLte
                 .Where(x => x.IsShared)
                 .OrderBy(x => x.SharedIndex)
                 .ToArray();
-            AllBlittableConfigs = componentConfigIndexes
-                .Where(x => x.IsBlittable)
-                .OrderBy(x => x.BlittableIndex)
-                .ToArray();
-            AllManagedConfigs = componentConfigIndexes
-                .Where(x => x.IsManaged)
-                .OrderBy(x => x.ManagedIndex)
-                .ToArray();
 
             AllComponentTypes = _componentConfigTypes
                 .OrderBy(x => x.Value.ComponentIndex)
@@ -197,16 +174,6 @@ namespace EcsLte
             AllSharedTypes = _componentConfigTypes
                 .Where(x => x.Value.IsShared)
                 .OrderBy(x => x.Value.SharedIndex)
-                .Select(x => x.Key)
-                .ToArray();
-            AllBlittableTypes = _componentConfigTypes
-                .Where(x => x.Value.IsBlittable)
-                .OrderBy(x => x.Value.BlittableIndex)
-                .Select(x => x.Key)
-                .ToArray();
-            AllManagedTypes = _componentConfigTypes
-                .Where(x => x.Value.IsManaged)
-                .OrderBy(x => x.Value.ManagedIndex)
                 .Select(x => x.Key)
                 .ToArray();
 
@@ -228,16 +195,6 @@ namespace EcsLte
                 .Where(x => x.IsShared)
                 .OrderBy(x => x.SharedIndex)
                 .Select(x => x.SharedIndex)
-                .ToArray();
-            AllBlittableIndexes = componentConfigIndexes
-                .Where(x => x.IsBlittable)
-                .OrderBy(x => x.BlittableIndex)
-                .Select(x => x.BlittableIndex)
-                .ToArray();
-            AllManagedIndexes = componentConfigIndexes
-                .Where(x => x.IsManaged)
-                .OrderBy(x => x.ManagedIndex)
-                .Select(x => x.ManagedIndex)
                 .ToArray();
         }
 

@@ -10,16 +10,16 @@ namespace EcsLte.UnitTest.ManagerTests
         private delegate void ArgumentsDelegate<T1, T2>(out int entityCount, out int keepEntityCount, out bool destroyEntities,
             out T1 component1,
             out T2 keepEntityComponent1)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new();
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent;
 
         private delegate void ArgumentsDelegate<T1, T2, T3>(out int entityCount, out int keepEntityCount, out bool destroyEntities,
             out T1 component1,
             out T2 component2,
             out T3 keepEntityComponent1)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new();
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent;
 
         [TestMethod]
         public void TransferEntities_Blittable() => Components_Blittable(AssertTransfer_Entities, Arguments);
@@ -338,8 +338,8 @@ namespace EcsLte.UnitTest.ManagerTests
         private void Arguments<T1, T2>(out int entityCount, out int keepEntityCount, out bool destroyEntities,
             out T1 component1,
             out T2 keepEntityComponent1)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
         {
             entityCount = UnitTestConsts.SmallCount;
             keepEntityCount = UnitTestConsts.SmallCount;
@@ -355,9 +355,9 @@ namespace EcsLte.UnitTest.ManagerTests
             out T1 component1,
             out T2 component2,
             out T3 keepEntityComponent1)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
         {
             entityCount = UnitTestConsts.SmallCount;
             keepEntityCount = UnitTestConsts.SmallCount;
@@ -373,8 +373,8 @@ namespace EcsLte.UnitTest.ManagerTests
         private void Arguments_Destroy<T1, T2>(out int entityCount, out int keepEntityCount, out bool destroyEntities,
             out T1 component1,
             out T2 keepEntityComponent1)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
         {
             entityCount = UnitTestConsts.SmallCount;
             keepEntityCount = 0;
@@ -390,9 +390,9 @@ namespace EcsLte.UnitTest.ManagerTests
             out T1 component1,
             out T2 component2,
             out T3 keepEntityComponent1)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
         {
             entityCount = UnitTestConsts.SmallCount;
             keepEntityCount = 0;
@@ -408,8 +408,8 @@ namespace EcsLte.UnitTest.ManagerTests
         private void Arguments_Destroy_Unique<T1, T2>(out int entityCount, out int keepEntityCount, out bool destroyEntities,
             out T1 component1,
             out T2 keepEntityComponent1)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
         {
             entityCount = 1;
             keepEntityCount = 0;
@@ -425,9 +425,9 @@ namespace EcsLte.UnitTest.ManagerTests
             out T1 component1,
             out T2 component2,
             out T3 keepEntityComponent1)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
         {
             entityCount = 1;
             keepEntityCount = 0;
@@ -443,8 +443,8 @@ namespace EcsLte.UnitTest.ManagerTests
         private void Arguments_Unique<T1, T2>(out int entityCount, out int keepEntityCount, out bool destroyEntities,
             out T1 component1,
             out T2 keepEntityComponent1)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
         {
             entityCount = 1;
             keepEntityCount = 1;
@@ -460,9 +460,9 @@ namespace EcsLte.UnitTest.ManagerTests
             out T1 component1,
             out T2 component2,
             out T3 keepEntityComponent1)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
         {
             entityCount = 1;
             keepEntityCount = 1;
@@ -478,8 +478,8 @@ namespace EcsLte.UnitTest.ManagerTests
         private void AssertTransfer<T1, T2>(
             ArgumentsDelegate<T1, T2> del,
             Func<EcsContext, EcsContext, Entity[], Entity[]> transferAction)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
         {
             if (typeof(T1) == typeof(T2))
                 throw new Exception();
@@ -518,9 +518,9 @@ namespace EcsLte.UnitTest.ManagerTests
         private void AssertTransfer<T1, T2, T3>(
             ArgumentsDelegate<T1, T2, T3> del,
             Func<EcsContext, EcsContext, Entity[], Entity[]> transferAction)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
         {
             if (typeof(T1) == typeof(T2))
                 throw new Exception();
@@ -612,8 +612,8 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         private void AssertTransfer_Entities<T1, T2>(ArgumentsDelegate<T1, T2> del)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
         {
             del.Invoke(out var _, out var _, out var destroyEntities, out var _, out var _);
             AssertTransfer(
@@ -622,9 +622,9 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         private void AssertTransfer_Entities<T1, T2, T3>(ArgumentsDelegate<T1, T2, T3> del)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
         {
             del.Invoke(out var _, out var _, out var destroyEntities, out var _, out var _, out var _);
             AssertTransfer(
@@ -633,8 +633,8 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         private void AssertTransfer_Entity<T1, T2>(ArgumentsDelegate<T1, T2> del)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
         {
             del.Invoke(out var _, out var _, out var destroyEntity, out var _, out var _);
             AssertTransfer(
@@ -649,9 +649,9 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         private void AssertTransfer_Entity<T1, T2, T3>(ArgumentsDelegate<T1, T2, T3> del)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
         {
             del.Invoke(out var _, out var _, out var destroyEntity, out var _, out var _, out var _);
             AssertTransfer(
@@ -666,8 +666,8 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         private void AssertTransfer_EntityArcheType<T1, T2>(ArgumentsDelegate<T1, T2> del)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
         {
             del.Invoke(out var _, out var _, out var destroyEntities, out var _, out var _);
             AssertTransfer(
@@ -681,9 +681,9 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         private void AssertTransfer_EntityArcheType<T1, T2, T3>(ArgumentsDelegate<T1, T2, T3> del)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
         {
             del.Invoke(out var _, out var _, out var destroyEntities, out var _, out var _, out var _);
             AssertTransfer(
@@ -698,8 +698,8 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         private void AssertTransfer_EntityQuery<T1, T2>(ArgumentsDelegate<T1, T2> del)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
         {
             del.Invoke(out var _, out var _, out var destroyEntities, out var _, out var _);
             AssertTransfer(
@@ -713,9 +713,9 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         private void AssertTransfer_EntityQuery<T1, T2, T3>(ArgumentsDelegate<T1, T2, T3> del)
-            where T1 : IComponent, ITestComponent, new()
-            where T2 : IComponent, ITestComponent, new()
-            where T3 : IComponent, ITestComponent, new()
+            where T1 : unmanaged, IComponent, ITestComponent
+            where T2 : unmanaged, IComponent, ITestComponent
+            where T3 : unmanaged, IComponent, ITestComponent
         {
             del.Invoke(out var _, out var _, out var destroyEntities, out var _, out var _, out var _);
             AssertTransfer(

@@ -17,14 +17,11 @@ namespace EcsLte
         private int _pagesLength;
         private int _slotsPerPage;
         private int _slotSizeInBytes;
-        private int _managedOffsetInBytes;
 
         internal ArcheTypeIndex ArcheTypeIndex { get; private set; }
         internal ArcheType ArcheType { get; private set; }
         internal int EntityCount { get; private set; }
         internal int ComponentsSizeInBytes => _slotSizeInBytes;
-        internal ComponentConfig* ManagedConfigs { get; private set; }
-        internal int ManagedConfigsLength { get; private set; }
         internal ComponentConfig* UniqueConfigs { get; private set; }
         internal int UniqueConfigsLength { get; private set; }
 
@@ -199,38 +196,15 @@ namespace EcsLte
             return entityData;
         }
 
-        internal void RemoveEntity(Entity entity, EntityData* allEntityDatas, ManagedComponentPools managedPools, MemoryBookManager bookManager)
-        {
-            var entityData = allEntityDatas[entity.Id];
-            for (var i = 0; i < ManagedConfigsLength; i++)
-            {
-                var configOffset = GetComponentConfigOffset(ManagedConfigs[i]);
-                managedPools.GetPool(configOffset.Config).ClearComponent(*DataBufferToManagedIndex(entityData, configOffset));
-            }
-            RemoveEntityReorder(entity, allEntityDatas, bookManager);
-        }
+        internal void RemoveEntity(Entity entity, EntityData* allEntityDatas, MemoryBookManager bookManager) => RemoveEntityReorder(entity, allEntityDatas, bookManager);
 
-        internal void RemoveAllEntities(EntityData* allEntityDatas, ManagedComponentPools managedPools, MemoryBookManager bookManager,
+        internal void RemoveAllEntities(EntityData* allEntityDatas, MemoryBookManager bookManager,
             ref Entity[] entities, ref int entitiesCount)
         {
             if (EntityCount == 0)
             {
                 entitiesCount = 0;
                 return;
-            }
-
-            if (ManagedConfigsLength > 0)
-            {
-                for (var i = 0; i < EntityCount; i++)
-                {
-                    var entity = GetEntity(i);
-                    var entityData = allEntityDatas[entity.Id];
-                    for (var j = 0; j < ManagedConfigsLength; j++)
-                    {
-                        var configOffset = GetComponentConfigOffset(ManagedConfigs[j]);
-                        managedPools.GetPool(configOffset.Config).ClearComponent(*DataBufferToManagedIndex(entityData, configOffset));
-                    }
-                }
             }
 
             fixed (Entity* entitiesPtr = &entities[0])
@@ -257,140 +231,71 @@ namespace EcsLte
                 var componentData = blittableComponentDatas[i];
                 var configOffset = GetComponentConfigOffset(componentData.Config);
                 if (componentData.Config.UnmanagedSizeInBytes != 0)
-                    componentData.CopyBlittableComponentData(componentsBuffer + configOffset.OffsetInBytes);
+                    componentData.CopyComponentData(componentsBuffer + configOffset.OffsetInBytes);
             }
         }
 
         internal TComponent GetComponent<TComponent>(EntityData entityData, ComponentConfig config)
-            where TComponent : IComponent => InteropTools.PtrToStructure<TComponent>(DataBufferToComponent(entityData, config));
-
-        internal TComponent GetComponent<TComponent>(EntityData entityData, ComponentConfig config, ManagedComponentPool<TComponent> managedPool)
-            where TComponent : IComponent =>
-            managedPool.GetComponent(*DataBufferToManagedIndex(entityData, config));
-
-        internal IComponent GetComponent(EntityData entityData, ComponentConfig config, IManagedComponentPool managedPool) =>
-            managedPool.GetComponent(*DataBufferToManagedIndex(entityData, config));
+            where TComponent : unmanaged, IComponent => GetComponentOffset<TComponent>(entityData, GetComponentConfigOffset(config));
 
         internal TComponent GetComponentOffset<TComponent>(EntityData entityData, ComponentConfigOffset configOffset)
-            where TComponent : IComponent =>
-            InteropTools.PtrToStructure<TComponent>(DataBufferToComponent(entityData, configOffset));
-
-        internal TComponent GetComponentOffset<TComponent>(EntityData entityData, ComponentConfigOffset configOffset, ManagedComponentPool<TComponent> managedPool)
-            where TComponent : IComponent =>
-            managedPool.GetComponent(*DataBufferToManagedIndex(entityData, configOffset));
+            where TComponent : unmanaged, IComponent =>
+            *(TComponent*)DataBufferToComponent(entityData, configOffset);
 
         internal void GetComponents<TComponent>(ref TComponent[] components, int startingIndex, ComponentConfig config)
-            where TComponent : IComponent
+            where TComponent : unmanaged, IComponent
         {
             var configOffset = GetComponentConfigOffset(config);
             var componentIndex = 0;
             for (var pageIndex = 0; pageIndex < _pagesCount; pageIndex++)
             {
                 var page = _pages[pageIndex];
-                var buffer = (IntPtr)page.Buffer;
+                var buffer = page.Buffer;
                 for (int slotIndex = 0, slotOffset = configOffset.OffsetInBytes; slotIndex < page.SlotCount;
                     slotIndex++,
                     slotOffset += _slotSizeInBytes,
                     componentIndex++)
                 {
-                    components[componentIndex + startingIndex] = InteropTools.PtrToStructure<TComponent>(buffer + slotOffset);
+                    components[componentIndex + startingIndex] = *(TComponent*)(buffer + slotOffset);
                 }
             }
         }
 
-        internal void GetComponents<TComponent>(ref TComponent[] components, int startingIndex, ComponentConfig config, ManagedComponentPool<TComponent> managedPool)
-            where TComponent : IComponent
-        {
-            var configOffset = GetComponentConfigOffset(config);
-            var componentIndex = 0;
-            for (var pageIndex = 0; pageIndex < _pagesCount; pageIndex++)
-            {
-                var page = _pages[pageIndex];
-                var buffer = (IntPtr)page.Buffer;
-                for (int slotIndex = 0, slotOffset = configOffset.OffsetInBytes; slotIndex < page.SlotCount;
-                    slotIndex++,
-                    slotOffset += _slotSizeInBytes,
-                    componentIndex++)
-                {
-                    components[componentIndex + startingIndex] = managedPool.GetComponent(ConvertToInt(buffer + slotOffset));
-                }
-            }
-        }
-
-        internal IComponent[] GetAllComponents(EntityData entityData, ManagedComponentPools managedPools)
+        internal IComponent[] GetAllComponents(EntityData entityData)
         {
             var components = new IComponent[ArcheType.ComponentConfigLength];
             for (var i = 0; i < ArcheType.ComponentConfigLength; i++)
             {
                 var configOffset = GetComponentConfigOffset(ArcheType.ComponentConfigs[i]);
-                components[i] = configOffset.Config.IsBlittable
-                    ? (IComponent)Marshal.PtrToStructure(
-                        DataBufferToComponent(entityData, configOffset),
-                        ComponentConfigs.Instance.AllComponentTypes[configOffset.Config.ComponentIndex])
-                    : managedPools.GetPool(configOffset.Config)
-                        .GetComponent(*DataBufferToManagedIndex(entityData, configOffset));
+                components[i] = (IComponent)Marshal.PtrToStructure(
+                    (IntPtr)DataBufferToComponent(entityData, configOffset),
+                    ComponentConfigs.Instance.AllComponentTypes[configOffset.Config.ComponentIndex]);
             }
 
             return components;
         }
 
         internal void SetComponent<TComponent>(EntityData entityData, TComponent component, ComponentConfig config)
-            where TComponent : IComponent => SetComponentOffset(entityData, component, GetComponentConfigOffset(config));
-
-        internal void SetComponent<TComponent>(EntityData entityData, TComponent component, ComponentConfig config, ManagedComponentPool<TComponent> managedPool)
-            where TComponent : IComponent => SetComponentOffset(entityData, component, GetComponentConfigOffset(config), managedPool);
+            where TComponent : unmanaged, IComponent => SetComponentOffset(entityData, component, GetComponentConfigOffset(config));
 
         internal void SetComponentOffset<TComponent>(EntityData entityData, TComponent component, ComponentConfigOffset configOffset)
-            where TComponent : IComponent => InteropTools.StructureToPtr(ref component, DataBufferToComponent(entityData, configOffset));
-
-        internal void SetComponentOffset<TComponent>(EntityData entityData, TComponent component, ComponentConfigOffset configOffset, ManagedComponentPool<TComponent> managedPool)
-            where TComponent : IComponent => managedPool.SetComponent(*DataBufferToManagedIndex(entityData, configOffset), component);
+            where TComponent : unmanaged, IComponent => *(TComponent*)DataBufferToComponent(entityData, configOffset) = component;
 
         internal void SetAllComponents<TComponent>(TComponent component, ComponentConfig config)
-            where TComponent : IComponent
+            where TComponent : unmanaged, IComponent
         {
             var configOffset = GetComponentConfigOffset(config);
             for (var pageIndex = 0; pageIndex < _pagesCount; pageIndex++)
             {
                 var page = _pages[pageIndex];
-                var buffer = (IntPtr)page.Buffer;
+                var buffer = page.Buffer;
                 for (int slotIndex = 0, slotOffset = configOffset.OffsetInBytes; slotIndex < page.SlotCount;
                     slotIndex++,
                     slotOffset += _slotSizeInBytes)
                 {
-                    InteropTools.StructureToPtr(ref component, buffer + slotOffset);
+                    *(TComponent*)(buffer + slotOffset) = component;
                 }
             }
-        }
-
-        internal void SetAllComponents<TComponent>(TComponent component, ComponentConfig config, ManagedComponentPool<TComponent> managedPool)
-            where TComponent : IComponent
-        {
-            var configOffset = GetComponentConfigOffset(config);
-            for (var pageIndex = 0; pageIndex < _pagesCount; pageIndex++)
-            {
-                var page = _pages[pageIndex];
-                var buffer = (IntPtr)page.Buffer;
-                for (int slotIndex = 0, slotOffset = configOffset.OffsetInBytes; slotIndex < page.SlotCount;
-                    slotIndex++,
-                    slotOffset += _slotSizeInBytes)
-                {
-                    managedPool.SetComponent(ConvertToInt(buffer + slotOffset), component);
-                }
-            }
-        }
-
-        internal void SetComponentAndIndex<TComponent>(EntityData entityData, TComponent component, ComponentConfig config, int componentIndex, ManagedComponentPool<TComponent> managedPool)
-            where TComponent : IComponent
-        {
-            managedPool.SetComponent(componentIndex, component);
-            *DataBufferToManagedIndex(entityData, config) = componentIndex;
-        }
-
-        internal void SetComponentAndIndex(EntityData entityData, IComponent component, ComponentConfig config, int componentIndex, IManagedComponentPool managedPool)
-        {
-            managedPool.SetComponent(componentIndex, component);
-            *DataBufferToManagedIndex(entityData, config) = componentIndex;
         }
 
         internal void SetComponentsBuffer(EntityData entityData, byte* componentsBuffer) => MemoryHelper.Copy(
@@ -402,23 +307,8 @@ namespace EcsLte
 
         private void Initialize(ArcheType archeType, ArcheTypeIndex archeIndex)
         {
-            var managedConfigs = new List<ComponentConfig>();
             var uniqueConfigs = new List<ComponentConfig>();
 
-            for (var i = 0; i < archeType.ComponentConfigLength; i++)
-            {
-                var config = archeType.ComponentConfigs[i];
-                if (config.IsBlittable)
-                {
-                    if (config.UnmanagedSizeInBytes == 0)
-                        _managedOffsetInBytes++;
-                    else
-                        _managedOffsetInBytes += config.UnmanagedSizeInBytes;
-                }
-            }
-
-            var managedSizeInBytes = 0;
-            var managedOffset = 0;
             _configOffsets = MemoryHelper.Alloc<ComponentConfigOffset>(ComponentConfigs.Instance.AllComponentCount);
             for (var i = 0; i < archeType.ComponentConfigLength; i++)
             {
@@ -429,21 +319,11 @@ namespace EcsLte
                     ConfigIndex = i,
                 };
 
-                if (config.IsBlittable)
-                {
-                    configOffset.OffsetInBytes = _slotSizeInBytes;
-                    if (config.UnmanagedSizeInBytes == 0)
-                        _slotSizeInBytes++;
-                    else
-                        _slotSizeInBytes += config.UnmanagedSizeInBytes;
-                }
+                configOffset.OffsetInBytes = _slotSizeInBytes;
+                if (config.UnmanagedSizeInBytes == 0)
+                    _slotSizeInBytes++;
                 else
-                {
-                    managedConfigs.Add(config);
-                    configOffset.IndexOffset = managedOffset++;
-                    configOffset.OffsetInBytes = managedSizeInBytes + _managedOffsetInBytes;
-                    managedSizeInBytes += TypeCache<int>.SizeInBytes;
-                }
+                    _slotSizeInBytes += config.UnmanagedSizeInBytes;
 
                 if (config.IsUnique)
                     uniqueConfigs.Add(config);
@@ -451,18 +331,10 @@ namespace EcsLte
                 _configOffsets[config.ComponentIndex] = configOffset;
             }
 
-            _slotSizeInBytes += managedSizeInBytes;
             _slotsPerPage = MemoryPage.PageBufferSizeInBytes / _slotSizeInBytes;
             ArcheTypeIndex = archeIndex;
             ArcheType = archeType;
 
-            if (managedConfigs.Count > 0)
-            {
-                ManagedConfigs = MemoryHelper.Alloc<ComponentConfig>(managedConfigs.Count);
-                ManagedConfigsLength = managedConfigs.Count;
-                for (var i = 0; i < ManagedConfigsLength; i++)
-                    ManagedConfigs[i] = managedConfigs[i];
-            }
             if (uniqueConfigs.Count > 0)
             {
                 UniqueConfigs = MemoryHelper.Alloc<ComponentConfig>(uniqueConfigs.Count);
@@ -490,16 +362,9 @@ namespace EcsLte
             }
             _slotsPerPage = 0;
             _slotSizeInBytes = 0;
-            _managedOffsetInBytes = 0;
             ArcheType.Dispose();
             ArcheType = new ArcheType();
             EntityCount = 0;
-            if (ManagedConfigsLength > 0)
-            {
-                MemoryHelper.Free(ManagedConfigs);
-                ManagedConfigs = null;
-                ManagedConfigsLength = 0;
-            }
             if (UniqueConfigsLength > 0)
             {
                 MemoryHelper.Free(UniqueConfigs);
@@ -590,10 +455,7 @@ namespace EcsLte
             {
                 CheckPages(1);
                 var page = bookManager.CheckoutPage();
-                if (ManagedConfigsLength > 0)
-                    page.Reset(_slotSizeInBytes, _slotsPerPage, _managedOffsetInBytes);
-                else
-                    page.Reset(_slotSizeInBytes, _slotsPerPage);
+                page.Reset(_slotSizeInBytes, _slotsPerPage);
                 _pages[_pagesCount] = page;
                 lastPage = &_pages[_pagesCount];
                 _pagesCount++;
@@ -602,18 +464,8 @@ namespace EcsLte
             return lastPage;
         }
 
-        private IntPtr DataBufferToComponent(EntityData entityData, ComponentConfig config) => DataBufferToComponent(entityData, GetComponentConfigOffset(config));
+        private byte* DataBufferToComponent(EntityData entityData, ComponentConfig config) => DataBufferToComponent(entityData, GetComponentConfigOffset(config));
 
-        private IntPtr DataBufferToComponent(EntityData entityData, ComponentConfigOffset configOffset) => (IntPtr)(entityData.Slot.BlittableBuffer + configOffset.OffsetInBytes);
-
-        private int* DataBufferToManagedIndex(EntityData entityData, ComponentConfig config) => DataBufferToManagedIndex(entityData, GetComponentConfigOffset(config));
-
-        private int* DataBufferToManagedIndex(EntityData entityData, ComponentConfigOffset configOffset) => entityData.Slot.ManagedBuffer + configOffset.IndexOffset;
-
-        private int ConvertToInt(byte* ptr) =>
-            InteropTools.PtrToStructure<int>((IntPtr)ptr);
-
-        private int ConvertToInt(IntPtr ptr) =>
-            InteropTools.PtrToStructure<int>(ptr);
+        private byte* DataBufferToComponent(EntityData entityData, ComponentConfigOffset configOffset) => entityData.Slot.BlittableBuffer + configOffset.OffsetInBytes;
     }
 }

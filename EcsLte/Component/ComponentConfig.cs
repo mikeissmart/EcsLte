@@ -8,14 +8,10 @@ namespace EcsLte
         internal int RecordableIndex { get; set; }
         internal int UniqueIndex { get; set; }
         internal int SharedIndex { get; set; }
-        internal int BlittableIndex { get; set; }
-        internal int ManagedIndex { get; set; }
         internal int UnmanagedSizeInBytes { get; set; }
         internal bool IsRecordable { get; set; }
         internal bool IsUnique { get; set; }
         internal bool IsShared { get; set; }
-        internal bool IsBlittable { get; set; }
-        internal bool IsManaged { get; set; }
 
         public static bool operator !=(ComponentConfig lhs, ComponentConfig rhs)
             => !(lhs == rhs);

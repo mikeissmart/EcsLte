@@ -13,8 +13,6 @@ namespace EcsLte
         internal IComponentData[] AllComponentDatas { get; private set; }
         internal IComponentData[] SharedComponentDatas { get; private set; }
         internal IComponentData[] UniqueComponentDatas { get; private set; }
-        internal IComponentData[] BlittableComponentDatas { get; private set; }
-        internal IComponentData[] ManagedComponentDatas { get; private set; }
 
         public EntityBlueprint()
         {
@@ -22,8 +20,6 @@ namespace EcsLte
             AllComponentDatas = new IComponentData[0];
             SharedComponentDatas = new IComponentData[0];
             UniqueComponentDatas = new IComponentData[0];
-            BlittableComponentDatas = new IComponentData[0];
-            ManagedComponentDatas = new IComponentData[0];
         }
 
         private EntityBlueprint(EntityArcheType archeType, IComponentData[] allComponentDatas)
@@ -39,12 +35,6 @@ namespace EcsLte
             UniqueComponentDatas = allComponentDatas
                 .Where(x => x.Config.IsUnique)
                 .ToArray();
-            BlittableComponentDatas = allComponentDatas
-                .Where(x => x.Config.IsBlittable)
-                .ToArray();
-            ManagedComponentDatas = allComponentDatas
-                .Where(x => x.Config.IsManaged)
-                .ToArray();
         }
 
         public bool HasComponent<TComponent>() where TComponent : IComponent
@@ -59,7 +49,7 @@ namespace EcsLte
             return (TComponent)AllComponentDatas[index].Component;
         }
 
-        public EntityBlueprint AddComponent<TComponent>(TComponent component) where TComponent : IComponent
+        public EntityBlueprint AddComponent<TComponent>(TComponent component) where TComponent : unmanaged, IComponent
         {
             var index = IndexOfBlueprintComponent(ComponentConfig<TComponent>.Config);
             if (index != -1)
@@ -83,7 +73,7 @@ namespace EcsLte
                     .ToArray());
         }
 
-        public EntityBlueprint UpdateComponent<TComponent>(TComponent component) where TComponent : IComponent
+        public EntityBlueprint UpdateComponent<TComponent>(TComponent component) where TComponent : unmanaged, IComponent
         {
             var config = ComponentConfig<TComponent>.Config;
             var index = IndexOfBlueprintComponent(config);

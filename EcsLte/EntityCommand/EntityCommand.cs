@@ -97,7 +97,7 @@ namespace EcsLte
     }
 
     internal class EntityCommand_UpdateComponent<TComponent> : IEntityCommand
-         where TComponent : IComponent
+         where TComponent : unmanaged, IComponent
     {
         private readonly IEnumerable<Entity> _entities;
         private readonly TComponent _component;
@@ -112,7 +112,7 @@ namespace EcsLte
     }
 
     internal class EntityCommand_UpdateComponent_EntityArcheType<TComponent> : IEntityCommand
-         where TComponent : IComponent
+         where TComponent : unmanaged, IComponent
     {
         private readonly EntityArcheType _entityArcheType;
         private readonly TComponent _component;
@@ -127,7 +127,7 @@ namespace EcsLte
     }
 
     internal class EntityCommand_UpdateComponent_EntityQuery<TComponent> : IEntityCommand
-         where TComponent : IComponent
+         where TComponent : unmanaged, IComponent
     {
         private readonly EntityQuery _entityQuery;
         private readonly TComponent _component;
