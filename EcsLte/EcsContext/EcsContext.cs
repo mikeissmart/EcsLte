@@ -13,6 +13,7 @@ namespace EcsLte
         private List<List<EntityQueryData>> _queryDatas;
         private Entity* _entities;
         private Entity[] _cachedEntities;
+        private Entity[] _cachedDestroyEntities;
         private bool _isCachedEntitiesDirty;
         private EntityData* _entityDatas;
         private int _nextId;
@@ -22,6 +23,7 @@ namespace EcsLte
         private Entity* _uniqueComponentEntities;
         private readonly EntityCommandManager _commands;
         private readonly SystemManager _systems;
+        private readonly MemoryBookManager _bookManager;
 
         public string Name { get; private set; }
         public bool IsDestroyed { get; private set; }
@@ -32,7 +34,6 @@ namespace EcsLte
         internal ManagedComponentPools ManagePools { get; private set; }
         internal ArcheTypeDataManager ArcheTypeManager { get; private set; }
         internal EntityTrackerManager TrackerManager { get; private set; }
-        internal MemoryBookManager BookManager { get; private set; }
 
         internal object LockObj;
 
@@ -42,6 +43,7 @@ namespace EcsLte
             _queryDatas = new List<List<EntityQueryData>>();
             _entities = MemoryHelper.Alloc<Entity>(1);
             _cachedEntities = new Entity[0];
+            _cachedDestroyEntities = new Entity[0];
             _isCachedEntitiesDirty = true;
             _entityDatas = MemoryHelper.Alloc<EntityData>(1);
             _nextId = 1;
@@ -52,13 +54,13 @@ namespace EcsLte
                 _uniqueComponentEntities = MemoryHelper.Alloc<Entity>(ComponentConfigs.Instance.AllUniqueCount);
             _commands = new EntityCommandManager(this);
             _systems = new SystemManager(this);
+            _bookManager = new MemoryBookManager();
 
             Name = name;
             SharedIndexDics = new SharedComponentIndexDictionaries();
             ManagePools = new ManagedComponentPools();
             ArcheTypeManager = new ArcheTypeDataManager(this);
             TrackerManager = new EntityTrackerManager(this);
-            BookManager = new MemoryBookManager();
             LockObj = new object();
         }
 
@@ -260,7 +262,7 @@ namespace EcsLte
 
                 var archeTypeData = ArcheTypeManager.GetArcheTypeData(blueprint.GetEntityArcheType());
                 var entity = AllocateEntity();
-                var entityData = archeTypeData.AddEntity(entity, BookManager);
+                var entityData = archeTypeData.AddEntity(entity, _bookManager);
                 _entityDatas[entity.Id] = entityData;
                 CheckAndSetUniqueComponents(entity, archeTypeData);
                 for (var i = 0; i < archeTypeData.ArcheType.ComponentConfigLength; i++)
@@ -314,7 +316,7 @@ namespace EcsLte
                 CheckCapacity(count);
 
                 var archeTypeData = ArcheTypeManager.GetArcheTypeData(blueprint.GetEntityArcheType());
-                archeTypeData.PrecheckEntityAllocation(count, BookManager);
+                archeTypeData.PrecheckEntityAllocation(count, _bookManager);
                 CheckUniqueComponents(archeTypeData);
 
                 var tempComponentBuffer = stackalloc byte[archeTypeData.ComponentsSizeInBytes];
@@ -335,7 +337,7 @@ namespace EcsLte
                     for (var j = 0; j < archeTypeData.ArcheType.ComponentConfigLength; j++)
                         TrackerManager.TrackAdd(entity, archeTypeData.ArcheType.ComponentConfigs[j]);
 
-                    var entityData = archeTypeData.AddEntity(entity, BookManager);
+                    var entityData = archeTypeData.AddEntity(entity, _bookManager);
                     entities[i] = entity;
                     _entityDatas[entity.Id] = entityData;
 
@@ -451,7 +453,7 @@ namespace EcsLte
                 for (var i = 0; i < prevArcheTypeData.ArcheType.ComponentConfigLength; i++)
                     TrackerManager.TrackAdd(nextEntity, prevArcheTypeData.ArcheType.ComponentConfigs[i]);
 
-                var nextEntityData = nextArcheTypeData.AddEntity(nextEntity, BookManager);
+                var nextEntityData = nextArcheTypeData.AddEntity(nextEntity, _bookManager);
                 _entityDatas[nextEntity.Id] = nextEntityData;
                 CheckAndSetUniqueComponents(nextEntity, nextArcheTypeData);
 
@@ -523,7 +525,7 @@ namespace EcsLte
                     for (var i = 0; i < prevArcheTypeData.ArcheType.ComponentConfigLength; i++)
                         TrackerManager.TrackAdd(nextEntity, prevArcheTypeData.ArcheType.ComponentConfigs[i]);
 
-                    var nextEntityData = nextArcheTypeData.AddEntity(nextEntity, BookManager);
+                    var nextEntityData = nextArcheTypeData.AddEntity(nextEntity, _bookManager);
                     _entityDatas[nextEntity.Id] = nextEntityData;
                     nextEntities[nextEntityIndex++] = nextEntity;
                     CheckAndSetUniqueComponents(nextEntity, nextArcheTypeData);
@@ -881,7 +883,7 @@ namespace EcsLte
                             prevArcheTypeData,
                             nextArcheTypeData,
                             _entityDatas,
-                            BookManager);
+                            _bookManager);
                     }
                 }
 
@@ -941,7 +943,7 @@ namespace EcsLte
                                 prevArcheTypeData,
                                 nextArcheTypeData,
                                 _entityDatas,
-                                BookManager);
+                                _bookManager);
                         }
 
                         if (!cachedConfigOffsets.TryGetValue(nextArcheTypeData.ArcheTypeIndex, out var configOffset))
@@ -1047,7 +1049,7 @@ namespace EcsLte
                         archeTypeData,
                         ArcheTypeManager.GetCachedArcheTypeData(),
                         _entityDatas,
-                        BookManager);
+                        _bookManager);
                 }
 
             }
@@ -1874,7 +1876,7 @@ namespace EcsLte
                     archeTypeData,
                     nextArcheTypeData,
                     _entityDatas,
-                    BookManager);
+                    _bookManager);
             }
         }
 
@@ -1907,7 +1909,7 @@ namespace EcsLte
                 ManagePools = null;
                 ArcheTypeManager.InternalDestroy();
                 TrackerManager.InternalDestroy();
-                BookManager.InternalDestroy();
+                _bookManager.InternalDestroy();
             }
         }
 
@@ -1935,6 +1937,7 @@ namespace EcsLte
                 _entityDatas = newEntityDatas;
 
                 _entityLength = newCapacity;
+                Array.Resize(ref _cachedDestroyEntities, newCapacity);
                 TrackerManager.ResizeTrackers(newCapacity);
             }
         }
@@ -1964,6 +1967,7 @@ namespace EcsLte
 
         private void DeallocateEntity(Entity entity)
         {
+            TrackerManager.TrackDestroy(entity);
             _entityDatas[entity.Id] = new EntityData();
             _entities[entity.Id] = Entity.Null;
             _reusableEntities.Push(entity);
@@ -1975,28 +1979,21 @@ namespace EcsLte
         {
             var archeTypeData = ArcheTypeManager.GetArcheTypeData(_entityDatas[entity.Id].ArcheTypeIndex);
             ClearUniqueComponents(archeTypeData);
-            archeTypeData.RemoveEntity(entity, _entityDatas, ManagePools, BookManager);
-            for (var i = 0; i < archeTypeData.ArcheType.ComponentConfigLength; i++)
-                TrackerManager.TrackDestroy(entity, archeTypeData.ArcheType.ComponentConfigs[i]);
+            archeTypeData.RemoveEntity(entity, _entityDatas, ManagePools, _bookManager);
             DeallocateEntity(entity);
         }
 
         private void DestroyEntities(ArcheTypeData archeTypeData)
         {
             ClearUniqueComponents(archeTypeData);
-            var entities = archeTypeData.RemoveAllEntities(_entityDatas,
+            var entitiesCount = 0;
+            archeTypeData.RemoveAllEntities(_entityDatas,
                 ManagePools,
-                BookManager);
-            for (var i = 0; i < entities.Length; i++)
-            {
-                var entity = entities[i];
-                for (var j = 0; j < archeTypeData.ArcheType.ComponentConfigLength; j++)
-                {
-                    TrackerManager.TrackDestroy(entity,
-                        archeTypeData.ArcheType.ComponentConfigs[j]);
-                }
-                DeallocateEntity(entity);
-            }
+                _bookManager,
+                ref _cachedDestroyEntities,
+                ref entitiesCount);
+            for (var i = 0; i < entitiesCount; i++)
+                DeallocateEntity(_cachedDestroyEntities[i]);
         }
 
         private void CheckAndSetUniqueComponents(Entity entity, ArcheTypeData archeTypeData)
@@ -2051,7 +2048,7 @@ namespace EcsLte
                     .AllocateComponents(entitiesLength);
             }
 
-            nextArcheTypeData.PrecheckEntityAllocation(entitiesLength, BookManager);
+            nextArcheTypeData.PrecheckEntityAllocation(entitiesLength, _bookManager);
             for (var i = 0; i < entitiesLength; i++)
             {
                 var prevEntity = prevArcheTypeData.GetEntity(i);
@@ -2061,7 +2058,7 @@ namespace EcsLte
                 for (var j = 0; j < prevArcheTypeData.ArcheType.ComponentConfigLength; j++)
                     TrackerManager.TrackAdd(nextEntity, prevArcheTypeData.ArcheType.ComponentConfigs[j]);
 
-                var nextEntityData = nextArcheTypeData.AddEntity(nextEntity, BookManager);
+                var nextEntityData = nextArcheTypeData.AddEntity(nextEntity, _bookManager);
                 _entityDatas[nextEntity.Id] = nextEntityData;
                 nextEntities[i + startEntityIndex] = nextEntity;
 
@@ -2096,7 +2093,7 @@ namespace EcsLte
                         prevArcheTypeData,
                         nextArcheTypeData,
                         _entityDatas,
-                        BookManager);
+                        _bookManager);
 
                 if (config.IsBlittable)
                 {

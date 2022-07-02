@@ -140,6 +140,7 @@ namespace EcsLte
                 return;
 
             IsTracking = true;
+            Context.TrackerManager.StartTraking(this);
             ResizeTracker(Context.EntityCapacity());
             foreach (var config in _trackingConfigs)
             {
@@ -158,6 +159,7 @@ namespace EcsLte
                 return;
 
             IsTracking = false;
+            Context.TrackerManager.StartTraking(this);
             foreach (var config in _trackingConfigs)
                 Context.TrackerManager.RegisterComponentEvent(this, 0, config);
         }

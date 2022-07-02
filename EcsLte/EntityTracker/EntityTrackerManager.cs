@@ -9,6 +9,7 @@ namespace EcsLte
     {
         private readonly EcsContext _context;
         private readonly TrackEvents[] _events;
+        private readonly TrackEvents _destroyEvent;
         private readonly List<EntityTracker> _trackers;
         private readonly Queue<int> _unusedTrackerIndexes;
         private readonly object _lockObj;
@@ -17,6 +18,7 @@ namespace EcsLte
         {
             _context = context;
             _events = new TrackEvents[ComponentConfigs.Instance.AllComponentCount];
+            _destroyEvent = new TrackEvents();
             _trackers = new List<EntityTracker>();
             _unusedTrackerIndexes = new Queue<int>();
             _lockObj = new object();
@@ -29,7 +31,7 @@ namespace EcsLte
 
         internal void TrackUpdate(Entity entity, ComponentConfig config) => _events[config.ComponentIndex].ComponentUpdatedInvoke(entity);
 
-        internal void TrackDestroy(Entity entity, ComponentConfig config) => _events[config.ComponentIndex].EntityDestroyedInvoke(entity);
+        internal void TrackDestroy(Entity entity) => _destroyEvent.EntityDestroyedInvoke(entity);
 
         internal void ResizeTrackers(int entityCapacity)
         {
@@ -75,8 +77,6 @@ namespace EcsLte
 
             events.ComponentAdded -= tracker.AddTracked;
             events.ComponentUpdated -= tracker.UpdateTracked;
-            events.EntityDestroyed -= tracker.RemoveTracked;
-            events.EntityDestroyed += tracker.RemoveTracked;
             switch (trackingState)
             {
                 case (int)EntityTracker.TrackingState.Added:
@@ -91,6 +91,10 @@ namespace EcsLte
                     break;
             }
         }
+
+        internal void StartTraking(EntityTracker tracker) => _destroyEvent.EntityDestroyed += tracker.RemoveTracked;
+
+        internal void StopTracking(EntityTracker tracker) => _destroyEvent.EntityDestroyed -= tracker.RemoveTracked;
 
         internal void InternalDestroy()
         {

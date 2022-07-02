@@ -28,18 +28,6 @@
             ManagedOffsetInBytes = managedOffset;
         }
 
-        /*internal MemorySlot GetSlot(int slotIndex)
-        {
-            var buffer = Buffer + (slotIndex * SlotSizeInBytes);
-            return new MemorySlot
-            {
-                BlittableBuffer = buffer,
-                ManagedBuffer = HasManaged
-                    ? (int*)(buffer + ManagedOffsetInBytes)
-                    : null
-            };
-        }*/
-
         internal byte* GetBuffer(int slotIndex) => Buffer + (slotIndex * SlotSizeInBytes);
 
         internal void SetSlot(int slotIndex, ref EntityData entityData)
