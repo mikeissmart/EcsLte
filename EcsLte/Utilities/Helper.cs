@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace EcsLte.Utilities
 {
@@ -44,6 +45,33 @@ namespace EcsLte.Utilities
                 types[i] = ComponentConfigs.Instance.AllComponentTypes[configs[i].ComponentIndex];
 
             return types;
+        }
+
+        internal static IComponentData[] CopyAddOrReplaceSort(IComponentData[] source, IComponentData addReplace)
+        {
+            IComponentData[] dest;
+            if (source.Any(x => x.Config == addReplace.Config))
+            {
+                dest = new IComponentData[source.Length];
+                Array.Copy(source, dest, source.Length);
+                for (var i = 0; i < dest.Length; i++)
+                {
+                    if (dest[i].Config == addReplace.Config)
+                    {
+                        dest[i] = addReplace;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                dest = new IComponentData[source.Length + 1];
+                Array.Copy(source, dest, source.Length);
+                dest[source.Length] = addReplace;
+                Array.Sort(dest);
+            }
+
+            return dest;
         }
     }
 }

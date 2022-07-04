@@ -104,31 +104,31 @@ namespace EcsLte
         {
             lock (_lockObj)
             {
-                _entityCommands.Add(new EntityCommand_UpdateComponent<TComponent>(new[] { entity }, component));
+                _entityCommands.Add(new EntityCommand_UpdateComponent<TComponent>(entity, component));
             }
         }
 
-        public void UpdateComponent<TComponent>(IEnumerable<Entity> entities, TComponent component) where TComponent : unmanaged, IComponent
+        public void UpdateSharedComponent<TComponent>(IEnumerable<Entity> entities, TComponent component) where TComponent : unmanaged, ISharedComponent
         {
             lock (_lockObj)
             {
-                _entityCommands.Add(new EntityCommand_UpdateComponent<TComponent>(new List<Entity>(entities), component));
+                _entityCommands.Add(new EntityCommand_UpdateSharedComponent_Entities<TComponent>(entities, component));
             }
         }
 
-        public void UpdateComponent<TComponent>(EntityArcheType entityArcheType, TComponent component) where TComponent : unmanaged, IComponent
+        public void UpdateSharedComponent<TComponent>(EntityArcheType entityArcheType, TComponent component) where TComponent : unmanaged, ISharedComponent
         {
             lock (_lockObj)
             {
-                _entityCommands.Add(new EntityCommand_UpdateComponent_EntityArcheType<TComponent>(entityArcheType, component));
+                _entityCommands.Add(new EntityCommand_UpdateSharedComponent_EntityArcheType<TComponent>(entityArcheType, component));
             }
         }
 
-        public void UpdateComponent<TComponent>(EntityQuery query, TComponent component) where TComponent : unmanaged, IComponent
+        public void UpdateSharedComponent<TComponent>(EntityQuery query, TComponent component) where TComponent : unmanaged, ISharedComponent
         {
             lock (_lockObj)
             {
-                _entityCommands.Add(new EntityCommand_UpdateComponent_EntityQuery<TComponent>(query, component));
+                _entityCommands.Add(new EntityCommand_UpdateSharedComponent_EntityQuery<TComponent>(query, component));
             }
         }
 

@@ -9,11 +9,11 @@ namespace EcsLte.UnitTest.ManagerTests
     {
         [TestMethod]
         public void CreateEntity_Null() => Assert.ThrowsException<ArgumentNullException>(() =>
-                                                      Context.CreateEntity(null));
+                                                               Context.CreateEntity(null));
 
         [TestMethod]
         public void CreateEntity_NoComponents() => Assert.ThrowsException<EntityBlueprintNoComponentsException>(() =>
-                                                              Context.CreateEntity(new EntityBlueprint()));
+                                                                       Context.CreateEntity(new EntityBlueprint()));
 
         [TestMethod]
         public void CreateEntity_DuplicateUniqueComponent()
@@ -94,21 +94,21 @@ namespace EcsLte.UnitTest.ManagerTests
 
         [TestMethod]
         public void CreateEntities_DuplicateUniqueComponent() => Assert.ThrowsException<EntityAlreadyHasComponentException>(() =>
-                                                                            Context.CreateEntities(2, new EntityBlueprint()
-                                                                                .AddComponent(new TestUniqueComponent1())));
+                                                                                     Context.CreateEntities(2, new EntityBlueprint()
+                                                                                         .AddComponent(new TestUniqueComponent1())));
 
         [TestMethod]
         public void CreateEntities_NegativeCount() => Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
-                                                                 Context.CreateEntities(-1, new EntityBlueprint()
-                                                                     .AddComponent(new TestComponent1())));
+                                                                          Context.CreateEntities(-1, new EntityBlueprint()
+                                                                              .AddComponent(new TestComponent1())));
 
         [TestMethod]
         public void CreateEntities_NoComponents() => Assert.ThrowsException<EntityBlueprintNoComponentsException>(() =>
-                                                                Context.CreateEntities(1, new EntityBlueprint()));
+                                                                         Context.CreateEntities(1, new EntityBlueprint()));
 
         [TestMethod]
         public void CreateEntities_Null() => Assert.ThrowsException<ArgumentNullException>(() =>
-                                                        Context.CreateEntities(1, null));
+                                                                 Context.CreateEntities(1, null));
 
         [TestMethod]
         public void CreateEntities_Destroyed()
@@ -170,7 +170,7 @@ namespace EcsLte.UnitTest.ManagerTests
 
         [TestMethod]
         public void DestroyEntity_Never() => Assert.ThrowsException<EntityDoesNotExistException>(() =>
-                                                        Context.DestroyEntity(Entity.Null));
+                                                                 Context.DestroyEntity(Entity.Null));
 
         [TestMethod]
         public void DestroyEntities()
@@ -373,21 +373,6 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         [TestMethod]
-        public void HasEntity_EntityArcheType_Manage()
-        {
-            var entity1 = Context.CreateEntity(new EntityBlueprint()
-                .AddComponent(new TestManageComponent1()));
-            var entity2 = Context.CreateEntity(new EntityBlueprint()
-                .AddComponent(new TestComponent2()));
-            var archeType = new EntityArcheType()
-                .AddComponentType<TestManageComponent1>();
-
-            Assert.IsTrue(Context.HasEntity(entity1, archeType));
-            Assert.IsFalse(Context.HasEntity(entity2, archeType));
-            Assert.IsFalse(Context.HasEntity(Entity.Null, archeType));
-        }
-
-        [TestMethod]
         public void HasEntity_EntityArcheType_Null()
         {
             var entity = Context.CreateEntity(new EntityBlueprint()
@@ -420,21 +405,6 @@ namespace EcsLte.UnitTest.ManagerTests
                 .AddComponent(new TestComponent2()));
             var query = new EntityQuery()
                 .WhereAllOf<TestComponent1>();
-
-            Assert.IsTrue(Context.HasEntity(entity1, query));
-            Assert.IsFalse(Context.HasEntity(entity2, query));
-            Assert.IsFalse(Context.HasEntity(Entity.Null, query));
-        }
-
-        [TestMethod]
-        public void HasEntity_EntityQuery_Manage()
-        {
-            var entity1 = Context.CreateEntity(new EntityBlueprint()
-                .AddComponent(new TestManageComponent1()));
-            var entity2 = Context.CreateEntity(new EntityBlueprint()
-                .AddComponent(new TestManageComponent2()));
-            var query = new EntityQuery()
-                .WhereAllOf<TestManageComponent1>();
 
             Assert.IsTrue(Context.HasEntity(entity1, query));
             Assert.IsFalse(Context.HasEntity(entity2, query));
@@ -507,23 +477,6 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         [TestMethod]
-        public void GetEntities_EntityArcheType_Manage()
-        {
-            var entities = Context.CreateEntities(2, new EntityBlueprint()
-                .AddComponent(new TestManageComponent1()));
-            Context.CreateEntity(new EntityBlueprint()
-                .AddComponent(new TestManageComponent2()));
-            var archeType = new EntityArcheType()
-                .AddComponentType<TestManageComponent1>();
-
-            var getEntities = Context.GetEntities(archeType);
-
-            Assert.IsTrue(getEntities.Length == 2);
-            Assert.IsTrue(getEntities[0] == entities[0]);
-            Assert.IsTrue(getEntities[1] == entities[1]);
-        }
-
-        [TestMethod]
         public void GetEntities_EntityArcheType_Null()
         {
             var entity = Context.CreateEntity(new EntityBlueprint()
@@ -556,23 +509,6 @@ namespace EcsLte.UnitTest.ManagerTests
                 .AddComponent(new TestComponent2()));
             var query = new EntityQuery()
                 .WhereAllOf<TestComponent1>();
-
-            var getEntities = Context.GetEntities(query);
-
-            Assert.IsTrue(getEntities.Length == 2);
-            Assert.IsTrue(getEntities[0] == entities[0]);
-            Assert.IsTrue(getEntities[1] == entities[1]);
-        }
-
-        [TestMethod]
-        public void GetEntities_EntityQuery_Manage()
-        {
-            var entities = Context.CreateEntities(2, new EntityBlueprint()
-                .AddComponent(new TestManageComponent1()));
-            Context.CreateEntity(new EntityBlueprint()
-                .AddComponent(new TestManageComponent2()));
-            var query = new EntityQuery()
-                .WhereAllOf<TestManageComponent1>();
 
             var getEntities = Context.GetEntities(query);
 

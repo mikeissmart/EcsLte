@@ -27,7 +27,6 @@ C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - step 05 Compone
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - step 05 ComponentConfigs\EcsLte\obj\Release\netstandard2.0\EcsLte.csproj.CoreCompileInputs.cache
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - step 05 ComponentConfigs\EcsLte\obj\Release\netstandard2.0\EcsLte.dll
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - step 05 ComponentConfigs\EcsLte\obj\Release\netstandard2.0\EcsLte.pdb
-C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\obj\Release\netstandard2.0\EcsLte.csproj.AssemblyReference.cache
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - Blittable Only\EcsLte\bin\Release\netstandard2.0\EcsLte.deps.json
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - Blittable Only\EcsLte\bin\Release\netstandard2.0\EcsLte.dll
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - Blittable Only\EcsLte\bin\Release\netstandard2.0\EcsLte.pdb

@@ -235,72 +235,72 @@ namespace EcsLte.UnitTest.EntityCommandQueueTests
         }
 
         [TestMethod]
-        public void UpdateComponent_Entities()
+        public void UpdateSharedComponent_Entities()
         {
-            var component = new TestComponent1 { Prop = 1 };
-            var updatedComponent = new TestComponent1 { Prop = 10 };
+            var component = new TestSharedComponent1 { Prop = 1 };
+            var updatedComponent = new TestSharedComponent1 { Prop = 10 };
             var queue = Context.Commands.CreateCommandQueue("Test");
             var entities = TestCreateEntities(Context, UnitTestConsts.SmallCount, component);
 
-            queue.UpdateComponent(entities, updatedComponent);
+            queue.UpdateSharedComponent(entities, updatedComponent);
             for (var i = 0; i < entities.Length; i++)
             {
-                Assert.IsTrue(Context.GetComponent<TestComponent1>(entities[i]).Prop == component.Prop,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent1>(entities[i]).Prop == component.Prop,
                     $"Enity.Id {entities[i].Id}");
             }
             queue.ExecuteCommands();
             for (var i = 0; i < entities.Length; i++)
             {
-                Assert.IsTrue(Context.GetComponent<TestComponent1>(entities[i]).Prop == updatedComponent.Prop,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent1>(entities[i]).Prop == updatedComponent.Prop,
                     $"Enity.Id {entities[i].Id}");
             }
         }
 
         [TestMethod]
-        public void UpdateComponent_EntityArcheType()
+        public void UpdateSharedComponent_EntityArcheType()
         {
-            var component = new TestComponent1 { Prop = 1 };
-            var updatedComponent = new TestComponent1 { Prop = 10 };
+            var component = new TestSharedComponent1 { Prop = 1 };
+            var updatedComponent = new TestSharedComponent1 { Prop = 10 };
             var queue = Context.Commands.CreateCommandQueue("Test");
             var archeType = new EntityArcheType()
-                .AddComponentType<TestComponent1>();
+                .AddSharedComponent(new TestSharedComponent1 { Prop = 1 });
             var entities = TestCreateEntities(Context, UnitTestConsts.SmallCount, component);
 
-            queue.UpdateComponent(archeType, updatedComponent);
+            queue.UpdateSharedComponent(archeType, updatedComponent);
             for (var i = 0; i < entities.Length; i++)
             {
-                Assert.IsTrue(Context.GetComponent<TestComponent1>(entities[i]).Prop == component.Prop,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent1>(entities[i]).Prop == component.Prop,
                     $"Enity.Id {entities[i].Id}");
             }
             queue.ExecuteCommands();
             for (var i = 0; i < entities.Length; i++)
             {
-                Assert.IsTrue(Context.GetComponent<TestComponent1>(entities[i]).Prop == updatedComponent.Prop,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent1>(entities[i]).Prop == updatedComponent.Prop,
                     $"Enity.Id {entities[i].Id}");
             }
         }
 
         [TestMethod]
-        public void UpdateComponent_EntityQuery()
+        public void UpdateSharedComponent_EntityQuery()
         {
-            var component = new TestComponent1 { Prop = 1 };
-            var updatedComponent = new TestComponent1 { Prop = 10 };
+            var component = new TestSharedComponent1 { Prop = 1 };
+            var updatedComponent = new TestSharedComponent1 { Prop = 10 };
             var queue = Context.Commands.CreateCommandQueue("Test");
             var query = new EntityQuery()
-                .WhereAllOf<TestComponent1>();
+                .FilterBy(new TestSharedComponent1 { Prop = 1 });
             TestCreateEntities(Context, UnitTestConsts.SmallCount, component);
             var entities = Context.GetEntities(query);
 
-            queue.UpdateComponent(query, updatedComponent);
+            queue.UpdateSharedComponent(query, updatedComponent);
             for (var i = 0; i < entities.Length; i++)
             {
-                Assert.IsTrue(Context.GetComponent<TestComponent1>(entities[i]).Prop == component.Prop,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent1>(entities[i]).Prop == component.Prop,
                     $"Enity.Id {entities[i].Id}");
             }
             queue.ExecuteCommands();
             for (var i = 0; i < entities.Length; i++)
             {
-                Assert.IsTrue(Context.GetComponent<TestComponent1>(entities[i]).Prop == updatedComponent.Prop,
+                Assert.IsTrue(Context.GetComponent<TestSharedComponent1>(entities[i]).Prop == updatedComponent.Prop,
                     $"Enity.Id {entities[i].Id}");
             }
         }

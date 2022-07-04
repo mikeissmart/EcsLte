@@ -27,7 +27,6 @@ C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - step 05 Compone
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - step 05 ComponentConfigs\EcsLte\obj\Debug\netstandard2.0\EcsLte.dll
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - step 05 ComponentConfigs\EcsLte\obj\Debug\netstandard2.0\EcsLte.pdb
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - step 05 ComponentConfigs\EcsLte\obj\Debug\netstandard2.0\EcsLte.csproj.AssemblyReference.cache
-C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\obj\Debug\netstandard2.0\EcsLte.csproj.AssemblyReference.cache
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - Blittable Only\EcsLte\obj\Debug\netstandard2.0\EcsLte.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - Blittable Only\EcsLte\obj\Debug\netstandard2.0\EcsLte.AssemblyInfoInputs.cache
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - Blittable Only\EcsLte\obj\Debug\netstandard2.0\EcsLte.AssemblyInfo.cs

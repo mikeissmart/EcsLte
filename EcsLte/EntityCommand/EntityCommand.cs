@@ -99,45 +99,60 @@ namespace EcsLte
     internal class EntityCommand_UpdateComponent<TComponent> : IEntityCommand
          where TComponent : unmanaged, IComponent
     {
+        private readonly Entity _entity;
+        private readonly TComponent _component;
+
+        public EntityCommand_UpdateComponent(Entity entity, TComponent component)
+        {
+            _entity = entity;
+            _component = component;
+        }
+
+        public void Execute(EcsContext context) => context.UpdateComponent(_entity, _component);
+    }
+
+    internal class EntityCommand_UpdateSharedComponent_Entities<TComponent> : IEntityCommand
+         where TComponent : unmanaged, ISharedComponent
+    {
         private readonly IEnumerable<Entity> _entities;
         private readonly TComponent _component;
 
-        public EntityCommand_UpdateComponent(IEnumerable<Entity> entities, TComponent component)
+        public EntityCommand_UpdateSharedComponent_Entities(IEnumerable<Entity> entities, TComponent component)
         {
             _entities = entities;
             _component = component;
         }
 
-        public void Execute(EcsContext context) => context.UpdateComponents(_entities, _component);
+        public void Execute(EcsContext context) => context.UpdateSharedComponent(_entities, _component);
     }
 
-    internal class EntityCommand_UpdateComponent_EntityArcheType<TComponent> : IEntityCommand
-         where TComponent : unmanaged, IComponent
+    internal class EntityCommand_UpdateSharedComponent_EntityArcheType<TComponent> : IEntityCommand
+         where TComponent : unmanaged, ISharedComponent
     {
         private readonly EntityArcheType _entityArcheType;
         private readonly TComponent _component;
 
-        public EntityCommand_UpdateComponent_EntityArcheType(EntityArcheType entityArcheType, TComponent component)
+        public EntityCommand_UpdateSharedComponent_EntityArcheType(EntityArcheType entityArcheType, TComponent component)
         {
             _entityArcheType = entityArcheType;
             _component = component;
         }
 
-        public void Execute(EcsContext context) => context.UpdateComponents(_entityArcheType, _component);
+        public void Execute(EcsContext context) => context.UpdateSharedComponent(_entityArcheType, _component);
     }
 
-    internal class EntityCommand_UpdateComponent_EntityQuery<TComponent> : IEntityCommand
-         where TComponent : unmanaged, IComponent
+    internal class EntityCommand_UpdateSharedComponent_EntityQuery<TComponent> : IEntityCommand
+         where TComponent : unmanaged, ISharedComponent
     {
         private readonly EntityQuery _entityQuery;
         private readonly TComponent _component;
 
-        public EntityCommand_UpdateComponent_EntityQuery(EntityQuery entityQuery, TComponent component)
+        public EntityCommand_UpdateSharedComponent_EntityQuery(EntityQuery entityQuery, TComponent component)
         {
             _entityQuery = entityQuery;
             _component = component;
         }
 
-        public void Execute(EcsContext context) => context.UpdateComponents(_entityQuery, _component);
+        public void Execute(EcsContext context) => context.UpdateSharedComponent(_entityQuery, _component);
     }
 }

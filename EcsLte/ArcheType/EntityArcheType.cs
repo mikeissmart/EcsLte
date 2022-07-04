@@ -14,7 +14,7 @@ namespace EcsLte
 
         internal EntityArcheType(IComponentData[] allComponentDatas, IComponentData[] sharedComponentDatas) => ArcheTypeData = new EntityArcheTypeData(allComponentDatas, sharedComponentDatas);
 
-        internal unsafe EntityArcheType(EcsContext context, ArcheTypeData archeTypeData) => ArcheTypeData = new EntityArcheTypeData(context, archeTypeData);
+        internal EntityArcheType(EcsContext context, ArcheTypeData archeTypeData) => ArcheTypeData = new EntityArcheTypeData(context, archeTypeData);
 
         private EntityArcheType(EntityArcheTypeData data) => ArcheTypeData = data;
 

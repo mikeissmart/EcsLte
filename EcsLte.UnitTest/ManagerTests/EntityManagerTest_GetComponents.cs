@@ -10,62 +10,6 @@ namespace EcsLte.UnitTest.ManagerTests
         #region Entities
 
         [TestMethod]
-        public void GetComponents_Entities_Blittable_Normal() =>
-            Components_Blittable_Normal(UnitTestConsts.SmallCount, AssertGetComponents_Entities);
-
-        [TestMethod]
-        public void GetComponents_Entities_Blittable_NormalShared() =>
-            Components_Blittable_NormalShared(UnitTestConsts.SmallCount, AssertGetComponents_Entities);
-
-        [TestMethod]
-        public void GetComponents_Entities_Blittable_NormalSharedUnique() =>
-            Components_Blittable_NormalSharedUnique(1, AssertGetComponents_Entities);
-
-        [TestMethod]
-        public void GetComponents_Entities_Blittable_NormalUnique() =>
-            Components_Blittable_NormalUnique(1, AssertGetComponents_Entities);
-
-        [TestMethod]
-        public void GetComponents_Entities_Blittable_Shared() =>
-            Components_Blittable_Shared(UnitTestConsts.SmallCount, AssertGetComponents_Entities);
-
-        [TestMethod]
-        public void GetComponents_Entities_Blittable_SharedUnique() =>
-            Components_Blittable_SharedUnique(1, AssertGetComponents_Entities);
-
-        [TestMethod]
-        public void GetComponents_Entities_Blittable_Unique() =>
-            Components_Blittable_Unique(1, AssertGetComponents_Entities);
-
-        [TestMethod]
-        public void GetComponents_Entities_BlittableManage_Normal() =>
-            Components_BlittableManage_Normal(UnitTestConsts.SmallCount, AssertGetComponents_Entities);
-
-        [TestMethod]
-        public void GetComponents_Entities_BlittableManage_NormalShared() =>
-            Components_BlittableManage_NormalShared(UnitTestConsts.SmallCount, AssertGetComponents_Entities);
-
-        [TestMethod]
-        public void GetComponents_Entities_BlittableManage_NormalSharedUnique() =>
-            Components_BlittableManage_NormalSharedUnique(1, AssertGetComponents_Entities);
-
-        [TestMethod]
-        public void GetComponents_Entities_BlittableManage_NormalUnique() =>
-            Components_BlittableManage_NormalUnique(1, AssertGetComponents_Entities);
-
-        [TestMethod]
-        public void GetComponents_Entities_BlittableManage_Shared() =>
-            Components_BlittableManage_Shared(UnitTestConsts.SmallCount, AssertGetComponents_Entities);
-
-        [TestMethod]
-        public void GetComponents_Entities_BlittableManage_SharedUnique() =>
-            Components_BlittableManage_SharedUnique(1, AssertGetComponents_Entities);
-
-        [TestMethod]
-        public void GetComponents_Entities_BlittableManage_Unique() =>
-            Components_BlittableManage_Unique(1, AssertGetComponents_Entities);
-
-        [TestMethod]
         public void GetComponents_Entities_Destroyed()
         {
             EcsContexts.DestroyContext(Context);
@@ -75,36 +19,17 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         [TestMethod]
-        public void GetComponents_Entities_Manage_Normal() =>
-            Components_Manage_Normal(UnitTestConsts.SmallCount, AssertGetComponents_Entities);
+        public void GetComponents_Entities_Null()
+        {
+            Entity[] entities = null;
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                Context.GetComponents<TestComponent1>(entities));
+        }
 
         [TestMethod]
-        public void GetComponents_Entities_Manage_NormalShared() =>
-            Components_Manage_NormalShared(UnitTestConsts.SmallCount, AssertGetComponents_Entities);
-
-        [TestMethod]
-        public void GetComponents_Entities_Manage_NormalSharedUnique() =>
-            Components_Manage_NormalSharedUnique(1, AssertGetComponents_Entities);
-
-        [TestMethod]
-        public void GetComponents_Entities_Manage_NormalUnique() =>
-            Components_Manage_NormalUnique(1, AssertGetComponents_Entities);
-
-        [TestMethod]
-        public void GetComponents_Entities_Manage_Shared() =>
-            Components_Manage_Shared(UnitTestConsts.SmallCount, AssertGetComponents_Entities);
-
-        [TestMethod]
-        public void GetComponents_Entities_Manage_SharedUnique() =>
-            Components_Manage_SharedUnique(1, AssertGetComponents_Entities);
-
-        [TestMethod]
-        public void GetComponents_Entities_Manage_Unique() =>
-            Components_Manage_Unique(1, AssertGetComponents_Entities);
-
-        [TestMethod]
-        public void GetComponents_Entities_NoEntity_All() => Assert.ThrowsException<EntityDoesNotExistException>(() =>
-                                                                        Context.GetComponents<TestComponent1>(new[] { Entity.Null, Entity.Null }));
+        public void GetComponents_Entities_NoEntity_All() =>
+            Assert.ThrowsException<EntityDoesNotExistException>(() =>
+                Context.GetComponents<TestComponent1>(new[] { Entity.Null, Entity.Null }));
 
         [TestMethod]
         public void GetComponents_Entities_NoEntity_Some()
@@ -120,173 +45,117 @@ namespace EcsLte.UnitTest.ManagerTests
         }
 
         [TestMethod]
-        public void GetComponents_Entities_Null()
+        public void GetComponents_Entities_Normal()
         {
-            Entity[] entities = null;
-            Assert.ThrowsException<ArgumentNullException>(() =>
-                Context.GetComponents<TestComponent1>(entities));
+            var entities = TestCreateEntities(Context, UnitTestConsts.SmallCount,
+                new TestComponent1());
+
+            UpdateComponent<TestComponent1>(entities);
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestComponent1>(entities));
         }
 
-        private void AssertGetComponents_Entities<T1>(int entityCount, T1 c1)
-            where T1 : unmanaged, IComponent, ITestComponent => AssertGetComponents(
-                entityCount,
-                c1,
-                (entities) => Context.GetComponents<T1>(entities));
+        [TestMethod]
+        public void GetComponents_Entities_NormalShared()
+        {
+            var entities = TestCreateEntities(Context, UnitTestConsts.SmallCount,
+                new TestComponent1(),
+                new TestSharedComponent1());
 
-        private void AssertGetComponents_Entities<T1, T2>(int entityCount, T1 c1, T2 c2)
-            where T1 : unmanaged, IComponent, ITestComponent
-            where T2 : unmanaged, IComponent, ITestComponent => AssertGetComponents(
-                entityCount,
-                c1,
-                c2,
-                (entities) => Context.GetComponents<T1>(entities),
-                (entities) => Context.GetComponents<T2>(entities));
+            UpdateComponent<TestComponent1>(entities);
+            var sharedComponent = new TestSharedComponent1 { Prop = 1 };
+            UpdateComponentShared(entities, sharedComponent);
 
-        private void AssertGetComponents_Entities<T1, T2, T3>(int entityCount, T1 c1, T2 c2, T3 c3)
-            where T1 : unmanaged, IComponent, ITestComponent
-            where T2 : unmanaged, IComponent, ITestComponent
-            where T3 : unmanaged, IComponent, ITestComponent => AssertGetComponents(
-                entityCount,
-                c1,
-                c2,
-                c3,
-                (entities) => Context.GetComponents<T1>(entities),
-                (entities) => Context.GetComponents<T2>(entities),
-                (entities) => Context.GetComponents<T3>(entities));
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestComponent1>(entities));
+            AssertHelper_EqualsSharedComponents(entities, Context.GetComponents<TestSharedComponent1>(entities),
+                sharedComponent);
+        }
 
-        private void AssertGetComponents_Entities<T1, T2, T3, T4>(int entityCount, T1 c1, T2 c2, T3 c3, T4 c4)
-            where T1 : unmanaged, IComponent, ITestComponent
-            where T2 : unmanaged, IComponent, ITestComponent
-            where T3 : unmanaged, IComponent, ITestComponent
-            where T4 : unmanaged, IComponent, ITestComponent => AssertGetComponents(
-                entityCount,
-                c1,
-                c2,
-                c3,
-                c4,
-                (entities) => Context.GetComponents<T1>(entities),
-                (entities) => Context.GetComponents<T2>(entities),
-                (entities) => Context.GetComponents<T3>(entities),
-                (entities) => Context.GetComponents<T4>(entities));
+        [TestMethod]
+        public void GetComponents_Entities_NormalSharedUnique()
+        {
+            var entities = TestCreateEntities(Context, 1,
+                new TestComponent1(),
+                new TestSharedComponent1(),
+                new TestUniqueComponent1());
 
-        private void AssertGetComponents_Entities<T1, T2, T3, T4, T5, T6>(int entityCount, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6)
-            where T1 : unmanaged, IComponent, ITestComponent
-            where T2 : unmanaged, IComponent, ITestComponent
-            where T3 : unmanaged, IComponent, ITestComponent
-            where T4 : unmanaged, IComponent, ITestComponent
-            where T5 : unmanaged, IComponent, ITestComponent
-            where T6 : unmanaged, IComponent, ITestComponent => AssertGetComponents(
-                entityCount,
-                c1,
-                c2,
-                c3,
-                c4,
-                c5,
-                c6,
-                (entities) => Context.GetComponents<T1>(entities),
-                (entities) => Context.GetComponents<T2>(entities),
-                (entities) => Context.GetComponents<T3>(entities),
-                (entities) => Context.GetComponents<T4>(entities),
-                (entities) => Context.GetComponents<T5>(entities),
-                (entities) => Context.GetComponents<T6>(entities));
+            UpdateComponent<TestComponent1>(entities);
+            var sharedComponent = new TestSharedComponent1 { Prop = 1 };
+            UpdateComponentShared(entities, sharedComponent);
+            UpdateComponent<TestUniqueComponent1>(entities);
+
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestComponent1>(entities));
+            AssertHelper_EqualsSharedComponents(entities, Context.GetComponents<TestSharedComponent1>(entities),
+                sharedComponent);
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestUniqueComponent1>(entities));
+        }
+
+        [TestMethod]
+        public void GetComponents_Entities_NormalUnique()
+        {
+            var entities = TestCreateEntities(Context, 1,
+                new TestComponent1(),
+                new TestUniqueComponent1());
+
+            UpdateComponent<TestComponent1>(entities);
+            UpdateComponent<TestUniqueComponent1>(entities);
+
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestComponent1>(entities));
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestUniqueComponent1>(entities));
+        }
+
+        [TestMethod]
+        public void GetComponents_Entities_Shared()
+        {
+            var entities = TestCreateEntities(Context, UnitTestConsts.SmallCount,
+                new TestSharedComponent1());
+
+            var sharedComponent = new TestSharedComponent1 { Prop = 1 };
+            UpdateComponentShared(entities, sharedComponent);
+
+            AssertHelper_EqualsSharedComponents(entities, Context.GetComponents<TestSharedComponent1>(entities),
+                sharedComponent);
+        }
+
+        [TestMethod]
+        public void GetComponents_Entities_SharedUnique()
+        {
+            var entities = TestCreateEntities(Context, 1,
+                new TestSharedComponent1(),
+                new TestUniqueComponent1());
+
+            var sharedComponent = new TestSharedComponent1 { Prop = 1 };
+            UpdateComponentShared(entities, sharedComponent);
+            UpdateComponent<TestUniqueComponent1>(entities);
+
+            AssertHelper_EqualsSharedComponents(entities, Context.GetComponents<TestSharedComponent1>(entities),
+                sharedComponent);
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestUniqueComponent1>(entities));
+        }
+
+        [TestMethod]
+        public void GetComponents_Entities_Unique()
+        {
+            var entities = TestCreateEntities(Context, 1,
+                new TestUniqueComponent1());
+
+            UpdateComponent<TestUniqueComponent1>(entities);
+
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestUniqueComponent1>(entities));
+        }
 
         #endregion Entities
 
         #region EntityArcheType
 
         [TestMethod]
-        public void GetComponents_EntityArcheType_Blittable_Normal() =>
-            Components_Blittable_Normal(UnitTestConsts.SmallCount, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_Blittable_NormalShared() =>
-            Components_Blittable_NormalShared(UnitTestConsts.SmallCount, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_Blittable_NormalSharedUnique() =>
-            Components_Blittable_NormalSharedUnique(1, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_Blittable_NormalUnique() =>
-            Components_Blittable_NormalUnique(1, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_Blittable_Shared() =>
-            Components_Blittable_Shared(UnitTestConsts.SmallCount, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_Blittable_SharedUnique() =>
-            Components_Blittable_SharedUnique(1, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_Blittable_Unique() =>
-            Components_Blittable_Unique(1, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_BlittableManage_Normal() =>
-            Components_BlittableManage_Normal(UnitTestConsts.SmallCount, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_BlittableManage_NormalShared() =>
-            Components_BlittableManage_NormalShared(UnitTestConsts.SmallCount, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_BlittableManage_NormalSharedUnique() =>
-            Components_BlittableManage_NormalSharedUnique(1, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_BlittableManage_NormalUnique() =>
-            Components_BlittableManage_NormalUnique(1, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_BlittableManage_Shared() =>
-            Components_BlittableManage_Shared(UnitTestConsts.SmallCount, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_BlittableManage_SharedUnique() =>
-            Components_BlittableManage_SharedUnique(1, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_BlittableManage_Unique() =>
-            Components_BlittableManage_Unique(1, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
         public void GetComponents_EntityArcheType_Destroyed()
         {
+            var archeType = new EntityArcheType();
             EcsContexts.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.GetComponents<TestComponent1>(new EntityArcheType()
-                    .AddComponentType<TestComponent1>()));
+                Context.GetComponents<TestComponent1>(archeType));
         }
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_Manage_Normal() =>
-            Components_Manage_Normal(UnitTestConsts.SmallCount, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_Manage_NormalShared() =>
-            Components_Manage_NormalShared(UnitTestConsts.SmallCount, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_Manage_NormalSharedUnique() =>
-            Components_Manage_NormalSharedUnique(1, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_Manage_NormalUnique() =>
-            Components_Manage_NormalUnique(1, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_Manage_Shared() =>
-            Components_Manage_Shared(UnitTestConsts.SmallCount, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_Manage_SharedUnique() =>
-            Components_Manage_SharedUnique(1, AssertGetComponents_EntityArcheType);
-
-        [TestMethod]
-        public void GetComponents_EntityArcheType_Manage_Unique() =>
-            Components_Manage_Unique(1, AssertGetComponents_EntityArcheType);
 
         [TestMethod]
         public void GetComponents_EntityArcheType_Null()
@@ -296,103 +165,122 @@ namespace EcsLte.UnitTest.ManagerTests
                 Context.GetComponents<TestComponent1>(archeType));
         }
 
-        private void AssertGetComponents_EntityArcheType<T1>(int entityCount, T1 c1)
-            where T1 : unmanaged, IComponent, ITestComponent
+        [TestMethod]
+        public void GetComponents_EntityArcheType_Normal()
         {
             var archeType = new EntityArcheType()
-                .AddComponentTypeOrSharedComponent(c1);
-            AssertGetComponents(
-                entityCount,
-                c1,
-                (entities) => Context.GetComponents<T1>(archeType));
+                .AddComponentType<TestComponent1>();
+            var entities = TestCreateEntities(Context, UnitTestConsts.SmallCount,
+                new TestComponent1());
+
+            UpdateComponent<TestComponent1>(entities);
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestComponent1>(archeType));
         }
 
-        private void AssertGetComponents_EntityArcheType<T1, T2>(int entityCount, T1 c1, T2 c2)
-            where T1 : unmanaged, IComponent, ITestComponent
-            where T2 : unmanaged, IComponent, ITestComponent
+        [TestMethod]
+        public void GetComponents_EntityArcheType_NormalShared()
         {
+            var entities = TestCreateEntities(Context, UnitTestConsts.SmallCount,
+                new TestComponent1(),
+                new TestSharedComponent1());
+
+            UpdateComponent<TestComponent1>(entities);
+            var sharedComponent = new TestSharedComponent1 { Prop = 1 };
+            UpdateComponentShared(entities, sharedComponent);
+
             var archeType = new EntityArcheType()
-                .AddComponentTypeOrSharedComponent(c1)
-                .AddComponentTypeOrSharedComponent(c2);
-            AssertGetComponents(
-                entityCount,
-                c1,
-                c2,
-                (entities) => Context.GetComponents<T1>(archeType),
-                (entities) => Context.GetComponents<T2>(archeType));
+                .AddComponentType<TestComponent1>()
+                .AddSharedComponent(sharedComponent);
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestComponent1>(archeType));
+            AssertHelper_EqualsSharedComponents(entities, Context.GetComponents<TestSharedComponent1>(archeType),
+                sharedComponent);
         }
 
-        private void AssertGetComponents_EntityArcheType<T1, T2, T3>(int entityCount, T1 c1, T2 c2, T3 c3)
-            where T1 : unmanaged, IComponent, ITestComponent
-            where T2 : unmanaged, IComponent, ITestComponent
-            where T3 : unmanaged, IComponent, ITestComponent
+        [TestMethod]
+        public void GetComponents_EntityArcheType_NormalSharedUnique()
         {
+            var entities = TestCreateEntities(Context, 1,
+                new TestComponent1(),
+                new TestSharedComponent1(),
+                new TestUniqueComponent1());
+
+            UpdateComponent<TestComponent1>(entities);
+            var sharedComponent = new TestSharedComponent1 { Prop = 1 };
+            UpdateComponentShared(entities, sharedComponent);
+            UpdateComponent<TestUniqueComponent1>(entities);
+
             var archeType = new EntityArcheType()
-                .AddComponentTypeOrSharedComponent(c1)
-                .AddComponentTypeOrSharedComponent(c2)
-                .AddComponentTypeOrSharedComponent(c3);
-            AssertGetComponents(
-                entityCount,
-                c1,
-                c2,
-                c3,
-                (entities) => Context.GetComponents<T1>(archeType),
-                (entities) => Context.GetComponents<T2>(archeType),
-                (entities) => Context.GetComponents<T3>(archeType));
+                .AddComponentType<TestComponent1>()
+                .AddSharedComponent(sharedComponent)
+                .AddComponentType<TestUniqueComponent1>();
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestComponent1>(archeType));
+            AssertHelper_EqualsSharedComponents(entities, Context.GetComponents<TestSharedComponent1>(archeType),
+                sharedComponent);
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestUniqueComponent1>(archeType));
         }
 
-        private void AssertGetComponents_EntityArcheType<T1, T2, T3, T4>(int entityCount, T1 c1, T2 c2, T3 c3, T4 c4)
-            where T1 : unmanaged, IComponent, ITestComponent
-            where T2 : unmanaged, IComponent, ITestComponent
-            where T3 : unmanaged, IComponent, ITestComponent
-            where T4 : unmanaged, IComponent, ITestComponent
+        [TestMethod]
+        public void GetComponents_EntityArcheType_NormalUnique()
         {
             var archeType = new EntityArcheType()
-                .AddComponentTypeOrSharedComponent(c1)
-                .AddComponentTypeOrSharedComponent(c2)
-                .AddComponentTypeOrSharedComponent(c3)
-                .AddComponentTypeOrSharedComponent(c4);
-            AssertGetComponents(
-                entityCount,
-                c1,
-                c2,
-                c3,
-                c4,
-                (entities) => Context.GetComponents<T1>(archeType),
-                (entities) => Context.GetComponents<T2>(archeType),
-                (entities) => Context.GetComponents<T3>(archeType),
-                (entities) => Context.GetComponents<T4>(archeType));
+                .AddComponentType<TestComponent1>()
+                .AddComponentType<TestUniqueComponent1>();
+            var entities = TestCreateEntities(Context, 1,
+                new TestComponent1(),
+                new TestUniqueComponent1());
+
+            UpdateComponent<TestComponent1>(entities);
+            UpdateComponent<TestUniqueComponent1>(entities);
+
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestComponent1>(archeType));
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestUniqueComponent1>(archeType));
         }
 
-        private void AssertGetComponents_EntityArcheType<T1, T2, T3, T4, T5, T6>(int entityCount, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6)
-            where T1 : unmanaged, IComponent, ITestComponent
-            where T2 : unmanaged, IComponent, ITestComponent
-            where T3 : unmanaged, IComponent, ITestComponent
-            where T4 : unmanaged, IComponent, ITestComponent
-            where T5 : unmanaged, IComponent, ITestComponent
-            where T6 : unmanaged, IComponent, ITestComponent
+        [TestMethod]
+        public void GetComponents_EntityArcheType_Shared()
+        {
+            var entities = TestCreateEntities(Context, UnitTestConsts.SmallCount,
+                new TestSharedComponent1());
+
+            var sharedComponent = new TestSharedComponent1 { Prop = 1 };
+            UpdateComponentShared(entities, sharedComponent);
+
+            var archeType = new EntityArcheType()
+                .AddSharedComponent(sharedComponent);
+            AssertHelper_EqualsSharedComponents(entities, Context.GetComponents<TestSharedComponent1>(archeType),
+                sharedComponent);
+        }
+
+        [TestMethod]
+        public void GetComponents_EntityArcheType_SharedUnique()
+        {
+            var entities = TestCreateEntities(Context, 1,
+                new TestSharedComponent1(),
+                new TestUniqueComponent1());
+
+            var sharedComponent = new TestSharedComponent1 { Prop = 1 };
+            UpdateComponentShared(entities, sharedComponent);
+            UpdateComponent<TestUniqueComponent1>(entities);
+
+            var archeType = new EntityArcheType()
+                .AddSharedComponent(sharedComponent)
+                .AddComponentType<TestUniqueComponent1>();
+            AssertHelper_EqualsSharedComponents(entities, Context.GetComponents<TestSharedComponent1>(archeType),
+                sharedComponent);
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestUniqueComponent1>(archeType));
+        }
+
+        [TestMethod]
+        public void GetComponents_EntityArcheType_Unique()
         {
             var archeType = new EntityArcheType()
-                .AddComponentTypeOrSharedComponent(c1)
-                .AddComponentTypeOrSharedComponent(c2)
-                .AddComponentTypeOrSharedComponent(c3)
-                .AddComponentTypeOrSharedComponent(c4)
-                .AddComponentTypeOrSharedComponent(c5)
-                .AddComponentTypeOrSharedComponent(c6);
-            AssertGetComponents(
-                entityCount,
-                c1,
-                c2,
-                c3,
-                c4,
-                c5,
-                c6,
-                (entities) => Context.GetComponents<T1>(archeType),
-                (entities) => Context.GetComponents<T2>(archeType),
-                (entities) => Context.GetComponents<T3>(archeType),
-                (entities) => Context.GetComponents<T4>(archeType),
-                (entities) => Context.GetComponents<T5>(archeType),
-                (entities) => Context.GetComponents<T6>(archeType));
+                .AddComponentType<TestUniqueComponent1>();
+            var entities = TestCreateEntities(Context, 1,
+                new TestUniqueComponent1());
+
+            UpdateComponent<TestUniqueComponent1>(entities);
+
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestUniqueComponent1>(archeType));
         }
 
         #endregion EntityArcheType
@@ -400,98 +288,25 @@ namespace EcsLte.UnitTest.ManagerTests
         #region EntityQuery
 
         [TestMethod]
-        public void GetComponents_EntityQuery_Blittable_Normal() =>
-            Components_Blittable_Normal(UnitTestConsts.SmallCount, AssertGetComponents_EntityQuery);
-
-        [TestMethod]
-        public void GetComponents_EntityQuery_Blittable_NormalShared() =>
-            Components_Blittable_NormalShared(UnitTestConsts.SmallCount, AssertGetComponents_EntityQuery);
-
-        [TestMethod]
-        public void GetComponents_EntityQuery_Blittable_NormalSharedUnique() =>
-            Components_Blittable_NormalSharedUnique(1, AssertGetComponents_EntityQuery);
-
-        [TestMethod]
-        public void GetComponents_EntityQuery_Blittable_NormalUnique() =>
-            Components_Blittable_NormalUnique(1, AssertGetComponents_EntityQuery);
-
-        [TestMethod]
-        public void GetComponents_EntityQuery_Blittable_Shared() =>
-            Components_Blittable_Shared(UnitTestConsts.SmallCount, AssertGetComponents_EntityQuery);
-
-        [TestMethod]
-        public void GetComponents_EntityQuery_Blittable_SharedUnique() =>
-            Components_Blittable_SharedUnique(1, AssertGetComponents_EntityQuery);
-
-        [TestMethod]
-        public void GetComponents_EntityQuery_Blittable_Unique() =>
-            Components_Blittable_Unique(1, AssertGetComponents_EntityQuery);
-
-        [TestMethod]
-        public void GetComponents_EntityQuery_BlittableManage_Normal() =>
-            Components_BlittableManage_Normal(UnitTestConsts.SmallCount, AssertGetComponents_EntityQuery);
-
-        [TestMethod]
-        public void GetComponents_EntityQuery_BlittableManage_NormalShared() =>
-            Components_BlittableManage_NormalShared(UnitTestConsts.SmallCount, AssertGetComponents_EntityQuery);
-
-        [TestMethod]
-        public void GetComponents_EntityQuery_BlittableManage_NormalSharedUnique() =>
-            Components_BlittableManage_NormalSharedUnique(1, AssertGetComponents_EntityQuery);
-
-        [TestMethod]
-        public void GetComponents_EntityQuery_BlittableManage_NormalUnique() =>
-            Components_BlittableManage_NormalUnique(1, AssertGetComponents_EntityQuery);
-
-        [TestMethod]
-        public void GetComponents_EntityQuery_BlittableManage_Shared() =>
-            Components_BlittableManage_Shared(UnitTestConsts.SmallCount, AssertGetComponents_EntityQuery);
-
-        [TestMethod]
-        public void GetComponents_EntityQuery_BlittableManage_SharedUnique() =>
-            Components_BlittableManage_SharedUnique(1, AssertGetComponents_EntityQuery);
-
-        [TestMethod]
-        public void GetComponents_EntityQuery_BlittableManage_Unique() =>
-            Components_BlittableManage_Unique(1, AssertGetComponents_EntityQuery);
-
-        [TestMethod]
         public void GetComponents_EntityQuery_Destroyed()
         {
+            var query = new EntityQuery()
+                .WhereAllOf<TestComponent1>();
             EcsContexts.DestroyContext(Context);
 
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.GetComponents<TestComponent1>(new EntityQuery()
-                    .WhereAllOf<TestComponent1>()));
+                Context.GetComponents<TestComponent1>(query));
         }
 
-        [TestMethod]
-        public void GetComponents_EntityQuery_Manage_Normal() =>
-            Components_Manage_Normal(UnitTestConsts.SmallCount, AssertGetComponents_EntityQuery);
+        /*[TestMethod]
+        public void GetComponents_EntityQuery_Different_Context()
+        {
+            var context2 = EcsContexts.CreateContext("EntityArcheType_Diff");
+            var archeType = new EntityArcheType(context2);
 
-        [TestMethod]
-        public void GetComponents_EntityQuery_Manage_NormalShared() =>
-            Components_Manage_NormalShared(UnitTestConsts.SmallCount, AssertGetComponents_EntityQuery);
-
-        [TestMethod]
-        public void GetComponents_EntityQuery_Manage_NormalSharedUnique() =>
-            Components_Manage_NormalSharedUnique(1, AssertGetComponents_EntityQuery);
-
-        [TestMethod]
-        public void GetComponents_EntityQuery_Manage_NormalUnique() =>
-            Components_Manage_NormalUnique(1, AssertGetComponents_EntityQuery);
-
-        [TestMethod]
-        public void GetComponents_EntityQuery_Manage_Shared() =>
-            Components_Manage_Shared(UnitTestConsts.SmallCount, AssertGetComponents_EntityQuery);
-
-        [TestMethod]
-        public void GetComponents_EntityQuery_Manage_SharedUnique() =>
-            Components_Manage_SharedUnique(1, AssertGetComponents_EntityQuery);
-
-        [TestMethod]
-        public void GetComponents_EntityQuery_Manage_Unique() =>
-            Components_Manage_Unique(1, AssertGetComponents_EntityQuery);
+            Assert.ThrowsException<EcsContextDifferentException>(() =>
+                Context.GetComponents<TestComponent1>(archeType));
+        }*/
 
         [TestMethod]
         public void GetComponents_EntityQuery_Null()
@@ -501,301 +316,167 @@ namespace EcsLte.UnitTest.ManagerTests
                 Context.GetComponents<TestComponent1>(query));
         }
 
-        private void AssertGetComponents_EntityQuery<T1>(int entityCount, T1 c1)
-            where T1 : unmanaged, IComponent, ITestComponent
+        [TestMethod]
+        public void GetComponents_EntityQuery_Normal()
         {
+            var entities = TestCreateEntities(Context, UnitTestConsts.SmallCount,
+                new TestComponent1());
+
+            UpdateComponent<TestComponent1>(entities);
+
             var query = new EntityQuery()
-                .WhereAllOf<T1>();
-            AssertGetComponents(
-                entityCount,
-                c1,
-                (entities) => Context.GetComponents<T1>(query));
+                .WhereAllOf<TestComponent1>();
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestComponent1>(query));
         }
 
-        private void AssertGetComponents_EntityQuery<T1, T2>(int entityCount, T1 c1, T2 c2)
-            where T1 : unmanaged, IComponent, ITestComponent
-            where T2 : unmanaged, IComponent, ITestComponent
+        [TestMethod]
+        public void GetComponents_EntityQuery_NormalShared()
         {
+            var entities = TestCreateEntities(Context, UnitTestConsts.SmallCount,
+                new TestComponent1(),
+                new TestSharedComponent1());
+
+            UpdateComponent<TestComponent1>(entities);
+            var sharedComponent = new TestSharedComponent1 { Prop = 1 };
+            UpdateComponentShared(entities, sharedComponent);
+
             var query = new EntityQuery()
-                .WhereAllOf<T1>()
-                .WhereAllOf<T2>();
-            AssertGetComponents(
-                entityCount,
-                c1,
-                c2,
-                (entities) => Context.GetComponents<T1>(query),
-                (entities) => Context.GetComponents<T2>(query));
+                .WhereAllOf<TestComponent1>()
+                .FilterBy(sharedComponent);
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestComponent1>(query));
+            AssertHelper_EqualsSharedComponents(entities, Context.GetComponents<TestSharedComponent1>(query),
+                sharedComponent);
         }
 
-        private void AssertGetComponents_EntityQuery<T1, T2, T3>(int entityCount, T1 c1, T2 c2, T3 c3)
-            where T1 : unmanaged, IComponent, ITestComponent
-            where T2 : unmanaged, IComponent, ITestComponent
-            where T3 : unmanaged, IComponent, ITestComponent
+        [TestMethod]
+        public void GetComponents_EntityQuery_NormalSharedUnique()
         {
+            var entities = TestCreateEntities(Context, 1,
+                new TestComponent1(),
+                new TestSharedComponent1(),
+                new TestUniqueComponent1());
+
+            UpdateComponent<TestComponent1>(entities);
+            var sharedComponent = new TestSharedComponent1 { Prop = 1 };
+            UpdateComponentShared(entities, sharedComponent);
+            UpdateComponent<TestUniqueComponent1>(entities);
+
             var query = new EntityQuery()
-                .WhereAllOf<T1>()
-                .WhereAllOf<T2>()
-                .WhereAllOf<T3>();
-            AssertGetComponents(
-                entityCount,
-                c1,
-                c2,
-                c3,
-                (entities) => Context.GetComponents<T1>(query),
-                (entities) => Context.GetComponents<T2>(query),
-                (entities) => Context.GetComponents<T3>(query));
+                .WhereAllOf<TestComponent1>()
+                .FilterBy(sharedComponent)
+                .WhereAllOf<TestUniqueComponent1>();
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestComponent1>(query));
+            AssertHelper_EqualsSharedComponents(entities, Context.GetComponents<TestSharedComponent1>(query),
+                sharedComponent);
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestUniqueComponent1>(query));
         }
 
-        private void AssertGetComponents_EntityQuery<T1, T2, T3, T4>(int entityCount, T1 c1, T2 c2, T3 c3, T4 c4)
-            where T1 : unmanaged, IComponent, ITestComponent
-            where T2 : unmanaged, IComponent, ITestComponent
-            where T3 : unmanaged, IComponent, ITestComponent
-            where T4 : unmanaged, IComponent, ITestComponent
+        [TestMethod]
+        public void GetComponents_EntityQuery_NormalUnique()
         {
+            var entities = TestCreateEntities(Context, 1,
+                new TestComponent1(),
+                new TestUniqueComponent1());
+
+            UpdateComponent<TestComponent1>(entities);
+            UpdateComponent<TestUniqueComponent1>(entities);
+
             var query = new EntityQuery()
-                .WhereAllOf<T1>()
-                .WhereAllOf<T2>()
-                .WhereAllOf<T3>()
-                .WhereAllOf<T4>();
-            AssertGetComponents(
-                entityCount,
-                c1,
-                c2,
-                c3,
-                c4,
-                (entities) => Context.GetComponents<T1>(query),
-                (entities) => Context.GetComponents<T2>(query),
-                (entities) => Context.GetComponents<T3>(query),
-                (entities) => Context.GetComponents<T4>(query));
+                .WhereAllOf<TestComponent1>()
+                .WhereAllOf<TestUniqueComponent1>();
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestComponent1>(query));
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestUniqueComponent1>(query));
         }
 
-        private void AssertGetComponents_EntityQuery<T1, T2, T3, T4, T5, T6>(int entityCount, T1 c1, T2 c2, T3 c3, T4 c4, T5 c5, T6 c6)
-            where T1 : unmanaged, IComponent, ITestComponent
-            where T2 : unmanaged, IComponent, ITestComponent
-            where T3 : unmanaged, IComponent, ITestComponent
-            where T4 : unmanaged, IComponent, ITestComponent
-            where T5 : unmanaged, IComponent, ITestComponent
-            where T6 : unmanaged, IComponent, ITestComponent
+        [TestMethod]
+        public void GetComponents_EntityQuery_Shared()
         {
+            var entities = TestCreateEntities(Context, UnitTestConsts.SmallCount,
+                new TestSharedComponent1());
+
+            var sharedComponent = new TestSharedComponent1 { Prop = 1 };
+            UpdateComponentShared(entities, sharedComponent);
+
             var query = new EntityQuery()
-                .WhereAllOf<T1>()
-                .WhereAllOf<T2>()
-                .WhereAllOf<T3>()
-                .WhereAllOf<T4>()
-                .WhereAllOf<T5>()
-                .WhereAllOf<T6>();
-            AssertGetComponents(
-                entityCount,
-                c1,
-                c2,
-                c3,
-                c4,
-                c5,
-                c6,
-                (entities) => Context.GetComponents<T1>(query),
-                (entities) => Context.GetComponents<T2>(query),
-                (entities) => Context.GetComponents<T3>(query),
-                (entities) => Context.GetComponents<T4>(query),
-                (entities) => Context.GetComponents<T5>(query),
-                (entities) => Context.GetComponents<T6>(query));
+                .FilterBy(sharedComponent);
+            AssertHelper_EqualsSharedComponents(entities, Context.GetComponents<TestSharedComponent1>(query),
+                sharedComponent);
+        }
+
+        [TestMethod]
+        public void GetComponents_EntityQuery_SharedUnique()
+        {
+            var entities = TestCreateEntities(Context, 1,
+                new TestSharedComponent1(),
+                new TestUniqueComponent1());
+
+            var sharedComponent = new TestSharedComponent1 { Prop = 1 };
+            UpdateComponentShared(entities, sharedComponent);
+            UpdateComponent<TestUniqueComponent1>(entities);
+
+            var query = new EntityQuery()
+                .FilterBy(sharedComponent)
+                .WhereAllOf<TestUniqueComponent1>();
+            AssertHelper_EqualsSharedComponents(entities, Context.GetComponents<TestSharedComponent1>(query),
+                sharedComponent);
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestUniqueComponent1>(query));
+        }
+
+        [TestMethod]
+        public void GetComponents_EntityQuery_Unique()
+        {
+            var entities = TestCreateEntities(Context, 1,
+                new TestUniqueComponent1());
+
+            UpdateComponent<TestUniqueComponent1>(entities);
+
+            var query = new EntityQuery()
+                .WhereAllOf<TestUniqueComponent1>();
+            AssertHelper_EqualsComponents(entities, Context.GetComponents<TestUniqueComponent1>(query));
         }
 
         #endregion EntityQuery
 
-        #region Assert
-
-        private void AssertGetComponents<T1>(int entityCount,
-            T1 component1,
-            Func<Entity[], T1[]> getAction1)
-            where T1 : unmanaged, IComponent, ITestComponent
-        {
-            var entities = Context.CreateEntities(entityCount, new EntityBlueprint()
-                .AddComponent(component1));
-            AssertHelper_UpdateAndEqualsComponent(entities, getAction1, component1);
-        }
-
-        private void AssertGetComponents<T1, T2>(int entityCount,
-            T1 component1,
-            T2 component2,
-            Func<Entity[], T1[]> getAction1,
-            Func<Entity[], T2[]> getAction2)
-            where T1 : unmanaged, IComponent, ITestComponent
-            where T2 : unmanaged, IComponent, ITestComponent
-        {
-            var entities = Context.CreateEntities(entityCount, new EntityBlueprint()
-                .AddComponent(component1)
-                .AddComponent(component2));
-            AssertHelper_UpdateAndEqualsComponent(entities, getAction1, component1);
-            AssertHelper_UpdateAndEqualsComponent(entities, getAction2, component2);
-        }
-
-        private void AssertGetComponents<T1, T2, T3>(int entityCount,
-            T1 component1,
-            T2 component2,
-            T3 component3,
-            Func<Entity[], T1[]> getAction1,
-            Func<Entity[], T2[]> getAction2,
-            Func<Entity[], T3[]> getAction3)
-            where T1 : unmanaged, IComponent, ITestComponent
-            where T2 : unmanaged, IComponent, ITestComponent
-            where T3 : unmanaged, IComponent, ITestComponent
-        {
-            var entities = Context.CreateEntities(entityCount, new EntityBlueprint()
-                .AddComponent(component1)
-                .AddComponent(component2)
-                .AddComponent(component3));
-            AssertHelper_UpdateAndEqualsComponent(entities, getAction1, component1);
-            AssertHelper_UpdateAndEqualsComponent(entities, getAction2, component2);
-            AssertHelper_UpdateAndEqualsComponent(entities, getAction3, component3);
-        }
-
-        private void AssertGetComponents<T1, T2, T3, T4>(int entityCount,
-            T1 component1,
-            T2 component2,
-            T3 component3,
-            T4 component4,
-            Func<Entity[], T1[]> getAction1,
-            Func<Entity[], T2[]> getAction2,
-            Func<Entity[], T3[]> getAction3,
-            Func<Entity[], T4[]> getAction4)
-            where T1 : unmanaged, IComponent, ITestComponent
-            where T2 : unmanaged, IComponent, ITestComponent
-            where T3 : unmanaged, IComponent, ITestComponent
-            where T4 : unmanaged, IComponent, ITestComponent
-        {
-            var entities = Context.CreateEntities(entityCount, new EntityBlueprint()
-                .AddComponent(component1)
-                .AddComponent(component2)
-                .AddComponent(component3)
-                .AddComponent(component4));
-            AssertHelper_UpdateAndEqualsComponent(entities, getAction1, component1);
-            AssertHelper_UpdateAndEqualsComponent(entities, getAction2, component2);
-            AssertHelper_UpdateAndEqualsComponent(entities, getAction3, component3);
-            AssertHelper_UpdateAndEqualsComponent(entities, getAction4, component4);
-        }
-
-        private void AssertGetComponents<T1, T2, T3, T4, T5, T6>(int entityCount,
-            T1 component1,
-            T2 component2,
-            T3 component3,
-            T4 component4,
-            T5 component5,
-            T6 component6,
-            Func<Entity[], T1[]> getAction1,
-            Func<Entity[], T2[]> getAction2,
-            Func<Entity[], T3[]> getAction3,
-            Func<Entity[], T4[]> getAction4,
-            Func<Entity[], T5[]> getAction5,
-            Func<Entity[], T6[]> getAction6)
-            where T1 : unmanaged, IComponent, ITestComponent
-            where T2 : unmanaged, IComponent, ITestComponent
-            where T3 : unmanaged, IComponent, ITestComponent
-            where T4 : unmanaged, IComponent, ITestComponent
-            where T5 : unmanaged, IComponent, ITestComponent
-            where T6 : unmanaged, IComponent, ITestComponent
-        {
-            var entities = Context.CreateEntities(entityCount, new EntityBlueprint()
-                .AddComponent(component1)
-                .AddComponent(component2)
-                .AddComponent(component3)
-                .AddComponent(component4)
-                .AddComponent(component5)
-                .AddComponent(component6));
-            AssertHelper_UpdateAndEqualsComponent(entities, getAction1, component1);
-            AssertHelper_UpdateAndEqualsComponent(entities, getAction2, component2);
-            AssertHelper_UpdateAndEqualsComponent(entities, getAction3, component3);
-            AssertHelper_UpdateAndEqualsComponent(entities, getAction4, component4);
-            AssertHelper_UpdateAndEqualsComponent(entities, getAction5, component5);
-            AssertHelper_UpdateAndEqualsComponent(entities, getAction6, component6);
-        }
-
-        private void AssertHelper_UpdateAndEqualsComponent<T>(Entity[] entities, Func<Entity[], T[]> getAction, T component)
+        private void UpdateComponent<T>(Entity[] entities)
             where T : unmanaged, IComponent, ITestComponent
         {
-            if (!(component is ISharedComponent))
-            {
-                for (var i = 0; i < entities.Length; i++)
-                    Context.UpdateComponent(entities[i], new T { Prop = entities[i].Id });
-            }
-            var components = getAction.Invoke(entities);
+            if (new T() is ISharedComponent)
+                throw new Exception("Use UpdateComponentShared for shared components");
+
+            for (var i = 0; i < entities.Length; i++)
+                Context.UpdateComponent(entities[i], new T { Prop = entities[i].Id });
+        }
+
+        private void UpdateComponentShared<T>(Entity[] entities, T sharedComponent)
+            where T : unmanaged, ISharedComponent, ITestComponent
+        {
+            for (var i = 0; i < entities.Length; i++)
+                Context.UpdateComponent(entities[i], sharedComponent);
+        }
+
+        private void AssertHelper_EqualsComponents<T>(Entity[] entities, T[] components)
+            where T : unmanaged, IComponent, ITestComponent
+        {
+            if (new T() is ISharedComponent)
+                throw new Exception("Use UpdateComponentShared for shared components");
+
             Assert.IsTrue(entities.Length == components.Length);
             for (var i = 0; i < entities.Length; i++)
             {
-                Assert.IsTrue(
-                    component is ISharedComponent
-                        ? components[i].Prop == component.Prop
-                        : components[i].Prop == entities[i].Id,
-                    $"Enity.Id {entities[i].Id}, {component.GetType()}");
+                Assert.IsTrue(components[i].Prop == entities[i].Id,
+                    $"Enity.Id {entities[i].Id}, {typeof(T)}");
             }
         }
 
-        #endregion Assert
-
-        #region Components
-
-        private void Components_Blittable_Normal(int entityCount, Action<int, TestComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestComponent1 { Prop = 1 });
-
-        private void Components_Blittable_NormalShared(int entityCount, Action<int, TestComponent1, TestSharedComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestComponent1 { Prop = 1 }, new TestSharedComponent1 { Prop = 2 });
-
-        private void Components_Blittable_NormalSharedUnique(int entityCount, Action<int, TestComponent1, TestSharedComponent1, TestUniqueComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestComponent1 { Prop = 1 }, new TestSharedComponent1 { Prop = 2 }, new TestUniqueComponent1 { Prop = 3 });
-
-        private void Components_Blittable_NormalUnique(int entityCount, Action<int, TestComponent1, TestUniqueComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestComponent1 { Prop = 1 }, new TestUniqueComponent1 { Prop = 2 });
-
-        private void Components_Blittable_Shared(int entityCount, Action<int, TestSharedComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestSharedComponent1 { Prop = 1 });
-
-        private void Components_Blittable_SharedUnique(int entityCount, Action<int, TestSharedComponent1, TestUniqueComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestSharedComponent1 { Prop = 1 }, new TestUniqueComponent1 { Prop = 2 });
-
-        private void Components_Blittable_Unique(int entityCount, Action<int, TestUniqueComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestUniqueComponent1 { Prop = 1 });
-
-        private void Components_BlittableManage_Normal(int entityCount, Action<int, TestComponent1, TestManageComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestComponent1 { Prop = 1 }, new TestManageComponent1 { Prop = 2 });
-
-        private void Components_BlittableManage_NormalShared(int entityCount, Action<int, TestComponent1, TestManageComponent1, TestSharedComponent1, TestManageSharedComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestComponent1 { Prop = 1 }, new TestManageComponent1 { Prop = 2 }, new TestSharedComponent1 { Prop = 3 }, new TestManageSharedComponent1 { Prop = 4 });
-
-        private void Components_BlittableManage_NormalSharedUnique(int entityCount, Action<int, TestComponent1, TestManageComponent1, TestSharedComponent1, TestManageSharedComponent1, TestUniqueComponent1, TestManageUniqueComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestComponent1 { Prop = 1 }, new TestManageComponent1 { Prop = 2 }, new TestSharedComponent1 { Prop = 3 }, new TestManageSharedComponent1 { Prop = 4 }, new TestUniqueComponent1 { Prop = 5 }, new TestManageUniqueComponent1 { Prop = 6 });
-
-        private void Components_BlittableManage_NormalUnique(int entityCount, Action<int, TestComponent1, TestManageComponent1, TestUniqueComponent1, TestManageUniqueComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestComponent1 { Prop = 1 }, new TestManageComponent1 { Prop = 2 }, new TestUniqueComponent1 { Prop = 3 }, new TestManageUniqueComponent1 { Prop = 4 });
-
-        private void Components_BlittableManage_Shared(int entityCount, Action<int, TestSharedComponent1, TestManageSharedComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestSharedComponent1 { Prop = 1 }, new TestManageSharedComponent1 { Prop = 2 });
-
-        private void Components_BlittableManage_SharedUnique(int entityCount, Action<int, TestSharedComponent1, TestManageSharedComponent1, TestUniqueComponent1, TestManageUniqueComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestSharedComponent1 { Prop = 1 }, new TestManageSharedComponent1 { Prop = 2 }, new TestUniqueComponent1 { Prop = 3 }, new TestManageUniqueComponent1 { Prop = 4 });
-
-        private void Components_BlittableManage_Unique(int entityCount, Action<int, TestUniqueComponent1, TestManageUniqueComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestUniqueComponent1 { Prop = 1 }, new TestManageUniqueComponent1 { Prop = 2 });
-
-        private void Components_Manage_Normal(int entityCount, Action<int, TestManageComponent1> assertAction) =>
-                                                                    assertAction.Invoke(entityCount, new TestManageComponent1 { Prop = 1 });
-
-        private void Components_Manage_NormalShared(int entityCount, Action<int, TestManageComponent1, TestManageSharedComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestManageComponent1 { Prop = 1 }, new TestManageSharedComponent1 { Prop = 2 });
-
-        private void Components_Manage_NormalSharedUnique(int entityCount, Action<int, TestManageComponent1, TestManageSharedComponent1, TestManageUniqueComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestManageComponent1 { Prop = 1 }, new TestManageSharedComponent1 { Prop = 2 }, new TestManageUniqueComponent1 { Prop = 3 });
-
-        private void Components_Manage_NormalUnique(int entityCount, Action<int, TestManageComponent1, TestManageUniqueComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestManageComponent1 { Prop = 1 }, new TestManageUniqueComponent1 { Prop = 2 });
-
-        private void Components_Manage_Shared(int entityCount, Action<int, TestManageSharedComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestManageSharedComponent1 { Prop = 1 });
-
-        private void Components_Manage_SharedUnique(int entityCount, Action<int, TestManageSharedComponent1, TestManageUniqueComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestManageSharedComponent1 { Prop = 1 }, new TestManageUniqueComponent1 { Prop = 2 });
-
-        private void Components_Manage_Unique(int entityCount, Action<int, TestManageUniqueComponent1> assertAction) =>
-            assertAction.Invoke(entityCount, new TestManageUniqueComponent1 { Prop = 1 });
-
-        #endregion Components
+        private void AssertHelper_EqualsSharedComponents<T>(Entity[] entities, T[] components, T sharedComponent)
+            where T : unmanaged, ISharedComponent, ITestComponent
+        {
+            Assert.IsTrue(entities.Length == components.Length);
+            for (var i = 0; i < entities.Length; i++)
+            {
+                Assert.IsTrue(components[i].Prop == sharedComponent.Prop,
+                    $"Enity.Id {entities[i].Id}, {typeof(T)}");
+            }
+        }
     }
 }

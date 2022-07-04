@@ -62,9 +62,9 @@
     <Compile Include="ManagerTests\EntityCommandManagerTest.cs" />
     <Compile Include="ManagerTests\EntityManagerTest_GetComponent.cs" />
     <Compile Include="ManagerTests\EntityManagerTest_GetComponents.cs" />
-    <Compile Include="ManagerTests\EntityManagerTest_UpdateComponent.cs" />
-    <Compile Include="ManagerTests\EntityManagerTest_Entity.cs" />
     <Compile Include="ManagerTests\EntityManagerTest_TransferEntity.cs" />
+    <Compile Include="ManagerTests\EntityManagerTest_Entity.cs" />
+    <Compile Include="ManagerTests\EntityManagerTest_UpdateComponent.cs" />
     <Compile Include="ManagerTests\SystemManagerTest.cs" />
     <Compile Include="EntityBlueprintTests\EntityBlueprintTest.cs" />
     <Compile Include="EntityCommandQueueTests\EntityCommandQueueTest.cs" />

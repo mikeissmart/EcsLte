@@ -783,7 +783,7 @@ namespace EcsLte
             }
         }
 
-        public void UpdateComponents<TComponent>(IEnumerable<Entity> entities, TComponent component) where TComponent : unmanaged, IComponent
+        public void UpdateSharedComponent<TComponent>(IEnumerable<Entity> entities, TComponent component) where TComponent : unmanaged, ISharedComponent
         {
             if (entities == null)
                 throw new ArgumentNullException(nameof(entities));
@@ -801,72 +801,50 @@ namespace EcsLte
             {
                 var config = ComponentConfig<TComponent>.Config;
                 var cachedConfigOffsets = new Dictionary<ArcheTypeIndex, ComponentConfigOffset>();
-                if (config.IsShared)
+                var cachedArcheTypeDatas = new Dictionary<ArcheTypeIndex, ArcheTypeData>();
+                var sharedIndexDic = SharedIndexDics.GetSharedIndexDic<TComponent>();
+                foreach (var entity in entities)
                 {
-                    var cachedArcheTypeDatas = new Dictionary<ArcheTypeIndex, ArcheTypeData>();
-                    var sharedIndexDic = SharedIndexDics.GetSharedIndexDic<TComponent>();
-                    foreach (var entity in entities)
+                    if (!HasComponent<TComponent>(entity))
+                        throw new EntityNotHaveComponentException(entity, typeof(TComponent));
+
+                    var entityData = _entityDatas[entity.Id];
+                    var prevArcheTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
+                    if (!cachedArcheTypeDatas.TryGetValue(prevArcheTypeData.ArcheTypeIndex, out var nextArcheTypeData))
                     {
-                        if (!HasComponent<TComponent>(entity))
-                            throw new EntityNotHaveComponentException(entity, typeof(TComponent));
-
-                        var entityData = _entityDatas[entity.Id];
-                        var prevArcheTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
-                        if (!cachedArcheTypeDatas.TryGetValue(prevArcheTypeData.ArcheTypeIndex, out var nextArcheTypeData))
+                        ArcheTypeManager.CachedArcheTypeCopyTo(prevArcheTypeData.ArcheType);
+                        var nextSharedDataIndex = new SharedComponentDataIndex
                         {
-                            ArcheTypeManager.CachedArcheTypeCopyTo(prevArcheTypeData.ArcheType);
-                            var nextSharedDataIndex = new SharedComponentDataIndex
-                            {
-                                SharedIndex = config.SharedIndex,
-                                SharedDataIndex = sharedIndexDic.GetOrAdd(component),
-                            };
-                            nextArcheTypeData = ArcheTypeManager.CachedArcheTypeGetNextArcheTypeData(prevArcheTypeData, nextSharedDataIndex);
-                            cachedArcheTypeDatas.Add(prevArcheTypeData.ArcheTypeIndex, nextArcheTypeData);
-                        }
-
-                        if (prevArcheTypeData != nextArcheTypeData)
-                        {
-                            entityData = ArcheTypeData.TransferEntity(
-                                entity,
-                                prevArcheTypeData,
-                                nextArcheTypeData,
-                                _entityDatas,
-                                _bookManager);
-                        }
-
-                        if (!cachedConfigOffsets.TryGetValue(nextArcheTypeData.ArcheTypeIndex, out var configOffset))
-                        {
-                            cachedConfigOffsets.Add(nextArcheTypeData.ArcheTypeIndex,
-                                nextArcheTypeData.GetComponentConfigOffset(config));
-                        }
-
-                        nextArcheTypeData.SetComponent(entityData, component, config);
-                        TrackerManager.TrackUpdate(entity, config);
+                            SharedIndex = config.SharedIndex,
+                            SharedDataIndex = sharedIndexDic.GetOrAdd(component),
+                        };
+                        nextArcheTypeData = ArcheTypeManager.CachedArcheTypeGetNextArcheTypeData(prevArcheTypeData, nextSharedDataIndex);
+                        cachedArcheTypeDatas.Add(prevArcheTypeData.ArcheTypeIndex, nextArcheTypeData);
                     }
-                }
-                else
-                {
-                    foreach (var entity in entities)
+
+                    if (prevArcheTypeData != nextArcheTypeData)
                     {
-                        if (!HasComponent<TComponent>(entity))
-                            throw new EntityNotHaveComponentException(entity, typeof(TComponent));
-
-                        var entityData = _entityDatas[entity.Id];
-                        var archeTypeData = ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
-                        if (!cachedConfigOffsets.TryGetValue(archeTypeData.ArcheTypeIndex, out var configOffset))
-                        {
-                            cachedConfigOffsets.Add(archeTypeData.ArcheTypeIndex,
-                                archeTypeData.GetComponentConfigOffset(config));
-                        }
-
-                        archeTypeData.SetComponent(entityData, component, config);
-                        TrackerManager.TrackUpdate(entity, config);
+                        entityData = ArcheTypeData.TransferEntity(
+                            entity,
+                            prevArcheTypeData,
+                            nextArcheTypeData,
+                            _entityDatas,
+                            _bookManager);
                     }
+
+                    if (!cachedConfigOffsets.TryGetValue(nextArcheTypeData.ArcheTypeIndex, out var configOffset))
+                    {
+                        cachedConfigOffsets.Add(nextArcheTypeData.ArcheTypeIndex,
+                            nextArcheTypeData.GetComponentConfigOffset(config));
+                    }
+
+                    nextArcheTypeData.SetComponent(entityData, component, config);
+                    TrackerManager.TrackUpdate(entity, config);
                 }
             }
         }
 
-        public void UpdateComponents<TComponent>(EntityArcheType entityArcheType, TComponent component) where TComponent : unmanaged, IComponent
+        public void UpdateSharedComponent<TComponent>(EntityArcheType entityArcheType, TComponent component) where TComponent : unmanaged, ISharedComponent
         {
             if (entityArcheType == null)
                 throw new ArgumentNullException(nameof(entityArcheType));
@@ -881,7 +859,7 @@ namespace EcsLte
             }
         }
 
-        public void UpdateComponents<TComponent>(EntityQuery entityQuery, TComponent component) where TComponent : unmanaged, IComponent
+        public void UpdateSharedComponent<TComponent>(EntityQuery entityQuery, TComponent component) where TComponent : unmanaged, ISharedComponent
         {
             if (entityQuery == null)
                 throw new ArgumentNullException(nameof(entityQuery));
@@ -1112,24 +1090,23 @@ namespace EcsLte
             }
         }
 
-        private void UpdateComponentsArcheType<TComponent>(ArcheTypeData prevArcheTypeData, TComponent component) where TComponent : unmanaged, IComponent
+        private void UpdateComponentsArcheType<TComponent>(ArcheTypeData prevArcheTypeData, TComponent component) where TComponent : unmanaged, ISharedComponent
         {
             var config = ComponentConfig<TComponent>.Config;
-            if (config.IsShared)
+            ArcheTypeManager.CachedArcheTypeCopyTo(prevArcheTypeData.ArcheType);
+            var nextArcheTypeData = ArcheTypeManager.CachedArcheTypeGetNextArcheTypeData(prevArcheTypeData,
+                SharedIndexDics.GetDataIndex(component));
+
+            if (nextArcheTypeData != prevArcheTypeData)
             {
-                ArcheTypeManager.CachedArcheTypeCopyTo(prevArcheTypeData.ArcheType);
-                var nextArcheTypeData = ArcheTypeManager.CachedArcheTypeGetNextArcheTypeData(prevArcheTypeData,
-                    SharedIndexDics.GetDataIndex(component));
-
-                if (nextArcheTypeData != prevArcheTypeData)
-                    ArcheTypeData.TransferAllEntities(
-                        prevArcheTypeData,
-                        nextArcheTypeData,
-                        _entityDatas,
-                        _bookManager);
-
+                ArcheTypeData.TransferAllEntities(
+                    prevArcheTypeData,
+                    nextArcheTypeData,
+                    _entityDatas,
+                    _bookManager);
                 prevArcheTypeData = nextArcheTypeData;
             }
+
             prevArcheTypeData.SetAllComponents(component, config);
 
             for (var i = 0; i < prevArcheTypeData.EntityCount; i++)

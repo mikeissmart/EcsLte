@@ -11,10 +11,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         private EntityQuery _query;
 
         // Didnt use ComponentArrangement because all the time were the same
-        [Params(
-            BenchmarkTestConsts.MediumCount,
-            BenchmarkTestConsts.LargeCount)]
-        public int EntityCount { get; set; }
+        public int EntityCount { get; set; } = BenchmarkTestConsts.LargeCount;
 
         [GlobalSetup]
         public void GlobalSetup()
@@ -22,7 +19,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             if (EcsContexts.HasContext("Test"))
                 EcsContexts.DestroyContext(EcsContexts.GetContext("Test"));
             _context = EcsContexts.CreateContext("Test");
-            _blueprint = EcsContextSetupCleanup.CreateBlueprint(ComponentArrangement.Normal_Bx4);
+            _blueprint = EcsContextSetupCleanup.CreateBlueprint(ComponentArrangement.Normal_x4);
         }
 
         [IterationSetup]

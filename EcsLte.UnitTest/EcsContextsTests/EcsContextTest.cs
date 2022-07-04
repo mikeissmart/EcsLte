@@ -48,7 +48,7 @@ namespace EcsLte.UnitTest.EcsContextTests
 
         [TestMethod]
         public void Create_null() => Assert.ThrowsException<ArgumentNullException>(()
-                                                => EcsContexts.CreateContext(null));
+                                                         => EcsContexts.CreateContext(null));
 
         [TestMethod]
         public void CreateMultiple()

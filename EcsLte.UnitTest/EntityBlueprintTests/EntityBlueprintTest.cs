@@ -18,7 +18,7 @@ namespace EcsLte.UnitTest.EntityBlueprintTests
 
         [TestMethod]
         public void GetComponent_Never() => Assert.ThrowsException<EntityBlueprintNotHaveComponentException>(() =>
-                                                       new EntityBlueprint().GetComponent<TestComponent1>());
+                                                                new EntityBlueprint().GetComponent<TestComponent1>());
 
         [TestMethod]
         public void GetComponent_Single()
@@ -89,7 +89,7 @@ namespace EcsLte.UnitTest.EntityBlueprintTests
 
         [TestMethod]
         public void RemoveComponent_Never() => Assert.ThrowsException<EntityBlueprintNotHaveComponentException>(() =>
-                                                          new EntityBlueprint().RemoveComponent<TestComponent1>());
+                                                                   new EntityBlueprint().RemoveComponent<TestComponent1>());
 
         [TestMethod]
         public void RemoveComponent_Single()
