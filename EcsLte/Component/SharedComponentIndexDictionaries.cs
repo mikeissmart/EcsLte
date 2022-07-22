@@ -60,10 +60,7 @@ namespace EcsLte
         internal void Clear()
         {
             for (var i = 0; i < _sharedComponentIndexes.Length; i++)
-            {
-                while (_sharedComponentIndexes[i].PopKeyObj(out var _))
-                { }
-            }
+                _sharedComponentIndexes[i].Clear();
         }
     }
 }

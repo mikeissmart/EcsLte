@@ -3,7 +3,7 @@
     internal unsafe struct EntityData
     {
         internal ArcheTypeIndex ArcheTypeIndex;
-        internal EntityMemorySlot Slot;
+        internal byte* ComponentsBuffer;
         internal int EntityIndex;
     }
 }

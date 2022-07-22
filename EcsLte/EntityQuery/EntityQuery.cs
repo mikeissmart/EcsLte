@@ -1,4 +1,5 @@
 ﻿using EcsLte.Exceptions;
+using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,628 +7,68 @@ using System.Threading.Tasks;
 
 namespace EcsLte
 {
-    public class EntityQuery : IEquatable<EntityQuery>
+    public class EntityQuery
     {
         private static readonly int _threadCount = (int)(Environment.ProcessorCount * 0.75);
+        private static bool _queryRunning = false;
 
-        public Type[] AllComponentTypes => QueryData.AllComponentTypes;
-        public Type[] AnyComponentTypes => QueryData.AnyComponentTypes;
-        public Type[] NoneComponentTypes => QueryData.NoneComponentTypes;
-        public ISharedComponent[] FilterComponents => QueryData.FilterComponents;
-        internal EntityQueryData QueryData { get; set; }
+        private Entity[] _cachedEntities;
 
-        public EntityQuery() => QueryData = new EntityQueryData();
+        public EcsContext Context { get; private set; }
+        public EntityFilter Filter { get; private set; }
+        public EntityTracker Tracker { get; private set; }
 
-        public static bool operator !=(EntityQuery lhs, EntityQuery rhs) => !(lhs == rhs);
-
-        public static bool operator ==(EntityQuery lhs, EntityQuery rhs)
+        public EntityQuery(EcsContext context, EntityFilter filter)
         {
-            if (ReferenceEquals(lhs, null) && ReferenceEquals(rhs, null))
-                return true;
-            if (ReferenceEquals(lhs, null) || ReferenceEquals(rhs, null))
-                return false;
+            EcsContext.AssertContext(context);
+            EntityFilter.AssertEntityFilter(filter);
 
-            return lhs.QueryData == rhs.QueryData;
+            _cachedEntities = new Entity[0];
+
+            Context = context;
+            Filter = filter;
         }
 
-        public bool Equals(EntityQuery other) => this == other;
-
-        public override bool Equals(object other) => other is EntityQuery obj && this == obj;
-
-        public override int GetHashCode() => QueryData.GetHashCode();
-
-        #region WhereOfs Filters
-
-        #region WhereOfs
-
-        public bool HasWhereOf<TComponent>()
-            where TComponent : IComponent
-            => HasWhereAllOf<TComponent>() ||
-                HasWhereAnyOf<TComponent>() ||
-                HasWhereNoneOf<TComponent>();
-
-        #region WhereAllOf
-
-        public bool HasWhereAllOf<TComponent>()
-            where TComponent : IComponent
+        public EntityQuery(EntityTracker tracker, EntityFilter filter)
         {
-            var config = ComponentConfig<TComponent>.Config;
-            for (var i = 0; i < QueryData.AllComponentConfigs.Length; i++)
-            {
-                if (QueryData.AllComponentConfigs[i] == config)
-                    return true;
-            }
+            EntityTracker.AssertEntityTracker(tracker, tracker?.Context);
+            EntityFilter.AssertEntityFilter(filter);
 
-            return false;
+            _cachedEntities = new Entity[0];
+
+            Context = tracker.Context;
+            Filter = filter;
+            Tracker = tracker;
         }
 
-        public EntityQuery WhereAllOf(EntityArcheType entityArcheType)
+        internal EntityQuery(EntityQuery clone)
         {
-            if (entityArcheType == null)
-                throw new ArgumentNullException(nameof(entityArcheType));
+            _cachedEntities = new Entity[0];
 
-            return new EntityQuery(this,
-                QueryCategory.All,
-                entityArcheType.ArcheTypeData.ComponentConfigs);
+            Context = clone.Context;
+            Filter = new EntityFilter(clone.Filter);
+            if (clone.Tracker != null)
+                Tracker = new EntityTracker(clone.Tracker);
         }
 
-        public EntityQuery WhereAllOf<T1>()
-            where T1 : IComponent
-            => new EntityQuery(this,
-                QueryCategory.All,
-                ComponentConfig<T1>.Config);
-
-        public EntityQuery WhereAllOf<T1, T2>()
-            where T1 : IComponent
-            where T2 : IComponent
-            => new EntityQuery(this,
-                QueryCategory.All,
-                new[]
-                {
-                    ComponentConfig<T1>.Config,
-                    ComponentConfig<T2>.Config
-                });
-
-        public EntityQuery WhereAllOf<T1, T2, T3>()
-            where T1 : IComponent
-            where T2 : IComponent
-            where T3 : IComponent
-            => new EntityQuery(this,
-                QueryCategory.All,
-                new[]
-                {
-                    ComponentConfig<T1>.Config,
-                    ComponentConfig<T2>.Config,
-                    ComponentConfig<T3>.Config
-                });
-
-        public EntityQuery WhereAllOf<T1, T2, T3, T4>()
-            where T1 : IComponent
-            where T2 : IComponent
-            where T3 : IComponent
-            where T4 : IComponent
-            => new EntityQuery(this,
-                QueryCategory.All,
-                new[]
-                {
-                    ComponentConfig<T1>.Config,
-                    ComponentConfig<T2>.Config,
-                    ComponentConfig<T3>.Config,
-                    ComponentConfig<T4>.Config
-                });
-
-        #endregion WhereAllOf
-
-        #region WhereAnyOf
-
-        public bool HasWhereAnyOf<TComponent>()
-            where TComponent : IComponent
-            => QueryData.AnyComponentConfigs.Contains(ComponentConfig<TComponent>.Config);
-
-        public EntityQuery WhereAnyOf(EntityArcheType entityArcheType)
+        internal static void AssertEntityQuery(EntityQuery query, EcsContext context)
         {
-            if (entityArcheType == null)
-                throw new ArgumentNullException(nameof(entityArcheType));
-
-            return new EntityQuery(this,
-                QueryCategory.Any,
-                entityArcheType.ArcheTypeData.ComponentConfigs);
+            if (query == null)
+                throw new ArgumentNullException(nameof(query));
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+            if (query.Context != context)
+                throw new EcsContextDifferentException(query.Context, context);
+            if (query.Tracker != null)
+                EntityTracker.AssertEntityTracker(query.Tracker, context);
         }
-
-        public EntityQuery WhereAnyOf<T1>()
-            where T1 : IComponent
-            => new EntityQuery(this,
-                QueryCategory.Any,
-                ComponentConfig<T1>.Config);
-
-        public EntityQuery WhereAnyOf<T1, T2>()
-            where T1 : IComponent
-            where T2 : IComponent
-            => new EntityQuery(this,
-                QueryCategory.Any,
-                new[]
-                {
-                    ComponentConfig<T1>.Config,
-                    ComponentConfig<T2>.Config
-                });
-
-        public EntityQuery WhereAnyOf<T1, T2, T3>()
-            where T1 : IComponent
-            where T2 : IComponent
-            where T3 : IComponent
-            => new EntityQuery(this,
-                QueryCategory.Any,
-                new[]
-                {
-                    ComponentConfig<T1>.Config,
-                    ComponentConfig<T2>.Config,
-                    ComponentConfig<T3>.Config
-                });
-
-        public EntityQuery WhereAnyOf<T1, T2, T3, T4>()
-            where T1 : IComponent
-            where T2 : IComponent
-            where T3 : IComponent
-            where T4 : IComponent
-            => new EntityQuery(this,
-                QueryCategory.Any,
-                new[]
-                {
-                    ComponentConfig<T1>.Config,
-                    ComponentConfig<T2>.Config,
-                    ComponentConfig<T3>.Config,
-                    ComponentConfig<T4>.Config
-                });
-
-        #endregion WhereAnyOf
-
-        #region WhereNoneOf
-
-        public bool HasWhereNoneOf<TComponent>()
-            where TComponent : IComponent
-            => QueryData.NoneComponentConfigs.Contains(ComponentConfig<TComponent>.Config);
-
-        public EntityQuery WhereNoneOf(EntityArcheType entityArcheType)
-        {
-            if (entityArcheType == null)
-                throw new ArgumentNullException(nameof(entityArcheType));
-
-            return new EntityQuery(this,
-                QueryCategory.None,
-                entityArcheType.ArcheTypeData.ComponentConfigs);
-        }
-
-        public EntityQuery WhereNoneOf<T1>()
-            where T1 : IComponent
-            => new EntityQuery(this,
-                QueryCategory.None,
-                ComponentConfig<T1>.Config);
-
-        public EntityQuery WhereNoneOf<T1, T2>()
-            where T1 : IComponent
-            where T2 : IComponent
-            => new EntityQuery(this,
-                QueryCategory.None,
-                new[]
-                {
-                    ComponentConfig<T1>.Config,
-                    ComponentConfig<T2>.Config
-                });
-
-        public EntityQuery WhereNoneOf<T1, T2, T3>()
-            where T1 : IComponent
-            where T2 : IComponent
-            where T3 : IComponent
-            => new EntityQuery(this,
-                QueryCategory.None,
-                new[]
-                {
-                    ComponentConfig<T1>.Config,
-                    ComponentConfig<T2>.Config,
-                    ComponentConfig<T3>.Config
-                });
-
-        public EntityQuery WhereNoneOf<T1, T2, T3, T4>()
-            where T1 : IComponent
-            where T2 : IComponent
-            where T3 : IComponent
-            where T4 : IComponent
-            => new EntityQuery(this,
-                QueryCategory.None,
-                new[]
-                {
-                    ComponentConfig<T1>.Config,
-                    ComponentConfig<T2>.Config,
-                    ComponentConfig<T3>.Config,
-                    ComponentConfig<T4>.Config
-                });
-
-        #endregion WhereNoneOf
-
-        #endregion WhereOfs
-
-        #region FilterBys
-
-        public bool HasFilterBy<TSharedComponent>()
-            where TSharedComponent : unmanaged, ISharedComponent
-        {
-            var config = ComponentConfig<TSharedComponent>.Config;
-            return QueryData.FilterComponentDatas.Any(x => x.Config == config);
-        }
-
-        public TSharedComponent GetFilterBy<TSharedComponent>()
-            where TSharedComponent : unmanaged, ISharedComponent
-        {
-            if (!HasFilterBy<TSharedComponent>())
-            {
-                throw new EntityQueryNothavFilterByException(
-                    ComponentConfigs.Instance.AllComponentTypes[ComponentConfig<TSharedComponent>.Config.ComponentIndex]);
-            }
-
-            var config = ComponentConfig<TSharedComponent>.Config;
-            return (TSharedComponent)QueryData.FilterComponentDatas.First(x => x.Config == config).Component;
-        }
-
-        public EntityQuery FilterBy(EntityArcheType entityArcheType)
-        {
-            if (entityArcheType == null)
-                throw new ArgumentNullException(nameof(entityArcheType));
-
-            return new EntityQuery(this,
-                entityArcheType.ArcheTypeData.SharedComponentDatas,
-                false);
-        }
-
-        public EntityQuery FilterBy<T1>(
-            T1 component1)
-            where T1 : unmanaged, ISharedComponent
-            => new EntityQuery(this,
-                new ComponentData<T1>(component1),
-                false);
-
-        public EntityQuery FilterBy<T1, T2>(
-            T1 component1,
-            T2 component2)
-            where T1 : unmanaged, ISharedComponent
-            where T2 : unmanaged, ISharedComponent
-            => new EntityQuery(this,
-                new IComponentData[]
-                {
-                    new ComponentData<T1>(component1),
-                    new ComponentData<T2>(component2)
-                },
-                false);
-
-        public EntityQuery FilterBy<T1, T2, T3>(
-            T1 component1,
-            T2 component2,
-            T3 component3)
-            where T1 : unmanaged, ISharedComponent
-            where T2 : unmanaged, ISharedComponent
-            where T3 : unmanaged, ISharedComponent
-            => new EntityQuery(this,
-                new IComponentData[]
-                {
-                    new ComponentData<T1>(component1),
-                    new ComponentData<T2>(component2),
-                    new ComponentData<T3>(component3)
-                },
-                false);
-
-        public EntityQuery FilterBy<T1, T2, T3, T4>(
-            T1 component1,
-            T2 component2,
-            T3 component3,
-            T4 component4)
-            where T1 : unmanaged, ISharedComponent
-            where T2 : unmanaged, ISharedComponent
-            where T3 : unmanaged, ISharedComponent
-            where T4 : unmanaged, ISharedComponent
-            => new EntityQuery(this,
-                new IComponentData[]
-                {
-                    new ComponentData<T1>(component1),
-                    new ComponentData<T2>(component2),
-                    new ComponentData<T3>(component3),
-                    new ComponentData<T4>(component4)
-                },
-                false);
-
-        public EntityQuery FilterByReplace(EntityArcheType entityArcheType)
-        {
-            if (entityArcheType == null)
-                throw new ArgumentNullException(nameof(entityArcheType));
-
-            return new EntityQuery(this,
-                entityArcheType.ArcheTypeData.SharedComponentDatas,
-                true);
-        }
-
-        public EntityQuery FilterByReplace<T1>(
-            T1 component1)
-            where T1 : unmanaged, ISharedComponent
-            => new EntityQuery(this,
-                new ComponentData<T1>(component1),
-                true);
-
-        public EntityQuery FilterByReplace<T1, T2>(
-            T1 component1,
-            T2 component2)
-            where T1 : unmanaged, ISharedComponent
-            where T2 : unmanaged, ISharedComponent
-            => new EntityQuery(this,
-                new IComponentData[]
-                {
-                    new ComponentData<T1>(component1),
-                    new ComponentData<T2>(component2)
-                },
-                true);
-
-        public EntityQuery FilterByReplace<T1, T2, T3>(
-            T1 component1,
-            T2 component2,
-            T3 component3)
-            where T1 : unmanaged, ISharedComponent
-            where T2 : unmanaged, ISharedComponent
-            where T3 : unmanaged, ISharedComponent
-            => new EntityQuery(this,
-                new IComponentData[]
-                {
-                    new ComponentData<T1>(component1),
-                    new ComponentData<T2>(component2),
-                    new ComponentData<T3>(component3)
-                },
-                true);
-
-        public EntityQuery FilterByReplace<T1, T2, T3, T4>(
-            T1 component1,
-            T2 component2,
-            T3 component3,
-            T4 component4)
-            where T1 : unmanaged, ISharedComponent
-            where T2 : unmanaged, ISharedComponent
-            where T3 : unmanaged, ISharedComponent
-            where T4 : unmanaged, ISharedComponent
-            => new EntityQuery(this,
-                new IComponentData[]
-                {
-                    new ComponentData<T1>(component1),
-                    new ComponentData<T2>(component2),
-                    new ComponentData<T3>(component3),
-                    new ComponentData<T4>(component4)
-                },
-                true);
-
-        #endregion FilterBys
-
-        #region Privates
-
-        private EntityQuery(EntityQuery query, QueryCategory category, ComponentConfig config)
-        {
-            CheckDistinctConfig(query.QueryData.AllComponentConfigs, config);
-            CheckDistinctConfig(query.QueryData.AnyComponentConfigs, config);
-            CheckDistinctConfig(query.QueryData.NoneComponentConfigs, config);
-
-            QueryData = new EntityQueryData(
-                category == QueryCategory.All
-                    ? AddOrReplaceConfig(query.QueryData.AllComponentConfigs, config, false)
-                    : query.QueryData.AllComponentConfigs,
-                category == QueryCategory.Any
-                    ? AddOrReplaceConfig(query.QueryData.AnyComponentConfigs, config, false)
-                    : query.QueryData.AnyComponentConfigs,
-                category == QueryCategory.None
-                    ? AddOrReplaceConfig(query.QueryData.NoneComponentConfigs, config, false)
-                    : query.QueryData.NoneComponentConfigs,
-                query.QueryData.FilterComponentDatas);
-        }
-
-        private EntityQuery(EntityQuery query, QueryCategory category, ComponentConfig[] configs)
-        {
-            CheckDuplicateConfigs(configs);
-            CheckDistinctConfigs(query.QueryData.AllComponentConfigs, configs);
-            CheckDistinctConfigs(query.QueryData.AnyComponentConfigs, configs);
-            CheckDistinctConfigs(query.QueryData.NoneComponentConfigs, configs);
-
-            QueryData = new EntityQueryData(
-                category == QueryCategory.All
-                    ? AddOrReplaceConfigs(query.QueryData.AllComponentConfigs, configs, false)
-                    : query.QueryData.AllComponentConfigs,
-                category == QueryCategory.Any
-                    ? AddOrReplaceConfigs(query.QueryData.AnyComponentConfigs, configs, false)
-                    : query.QueryData.AnyComponentConfigs,
-                category == QueryCategory.None
-                    ? AddOrReplaceConfigs(query.QueryData.NoneComponentConfigs, configs, false)
-                    : query.QueryData.NoneComponentConfigs,
-                query.QueryData.FilterComponentDatas);
-        }
-
-        private EntityQuery(EntityQuery query, IComponentData filterComponent, bool replace)
-        {
-            CheckDistinctConfig(query.QueryData.AnyComponentConfigs, filterComponent.Config);
-            CheckDistinctConfig(query.QueryData.NoneComponentConfigs, filterComponent.Config);
-
-            QueryData = new EntityQueryData(
-                AddOrReplaceConfig(query.QueryData.AllComponentConfigs, filterComponent.Config, true),
-                query.QueryData.AnyComponentConfigs,
-                query.QueryData.NoneComponentConfigs,
-                AddOrReplaceFilterComponent(query.QueryData.FilterComponentDatas, filterComponent, replace));
-        }
-
-        private EntityQuery(EntityQuery query, IComponentData[] filterComponents, bool replace)
-        {
-            var configs = filterComponents.Select(x => x.Config).ToArray();
-
-            CheckDuplicateConfigs(configs);
-            CheckDistinctConfigs(query.QueryData.AnyComponentConfigs, configs);
-            CheckDistinctConfigs(query.QueryData.NoneComponentConfigs, configs);
-
-            QueryData = new EntityQueryData(
-                AddOrReplaceConfigs(query.QueryData.AllComponentConfigs, configs, true),
-                query.QueryData.AnyComponentConfigs,
-                query.QueryData.NoneComponentConfigs,
-                AddOrReplaceFilterComponents(query.QueryData.FilterComponentDatas, filterComponents, replace));
-        }
-
-        private static void CheckDuplicateConfigs(ComponentConfig[] configs)
-        {
-            for (var i = 0; i < configs.Length; i++)
-            {
-                for (var j = i + 1; j < configs.Length; j++)
-                {
-                    if (configs[i] == configs[j])
-                    {
-                        throw new EntityQueryDuplicateComponentException(
-                            ComponentConfigs.Instance.AllComponentTypes[configs[i].ComponentIndex]);
-                    }
-                }
-            }
-        }
-
-        private static void CheckDistinctConfig(ComponentConfig[] sourceConfigs, ComponentConfig config)
-        {
-            if (sourceConfigs.Contains(config))
-            {
-                throw new EntityQueryAlreadyHasWhereException(
-                    ComponentConfigs.Instance.AllComponentTypes[config.ComponentIndex]);
-            }
-        }
-
-        private static void CheckDistinctConfigs(ComponentConfig[] sourceConfigs, ComponentConfig[] configs)
-        {
-            if (sourceConfigs.Any(x => configs.Contains(x)))
-            {
-                throw new EntityQueryAlreadyHasWhereException(
-                    ComponentConfigs.Instance.AllComponentTypes[configs.First(x => configs.Contains(x)).ComponentIndex]);
-            }
-        }
-
-        private static ComponentConfig[] AddOrReplaceConfig(ComponentConfig[] sourceConfigs, ComponentConfig config, bool replace)
-        {
-            ComponentConfig[] destConfigs;
-            if (sourceConfigs.Contains(config))
-            {
-                if (!replace)
-                {
-                    throw new EntityQueryAlreadyHasWhereException(
-                        ComponentConfigs.Instance.AllComponentTypes[config.ComponentIndex]);
-                }
-                else
-                {
-                    destConfigs = sourceConfigs;
-                }
-            }
-            else
-            {
-                destConfigs = new ComponentConfig[sourceConfigs.Length + 1];
-                destConfigs[sourceConfigs.Length] = config;
-                Array.Copy(sourceConfigs, destConfigs, sourceConfigs.Length);
-                Array.Sort(destConfigs);
-            }
-
-            return destConfigs;
-        }
-
-        private static ComponentConfig[] AddOrReplaceConfigs(ComponentConfig[] sourceConfigs, ComponentConfig[] configs, bool replace)
-        {
-            var destConfigs = new List<ComponentConfig>(sourceConfigs);
-            foreach (var config in configs)
-            {
-                if (destConfigs.Contains(config))
-                {
-                    if (!replace)
-                    {
-                        throw new EntityQueryAlreadyHasWhereException(
-                            ComponentConfigs.Instance.AllComponentTypes[config.ComponentIndex]);
-                    }
-                }
-                else
-                {
-                    destConfigs.Add(config);
-                }
-            }
-            destConfigs.Sort();
-
-            return destConfigs.ToArray();
-        }
-
-        private static IComponentData[] AddOrReplaceFilterComponent(IComponentData[] sourceFilterComponents, IComponentData filterComponent, bool replace)
-        {
-            IComponentData[] destFilterComponents;
-            var hasFilterComponent = sourceFilterComponents.Any(x => x.Config == filterComponent.Config);
-            if (hasFilterComponent && !replace)
-            {
-                throw new EntityQueryAlreadyFilteredByException(
-                    ComponentConfigs.Instance.AllComponentTypes[filterComponent.Config.ComponentIndex]);
-            }
-            else if (hasFilterComponent)
-            {
-                destFilterComponents = new IComponentData[sourceFilterComponents.Length];
-                Array.Copy(sourceFilterComponents, destFilterComponents, sourceFilterComponents.Length);
-                var index = sourceFilterComponents
-                    .Select((x, i) => (x, i))
-                    .Where(x => x.x.Config == filterComponent.Config)
-                    .Select(x => x.i)
-                    .First();
-                destFilterComponents[index] = filterComponent;
-            }
-            else
-            {
-                destFilterComponents = new IComponentData[sourceFilterComponents.Length + 1];
-                destFilterComponents[sourceFilterComponents.Length] = filterComponent;
-                Array.Copy(sourceFilterComponents, destFilterComponents, sourceFilterComponents.Length);
-                Array.Sort(destFilterComponents);
-            }
-
-            return destFilterComponents;
-        }
-
-        private static IComponentData[] AddOrReplaceFilterComponents(IComponentData[] sourceFilterComponents, IComponentData[] filterComponents, bool replace)
-        {
-            var destFilterComponents = new List<IComponentData>(sourceFilterComponents);
-            foreach (var filterComponent in filterComponents)
-            {
-                var hasFilterComponent = sourceFilterComponents.Any(x => x.Config == filterComponent.Config);
-                if (hasFilterComponent && !replace)
-                {
-                    throw new EntityQueryAlreadyFilteredByException(
-                        ComponentConfigs.Instance.AllComponentTypes[filterComponent.Config.ComponentIndex]);
-                }
-                else if (hasFilterComponent)
-                {
-                    var index = destFilterComponents
-                        .Select((x, i) => (x, i))
-                        .Where(x => x.x.Config == filterComponent.Config)
-                        .Select(x => x.i)
-                        .First();
-                    destFilterComponents[index] = filterComponent;
-                }
-                else
-                {
-                    destFilterComponents.Add(filterComponent);
-                }
-            }
-            destFilterComponents.Sort();
-
-            return destFilterComponents.ToArray();
-        }
-
-        private enum QueryCategory
-        {
-            All,
-            Any,
-            None
-        }
-
-        #endregion Privates
-
-        #endregion WhereOfs Filters
 
         #region ForEachs
 
         #region ForEachs
 
-        public unsafe void ForEach(EcsContext context, bool runParallel, EntityQueryActions.R0W0 action) =>
-            ForEachRun(context, runParallel, 0,
+        public unsafe void ForEach(EntityQueryActions.R0W0 action, bool runParallel, EntityCommands commandQueue = null) =>
+            ForEachRun(commandQueue, runParallel, 0,
                 new ComponentConfig[0],
                 (options) =>
                 {
@@ -636,8 +77,8 @@ namespace EcsLte
 
         #region Write 0
 
-        public unsafe void ForEach<T1>(EcsContext context, bool runParallel, EntityQueryActions.R1W0<T1> action)
-            where T1 : IComponent => ForEachRun(context, runParallel, 0,
+        public unsafe void ForEach<T1>(EntityQueryActions.R1W0<T1> action, bool runParallel, EntityCommands commandQueue = null)
+            where T1 : IComponent => ForEachRun(commandQueue, runParallel, 0,
                 new[]
                 {
                     ComponentConfig<T1>.Config
@@ -648,9 +89,9 @@ namespace EcsLte
                         in ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2>(EcsContext context, bool runParallel, EntityQueryActions.R2W0<T1, T2> action)
+        public unsafe void ForEach<T1, T2>(EntityQueryActions.R2W0<T1, T2> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
-            where T2 : IComponent => ForEachRun(context, runParallel, 0,
+            where T2 : IComponent => ForEachRun(commandQueue, runParallel, 0,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -663,10 +104,10 @@ namespace EcsLte
                         in ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3>(EcsContext context, bool runParallel, EntityQueryActions.R3W0<T1, T2, T3> action)
+        public unsafe void ForEach<T1, T2, T3>(EntityQueryActions.R3W0<T1, T2, T3> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
-            where T3 : IComponent => ForEachRun(context, runParallel, 0,
+            where T3 : IComponent => ForEachRun(commandQueue, runParallel, 0,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -681,11 +122,11 @@ namespace EcsLte
                         in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4>(EcsContext context, bool runParallel, EntityQueryActions.R4W0<T1, T2, T3, T4> action)
+        public unsafe void ForEach<T1, T2, T3, T4>(EntityQueryActions.R4W0<T1, T2, T3, T4> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
-            where T4 : IComponent => ForEachRun(context, runParallel, 0,
+            where T4 : IComponent => ForEachRun(commandQueue, runParallel, 0,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -702,12 +143,12 @@ namespace EcsLte
                         in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5>(EcsContext context, bool runParallel, EntityQueryActions.R5W0<T1, T2, T3, T4, T5> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5>(EntityQueryActions.R5W0<T1, T2, T3, T4, T5> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
-            where T5 : IComponent => ForEachRun(context, runParallel, 0,
+            where T5 : IComponent => ForEachRun(commandQueue, runParallel, 0,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -726,13 +167,13 @@ namespace EcsLte
                         in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R6W0<T1, T2, T3, T4, T5, T6> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EntityQueryActions.R6W0<T1, T2, T3, T4, T5, T6> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
-            where T6 : IComponent => ForEachRun(context, runParallel, 0,
+            where T6 : IComponent => ForEachRun(commandQueue, runParallel, 0,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -753,14 +194,14 @@ namespace EcsLte
                         in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R7W0<T1, T2, T3, T4, T5, T6, T7> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EntityQueryActions.R7W0<T1, T2, T3, T4, T5, T6, T7> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
             where T6 : IComponent
-            where T7 : IComponent => ForEachRun(context, runParallel, 0,
+            where T7 : IComponent => ForEachRun(commandQueue, runParallel, 0,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -783,7 +224,7 @@ namespace EcsLte
                         in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R8W0<T1, T2, T3, T4, T5, T6, T7, T8> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EntityQueryActions.R8W0<T1, T2, T3, T4, T5, T6, T7, T8> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
@@ -791,7 +232,7 @@ namespace EcsLte
             where T5 : IComponent
             where T6 : IComponent
             where T7 : IComponent
-            where T8 : IComponent => ForEachRun(context, runParallel, 0,
+            where T8 : IComponent => ForEachRun(commandQueue, runParallel, 0,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -820,8 +261,8 @@ namespace EcsLte
 
         #region Write 1
 
-        public unsafe void ForEach<T1>(EcsContext context, bool runParallel, EntityQueryActions.R0W1<T1> action)
-            where T1 : IComponent => ForEachRun(context, runParallel, 1,
+        public unsafe void ForEach<T1>(EntityQueryActions.R0W1<T1> action, bool runParallel, EntityCommands commandQueue = null)
+            where T1 : IComponent => ForEachRun(commandQueue, runParallel, 1,
                 new[]
                 {
                     ComponentConfig<T1>.Config
@@ -832,9 +273,9 @@ namespace EcsLte
                         ref ((IComponentAdapter<T1>)options.ComponentAdapters[0]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2>(EcsContext context, bool runParallel, EntityQueryActions.R1W1<T1, T2> action)
+        public unsafe void ForEach<T1, T2>(EntityQueryActions.R1W1<T1, T2> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
-            where T2 : IComponent => ForEachRun(context, runParallel, 1,
+            where T2 : IComponent => ForEachRun(commandQueue, runParallel, 1,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -847,10 +288,10 @@ namespace EcsLte
                         in ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3>(EcsContext context, bool runParallel, EntityQueryActions.R2W1<T1, T2, T3> action)
+        public unsafe void ForEach<T1, T2, T3>(EntityQueryActions.R2W1<T1, T2, T3> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
-            where T3 : IComponent => ForEachRun(context, runParallel, 1,
+            where T3 : IComponent => ForEachRun(commandQueue, runParallel, 1,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -865,11 +306,11 @@ namespace EcsLte
                         in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4>(EcsContext context, bool runParallel, EntityQueryActions.R3W1<T1, T2, T3, T4> action)
+        public unsafe void ForEach<T1, T2, T3, T4>(EntityQueryActions.R3W1<T1, T2, T3, T4> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
-            where T4 : IComponent => ForEachRun(context, runParallel, 1,
+            where T4 : IComponent => ForEachRun(commandQueue, runParallel, 1,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -886,12 +327,12 @@ namespace EcsLte
                         in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5>(EcsContext context, bool runParallel, EntityQueryActions.R4W1<T1, T2, T3, T4, T5> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5>(EntityQueryActions.R4W1<T1, T2, T3, T4, T5> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
-            where T5 : IComponent => ForEachRun(context, runParallel, 1,
+            where T5 : IComponent => ForEachRun(commandQueue, runParallel, 1,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -910,13 +351,13 @@ namespace EcsLte
                         in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R5W1<T1, T2, T3, T4, T5, T6> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EntityQueryActions.R5W1<T1, T2, T3, T4, T5, T6> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
-            where T6 : IComponent => ForEachRun(context, runParallel, 1,
+            where T6 : IComponent => ForEachRun(commandQueue, runParallel, 1,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -937,14 +378,14 @@ namespace EcsLte
                         in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R6W1<T1, T2, T3, T4, T5, T6, T7> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EntityQueryActions.R6W1<T1, T2, T3, T4, T5, T6, T7> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
             where T6 : IComponent
-            where T7 : IComponent => ForEachRun(context, runParallel, 1,
+            where T7 : IComponent => ForEachRun(commandQueue, runParallel, 1,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -967,7 +408,7 @@ namespace EcsLte
                         in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R7W1<T1, T2, T3, T4, T5, T6, T7, T8> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EntityQueryActions.R7W1<T1, T2, T3, T4, T5, T6, T7, T8> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
@@ -975,7 +416,7 @@ namespace EcsLte
             where T5 : IComponent
             where T6 : IComponent
             where T7 : IComponent
-            where T8 : IComponent => ForEachRun(context, runParallel, 1,
+            where T8 : IComponent => ForEachRun(commandQueue, runParallel, 1,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1004,9 +445,9 @@ namespace EcsLte
 
         #region Write 2
 
-        public unsafe void ForEach<T1, T2>(EcsContext context, bool runParallel, EntityQueryActions.R0W2<T1, T2> action)
+        public unsafe void ForEach<T1, T2>(EntityQueryActions.R0W2<T1, T2> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
-            where T2 : IComponent => ForEachRun(context, runParallel, 2,
+            where T2 : IComponent => ForEachRun(commandQueue, runParallel, 2,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1019,10 +460,10 @@ namespace EcsLte
                         ref ((IComponentAdapter<T2>)options.ComponentAdapters[1]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3>(EcsContext context, bool runParallel, EntityQueryActions.R1W2<T1, T2, T3> action)
+        public unsafe void ForEach<T1, T2, T3>(EntityQueryActions.R1W2<T1, T2, T3> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
-            where T3 : IComponent => ForEachRun(context, runParallel, 2,
+            where T3 : IComponent => ForEachRun(commandQueue, runParallel, 2,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1037,11 +478,11 @@ namespace EcsLte
                         in ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4>(EcsContext context, bool runParallel, EntityQueryActions.R2W2<T1, T2, T3, T4> action)
+        public unsafe void ForEach<T1, T2, T3, T4>(EntityQueryActions.R2W2<T1, T2, T3, T4> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
-            where T4 : IComponent => ForEachRun(context, runParallel, 2,
+            where T4 : IComponent => ForEachRun(commandQueue, runParallel, 2,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1058,12 +499,12 @@ namespace EcsLte
                         in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5>(EcsContext context, bool runParallel, EntityQueryActions.R3W2<T1, T2, T3, T4, T5> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5>(EntityQueryActions.R3W2<T1, T2, T3, T4, T5> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
-            where T5 : IComponent => ForEachRun(context, runParallel, 2,
+            where T5 : IComponent => ForEachRun(commandQueue, runParallel, 2,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1082,13 +523,13 @@ namespace EcsLte
                         in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R4W2<T1, T2, T3, T4, T5, T6> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EntityQueryActions.R4W2<T1, T2, T3, T4, T5, T6> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
-            where T6 : IComponent => ForEachRun(context, runParallel, 2,
+            where T6 : IComponent => ForEachRun(commandQueue, runParallel, 2,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1109,14 +550,14 @@ namespace EcsLte
                         in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R5W2<T1, T2, T3, T4, T5, T6, T7> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EntityQueryActions.R5W2<T1, T2, T3, T4, T5, T6, T7> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
             where T6 : IComponent
-            where T7 : IComponent => ForEachRun(context, runParallel, 2,
+            where T7 : IComponent => ForEachRun(commandQueue, runParallel, 2,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1139,7 +580,7 @@ namespace EcsLte
                         in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R6W2<T1, T2, T3, T4, T5, T6, T7, T8> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EntityQueryActions.R6W2<T1, T2, T3, T4, T5, T6, T7, T8> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
@@ -1147,7 +588,7 @@ namespace EcsLte
             where T5 : IComponent
             where T6 : IComponent
             where T7 : IComponent
-            where T8 : IComponent => ForEachRun(context, runParallel, 2,
+            where T8 : IComponent => ForEachRun(commandQueue, runParallel, 2,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1176,10 +617,10 @@ namespace EcsLte
 
         #region Write 3
 
-        public unsafe void ForEach<T1, T2, T3>(EcsContext context, bool runParallel, EntityQueryActions.R0W3<T1, T2, T3> action)
+        public unsafe void ForEach<T1, T2, T3>(EntityQueryActions.R0W3<T1, T2, T3> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
-            where T3 : IComponent => ForEachRun(context, runParallel, 3,
+            where T3 : IComponent => ForEachRun(commandQueue, runParallel, 3,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1194,11 +635,11 @@ namespace EcsLte
                         ref ((IComponentAdapter<T3>)options.ComponentAdapters[2]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4>(EcsContext context, bool runParallel, EntityQueryActions.R1W3<T1, T2, T3, T4> action)
+        public unsafe void ForEach<T1, T2, T3, T4>(EntityQueryActions.R1W3<T1, T2, T3, T4> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
-            where T4 : IComponent => ForEachRun(context, runParallel, 3,
+            where T4 : IComponent => ForEachRun(commandQueue, runParallel, 3,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1215,12 +656,12 @@ namespace EcsLte
                         in ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5>(EcsContext context, bool runParallel, EntityQueryActions.R2W3<T1, T2, T3, T4, T5> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5>(EntityQueryActions.R2W3<T1, T2, T3, T4, T5> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
-            where T5 : IComponent => ForEachRun(context, runParallel, 3,
+            where T5 : IComponent => ForEachRun(commandQueue, runParallel, 3,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1239,13 +680,13 @@ namespace EcsLte
                         in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R3W3<T1, T2, T3, T4, T5, T6> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EntityQueryActions.R3W3<T1, T2, T3, T4, T5, T6> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
-            where T6 : IComponent => ForEachRun(context, runParallel, 3,
+            where T6 : IComponent => ForEachRun(commandQueue, runParallel, 3,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1266,14 +707,14 @@ namespace EcsLte
                         in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R4W3<T1, T2, T3, T4, T5, T6, T7> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EntityQueryActions.R4W3<T1, T2, T3, T4, T5, T6, T7> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
             where T6 : IComponent
-            where T7 : IComponent => ForEachRun(context, runParallel, 3,
+            where T7 : IComponent => ForEachRun(commandQueue, runParallel, 3,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1296,7 +737,7 @@ namespace EcsLte
                         in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R5W3<T1, T2, T3, T4, T5, T6, T7, T8> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EntityQueryActions.R5W3<T1, T2, T3, T4, T5, T6, T7, T8> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
@@ -1304,7 +745,7 @@ namespace EcsLte
             where T5 : IComponent
             where T6 : IComponent
             where T7 : IComponent
-            where T8 : IComponent => ForEachRun(context, runParallel, 3,
+            where T8 : IComponent => ForEachRun(commandQueue, runParallel, 3,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1333,11 +774,11 @@ namespace EcsLte
 
         #region Write 4
 
-        public unsafe void ForEach<T1, T2, T3, T4>(EcsContext context, bool runParallel, EntityQueryActions.R0W4<T1, T2, T3, T4> action)
+        public unsafe void ForEach<T1, T2, T3, T4>(EntityQueryActions.R0W4<T1, T2, T3, T4> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
-            where T4 : IComponent => ForEachRun(context, runParallel, 4,
+            where T4 : IComponent => ForEachRun(commandQueue, runParallel, 4,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1354,12 +795,12 @@ namespace EcsLte
                         ref ((IComponentAdapter<T4>)options.ComponentAdapters[3]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5>(EcsContext context, bool runParallel, EntityQueryActions.R1W4<T1, T2, T3, T4, T5> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5>(EntityQueryActions.R1W4<T1, T2, T3, T4, T5> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
-            where T5 : IComponent => ForEachRun(context, runParallel, 4,
+            where T5 : IComponent => ForEachRun(commandQueue, runParallel, 4,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1378,13 +819,13 @@ namespace EcsLte
                         in ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R2W4<T1, T2, T3, T4, T5, T6> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EntityQueryActions.R2W4<T1, T2, T3, T4, T5, T6> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
-            where T6 : IComponent => ForEachRun(context, runParallel, 4,
+            where T6 : IComponent => ForEachRun(commandQueue, runParallel, 4,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1405,14 +846,14 @@ namespace EcsLte
                         in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R3W4<T1, T2, T3, T4, T5, T6, T7> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EntityQueryActions.R3W4<T1, T2, T3, T4, T5, T6, T7> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
             where T6 : IComponent
-            where T7 : IComponent => ForEachRun(context, runParallel, 4,
+            where T7 : IComponent => ForEachRun(commandQueue, runParallel, 4,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1435,7 +876,7 @@ namespace EcsLte
                         in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R4W4<T1, T2, T3, T4, T5, T6, T7, T8> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EntityQueryActions.R4W4<T1, T2, T3, T4, T5, T6, T7, T8> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
@@ -1443,7 +884,7 @@ namespace EcsLte
             where T5 : IComponent
             where T6 : IComponent
             where T7 : IComponent
-            where T8 : IComponent => ForEachRun(context, runParallel, 4,
+            where T8 : IComponent => ForEachRun(commandQueue, runParallel, 4,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1472,12 +913,12 @@ namespace EcsLte
 
         #region Write 5
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5>(EcsContext context, bool runParallel, EntityQueryActions.R0W5<T1, T2, T3, T4, T5> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5>(EntityQueryActions.R0W5<T1, T2, T3, T4, T5> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
-            where T5 : IComponent => ForEachRun(context, runParallel, 5,
+            where T5 : IComponent => ForEachRun(commandQueue, runParallel, 5,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1496,13 +937,13 @@ namespace EcsLte
                         ref ((IComponentAdapter<T5>)options.ComponentAdapters[4]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R1W5<T1, T2, T3, T4, T5, T6> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EntityQueryActions.R1W5<T1, T2, T3, T4, T5, T6> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
-            where T6 : IComponent => ForEachRun(context, runParallel, 5,
+            where T6 : IComponent => ForEachRun(commandQueue, runParallel, 5,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1523,14 +964,14 @@ namespace EcsLte
                         in ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R2W5<T1, T2, T3, T4, T5, T6, T7> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EntityQueryActions.R2W5<T1, T2, T3, T4, T5, T6, T7> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
             where T6 : IComponent
-            where T7 : IComponent => ForEachRun(context, runParallel, 5,
+            where T7 : IComponent => ForEachRun(commandQueue, runParallel, 5,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1553,7 +994,7 @@ namespace EcsLte
                         in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R3W5<T1, T2, T3, T4, T5, T6, T7, T8> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EntityQueryActions.R3W5<T1, T2, T3, T4, T5, T6, T7, T8> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
@@ -1561,7 +1002,7 @@ namespace EcsLte
             where T5 : IComponent
             where T6 : IComponent
             where T7 : IComponent
-            where T8 : IComponent => ForEachRun(context, runParallel, 5,
+            where T8 : IComponent => ForEachRun(commandQueue, runParallel, 5,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1590,13 +1031,13 @@ namespace EcsLte
 
         #region Write 6
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EcsContext context, bool runParallel, EntityQueryActions.R0W6<T1, T2, T3, T4, T5, T6> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6>(EntityQueryActions.R0W6<T1, T2, T3, T4, T5, T6> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
-            where T6 : IComponent => ForEachRun(context, runParallel, 6,
+            where T6 : IComponent => ForEachRun(commandQueue, runParallel, 6,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1617,14 +1058,14 @@ namespace EcsLte
                         ref ((IComponentAdapter<T6>)options.ComponentAdapters[5]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R1W6<T1, T2, T3, T4, T5, T6, T7> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EntityQueryActions.R1W6<T1, T2, T3, T4, T5, T6, T7> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
             where T6 : IComponent
-            where T7 : IComponent => ForEachRun(context, runParallel, 6,
+            where T7 : IComponent => ForEachRun(commandQueue, runParallel, 6,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1647,7 +1088,7 @@ namespace EcsLte
                         in ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R2W6<T1, T2, T3, T4, T5, T6, T7, T8> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EntityQueryActions.R2W6<T1, T2, T3, T4, T5, T6, T7, T8> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
@@ -1655,7 +1096,7 @@ namespace EcsLte
             where T5 : IComponent
             where T6 : IComponent
             where T7 : IComponent
-            where T8 : IComponent => ForEachRun(context, runParallel, 6,
+            where T8 : IComponent => ForEachRun(commandQueue, runParallel, 6,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1684,14 +1125,14 @@ namespace EcsLte
 
         #region Write 7
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EcsContext context, bool runParallel, EntityQueryActions.R0W7<T1, T2, T3, T4, T5, T6, T7> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7>(EntityQueryActions.R0W7<T1, T2, T3, T4, T5, T6, T7> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
             where T4 : IComponent
             where T5 : IComponent
             where T6 : IComponent
-            where T7 : IComponent => ForEachRun(context, runParallel, 7,
+            where T7 : IComponent => ForEachRun(commandQueue, runParallel, 7,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1714,7 +1155,7 @@ namespace EcsLte
                         ref ((IComponentAdapter<T7>)options.ComponentAdapters[6]).GetComponentRef());
                 });
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R1W7<T1, T2, T3, T4, T5, T6, T7, T8> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EntityQueryActions.R1W7<T1, T2, T3, T4, T5, T6, T7, T8> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
@@ -1722,7 +1163,7 @@ namespace EcsLte
             where T5 : IComponent
             where T6 : IComponent
             where T7 : IComponent
-            where T8 : IComponent => ForEachRun(context, runParallel, 7,
+            where T8 : IComponent => ForEachRun(commandQueue, runParallel, 7,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1751,7 +1192,7 @@ namespace EcsLte
 
         #region Write 8
 
-        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EcsContext context, bool runParallel, EntityQueryActions.R0W8<T1, T2, T3, T4, T5, T6, T7, T8> action)
+        public unsafe void ForEach<T1, T2, T3, T4, T5, T6, T7, T8>(EntityQueryActions.R0W8<T1, T2, T3, T4, T5, T6, T7, T8> action, bool runParallel, EntityCommands commandQueue = null)
             where T1 : IComponent
             where T2 : IComponent
             where T3 : IComponent
@@ -1759,7 +1200,7 @@ namespace EcsLte
             where T5 : IComponent
             where T6 : IComponent
             where T7 : IComponent
-            where T8 : IComponent => ForEachRun(context, runParallel, 8,
+            where T8 : IComponent => ForEachRun(commandQueue, runParallel, 8,
                 new[]
                 {
                     ComponentConfig<T1>.Config,
@@ -1790,31 +1231,35 @@ namespace EcsLte
 
         #region Privates
 
-        private unsafe void ForEachRun(EcsContext context, bool runParallel, int writeCount, ComponentConfig[] configs, ForEachRunAction action)
+        private unsafe void ForEachRun(EntityCommands commandQueue, bool runParallel, int writeCount, ComponentConfig[] configs, ForEachRunAction action)
         {
-            var missingConfigs = configs.Where(x => !QueryData.AllComponentConfigs.Contains(x));
+            if (_queryRunning)
+                throw new EntityQueryAlreadyRunningException();
+            _queryRunning = true;
+            if (commandQueue != null && commandQueue.Context != Context)
+                throw new EcsContextDifferentException(Context, commandQueue.Context);
+
+            Context.AssertContext();
+            Helper.AssertDuplicateConfigs(configs);
+
+            var missingConfigs = configs.Where(x => !Filter.AllOfComponentConfigs.Contains(x));
             if (missingConfigs.Count() > 0)
-            {
-                throw new EntityQueryNotHaveWhereOfAllException(
-                    ComponentConfigs.Instance.AllComponentTypes[missingConfigs.First().ComponentIndex]);
-            }
+                throw new EntityFilterNotHaveWhereAllOfException(missingConfigs.First().ComponentType);
 
-            CheckDuplicateConfigs(configs);
-
-            var entities = context.GetEntities(this);
-            var contextQueryData = QueryData.ContextQueryData[context];
+            Context.Entities.GetEntities(this, ref _cachedEntities);
+            var archeTypeDatas = Filter.GetContextData(Context).ArcheTypeDatas;
             if (runParallel)
             {
                 var batches = new List<BatchOptions>();
-                var batchCount = entities.Length / _threadCount +
-                    (entities.Length % _threadCount != 0
+                var batchCount = _cachedEntities.Length / _threadCount +
+                    (_cachedEntities.Length % _threadCount != 0
                         ? 1
                         : 0);
                 for (var i = 0; i < _threadCount; i++)
                 {
                     var batchStartIndex = i * batchCount;
-                    var batchEndIndex = batchStartIndex + batchCount > entities.Length
-                        ? entities.Length
+                    var batchEndIndex = batchStartIndex + batchCount > _cachedEntities.Length
+                        ? _cachedEntities.Length
                         : batchStartIndex + batchCount;
 
                     if (batchStartIndex < batchEndIndex)
@@ -1824,10 +1269,10 @@ namespace EcsLte
                             StartIndex = batchStartIndex,
                             EndIndex = batchEndIndex,
                             WriteCount = writeCount,
-                            Context = context,
-                            Entities = entities,
+                            Context = Context,
+                            Entities = _cachedEntities,
                             Configs = configs,
-                            ArcheTypeDatas = contextQueryData.ArcheTypeDatas,
+                            ArcheTypeDatas = archeTypeDatas,
                             Action = action
                         });
                     }
@@ -1848,17 +1293,19 @@ namespace EcsLte
                 var batchOptions = new BatchOptions()
                 {
                     StartIndex = 0,
-                    EndIndex = entities.Length,
+                    EndIndex = _cachedEntities.Length,
                     WriteCount = writeCount,
-                    Context = context,
-                    Entities = entities,
+                    Context = Context,
+                    Entities = _cachedEntities,
                     Configs = configs,
-                    ArcheTypeDatas = contextQueryData.ArcheTypeDatas,
+                    ArcheTypeDatas = archeTypeDatas,
                     Action = action
                 };
 
                 ForEachBatchRun(batchOptions);
             }
+
+            _queryRunning = false;
         }
 
         private static unsafe void ForEachBatchRun(BatchOptions batchOptions)
@@ -1877,7 +1324,7 @@ namespace EcsLte
                 if (forEachOptions.StoreComponents(batchOptions.Context, i, batchOptions.Entities[i]))
                 {
                     batchOptions.Action(forEachOptions);
-                    batchOptions.Context.UpdateForEachArcheType(entity, forEachOptions.WriteComponentAdapters);
+                    batchOptions.Context.Entities.UpdateForEach(entity, forEachOptions.WriteComponentAdapters);
                 }
             }
         }
@@ -1898,51 +1345,28 @@ namespace EcsLte
 
         private class ForEachOptions
         {
+            private ArcheTypeData _prevArcheTypeData;
+            private IComponentAdapter[] _componentAdapters;
+
             public int Index { get; private set; }
             public Entity CurrentEntity { get; private set; }
             public HashSet<ArcheTypeIndex> ArcheTypeDataHash { get; private set; }
-            public ArcheTypeData PrevArcheTypeData { get; private set; }
-            public IComponentAdapter[] ComponentAdapters { get; private set; }
+            public IComponentAdapter[] ComponentAdapters { get => _componentAdapters; }
             public IComponentAdapter[] WriteComponentAdapters { get; private set; }
 
             public ForEachOptions(ArcheTypeData[] archeTypeDatas, IComponentAdapter[] componentAdapters, int writeCount)
             {
                 ArcheTypeDataHash = new HashSet<ArcheTypeIndex>(archeTypeDatas.Select(x => x.ArcheTypeIndex));
-                ComponentAdapters = componentAdapters;
+                _componentAdapters = componentAdapters;
                 WriteComponentAdapters = componentAdapters.Take(writeCount).ToArray();
             }
 
             public unsafe bool StoreComponents(EcsContext context, int index, Entity entity)
             {
-                lock (context.LockObj)
-                {
-                    if (!context.HasEntity(entity))
-                        return false;
+                Index = index;
+                CurrentEntity = entity;
 
-                    Index = index;
-                    CurrentEntity = entity;
-
-                    var entityData = context.EntityDatas[CurrentEntity.Id];
-                    var archeTypeData = context.ArcheTypeManager.GetArcheTypeData(entityData.ArcheTypeIndex);
-
-                    if (PrevArcheTypeData != archeTypeData)
-                    {
-                        PrevArcheTypeData = archeTypeData;
-                        for (var i = 0; i < ComponentAdapters.Length; i++)
-                        {
-                            var configOffset = archeTypeData.GetComponentConfigOffset(ComponentAdapters[i].Config);
-                            ComponentAdapters[i].SetComponentConfigOffset(configOffset);
-                            ComponentAdapters[i].StoreComponent(entityData, archeTypeData);
-                        }
-                    }
-                    else
-                    {
-                        for (var i = 0; i < ComponentAdapters.Length; i++)
-                            ComponentAdapters[i].StoreComponent(entityData, archeTypeData);
-                    }
-                }
-
-                return true;
+                return context.Entities.GetForEach(entity, ref _prevArcheTypeData, ref _componentAdapters);
             }
         }
 

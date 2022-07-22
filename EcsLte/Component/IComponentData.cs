@@ -9,7 +9,9 @@ namespace EcsLte
 
         unsafe void CopyComponentData(byte* componentPtr);
 
-        bool ComponentEquals<TComponentEqual>(TComponentEqual component) where TComponentEqual : IComponent;
+        bool ComponentEquals<TComponentEqual>(TComponentEqual component) where TComponentEqual : unmanaged, IComponent;
+
+        unsafe bool ComponentEquals(byte* sharedComponentPtr);
 
         SharedComponentDataIndex GetSharedComponentDataIndex(SharedComponentIndexDictionaries sharedIndexDics);
     }
@@ -31,8 +33,15 @@ namespace EcsLte
         public unsafe void CopyComponentData(byte* componentPtr) => *(TComponent*)componentPtr = _component;
 
         public bool ComponentEquals<TComponentEqual>(TComponentEqual component)
-             where TComponentEqual : IComponent => Config == ComponentConfig<TComponentEqual>.Config &&
+             where TComponentEqual : unmanaged, IComponent => Config == ComponentConfig<TComponentEqual>.Config &&
                 _component.Equals(component);
+
+        public unsafe bool ComponentEquals(byte* sharedComponentPtr)
+        {
+            var checkComponent = *(TComponent*)sharedComponentPtr;
+            return _component.GetHashCode() == checkComponent.GetHashCode() &&
+                _component.Equals(checkComponent);
+        }
 
         public SharedComponentDataIndex GetSharedComponentDataIndex(SharedComponentIndexDictionaries sharedIndexDics) =>
             sharedIndexDics.GetDataIndex(_component);

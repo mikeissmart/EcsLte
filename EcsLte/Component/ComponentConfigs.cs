@@ -25,22 +25,22 @@ namespace EcsLte
         }
 
         internal ComponentConfig[] AllComponentConfigs { get; private set; }
-        internal ComponentConfig[] AllRecordableConfigs { get; private set; }
+        internal ComponentConfig[] AllGeneralConfigs { get; private set; }
         internal ComponentConfig[] AllUniqueConfigs { get; private set; }
         internal ComponentConfig[] AllSharedConfigs { get; private set; }
 
         internal Type[] AllComponentTypes { get; private set; }
-        internal Type[] AllRecordableTypes { get; private set; }
+        internal Type[] AllGeneralTypes { get; private set; }
         internal Type[] AllUniqueTypes { get; private set; }
         internal Type[] AllSharedTypes { get; private set; }
 
         internal int[] AllComponentIndexes { get; private set; }
-        internal int[] AllRecordableIndexes { get; private set; }
+        internal int[] AllGeneralIndexes { get; private set; }
         internal int[] AllUniqueIndexes { get; private set; }
         internal int[] AllSharedIndexes { get; private set; }
 
         internal int AllComponentCount => AllComponentConfigs.Length;
-        internal int AllRecordableCount => AllRecordableConfigs.Length;
+        internal int AllGeneralCount => AllGeneralConfigs.Length;
         internal int AllUniqueCount => AllUniqueConfigs.Length;
         internal int AllSharedCount => AllSharedConfigs.Length;
 
@@ -53,7 +53,7 @@ namespace EcsLte
         private void Initialize()
         {
             var iComponentType = typeof(IComponent);
-            var iRecordableComponentType = typeof(IRecordableComponent);
+            var iGeneralComponentType = typeof(IGeneralComponent);
             var iUniqueComponentType = typeof(IUniqueComponent);
             var iSharedComponentType = typeof(ISharedComponent);
             var equatableType = typeof(IEquatable<>);
@@ -65,29 +65,28 @@ namespace EcsLte
                     iComponentType.IsAssignableFrom(x));
 
             _componentConfigTypes = new Dictionary<Type, ComponentConfig>();
-            var recordableIndex = 0;
+            var GeneralIndex = 0;
             var uniqueIndex = 0;
             var sharedIndex = 0;
             var sharedNoEquatableOrGetHashCode = new List<Type>();
-            var sharedUniqueErrorTypes = new List<Type>();
+            var multipleComponentTypes = new List<Type>();
+            var notBlittableTypes = new List<Type>();
             var configTypes = new List<ConfigType>();
 
             foreach (var type in componentTypes.OrderBy(x => x.FullName.ToString()))
             {
                 var config = new ComponentConfig();
 
-                if (iRecordableComponentType.IsAssignableFrom(type))
+                if (iGeneralComponentType.IsAssignableFrom(type))
                 {
-                    config.RecordableIndex = recordableIndex++;
-                    config.IsRecordable = true;
+                    config.GeneralIndex = GeneralIndex++;
+                    config.IsGeneral = true;
                 }
 
                 if (iUniqueComponentType.IsAssignableFrom(type))
                 {
                     config.UniqueIndex = uniqueIndex++;
                     config.IsUnique = true;
-                    if (config.IsShared)
-                        sharedUniqueErrorTypes.Add(type);
                 }
 
                 if (iSharedComponentType.IsAssignableFrom(type))
@@ -107,7 +106,7 @@ namespace EcsLte
                 }
                 else
                 {
-                    throw new ArgumentException($"{type.Name} is not Blittable");
+                    notBlittableTypes.Add(type);
                 }
 
                 configTypes.Add(new ConfigType
@@ -119,14 +118,16 @@ namespace EcsLte
 
             if (configTypes.Count == 0)
                 throw new ComponentNoneException();
-            if (sharedUniqueErrorTypes.Count > 0)
-                throw new ComponentSharedUniqueException(sharedUniqueErrorTypes);
+            if (notBlittableTypes.Count > 0)
+                throw new ComponentNotBlittalbeException(notBlittableTypes);
+            if (multipleComponentTypes.Count > 0)
+                throw new ComponentMultipleTypesException(multipleComponentTypes);
             if (sharedNoEquatableOrGetHashCode.Count > 0)
-                throw new ComponentSharedUniqueException(sharedNoEquatableOrGetHashCode);
+                throw new ComponentNoSharedEquatableHashCodeException(sharedNoEquatableOrGetHashCode);
 
             /*configTypes = configTypes
                 .OrderBy(x => x.Config.BlittableIndex)
-                .ThenBy(x => x.Config.RecordableIndex)
+                .ThenBy(x => x.Config.GeneralIndex)
                 .ThenBy(x => x.Config.SharedIndex)
                 .ThenBy(x => x.Config.UniqueIndex)
                 .ThenBy(x => x.Type.Name)
@@ -144,9 +145,9 @@ namespace EcsLte
             AllComponentConfigs = componentConfigIndexes
                 .OrderBy(x => x.ComponentIndex)
                 .ToArray();
-            AllRecordableConfigs = componentConfigIndexes
-                .Where(x => x.IsRecordable)
-                .OrderBy(x => x.RecordableIndex)
+            AllGeneralConfigs = componentConfigIndexes
+                .Where(x => x.IsGeneral)
+                .OrderBy(x => x.GeneralIndex)
                 .ToArray();
             AllUniqueConfigs = componentConfigIndexes
                 .Where(x => x.IsUnique)
@@ -161,9 +162,9 @@ namespace EcsLte
                 .OrderBy(x => x.Value.ComponentIndex)
                 .Select(x => x.Key)
                 .ToArray();
-            AllRecordableTypes = _componentConfigTypes
-                .Where(x => x.Value.IsRecordable)
-                .OrderBy(x => x.Value.RecordableIndex)
+            AllGeneralTypes = _componentConfigTypes
+                .Where(x => x.Value.IsGeneral)
+                .OrderBy(x => x.Value.GeneralIndex)
                 .Select(x => x.Key)
                 .ToArray();
             AllUniqueTypes = _componentConfigTypes
@@ -181,10 +182,10 @@ namespace EcsLte
                 .OrderBy(x => x.ComponentIndex)
                 .Select(x => x.ComponentIndex)
                 .ToArray();
-            AllRecordableIndexes = componentConfigIndexes
-                .Where(x => x.IsRecordable)
-                .OrderBy(x => x.RecordableIndex)
-                .Select(x => x.RecordableIndex)
+            AllGeneralIndexes = componentConfigIndexes
+                .Where(x => x.IsGeneral)
+                .OrderBy(x => x.GeneralIndex)
+                .Select(x => x.GeneralIndex)
                 .ToArray();
             AllUniqueIndexes = componentConfigIndexes
                 .Where(x => x.IsUnique)

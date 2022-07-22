@@ -7,112 +7,253 @@ namespace EcsLte
 {
     public class EntityBlueprint
     {
-        private EntityArcheType _archeType;
+        private EntityArcheType _blueprintArcheType;
+        private IComponentData[] _generalComponentDatas;
+        private IComponentData[] _sharedComponentDatas;
+        private IComponentData[] _uniqueComponentDatas;
+        private readonly object _lockObj;
 
-        public IComponent[] Components { get; private set; }
-        internal IComponentData[] AllComponentDatas { get; private set; }
-        internal IComponentData[] SharedComponentDatas { get; private set; }
-        internal IComponentData[] UniqueComponentDatas { get; private set; }
+        public IGeneralComponent[] Components { get; private set; }
+        public ISharedComponent[] SharedComponents { get; private set; }
+        public IUniqueComponent[] UniqueComponents { get; private set; }
+        internal IComponentData[] GeneralComponentDatas { get => _generalComponentDatas; }
+        internal IComponentData[] SharedComponentDatas { get => _sharedComponentDatas; }
+        internal IComponentData[] UniqueComponentDatas { get => _uniqueComponentDatas; }
 
         public EntityBlueprint()
         {
-            Components = new IComponent[0];
-            AllComponentDatas = new IComponentData[0];
-            SharedComponentDatas = new IComponentData[0];
-            UniqueComponentDatas = new IComponentData[0];
+            _generalComponentDatas = new IComponentData[0];
+            _sharedComponentDatas = new IComponentData[0];
+            _uniqueComponentDatas = new IComponentData[0];
+            _lockObj = new object();
+
+            Components = new IGeneralComponent[0];
+            SharedComponents = new ISharedComponent[0];
+            UniqueComponents = new IUniqueComponent[0];
         }
 
-        private EntityBlueprint(EntityArcheType archeType, IComponentData[] allComponentDatas)
+        internal EntityBlueprint(EntityBlueprint clone)
         {
-            _archeType = archeType;
-            Components = allComponentDatas
-                .Select(x => x.Component)
-                .ToArray();
-            AllComponentDatas = allComponentDatas;
-            SharedComponentDatas = allComponentDatas
-                .Where(x => x.Config.IsShared)
-                .ToArray();
-            UniqueComponentDatas = allComponentDatas
-                .Where(x => x.Config.IsUnique)
-                .ToArray();
+            _lockObj = new object();
+
+            _blueprintArcheType = clone._blueprintArcheType;
+
+            _generalComponentDatas = clone._generalComponentDatas;
+            _sharedComponentDatas = clone._sharedComponentDatas;
+            _uniqueComponentDatas = clone._uniqueComponentDatas;
+
+            Components = clone.Components;
+            SharedComponents = clone.SharedComponents;
+            UniqueComponents = clone.UniqueComponents;
         }
 
-        public bool HasComponent<TComponent>() where TComponent : IComponent
-            => IndexOfBlueprintComponent(ComponentConfig<TComponent>.Config) != -1;
-
-        public TComponent GetComponent<TComponent>() where TComponent : IComponent
-        {
-            var index = IndexOfBlueprintComponent(ComponentConfig<TComponent>.Config);
-            if (index == -1)
-                throw new EntityBlueprintNotHaveComponentException(typeof(TComponent));
-
-            return (TComponent)AllComponentDatas[index].Component;
-        }
-
-        public EntityBlueprint AddComponent<TComponent>(TComponent component) where TComponent : unmanaged, IComponent
-        {
-            var index = IndexOfBlueprintComponent(ComponentConfig<TComponent>.Config);
-            if (index != -1)
-                throw new EntityBlueprintAlreadyHasComponentException(typeof(TComponent));
-
-            return new EntityBlueprint(null, Helper.CopyInsertSort(AllComponentDatas, new ComponentData<TComponent>(component)));
-        }
-
-        public EntityBlueprint RemoveComponent<TComponent>() where TComponent : IComponent
+        public bool HasComponent<TComponent>()
+            where TComponent : IGeneralComponent
         {
             var config = ComponentConfig<TComponent>.Config;
-            var index = IndexOfBlueprintComponent(config);
-            if (index == -1)
-                throw new EntityBlueprintNotHaveComponentException(typeof(TComponent));
-            if (AllComponentDatas.Length == 1)
-                return new EntityBlueprint();
-
-            return new EntityBlueprint(null,
-                AllComponentDatas
-                    .Where(x => x.Config != config)
-                    .ToArray());
-        }
-
-        public EntityBlueprint UpdateComponent<TComponent>(TComponent component) where TComponent : unmanaged, IComponent
-        {
-            var config = ComponentConfig<TComponent>.Config;
-            var index = IndexOfBlueprintComponent(config);
-            if (index == -1)
-                return AddComponent(component);
-
-            var componentData = new ComponentData<TComponent>(component);
-
-            var componentDatas = new IComponentData[AllComponentDatas.Length];
-            Array.Copy(AllComponentDatas, componentDatas, componentDatas.Length);
-            componentDatas[index] = componentData;
-
-            if (config.IsShared)
-                return new EntityBlueprint(null, componentDatas);
-            else
-                return new EntityBlueprint(_archeType, componentDatas);
-        }
-
-        public EntityArcheType GetEntityArcheType()
-        {
-            if (_archeType == null)
-                _archeType = new EntityArcheType(AllComponentDatas, SharedComponentDatas);
-
-            return _archeType;
-        }
-
-        private int IndexOfBlueprintComponent(ComponentConfig config)
-        {
-            if (AllComponentDatas != null)
+            for (var i = 0; i < _generalComponentDatas.Length; i++)
             {
-                for (var i = 0; i < AllComponentDatas.Length; i++)
+                if (_generalComponentDatas[i].Config == config)
+                    return true;
+            }
+
+            return false;
+        }
+
+        public bool HasSharedComponent<TComponent>()
+            where TComponent : ISharedComponent
+        {
+            var config = ComponentConfig<TComponent>.Config;
+            for (var i = 0; i < _sharedComponentDatas.Length; i++)
+            {
+                if (_sharedComponentDatas[i].Config == config)
+                    return true;
+            }
+
+            return false;
+        }
+
+        public bool HasUniqueComponent<TComponent>()
+            where TComponent : IUniqueComponent
+        {
+            var config = ComponentConfig<TComponent>.Config;
+            for (var i = 0; i < _uniqueComponentDatas.Length; i++)
+            {
+                if (_uniqueComponentDatas[i].Config == config)
+                    return true;
+            }
+
+            return false;
+        }
+
+        public TComponent GetComponent<TComponent>()
+            where TComponent : IGeneralComponent
+        {
+            var config = ComponentConfig<TComponent>.Config;
+            AssertNotHaveComponent(GeneralComponentDatas, config);
+
+            return (TComponent)Components[IndexOfComponent(config)];
+        }
+
+        public TComponent GetSharedComponent<TComponent>()
+            where TComponent : ISharedComponent
+        {
+            var config = ComponentConfig<TComponent>.Config;
+            AssertNotHaveComponent(SharedComponentDatas, config);
+
+            return (TComponent)SharedComponents[IndexOfSharedComponent(config)];
+        }
+
+        public TComponent GetUniqueComponent<TComponent>()
+            where TComponent : IUniqueComponent
+        {
+            var config = ComponentConfig<TComponent>.Config;
+            AssertNotHaveComponent(UniqueComponentDatas, config);
+
+            return (TComponent)UniqueComponents[IndexOfUniqueComponent(config)];
+        }
+
+        public EntityBlueprint SetComponent<TComponent>(TComponent component)
+            where TComponent : unmanaged, IGeneralComponent
+        {
+            GenerateComponents(HasComponent<TComponent>() ? _blueprintArcheType : null,
+                new ComponentData<TComponent>(component));
+
+            return this;
+        }
+
+        public EntityBlueprint SetSharedComponent<TComponent>(TComponent component)
+            where TComponent : unmanaged, ISharedComponent
+        {
+            GenerateComponents(null, new ComponentData<TComponent>(component));
+
+            return this;
+        }
+
+        public EntityBlueprint SetUniqueComponent<TComponent>(TComponent component)
+            where TComponent : unmanaged, IUniqueComponent
+        {
+            GenerateComponents(HasUniqueComponent<TComponent>() ? _blueprintArcheType : null,
+                new ComponentData<TComponent>(component));
+
+            return this;
+        }
+
+        public EntityArcheType GetArcheType()
+        {
+            return new EntityArcheType(GetBlueprintArcheType());
+        }
+
+        internal static void AssertEntityBlueprint(EntityBlueprint blueprint)
+        {
+            if (blueprint == null)
+                throw new ArgumentNullException(nameof(blueprint));
+            if (blueprint._generalComponentDatas.Length == 0 &&
+                blueprint._sharedComponentDatas.Length == 0 &&
+                blueprint._uniqueComponentDatas.Length == 0)
+            {
+                throw new ComponentsNoneException();
+            }
+        }
+
+        internal EntityArcheType GetBlueprintArcheType()
+        {
+            lock (_lockObj)
+            {
+                if (_blueprintArcheType == null)
                 {
-                    var blueprintComponent = AllComponentDatas[i];
-                    if (blueprintComponent.Config == config)
+                    _blueprintArcheType = new EntityArcheType(
+                        _generalComponentDatas.Select(x => x.Config).ToArray(),
+                        _uniqueComponentDatas.Select(x => x.Config).ToArray(),
+                        _sharedComponentDatas);
+                }
+
+                return _blueprintArcheType;
+            }
+        }
+
+        private void GenerateComponents(EntityArcheType blueprintArcheType, IComponentData componentData)
+        {
+            lock (_lockObj)
+            {
+                _blueprintArcheType = blueprintArcheType;
+
+                _generalComponentDatas = componentData.Config.IsGeneral
+                    ? Helper.CopyAddOrReplaceSort(_generalComponentDatas, componentData)
+                    : _generalComponentDatas;
+                _sharedComponentDatas = componentData.Config.IsShared
+                    ? Helper.CopyAddOrReplaceSort(_sharedComponentDatas, componentData)
+                    : _sharedComponentDatas;
+                _uniqueComponentDatas = componentData.Config.IsUnique
+                    ? Helper.CopyAddOrReplaceSort(_uniqueComponentDatas, componentData)
+                    : _uniqueComponentDatas;
+
+                Components = GeneralComponentDatas.Select(x => (IGeneralComponent)x.Component).ToArray();
+                SharedComponents = SharedComponentDatas.Select(x => (ISharedComponent)x.Component).ToArray();
+                UniqueComponents = UniqueComponentDatas.Select(x => (IUniqueComponent)x.Component).ToArray();
+            }
+        }
+
+        private int IndexOfComponent(ComponentConfig config)
+        {
+            if (_generalComponentDatas != null)
+            {
+                for (var i = 0; i < _generalComponentDatas.Length; i++)
+                {
+                    if (_generalComponentDatas[i].Config == config)
                         return i;
                 }
             }
 
             return -1;
+        }
+
+        private int IndexOfSharedComponent(ComponentConfig config)
+        {
+            if (_sharedComponentDatas != null)
+            {
+                for (var i = 0; i < _sharedComponentDatas.Length; i++)
+                {
+                    if (_sharedComponentDatas[i].Config == config)
+                        return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private int IndexOfUniqueComponent(ComponentConfig config)
+        {
+            if (_uniqueComponentDatas != null)
+            {
+                for (var i = 0; i < _uniqueComponentDatas.Length; i++)
+                {
+                    if (_uniqueComponentDatas[i].Config == config)
+                        return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private void AssertAlreadyHasComponent(in IComponentData[] componentDatas, ComponentConfig config)
+        {
+            for (var i = 0; i < componentDatas.Length; i++)
+            {
+                if (componentDatas[i].Config == config)
+                    throw new EntityBlueprintAlreadyHasComponentException(config.ComponentType);
+            }
+        }
+
+        private void AssertNotHaveComponent(in IComponentData[] componentDatas, ComponentConfig config)
+        {
+            for (var i = 0; i < componentDatas.Length; i++)
+            {
+                if (componentDatas[i].Config == config)
+                    return;
+            }
+
+            throw new EntityBlueprintNotHaveComponentException(config.ComponentType);
         }
     }
 }

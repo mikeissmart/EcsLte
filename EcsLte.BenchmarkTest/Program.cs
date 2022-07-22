@@ -24,7 +24,7 @@ namespace EcsLte.BenchmarkTest
             ;
 #if DEBUG
             //BenchmarkRunner.Run(typeof(Program).Assembly, config);
-            BenchmarkRunner.Run<EcsContextTests.EcsContext_UpdateComponent>(config);
+            BenchmarkRunner.Run<EcsContextTests.EcsContext_CreateEntity>(config);
             Console.WriteLine("done");
             Console.ReadLine();
 #else

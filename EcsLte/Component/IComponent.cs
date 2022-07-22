@@ -4,7 +4,7 @@
     {
     }
 
-    public interface IRecordableComponent : IComponent
+    public interface IGeneralComponent : IComponent
     {
     }
 

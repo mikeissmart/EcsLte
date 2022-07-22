@@ -10,181 +10,102 @@ namespace EcsLte.UnitTest.EntityBlueprintTests
         public void HasComponent()
         {
             var blueprint = new EntityBlueprint()
-                .AddComponent(new TestComponent1());
+                .SetComponent(new TestComponent1());
 
             Assert.IsTrue(blueprint.HasComponent<TestComponent1>());
             Assert.IsFalse(blueprint.HasComponent<TestComponent2>());
         }
 
         [TestMethod]
-        public void GetComponent_Never() => Assert.ThrowsException<EntityBlueprintNotHaveComponentException>(() =>
-                                                                new EntityBlueprint().GetComponent<TestComponent1>());
-
-        [TestMethod]
-        public void GetComponent_Single()
+        public void HasSharedComponent()
         {
-            var component1 = new TestComponent1 { Prop = 1 };
             var blueprint = new EntityBlueprint()
-                .AddComponent(component1);
+                .SetSharedComponent(new TestSharedComponent1());
 
-            Assert.IsTrue(blueprint.GetComponent<TestComponent1>().Prop == component1.Prop);
+            Assert.IsTrue(blueprint.HasSharedComponent<TestSharedComponent1>());
+            Assert.IsFalse(blueprint.HasSharedComponent<TestSharedComponent2>());
         }
 
         [TestMethod]
-        public void GetComponent_Multiple()
+        public void HasUniqueComponent()
         {
-            var component1 = new TestComponent1 { Prop = 1 };
-            var component2 = new TestComponent2 { Prop = 2 };
-            var component3 = new TestSharedComponent1 { Prop = 3 };
-            var component4 = new TestSharedComponent2 { Prop = 4 };
             var blueprint = new EntityBlueprint()
-                .AddComponent(component1)
-                .AddComponent(component2)
-                .AddComponent(component3)
-                .AddComponent(component4);
+                .SetUniqueComponent(new TestUniqueComponent1());
 
-            Assert.IsTrue(blueprint.GetComponent<TestComponent1>().Prop == component1.Prop);
-            Assert.IsTrue(blueprint.GetComponent<TestComponent2>().Prop == component2.Prop);
-            Assert.IsTrue(blueprint.GetComponent<TestSharedComponent1>().Prop == component3.Prop);
-            Assert.IsTrue(blueprint.GetComponent<TestSharedComponent2>().Prop == component4.Prop);
+            Assert.IsTrue(blueprint.HasUniqueComponent<TestUniqueComponent1>());
+            Assert.IsFalse(blueprint.HasUniqueComponent<TestUniqueComponent2>());
         }
 
         [TestMethod]
-        public void AddComponent_Duplicate()
+        public void GetComponent()
         {
             var blueprint = new EntityBlueprint()
-                .AddComponent(new TestComponent1());
+                .SetComponent(new TestComponent1 { Prop = 1});
 
-            Assert.ThrowsException<EntityBlueprintAlreadyHasComponentException>(() =>
-                blueprint.AddComponent(new TestComponent1()));
+            Assert.IsTrue(blueprint.GetComponent<TestComponent1>().Prop == 1);
+
+            Assert.ThrowsException<EntityBlueprintNotHaveComponentException>(() =>
+                new EntityBlueprint().GetComponent<TestComponent2>());
         }
 
         [TestMethod]
-        public void AddComponent_Single()
+        public void SetComponent()
         {
             var blueprint = new EntityBlueprint()
-                .AddComponent(new TestComponent1());
+                .SetComponent(new TestComponent1 { Prop = 1 });
 
-            Assert.IsTrue(blueprint.HasComponent<TestComponent1>());
+            Assert.IsTrue(blueprint.Components.Length == 1);
+            Assert.IsTrue(blueprint.SharedComponents.Length == 0);
+            Assert.IsTrue(blueprint.UniqueComponents.Length == 0);
+            Assert.IsTrue(blueprint.Components[0].GetType() == typeof(TestComponent1));
         }
 
         [TestMethod]
-        public void AddComponent_Multiple()
+        public void GetSharedComponent()
         {
-            var component1 = new TestComponent1 { Prop = 1 };
-            var component2 = new TestComponent2 { Prop = 2 };
-            var component3 = new TestSharedComponent1 { Prop = 3 };
-            var component4 = new TestSharedComponent2 { Prop = 4 };
             var blueprint = new EntityBlueprint()
-                .AddComponent(component1)
-                .AddComponent(component2)
-                .AddComponent(component3)
-                .AddComponent(component4);
+                .SetSharedComponent(new TestSharedComponent1 { Prop = 1 });
 
-            Assert.IsTrue(blueprint.HasComponent<TestComponent1>());
-            Assert.IsTrue(blueprint.HasComponent<TestComponent2>());
-            Assert.IsTrue(blueprint.HasComponent<TestSharedComponent1>());
-            Assert.IsTrue(blueprint.HasComponent<TestSharedComponent2>());
+            Assert.IsTrue(blueprint.GetSharedComponent<TestSharedComponent1>().Prop == 1);
+
+            Assert.ThrowsException<EntityBlueprintNotHaveComponentException>(() =>
+                new EntityBlueprint().GetComponent<TestComponent2>());
         }
 
         [TestMethod]
-        public void RemoveComponent_Never() => Assert.ThrowsException<EntityBlueprintNotHaveComponentException>(() =>
-                                                                   new EntityBlueprint().RemoveComponent<TestComponent1>());
-
-        [TestMethod]
-        public void RemoveComponent_Single()
+        public void SetSharedComponent()
         {
             var blueprint = new EntityBlueprint()
-                .AddComponent(new TestComponent1())
-                .RemoveComponent<TestComponent1>();
+                .SetSharedComponent(new TestSharedComponent1 { Prop = 1 });
 
-            Assert.IsFalse(blueprint.HasComponent<TestComponent1>());
+            Assert.IsTrue(blueprint.Components.Length == 0);
+            Assert.IsTrue(blueprint.SharedComponents.Length == 1);
+            Assert.IsTrue(blueprint.UniqueComponents.Length == 0);
+            Assert.IsTrue(blueprint.SharedComponents[0].GetType() == typeof(TestSharedComponent1));
         }
 
         [TestMethod]
-        public void RemoveComponent_Multiple()
+        public void GetUniqueComponent()
         {
-            var component1 = new TestComponent1 { Prop = 1 };
-            var component2 = new TestComponent2 { Prop = 2 };
-            var component3 = new TestSharedComponent1 { Prop = 3 };
-            var component4 = new TestSharedComponent2 { Prop = 4 };
             var blueprint = new EntityBlueprint()
-                .AddComponent(component1)
-                .AddComponent(component2)
-                .AddComponent(component3)
-                .AddComponent(component4)
-                .RemoveComponent<TestComponent1>()
-                .RemoveComponent<TestComponent2>()
-                .RemoveComponent<TestSharedComponent1>()
-                .RemoveComponent<TestSharedComponent2>();
+                .SetUniqueComponent(new TestUniqueComponent1 { Prop = 1 });
 
-            Assert.IsFalse(blueprint.HasComponent<TestComponent1>());
-            Assert.IsFalse(blueprint.HasComponent<TestComponent2>());
-            Assert.IsFalse(blueprint.HasComponent<TestSharedComponent1>());
-            Assert.IsFalse(blueprint.HasComponent<TestSharedComponent2>());
+            Assert.IsTrue(blueprint.GetUniqueComponent<TestUniqueComponent1>().Prop == 1);
+
+            Assert.ThrowsException<EntityBlueprintNotHaveComponentException>(() =>
+                new EntityBlueprint().GetComponent<TestComponent2>());
         }
 
         [TestMethod]
-        public void UpdateComponent_Single_Never()
+        public void AddUniqueComponent()
         {
-            var component1 = new TestComponent1 { Prop = 1 };
             var blueprint = new EntityBlueprint()
-                .UpdateComponent(component1);
+                .SetUniqueComponent(new TestUniqueComponent1 { Prop = 1 });
 
-            Assert.IsTrue(blueprint.GetComponent<TestComponent1>().Prop == component1.Prop);
-        }
-
-        [TestMethod]
-        public void UpdateComponent_Single_Has()
-        {
-            var component1 = new TestComponent1 { Prop = 1 };
-            var blueprint = new EntityBlueprint()
-                .AddComponent(new TestComponent1())
-                .UpdateComponent(component1);
-
-            Assert.IsTrue(blueprint.GetComponent<TestComponent1>().Prop == component1.Prop);
-        }
-
-        [TestMethod]
-        public void UpdateComponent_Multiple_Never()
-        {
-            var component1 = new TestComponent1 { Prop = 1 };
-            var component2 = new TestComponent2 { Prop = 2 };
-            var component3 = new TestSharedComponent1 { Prop = 3 };
-            var component4 = new TestSharedComponent2 { Prop = 4 };
-            var blueprint = new EntityBlueprint()
-                .UpdateComponent(component1)
-                .UpdateComponent(component2)
-                .UpdateComponent(component3)
-                .UpdateComponent(component4);
-
-            Assert.IsTrue(blueprint.GetComponent<TestComponent1>().Prop == component1.Prop);
-            Assert.IsTrue(blueprint.GetComponent<TestComponent2>().Prop == component2.Prop);
-            Assert.IsTrue(blueprint.GetComponent<TestSharedComponent1>().Prop == component3.Prop);
-            Assert.IsTrue(blueprint.GetComponent<TestSharedComponent2>().Prop == component4.Prop);
-        }
-
-        [TestMethod]
-        public void UpdateComponent_Multiple_Has()
-        {
-            var component1 = new TestComponent1 { Prop = 1 };
-            var component2 = new TestComponent2 { Prop = 2 };
-            var component3 = new TestSharedComponent1 { Prop = 3 };
-            var component4 = new TestSharedComponent2 { Prop = 4 };
-            var blueprint = new EntityBlueprint()
-                .AddComponent(new TestComponent1())
-                .AddComponent(new TestComponent2())
-                .AddComponent(new TestSharedComponent1())
-                .AddComponent(new TestSharedComponent2())
-                .UpdateComponent(component1)
-                .UpdateComponent(component2)
-                .UpdateComponent(component3)
-                .UpdateComponent(component4);
-
-            Assert.IsTrue(blueprint.GetComponent<TestComponent1>().Prop == component1.Prop);
-            Assert.IsTrue(blueprint.GetComponent<TestComponent2>().Prop == component2.Prop);
-            Assert.IsTrue(blueprint.GetComponent<TestSharedComponent1>().Prop == component3.Prop);
-            Assert.IsTrue(blueprint.GetComponent<TestSharedComponent2>().Prop == component4.Prop);
+            Assert.IsTrue(blueprint.Components.Length == 0);
+            Assert.IsTrue(blueprint.SharedComponents.Length == 0);
+            Assert.IsTrue(blueprint.UniqueComponents.Length == 1);
+            Assert.IsTrue(blueprint.UniqueComponents[0].GetType() == typeof(TestUniqueComponent1));
         }
 
         [TestMethod]
@@ -193,15 +114,22 @@ namespace EcsLte.UnitTest.EntityBlueprintTests
             var sharedComponent = new TestSharedComponent1 { Prop = 1 };
             var entityArcheType = new EntityArcheType()
                 .AddComponentType<TestComponent1>()
-                .AddSharedComponent(sharedComponent);
+                .AddSharedComponent(sharedComponent)
+                .AddUniqueComponentType<TestUniqueComponent1>();
             var blueprint = new EntityBlueprint()
-                .AddComponent(new TestComponent1())
-                .AddComponent(sharedComponent);
+                .SetComponent(new TestComponent1())
+                .SetSharedComponent(new TestSharedComponent1 { Prop = 1 })
+                .SetUniqueComponent(new TestUniqueComponent1());
 
-            var blueprintArcheType = blueprint.GetEntityArcheType();
+            var blueprintArcheType = blueprint.GetArcheType();
 
             Assert.IsTrue(blueprintArcheType != null);
             Assert.IsTrue(entityArcheType == blueprintArcheType);
+
+            blueprintArcheType.AddComponentType<TestComponent2>();
+
+            var blueprintArcheType2 = blueprint.GetArcheType();
+            Assert.IsTrue(blueprintArcheType != blueprintArcheType2);
         }
     }
 }

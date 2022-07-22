@@ -26,9 +26,11 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             _destEntities = new Entity[BenchmarkTestConsts.LargeCount];
 
             _archeType = EcsContextSetupCleanup.CreateBlueprint(CompArr)
-                .GetEntityArcheType();
-            _query = new EntityQuery()
-                .WhereAllOf(_archeType);
+                .GetArcheType();
+            _query = new EntityQuery(
+                _sourceContext,
+                new EntityFilter()
+                    .WhereAllOf(_archeType));
         }
 
         [GlobalCleanup]
@@ -43,58 +45,43 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         [IterationSetup()]
         public void IterationSetup_Create()
         {
-            _sourceEntities = _sourceContext.CreateEntities(BenchmarkTestConsts.LargeCount,
-                EcsContextSetupCleanup.CreateBlueprint(CompArr));
+            _sourceEntities = _sourceContext.Entities.CreateEntities(
+                EcsContextSetupCleanup.CreateBlueprint(CompArr),
+                EntityState.Active,
+                BenchmarkTestConsts.LargeCount);
 
             _archeType = EcsContextSetupCleanup.CreateBlueprint(CompArr)
-                .GetEntityArcheType();
-            _query = new EntityQuery()
-                .WhereAllOf(_archeType);
+                .GetArcheType();
+            _query = new EntityQuery(
+                _sourceContext,
+                new EntityFilter()
+                    .WhereAllOf(_archeType));
         }
 
         [IterationCleanup()]
         public void IterationCleanup_Create()
         {
-            _sourceContext.DestroyEntities(_archeType);
-            _destContext.DestroyEntities(_archeType);
+            _sourceContext.Entities.DestroyEntities(_archeType);
+            _destContext.Entities.DestroyEntities(_archeType);
         }
 
         [Benchmark]
         public void TransferEntity_NoDestroy()
         {
             for (var i = 0; i < _sourceEntities.Length; i++)
-                _destEntities[i] = _destContext.TransferEntity(_sourceContext, _sourceEntities[i], false);
+                _destEntities[i] = _destContext.Entities.CopyEntity(_sourceContext.Entities, _sourceEntities[i]);
         }
 
         [Benchmark]
         public void TransferEntities_NoDestroy() =>
-            _destEntities = _destContext.TransferEntities(_sourceContext, _sourceEntities, false);
+            _destEntities = _destContext.Entities.CopyEntities(_sourceContext.Entities, _sourceEntities);
 
         [Benchmark]
         public void TransferEntityArcheType_NoDestroy() =>
-            _destEntities = _destContext.TransferEntities(_sourceContext, _archeType, false);
+            _destEntities = _destContext.Entities.CopyEntities(_sourceContext.Entities, _archeType);
 
         [Benchmark]
         public void TransferEntityQuery_NoDestroy() =>
-            _destEntities = _destContext.TransferEntities(_sourceContext, _query, false);
-
-        [Benchmark]
-        public void TransferEntity_Destroy()
-        {
-            for (var i = 0; i < _sourceEntities.Length; i++)
-                _destEntities[i] = _destContext.TransferEntity(_sourceContext, _sourceEntities[i], true);
-        }
-
-        [Benchmark]
-        public void TransferEntities_Destroy() =>
-            _destEntities = _destContext.TransferEntities(_sourceContext, _sourceEntities, true);
-
-        [Benchmark]
-        public void TransferEntityArcheType_Destroy() =>
-            _destEntities = _destContext.TransferEntities(_sourceContext, _archeType, true);
-
-        [Benchmark]
-        public void TransferEntityQuery_Destroy() =>
-            _destEntities = _destContext.TransferEntities(_sourceContext, _query, true);
+            _destEntities = _destContext.Entities.CopyEntities(_query);
     }
 }

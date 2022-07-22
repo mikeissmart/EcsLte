@@ -8,16 +8,19 @@ namespace EcsLte.Data
     {
         int GetOrAdd(object key);
 
+        unsafe int GetOrAdd(byte* sharedComponentPtr);
+
         int GetOrAdd(object key, Action<int> addAction);
 
         int GetOrAdd(object key, Func<int, object> addAction);
 
         object GetKey(int index);
 
-        bool PopKeyObj(out object key);
+        void Clear();
     }
 
     internal class IndexDictionary<TKey> : IIndexDictionary
+        where TKey : unmanaged
     {
         private readonly Dictionary<TKey, int> _indexes;
         private readonly List<TKey> _values;
@@ -57,6 +60,11 @@ namespace EcsLte.Data
             if (key is TKey val)
                 return GetOrAdd(val);
             throw new InvalidCastException("key");
+        }
+
+        public unsafe int GetOrAdd(byte* sharedComponentPtr)
+        {
+            return GetOrAdd(*(TKey*)sharedComponentPtr);
         }
 
         internal int GetOrAdd(TKey key, Action<int> addAction)
@@ -119,44 +127,6 @@ namespace EcsLte.Data
             {
                 return _values[index];
             }
-        }
-
-        internal bool PopKey(out TKey key)
-        {
-            key = default;
-            lock (_lockObj)
-            {
-                if (_indexes.Count > 0)
-                {
-                    var pair = _indexes.First();
-                    _indexes.Remove(pair.Key);
-                    _values[pair.Value] = default;
-                    key = pair.Key;
-
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public bool PopKeyObj(out object key)
-        {
-            key = default;
-            lock (_lockObj)
-            {
-                if (_indexes.Count > 0)
-                {
-                    var pair = _indexes.First();
-                    _indexes.Remove(pair.Key);
-                    _values[pair.Value] = default;
-                    key = pair.Key;
-
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         public void Clear()

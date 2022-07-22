@@ -9,8 +9,7 @@ namespace EcsLte
 
         void SetComponentConfigOffset(ComponentConfigOffset configOffset);
         void StoreComponent(EntityData entityData, ArcheTypeData archeTypeData);
-        void UpdateComponent(EntityData entityData, ArcheTypeData archeTypeData);
-        SharedComponentDataIndex GetSharedDataIndex();
+        bool UpdateComponent(EntityData entityData, ArcheTypeData archeTypeData, ref ArcheType archeType);
     }
 
     internal interface IComponentAdapter<TComponent> : IComponentAdapter
@@ -31,17 +30,19 @@ namespace EcsLte
         public ComponentAdapter(ComponentConfig config) => Config = config;
 
         public ref TComponent GetComponentRef() => ref Component;
-        public virtual SharedComponentDataIndex GetSharedDataIndex() => throw new NotImplementedException();
         public void SetComponentConfigOffset(ComponentConfigOffset configOffset) => ConfigOffset = configOffset;
 
-        public void StoreComponent(EntityData entityData, ArcheTypeData archeTypeData)
+        public unsafe void StoreComponent(EntityData entityData, ArcheTypeData archeTypeData)
         {
             CurrentArcheTypeData = archeTypeData;
-            Component = archeTypeData.GetComponentOffset<TComponent>(entityData, ConfigOffset);
+            Component = *(TComponent*)archeTypeData.GetComponentOffsetPtr(entityData, ConfigOffset);
         }
 
-        public void UpdateComponent(EntityData entityData, ArcheTypeData archeTypeData) =>
-            archeTypeData.SetComponentOffset(entityData, Component, ConfigOffset);
+        public unsafe virtual bool UpdateComponent(EntityData entityData, ArcheTypeData archeTypeData, ref ArcheType archeType)
+        {
+            *(TComponent*)archeTypeData.GetComponentOffsetPtr(entityData, ConfigOffset) = Component;
+            return false;
+        }
     }
 
     internal class SharedComponentAdapter<TComponent> : ComponentAdapter<TComponent>
@@ -53,11 +54,15 @@ namespace EcsLte
             : base(config) =>
             _sharedComponentIndexDic = sharedIndexDics.GetSharedIndexDic<TComponent>();
 
-        public override SharedComponentDataIndex GetSharedDataIndex() => new SharedComponentDataIndex
+        public unsafe override bool UpdateComponent(EntityData entityData, ArcheTypeData archeTypeData, ref ArcheType archeType)
         {
-            SharedIndex = Config.SharedIndex,
-            SharedDataIndex = _sharedComponentIndexDic.GetOrAdd(Component)
-        };
+            archeType.ReplaceSharedComponentDataIndex(new SharedComponentDataIndex
+            {
+                SharedIndex = Config.SharedIndex,
+                SharedDataIndex = _sharedComponentIndexDic.GetOrAdd(Component)
+            });
+            return true;
+        }
     }
 
     internal static class EntityQueryComponentAdapters

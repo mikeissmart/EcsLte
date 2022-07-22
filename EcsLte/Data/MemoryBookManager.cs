@@ -29,29 +29,29 @@ namespace EcsLte.Data
             }
         }
 
-        internal void CheckoutPages(MemoryPage* pages, int count, int startIndex)
+        internal void CheckoutPages1(MemoryPage* pages, int startingIndex, int count)
         {
             lock (_lockObj)
             {
                 AllocatePages(count);
 
                 for (var i = 0; i < count; i++)
-                    pages[i + startIndex] = _unusedPages.Dequeue();
+                    pages[i + startingIndex] = _unusedPages.Dequeue();
             }
         }
 
-        internal void CheckoutPages(ref MemoryPage[] pages, int count, int startIndex)
+        internal void CheckoutPages1(ref MemoryPage[] pages, int startingIndex, int count)
         {
             lock (_lockObj)
             {
                 AllocatePages(count);
 
                 for (var i = 0; i < count; i++)
-                    pages[i + startIndex] = _unusedPages.Dequeue();
+                    pages[i + startingIndex] = _unusedPages.Dequeue();
             }
         }
 
-        internal void ReturnPage(MemoryPage page)
+        internal void ReturnPage1(MemoryPage page)
         {
             lock (_lockObj)
             {
@@ -59,21 +59,21 @@ namespace EcsLte.Data
             }
         }
 
-        internal void ReturnPages(MemoryPage* pages, int count, int startIndex)
+        internal void ReturnPages1(MemoryPage* pages, int startingIndex, int count)
         {
             lock (_lockObj)
             {
                 for (var i = 0; i < count; i++)
-                    _unusedPages.Enqueue(pages[i + startIndex]);
+                    _unusedPages.Enqueue(pages[i + startingIndex]);
             }
         }
 
-        internal void ReturnPages(MemoryPage[] pages, int count, int startIndex)
+        internal void ReturnPages1(MemoryPage[] pages, int startingIndex, int count)
         {
             lock (_lockObj)
             {
                 for (var i = 0; i < count; i++)
-                    _unusedPages.Enqueue(pages[i + startIndex]);
+                    _unusedPages.Enqueue(pages[i + startingIndex]);
             }
         }
 

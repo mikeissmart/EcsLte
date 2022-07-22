@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace EcsLte
 {
-    internal class EntityQueryData : IEquatable<EntityQueryData>
+    /*internal class EntityQueryData : IEquatable<EntityQueryData>
     {
         private int _hashCode;
         private Type[] _allComponentTypes;
@@ -206,5 +206,5 @@ namespace EcsLte
 
             return _hashCode;
         }
-    }
+    }*/
 }

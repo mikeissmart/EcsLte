@@ -6,7 +6,7 @@ namespace EcsLte.Exceptions
     public class ComponentNoSharedEquatableHashCodeException : EcsLteException
     {
         public ComponentNoSharedEquatableHashCodeException(List<Type> componentTypes)
-            : base($"Shared components dont inherit IEquatable or override GetHashCode ({TypesToString(componentTypes)}).")
+            : base($"Shared components dont inherit IEquatable and override GetHashCode ({TypesToString(componentTypes)}).")
         {
         }
     }

@@ -30,16 +30,34 @@ namespace EcsLte
             MemoryHelper.Copy(
                 source.ComponentConfigs,
                 archeType.ComponentConfigs,
-                archeType.ComponentConfigLength * TypeCache<ComponentConfig>.SizeInBytes);
+                archeType.ComponentConfigLength);
             if (source.SharedComponentDataLength > 0)
             {
                 MemoryHelper.Copy(
                     source.SharedComponentDataIndexes,
                     archeType.SharedComponentDataIndexes,
-                    source.SharedComponentDataLength * TypeCache<SharedComponentDataIndex>.SizeInBytes);
+                    source.SharedComponentDataLength);
             }
 
             return archeType;
+        }
+
+        internal static void CopyToCached(in ArcheType srcArcheType, ref ArcheType cachedArcheType)
+        {
+            cachedArcheType.ComponentConfigLength = srcArcheType.ComponentConfigLength;
+            cachedArcheType.SharedComponentDataLength = srcArcheType.SharedComponentDataLength;
+
+            MemoryHelper.Copy(
+                srcArcheType.ComponentConfigs,
+                cachedArcheType.ComponentConfigs,
+                srcArcheType.ComponentConfigLength);
+            if (srcArcheType.SharedComponentDataLength > 0)
+            {
+                MemoryHelper.Copy(
+                    srcArcheType.SharedComponentDataIndexes,
+                    cachedArcheType.SharedComponentDataIndexes,
+                    srcArcheType.SharedComponentDataLength);
+            }
         }
 
         internal ComponentConfig* ComponentConfigs { get; private set; }

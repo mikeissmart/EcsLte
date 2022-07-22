@@ -5,13 +5,31 @@ namespace EcsLte
     internal struct ComponentConfig : IEquatable<ComponentConfig>, IComparable<ComponentConfig>
     {
         internal int ComponentIndex { get; set; }
-        internal int RecordableIndex { get; set; }
-        internal int UniqueIndex { get; set; }
+        internal int GeneralIndex { get; set; }
         internal int SharedIndex { get; set; }
+        internal int UniqueIndex { get; set; }
         internal int UnmanagedSizeInBytes { get; set; }
-        internal bool IsRecordable { get; set; }
-        internal bool IsUnique { get; set; }
+        internal bool IsGeneral { get; set; }
         internal bool IsShared { get; set; }
+        internal bool IsUnique { get; set; }
+
+        internal Type ComponentType
+        {
+            get => ComponentConfigs.Instance.AllComponentTypes[ComponentIndex];
+        }
+
+        internal bool IsValidConfig()
+        {
+            var realConfig = ComponentConfigs.Instance.AllComponentConfigs[ComponentIndex];
+
+            return GeneralIndex != realConfig.GeneralIndex &&
+                SharedIndex != realConfig.SharedIndex &&
+                UniqueIndex != realConfig.UniqueIndex &&
+                UnmanagedSizeInBytes != realConfig.UnmanagedSizeInBytes &&
+                IsGeneral != realConfig.IsGeneral &&
+                IsShared != realConfig.IsShared &&
+                IsUnique != realConfig.IsUnique;
+        }
 
         public static bool operator !=(ComponentConfig lhs, ComponentConfig rhs)
             => !(lhs == rhs);
@@ -26,6 +44,20 @@ namespace EcsLte
             => this == other;
 
         public override int GetHashCode() => ComponentIndex.GetHashCode();
+
+        public override bool Equals(object obj) => obj is ComponentConfig config && config == this;
+
+        public override string ToString()
+        {
+            if (IsGeneral)
+                return $"{ComponentIndex} General {GeneralIndex}";
+            else if (IsShared)
+                return $"{ComponentIndex} Shared {SharedIndex}";
+            else if (IsUnique)
+                return $"{ComponentIndex} Unique {UniqueIndex}";
+            else
+                throw new Exception("Unknown component type");
+        }
     }
 
     internal class ComponentConfig<TComponent> where TComponent : IComponent

@@ -9,161 +9,136 @@ namespace EcsLte.UnitTest.EntityTrackerTests
     public class EntityTrackerTests : BasePrePostTest
     {
         [TestMethod]
-        public void Create_Destroyed()
+        public void IsTrackingComponent()
         {
-            EcsContexts.DestroyContext(Context);
+            var tracker = Context.Tracking.CreateTracker("Tracker")
+                .SetComponentState<TestComponent1>(EntityTrackerState.Added);
 
-            Assert.ThrowsException<EcsContextIsDestroyedException>(() => new EntityTracker(Context));
+            Assert.IsTrue(tracker.IsTrackingComponent<TestComponent1>());
+            Assert.IsFalse(tracker.IsTrackingComponent<TestComponent2>());
+
+            Context.Tracking.RemoveTracker(tracker);
+            Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
+                tracker.IsTrackingComponent<TestComponent1>());
         }
 
         [TestMethod]
-        public void Create_Null() => Assert.ThrowsException<ArgumentNullException>(() => new EntityTracker(null));
-
-        [TestMethod]
-        public void StartComponentTrack_Added()
+        public void GetComponentState()
         {
-            var tracker = new EntityTracker(Context);
-            tracker.SetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Added);
+            var tracker = Context.Tracking.CreateTracker("Tracker")
+                .SetComponentState<TestComponent1>(EntityTrackerState.Added);
 
-            Assert.IsTrue(tracker.AddedTrackComponentTypes.Length == 1);
-            Assert.IsTrue(tracker.AddedTrackComponentTypes[0] == typeof(TestComponent1));
-            Assert.IsTrue(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Added));
-            Assert.IsTrue(tracker.UpdatedTrackComponentTypes.Length == 0);
-            Assert.IsFalse(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Updated));
-            Assert.IsFalse(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.AddedOrUpdated));
+            Assert.IsTrue(tracker.GetComponentState<TestComponent1>() == EntityTrackerState.Added);
+
+            Context.Tracking.RemoveTracker(tracker);
+            Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
+                tracker.GetComponentState<TestComponent1>());
         }
 
         [TestMethod]
-        public void StartComponentTrack_Updated()
+        public void SetComponentState()
         {
-            var tracker = new EntityTracker(Context);
-            tracker.SetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Updated);
+            var tracker = Context.Tracking.CreateTracker("Tracker")
+                .SetComponentState<TestComponent1>(EntityTrackerState.Added);
 
-            Assert.IsTrue(tracker.AddedTrackComponentTypes.Length == 0);
-            Assert.IsFalse(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Added));
-            Assert.IsTrue(tracker.UpdatedTrackComponentTypes.Length == 1);
-            Assert.IsTrue(tracker.UpdatedTrackComponentTypes[0] == typeof(TestComponent1));
-            Assert.IsTrue(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Updated));
-            Assert.IsFalse(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.AddedOrUpdated));
+            Assert.IsTrue(tracker.GetComponentState<TestComponent1>() == EntityTrackerState.Added);
+
+            Context.Tracking.RemoveTracker(tracker);
+            Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
+                tracker.SetComponentState<TestComponent1>(EntityTrackerState.Added));
         }
 
         [TestMethod]
-        public void StartComponentTrack_AddedOrUpdated()
+        public void ClearComponentState()
         {
-            var tracker = new EntityTracker(Context);
-            tracker.SetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.AddedOrUpdated);
+            var tracker = Context.Tracking.CreateTracker("Tracker")
+                .SetComponentState<TestComponent1>(EntityTrackerState.Added);
 
-            Assert.IsTrue(tracker.AddedTrackComponentTypes.Length == 1);
-            Assert.IsTrue(tracker.AddedTrackComponentTypes[0] == typeof(TestComponent1));
-            Assert.IsTrue(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Added));
-            Assert.IsTrue(tracker.UpdatedTrackComponentTypes.Length == 1);
-            Assert.IsTrue(tracker.UpdatedTrackComponentTypes[0] == typeof(TestComponent1));
-            Assert.IsTrue(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Updated));
-            Assert.IsTrue(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.AddedOrUpdated));
+            Assert.IsTrue(tracker.IsTrackingComponent<TestComponent1>());
+
+            tracker.ClearComponentState<TestComponent1>();
+            Assert.IsFalse(tracker.IsTrackingComponent<TestComponent1>());
+
+            Context.Tracking.RemoveTracker(tracker);
+            Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
+                tracker.ClearComponentState<TestComponent1>());
         }
 
         [TestMethod]
-        public void StartComponentTrack_Change()
+        public void ClearAllComponentStates()
         {
-            var tracker = new EntityTracker(Context);
+            var tracker = Context.Tracking.CreateTracker("Tracker")
+                .SetComponentState<TestComponent1>(EntityTrackerState.Added)
+                .SetComponentState<TestComponent2>(EntityTrackerState.Added);
 
-            Assert.IsFalse(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Added));
-            Assert.IsFalse(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Updated));
-            Assert.IsFalse(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.AddedOrUpdated));
+            tracker.ClearAllComponentStates();
+            Assert.IsFalse(tracker.IsTrackingComponent<TestComponent1>());
+            Assert.IsFalse(tracker.IsTrackingComponent<TestComponent2>());
 
-            tracker.SetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Added);
-            Assert.IsTrue(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Added));
-            Assert.IsFalse(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Updated));
-            Assert.IsFalse(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.AddedOrUpdated));
-
-            tracker.SetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Updated);
-            Assert.IsFalse(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Added));
-            Assert.IsTrue(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Updated));
-            Assert.IsFalse(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.AddedOrUpdated));
-
-            tracker.SetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.AddedOrUpdated);
-            Assert.IsTrue(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Added));
-            Assert.IsTrue(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Updated));
-            Assert.IsTrue(tracker.GetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.AddedOrUpdated));
+            Context.Tracking.RemoveTracker(tracker);
+            Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
+                tracker.ClearAllComponentStates());
         }
 
         [TestMethod]
-        public void ChangeComponentTrackingState_Added()
+        public void SetEntityStateChange()
         {
-            var tracker = new EntityTracker(Context);
-            tracker.SetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Added);
-            tracker.StartTracking();
+            var tracker = Context.Tracking.CreateTracker("Tracker")
+                .SetEntityStateChange(true);
 
-            var entity = Context.CreateEntity(new EntityBlueprint()
-                .AddComponent(new TestComponent1()));
+            Assert.IsTrue(tracker.IsTrackingEntityStateChange);
 
-            Assert.IsTrue(Context.EntityCount(tracker) == 1);
-            Assert.IsTrue(Context.GetEntities(tracker)[0] == entity);
+            Context.Tracking.RemoveTracker(tracker);
+            Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
+                tracker.SetEntityStateChange(true));
         }
 
         [TestMethod]
-        public void ChangeComponentTrackingState_Updated()
+        public void StartTracking()
         {
-            var entity = Context.CreateEntity(new EntityBlueprint()
-                .AddComponent(new TestComponent1()));
+            var tracker = Context.Tracking.CreateTracker("Tracker")
+                .StartTracking();
 
-            var tracker = new EntityTracker(Context);
-            tracker.SetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Updated);
-            tracker.StartTracking();
+            Assert.IsTrue(tracker.IsTracking);
 
-            Context.UpdateComponent(entity, new TestComponent1 { Prop = 1 });
-
-            Assert.IsTrue(Context.EntityCount(tracker) == 1);
-            Assert.IsTrue(Context.GetEntities(tracker)[0] == entity);
+            Context.Tracking.RemoveTracker(tracker);
+            Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
+                tracker.StartTracking());
         }
 
         [TestMethod]
-        public void ChangeComponentTrackingState_AddedOrUpdated()
+        public void StopTracking()
         {
-            var entity1 = Context.CreateEntity(new EntityBlueprint()
-                .AddComponent(new TestComponent1()));
+            var tracker = Context.Tracking.CreateTracker("Tracker")
+                .StartTracking()
+                .StopTracking();
 
-            var tracker = new EntityTracker(Context);
-            tracker.SetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.AddedOrUpdated);
-            tracker.StartTracking();
+            Assert.IsFalse(tracker.IsTracking);
 
-            Context.UpdateComponent(entity1, new TestComponent1 { Prop = 1 });
-            var entity2 = Context.CreateEntity(new EntityBlueprint()
-                .AddComponent(new TestComponent1()));
-
-            Assert.IsTrue(Context.EntityCount(tracker) == 2);
-            Assert.IsTrue(Context.GetEntities(tracker).Contains(entity1));
-            Assert.IsTrue(Context.GetEntities(tracker).Contains(entity2));
+            Context.Tracking.RemoveTracker(tracker);
+            Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
+                tracker.StopTracking());
         }
 
         [TestMethod]
-        public void TrackingEntityDestroyed()
+        public void ClearEntities()
         {
-            var tracker = new EntityTracker(Context);
-            tracker.SetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Added);
-            tracker.StartTracking();
+            var tracker = Context.Tracking.CreateTracker("Tracker")
+                .SetComponentState<TestComponent1>(EntityTrackerState.Added)
+                .StartTracking();
 
-            var entity = Context.CreateEntity(new EntityBlueprint()
-                .AddComponent(new TestComponent1()));
+            var entity = Context.Entities.CreateEntity(
+                new EntityArcheType().AddComponentType<TestComponent1>(),
+                EntityState.Active);
 
-            Assert.IsTrue(Context.EntityCount(tracker) == 1);
+            Assert.IsTrue(Context.Entities.HasEntity(entity, tracker));
 
-            Context.DestroyEntity(entity);
-            Assert.IsTrue(Context.EntityCount(tracker) == 0);
-        }
+            tracker.ClearEntities();
+            Assert.IsFalse(Context.Entities.HasEntity(entity, tracker));
 
-        [TestMethod]
-        public void ResetTracking()
-        {
-            var tracker = new EntityTracker(Context);
-            tracker.SetComponentTrackingState<TestComponent1>(EntityTracker.TrackingState.Added);
-            tracker.StartTracking();
-
-            Context.CreateEntity(new EntityBlueprint()
-                .AddComponent(new TestComponent1()));
-            tracker.ResetTracking();
-
-            Assert.IsTrue(Context.EntityCount(tracker) == 0);
+            Context.Tracking.RemoveTracker(tracker);
+            Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
+                tracker.ClearEntities());
         }
     }
 }

@@ -6,22 +6,22 @@ public interface ITestComponent
     int Prop { get; set; }
 }
 
-public struct TestComponent1 : IComponent, ITestComponent
+public struct TestComponent1 : IGeneralComponent, ITestComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent2 : IComponent, ITestComponent
+public struct TestComponent2 : IGeneralComponent, ITestComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent3 : IComponent, ITestComponent
+public struct TestComponent3 : IGeneralComponent, ITestComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent4 : IComponent, ITestComponent
+public struct TestComponent4 : IGeneralComponent, ITestComponent
 {
     public int Prop { get; set; }
 }

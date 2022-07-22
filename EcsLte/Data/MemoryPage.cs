@@ -21,9 +21,7 @@
 
         internal void SetSlot(int slotIndex, ref EntityData entityData)
         {
-            var buffer = GetBuffer(slotIndex);
-            entityData.Slot.Buffer = buffer;
-            entityData.Slot.BlittableBuffer = buffer;
+            entityData.ComponentsBuffer = GetBuffer(slotIndex);
         }
     }
 }

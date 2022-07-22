@@ -6,32 +6,22 @@ public interface ITestComponent
     int Prop { get; set; }
 }
 
-public struct TestComponent1 : IComponent, ITestComponent
+public struct TestComponent1 : IGeneralComponent, ITestComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent2 : IComponent, ITestComponent
+public struct TestComponent2 : IGeneralComponent, ITestComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent3 : IComponent, ITestComponent
+public struct TestComponent3 : IGeneralComponent, ITestComponent
 {
     public int Prop { get; set; }
 }
 
-public struct TestComponent4 : IComponent, ITestComponent
-{
-    public int Prop { get; set; }
-}
-
-public struct TestUniqueComponent1 : IUniqueComponent, ITestComponent
-{
-    public int Prop { get; set; }
-}
-
-public struct TestUniqueComponent2 : IUniqueComponent, ITestComponent
+public struct TestComponent4 : IGeneralComponent, ITestComponent
 {
     public int Prop { get; set; }
 }
@@ -74,4 +64,24 @@ public struct TestSharedComponent4 : ISharedComponent, IEquatable<TestSharedComp
         => Prop == other.Prop;
 
     public override int GetHashCode() => Prop.GetHashCode();
+}
+
+public struct TestUniqueComponent1 : IUniqueComponent, ITestComponent
+{
+    public int Prop { get; set; }
+}
+
+public struct TestUniqueComponent2 : IUniqueComponent, ITestComponent
+{
+    public int Prop { get; set; }
+}
+
+public struct TestUniqueComponent3 : IUniqueComponent, ITestComponent
+{
+    public int Prop { get; set; }
+}
+
+public struct TestUniqueComponent4 : IUniqueComponent, ITestComponent
+{
+    public int Prop { get; set; }
 }

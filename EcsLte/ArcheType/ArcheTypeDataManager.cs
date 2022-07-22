@@ -13,14 +13,16 @@ namespace EcsLte
         private int _archeTypeDataVersion;
         private ArcheType _cachedArcheType;
         private readonly EcsContext _context;
+        private readonly object _lockObj;
 
         internal ArcheTypeDataManager(EcsContext context)
         {
             _archeTypeIndexes = new List<List<ArcheTypeData>>();
+            _context = context;
             _cachedArcheType = ArcheType.Alloc(
                 ComponentConfigs.Instance.AllComponentCount,
                 ComponentConfigs.Instance.AllSharedCount);
-            _context = context;
+            _lockObj = new object();
 
             var allConfigCount = ComponentConfigs.Instance.AllComponentCount;
             _rootPoints = new DataPoint[allConfigCount];
@@ -29,75 +31,86 @@ namespace EcsLte
                 _rootPoints[i] = new DataPoint(i);
         }
 
-        internal void CachedArcheTypeCopyTo(ArcheType source)
+        internal ArcheTypeData GetArcheTypeData(ArcheType cachedArcheType)
         {
-            _cachedArcheType.ComponentConfigLength = source.ComponentConfigLength;
-            _cachedArcheType.SharedComponentDataLength = source.SharedComponentDataLength;
-
-            MemoryHelper.Copy(
-                source.ComponentConfigs,
-                _cachedArcheType.ComponentConfigs,
-                source.ComponentConfigLength * TypeCache<ComponentConfig>.SizeInBytes);
-            if (source.SharedComponentDataLength > 0)
+            lock (_lockObj)
             {
-                MemoryHelper.Copy(
-                    source.SharedComponentDataIndexes,
-                    _cachedArcheType.SharedComponentDataIndexes,
-                    source.SharedComponentDataLength * TypeCache<SharedComponentDataIndex>.SizeInBytes);
+                return InternalGetArcheTypeData(cachedArcheType);
             }
         }
-
-        internal bool CachedArcheTypeReplaceSharedDataIndex(SharedComponentDataIndex shareDataIndex) =>
-            _cachedArcheType.ReplaceSharedComponentDataIndex(shareDataIndex);
-
-        internal ArcheTypeData CachedArcheTypeGetNextArcheTypeData(ArcheTypeData prevArcheTypeData, SharedComponentDataIndex shareDataIndex) =>
-            _cachedArcheType.ReplaceSharedComponentDataIndex(shareDataIndex)
-                ? GetCachedArcheTypeData()
-                : prevArcheTypeData;
 
         internal ArcheTypeData GetArcheTypeData(EntityArcheType entityArcheType)
         {
-            if (entityArcheType.ArcheTypeData.TryGetArcheTypeIndex(_context, out var archeTypeData))
+            if (entityArcheType.TryGetArcheTypeData(_context, out var archeTypeData))
                 return archeTypeData;
 
-            var entityArcheTypeData = entityArcheType.ArcheTypeData;
-            _cachedArcheType.ComponentConfigLength = entityArcheTypeData.ComponentConfigs.Length;
-            _cachedArcheType.SharedComponentDataLength = entityArcheTypeData.SharedComponentDatas.Length;
-
-            for (var i = 0; i < _cachedArcheType.ComponentConfigLength; i++)
-                _cachedArcheType.ComponentConfigs[i] = entityArcheTypeData.ComponentConfigs[i];
-            for (var i = 0; i < _cachedArcheType.SharedComponentDataLength; i++)
+            lock (_lockObj)
             {
-                var component = entityArcheTypeData.SharedComponentDatas[i];
-                _cachedArcheType.SharedComponentDataIndexes[i] = component.GetSharedComponentDataIndex(
-                    _context.SharedIndexDics);
-            }
+                _cachedArcheType.ComponentConfigLength = entityArcheType.AllComponentConfigs.Length;
+                _cachedArcheType.SharedComponentDataLength = entityArcheType.SharedComponentDatas.Length;
 
-            archeTypeData = GetCachedArcheTypeData();
-            entityArcheType.ArcheTypeData.AddArcheTypeIndex(_context, archeTypeData);
-
-            return archeTypeData;
-        }
-
-        internal ArcheTypeData GetArcheTypeData(ArcheTypeIndex archeIndex) => _archeTypeIndexes[archeIndex.ComponentConfigLength][archeIndex.Index];
-
-        internal void UpdateEntityQuery(EntityQuery query)
-        {
-            var contextQueryData = query.QueryData.ContextQueryData[_context];
-            if (contextQueryData.ArcheTypeChangeVersion != _archeTypeDataVersion)
-            {
-                var archeTypeDatas = new List<ArcheTypeData>();
-                for (var i = query.QueryData.ConfigCount; i < _archeTypeIndexes.Count; i++)
+                fixed (ComponentConfig* configs = &entityArcheType.AllComponentConfigs[0])
                 {
-                    foreach (var archeTypeData in _archeTypeIndexes[i])
-                    {
-                        if (query.QueryData.IsFiltered(archeTypeData.ArcheType))
-                            archeTypeDatas.Add(archeTypeData);
-                    }
+                    MemoryHelper.Copy(
+                        configs,
+                        _cachedArcheType.ComponentConfigs,
+                        entityArcheType.AllComponentConfigs.Length);
                 }
 
-                contextQueryData.ArcheTypeDatas = archeTypeDatas.ToArray();
-                contextQueryData.ArcheTypeChangeVersion = _archeTypeDataVersion;
+                for (var i = 0; i < entityArcheType.SharedComponentDatas.Length; i++)
+                {
+                    _cachedArcheType.SharedComponentDataIndexes[i] =
+                        entityArcheType.SharedComponentDatas[i].GetSharedComponentDataIndex(_context.SharedIndexDics);
+                }
+
+                archeTypeData = InternalGetArcheTypeData(_cachedArcheType);
+                entityArcheType.SetArcheTypeData(_context, archeTypeData);
+
+                return archeTypeData;
+            }
+        }
+
+        internal ArcheTypeData GetArcheTypeData(ArcheTypeIndex archeIndex)
+        {
+            lock (_lockObj)
+            {
+                return _archeTypeIndexes[archeIndex.ComponentConfigLength][archeIndex.Index];
+            }
+        }
+
+        internal void UpdateEntityFilter(EntityFilter filter, EntityFilterContextData contextData)
+        {
+            lock (_lockObj)
+            {
+                if (contextData.ArcheTypeChangeVersion != _archeTypeDataVersion)
+                {
+                    var archeTypeDatas = new List<ArcheTypeData>();
+                    for (var i = filter.ConfigCount; i < _archeTypeIndexes.Count; i++)
+                    {
+                        foreach (var archeTypeData in _archeTypeIndexes[i])
+                        {
+                            if (filter.IsFiltered(archeTypeData.ArcheType))
+                            {
+                                bool isOk = true;
+                                for (var j = 0; j < filter.FilterByComponentDatas.Length; j++)
+                                {
+                                    var componentData = filter.FilterByComponentDatas[j];
+                                    if (!componentData.ComponentEquals(archeTypeData.GetSharedComponentPtr(componentData.Config)))
+                                    {
+                                        isOk = false;
+                                        break;
+                                    }
+                                }
+
+                                if (isOk)
+                                    archeTypeDatas.Add(archeTypeData);
+                            }
+                        }
+                    }
+
+                    contextData.ArcheTypeDatas = archeTypeDatas.ToArray();
+                    contextData.ArcheTypeChangeVersion = _archeTypeDataVersion;
+                }
             }
         }
 
@@ -110,6 +123,27 @@ namespace EcsLte
             }
             _archeTypeIndexes = null;
             _cachedArcheType.Dispose();
+            _cachedArcheType = new ArcheType();
+        }
+
+        private ArcheTypeData InternalGetArcheTypeData(ArcheType cachedArcheType)
+        {
+            GetArcheTypeIndexDic(cachedArcheType.ComponentConfigLength, out var dataList);
+            var point = _rootPoints[cachedArcheType.ComponentConfigs[0].ComponentIndex];
+            for (var i = 1; i < cachedArcheType.ComponentConfigLength; i++)
+                point = point.GetChild(cachedArcheType.ComponentConfigs[i].ComponentIndex);
+
+            if (!point.ArcheTypeDatas.TryGetValue(cachedArcheType, out var archeTypeData))
+            {
+                archeTypeData = new ArcheTypeData(ArcheType.AllocClone(cachedArcheType),
+                    new ArcheTypeIndex(cachedArcheType.ComponentConfigLength, dataList.Count),
+                    _context.SharedIndexDics);
+                point.ArcheTypeDatas.Add(archeTypeData.ArcheType, archeTypeData);
+                dataList.Add(archeTypeData);
+                _archeTypeDataVersion++;
+            }
+
+            return archeTypeData;
         }
 
         private void GetArcheTypeIndexDic(int configCount, out List<ArcheTypeData> indexDic)
@@ -120,43 +154,20 @@ namespace EcsLte
             indexDic = _archeTypeIndexes[configCount];
         }
 
-        internal ArcheTypeData GetCachedArcheTypeData()
-        {
-            GetArcheTypeIndexDic(_cachedArcheType.ComponentConfigLength, out var dataList);
-            var point = _rootPoints[_cachedArcheType.ComponentConfigs[0].ComponentIndex];
-            for (var i = 1; i < _cachedArcheType.ComponentConfigLength; i++)
-                point = point.GetChild(_cachedArcheType.ComponentConfigs[i].ComponentIndex);
-
-            if (!point.ArcheTypeDatas.TryGetValue(_cachedArcheType, out var archeTypeData))
-            {
-                archeTypeData = new ArcheTypeData(ArcheType.AllocClone(_cachedArcheType),
-                    new ArcheTypeIndex(_cachedArcheType.ComponentConfigLength, dataList.Count));
-                point.ArcheTypeDatas.Add(archeTypeData.ArcheType, archeTypeData);
-                dataList.Add(archeTypeData);
-                _archeTypeDataVersion++;
-            }
-
-            return archeTypeData;
-        }
-
         private class DataPoint
         {
-            public int ComponentIndex { get; set; }
-            public DataPoint[] Children { get; set; }
-            /// <summary>
-            /// ArcheTypeData*
-            /// </summary>
-            public Dictionary<ArcheType, ArcheTypeData> ArcheTypeDatas { get; set; }
+            internal int ComponentIndex { get; set; }
+            internal DataPoint[] Children { get; set; }
+            internal Dictionary<ArcheType, ArcheTypeData> ArcheTypeDatas { get; set; }
 
-            public DataPoint(int componentIndex)
+            internal DataPoint(int componentIndex)
             {
-                var allConfigCount = ComponentConfigs.Instance.AllComponentCount;
                 ComponentIndex = componentIndex;
                 ArcheTypeDatas = new Dictionary<ArcheType, ArcheTypeData>(ArcheTypeSharedDataIndexComparer.Comparer);
-                Children = new DataPoint[allConfigCount];
+                Children = new DataPoint[ComponentConfigs.Instance.AllComponentCount];
             }
 
-            public DataPoint GetChild(int componentIndex)
+            internal DataPoint GetChild(int componentIndex)
             {
                 if (Children[componentIndex] == null)
                 {

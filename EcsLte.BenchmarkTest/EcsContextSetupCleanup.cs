@@ -21,18 +21,18 @@ namespace EcsLte.BenchmarkTest
             {
                 case ComponentArrangement.Normal_x4:
                     blueprint = blueprint
-                        .AddComponent(Component1)
-                        .AddComponent(Component2)
-                        .AddComponent(Component3)
-                        .AddComponent(Component4);
+                        .SetComponent(Component1)
+                        .SetComponent(Component2)
+                        .SetComponent(Component3)
+                        .SetComponent(Component4);
                     break;
 
                 case ComponentArrangement.Shared_x4:
                     blueprint = blueprint
-                        .AddComponent(SharedComponent1)
-                        .AddComponent(SharedComponent2)
-                        .AddComponent(SharedComponent3)
-                        .AddComponent(SharedComponent4);
+                        .SetSharedComponent(SharedComponent1)
+                        .SetSharedComponent(SharedComponent2)
+                        .SetSharedComponent(SharedComponent3)
+                        .SetSharedComponent(SharedComponent4);
                     break;
 
                 default:
@@ -49,25 +49,25 @@ namespace EcsLte.BenchmarkTest
             {
                 case EntityQuery_ForEach.ReadWriteType.R0W0:
                     blueprint = blueprint
-                        .AddComponent(Component1);
+                        .SetComponent(Component1);
                     break;
 
                 case EntityQuery_ForEach.ReadWriteType.R0W4_Normal_x4:
                 case EntityQuery_ForEach.ReadWriteType.R4W0_Normal_x4:
                     blueprint = blueprint
-                        .AddComponent(Component1)
-                        .AddComponent(Component2)
-                        .AddComponent(Component3)
-                        .AddComponent(Component4);
+                        .SetComponent(Component1)
+                        .SetComponent(Component2)
+                        .SetComponent(Component3)
+                        .SetComponent(Component4);
                     break;
 
                 case EntityQuery_ForEach.ReadWriteType.R0W4_Shared_x4:
                 case EntityQuery_ForEach.ReadWriteType.R4W0_Shared_x4:
                     blueprint = blueprint
-                        .AddComponent(SharedComponent1)
-                        .AddComponent(SharedComponent2)
-                        .AddComponent(SharedComponent3)
-                        .AddComponent(SharedComponent4);
+                        .SetSharedComponent(SharedComponent1)
+                        .SetSharedComponent(SharedComponent2)
+                        .SetSharedComponent(SharedComponent3)
+                        .SetSharedComponent(SharedComponent4);
                     break;
             }
             return blueprint;

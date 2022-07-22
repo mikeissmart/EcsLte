@@ -25,13 +25,16 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         [IterationSetup]
         public void IterationSetup()
         {
-            _entities = _entities = _context.CreateEntities(EntityCount, _blueprint);
-            _archeType = _blueprint.GetEntityArcheType();
-            _query = new EntityQuery().WhereAllOf(_archeType);
+            _entities = _entities = _context.Entities.CreateEntities(_blueprint, EntityState.Active, EntityCount);
+            _archeType = _blueprint.GetArcheType();
+            _query = new EntityQuery(
+                _context,
+                new EntityFilter()
+                    .WhereAllOf(_archeType));
         }
 
         [IterationCleanup]
-        public void IterationCleanup() => _context.DestroyEntities(_entities);
+        public void IterationCleanup() => _context.Entities.DestroyEntities(_entities);
 
         [Benchmark]
         public void GetComponent_Entity()
@@ -39,38 +42,29 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             for (var i = 0; i < _entities.Length; i++)
             {
                 var entity = _entities[i];
-                _context.GetComponent<TestComponent1>(entity);
-                _context.GetComponent<TestComponent2>(entity);
-                _context.GetComponent<TestComponent3>(entity);
-                _context.GetComponent<TestComponent4>(entity);
+                _context.Entities.GetComponent<TestComponent1>(entity);
+                _context.Entities.GetComponent<TestComponent2>(entity);
+                _context.Entities.GetComponent<TestComponent3>(entity);
+                _context.Entities.GetComponent<TestComponent4>(entity);
             }
-        }
-
-        [Benchmark]
-        public void GetComponents_Entities()
-        {
-            _context.GetComponents<TestComponent1>(_entities);
-            _context.GetComponents<TestComponent2>(_entities);
-            _context.GetComponents<TestComponent3>(_entities);
-            _context.GetComponents<TestComponent4>(_entities);
         }
 
         [Benchmark]
         public void GetComponents_EntityArcheType()
         {
-            _context.GetComponents<TestComponent1>(_archeType);
-            _context.GetComponents<TestComponent2>(_archeType);
-            _context.GetComponents<TestComponent3>(_archeType);
-            _context.GetComponents<TestComponent4>(_archeType);
+            _context.Entities.GetComponents<TestComponent1>(_archeType);
+            _context.Entities.GetComponents<TestComponent2>(_archeType);
+            _context.Entities.GetComponents<TestComponent3>(_archeType);
+            _context.Entities.GetComponents<TestComponent4>(_archeType);
         }
 
         [Benchmark]
         public void GetComponents_EntityQuery()
         {
-            _context.GetComponents<TestComponent1>(_query);
-            _context.GetComponents<TestComponent2>(_query);
-            _context.GetComponents<TestComponent3>(_query);
-            _context.GetComponents<TestComponent4>(_query);
+            _context.Entities.GetComponents<TestComponent1>(_query);
+            _context.Entities.GetComponents<TestComponent2>(_query);
+            _context.Entities.GetComponents<TestComponent3>(_query);
+            _context.Entities.GetComponents<TestComponent4>(_query);
         }
     }
 }

@@ -38,10 +38,10 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         }
 
         [IterationSetup]
-        public void IterationSetup() => _entities = _context.CreateEntities(_entities.Length, _blueprint);
+        public void IterationSetup() => _entities = _context.Entities.CreateEntities(_blueprint, EntityState.Active, _entities.Length);
 
         [IterationCleanup]
-        public void IterationCleanup() => _context.DestroyEntities(_entities);
+        public void IterationCleanup() => _context.Entities.DestroyEntities(_entities);
 
         [Benchmark]
         public void UpdateComponent_Entity()
@@ -52,10 +52,10 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
                     for (var i = 0; i < _entities.Length; i++)
                     {
                         var entity = _entities[i];
-                        _context.UpdateComponent(entity, Component1);
-                        _context.UpdateComponent(entity, Component2);
-                        _context.UpdateComponent(entity, Component3);
-                        _context.UpdateComponent(entity, Component4);
+                        _context.Entities.UpdateComponent(entity, Component1);
+                        _context.Entities.UpdateComponent(entity, Component2);
+                        _context.Entities.UpdateComponent(entity, Component3);
+                        _context.Entities.UpdateComponent(entity, Component4);
                     }
                     break;
 
@@ -63,10 +63,10 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
                     for (var i = 0; i < _entities.Length; i++)
                     {
                         var entity = _entities[i];
-                        _context.UpdateComponent(entity, SharedComponent1);
-                        _context.UpdateComponent(entity, SharedComponent2);
-                        _context.UpdateComponent(entity, SharedComponent3);
-                        _context.UpdateComponent(entity, SharedComponent4);
+                        _context.Entities.UpdateSharedComponent(entity, SharedComponent1);
+                        _context.Entities.UpdateSharedComponent(entity, SharedComponent2);
+                        _context.Entities.UpdateSharedComponent(entity, SharedComponent3);
+                        _context.Entities.UpdateSharedComponent(entity, SharedComponent4);
                     }
                     break;
             }

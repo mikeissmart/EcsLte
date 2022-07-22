@@ -17,14 +17,33 @@ namespace EcsLte.UnitTest.EntityArcheTypeTests
         }
 
         [TestMethod]
-        public void HasSharedComponentData()
+        public void HasSharedComponentType()
+        {
+            var archeType = new EntityArcheType()
+                .AddSharedComponent(new TestSharedComponent1());
+
+            Assert.IsTrue(archeType.HasSharedComponentType<TestSharedComponent1>());
+            Assert.IsFalse(archeType.HasSharedComponentType<TestSharedComponent2>());
+        }
+
+        [TestMethod]
+        public void HasUniqueComponentType()
+        {
+            var archeType = new EntityArcheType()
+                .AddUniqueComponentType<TestUniqueComponent1>();
+
+            Assert.IsTrue(archeType.HasUniqueComponentType<TestUniqueComponent1>());
+            Assert.IsFalse(archeType.HasUniqueComponentType<TestUniqueComponent2>());
+        }
+
+        [TestMethod]
+        public void HasSharedComponent()
         {
             var archeType = new EntityArcheType()
                 .AddSharedComponent(new TestSharedComponent1 { Prop = 1 });
 
-            Assert.IsTrue(archeType.HasComponentType<TestSharedComponent1>());
-            Assert.IsTrue(archeType.HasSharedComponentData(new TestSharedComponent1 { Prop = 1 }));
-            Assert.IsFalse(archeType.HasSharedComponentData(new TestSharedComponent1 { Prop = 0 }));
+            Assert.IsTrue(archeType.HasSharedComponent(new TestSharedComponent1 { Prop = 1 }));
+            Assert.IsFalse(archeType.HasSharedComponent(new TestSharedComponent1 { Prop = 0 }));
         }
 
         [TestMethod]
@@ -35,66 +54,28 @@ namespace EcsLte.UnitTest.EntityArcheTypeTests
 
             Assert.IsTrue(archeType.ComponentTypes.Length == 1);
             Assert.IsTrue(archeType.ComponentTypes[0] == typeof(TestComponent1));
+            Assert.IsTrue(archeType.HasComponentType<TestComponent1>());
+            Assert.IsTrue(archeType.UniqueComponentTypes.Length == 0);
             Assert.IsTrue(archeType.SharedComponents.Length == 0);
-        }
-
-        [TestMethod]
-        public void AddComponentType_Duplicate()
-        {
-            var archeType = new EntityArcheType()
-                .AddComponentType<TestComponent1>();
 
             Assert.ThrowsException<EntityArcheTypeAlreadyHasComponentException>(() => archeType
                 .AddComponentType<TestComponent1>());
         }
 
         [TestMethod]
-        public void AddComponentType_SharedComponent()
-        {
-            var archeType = new EntityArcheType();
-
-            Assert.ThrowsException<EntityArcheTypeSharedComponentException>(() => archeType
-                .AddComponentType<TestSharedComponent1>());
-        }
-
-        [TestMethod]
-        public void RemoveComponentType()
+        public void AddUniqueComponentType()
         {
             var archeType = new EntityArcheType()
-                .AddComponentType<TestComponent1>()
-                .RemoveComponentType<TestComponent1>();
+                .AddUniqueComponentType<TestUniqueComponent1>();
 
-            Assert.IsFalse(archeType.HasComponentType<TestComponent1>());
-        }
+            Assert.IsTrue(archeType.UniqueComponentTypes.Length == 1);
+            Assert.IsTrue(archeType.UniqueComponentTypes[0] == typeof(TestUniqueComponent1));
+            Assert.IsTrue(archeType.HasUniqueComponentType<TestUniqueComponent1>());
+            Assert.IsTrue(archeType.ComponentTypes.Length == 0);
+            Assert.IsTrue(archeType.SharedComponents.Length == 0);
 
-        [TestMethod]
-        public void RemoveComponentType_Never()
-        {
-            var archeType = new EntityArcheType();
-
-            Assert.ThrowsException<EntityArcheTypeNotHaveComponentException>(() => archeType
-                .RemoveComponentType<TestComponent1>());
-        }
-
-        [TestMethod]
-        public void RemoveComponentType_Duplicate()
-        {
-            var archeType = new EntityArcheType()
-                .AddComponentType<TestComponent1>()
-                .RemoveComponentType<TestComponent1>();
-
-            Assert.ThrowsException<EntityArcheTypeNotHaveComponentException>(() => archeType
-                .RemoveComponentType<TestComponent1>());
-        }
-
-        [TestMethod]
-        public void RemoveComponentType_SharedComponent()
-        {
-            var archeType = new EntityArcheType()
-                .AddSharedComponent(new TestSharedComponent1());
-
-            Assert.ThrowsException<EntityArcheTypeSharedComponentException>(() => archeType
-                .RemoveComponentType<TestSharedComponent1>());
+            Assert.ThrowsException<EntityArcheTypeAlreadyHasComponentException>(() => archeType
+                .AddUniqueComponentType<TestUniqueComponent1>());
         }
 
         [TestMethod]
@@ -104,15 +85,9 @@ namespace EcsLte.UnitTest.EntityArcheTypeTests
                 .AddSharedComponent(new TestSharedComponent1 { Prop = 1 });
 
             Assert.IsTrue(archeType.GetSharedComponent<TestSharedComponent1>().Prop == 1);
-        }
-
-        [TestMethod]
-        public void GetSharedComponent_Never()
-        {
-            var archeType = new EntityArcheType();
 
             Assert.ThrowsException<EntityArcheTypeNotHaveComponentException>(() => archeType
-                .GetSharedComponent<TestSharedComponent1>());
+                .GetSharedComponent<TestSharedComponent2>());
         }
 
         [TestMethod]
@@ -121,69 +96,28 @@ namespace EcsLte.UnitTest.EntityArcheTypeTests
             var archeType = new EntityArcheType()
                 .AddSharedComponent(new TestSharedComponent1 { Prop = 1 });
 
-            Assert.IsTrue(archeType.ComponentTypes.Length == 1);
-            Assert.IsTrue(archeType.ComponentTypes[0] == typeof(TestSharedComponent1));
             Assert.IsTrue(archeType.SharedComponents.Length == 1);
-            Assert.IsTrue(((TestSharedComponent1)archeType.SharedComponents[0]).Prop == 1);
-        }
-
-        [TestMethod]
-        public void AddSharedComponent_Duplicate()
-        {
-            var archeType = new EntityArcheType()
-                .AddSharedComponent(new TestSharedComponent1());
+            Assert.IsTrue(archeType.SharedComponents[0].GetType() == typeof(TestSharedComponent1));
+            Assert.IsTrue(archeType.HasSharedComponentType<TestSharedComponent1>());
+            Assert.IsTrue(archeType.GetSharedComponent<TestSharedComponent1>().Prop == 1);
+            Assert.IsTrue(archeType.ComponentTypes.Length == 0);
+            Assert.IsTrue(archeType.UniqueComponentTypes.Length == 0);
 
             Assert.ThrowsException<EntityArcheTypeAlreadyHasComponentException>(() => archeType
                 .AddSharedComponent(new TestSharedComponent1()));
         }
 
         [TestMethod]
-        public void ReplaceSharedComponent()
+        public void UpdateSharedComponent()
         {
             var archeType = new EntityArcheType()
                 .AddSharedComponent(new TestSharedComponent1())
-                .ReplaceSharedComponent(new TestSharedComponent1 { Prop = 1 });
+                .UpdateSharedComponent(new TestSharedComponent1 { Prop = 1 });
 
-            Assert.IsTrue(archeType.HasSharedComponentData(new TestSharedComponent1 { Prop = 1 }));
-        }
+            Assert.IsTrue(archeType.HasSharedComponent(new TestSharedComponent1 { Prop = 1 }));
 
-        [TestMethod]
-        public void ReplaceSharedComponent_New()
-        {
-            var archeType = new EntityArcheType()
-                .ReplaceSharedComponent(new TestSharedComponent1 { Prop = 1 });
-
-            Assert.IsTrue(archeType.HasSharedComponentData(new TestSharedComponent1 { Prop = 1 }));
-        }
-
-        [TestMethod]
-        public void RemoveSharedComponent()
-        {
-            var archeType = new EntityArcheType()
-                .AddSharedComponent(new TestSharedComponent1())
-                .RemoveSharedComponent<TestSharedComponent1>();
-
-            Assert.IsFalse(archeType.HasComponentType<TestSharedComponent1>());
-        }
-
-        [TestMethod]
-        public void RemoveSharedComponent_Duplicate()
-        {
-            var archeType = new EntityArcheType()
-                .AddSharedComponent(new TestSharedComponent1())
-                .RemoveSharedComponent<TestSharedComponent1>();
-
-            Assert.ThrowsException<EntityArcheTypeNotHaveComponentException>(() => archeType
-                .RemoveSharedComponent<TestSharedComponent1>());
-        }
-
-        [TestMethod]
-        public void RemoveSharedComponent_Never()
-        {
-            var archeType = new EntityArcheType();
-
-            Assert.ThrowsException<EntityArcheTypeNotHaveComponentException>(() => archeType
-                .RemoveSharedComponent<TestSharedComponent1>());
+            Assert.ThrowsException<EntityArcheTypeNotHaveComponentException>(() => new EntityArcheType()
+                .UpdateSharedComponent(new TestSharedComponent2()));
         }
 
         [TestMethod]

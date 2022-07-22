@@ -1,12 +1,3 @@
-C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\bin\Debug\netstandard2.0\EcsLte.deps.json
-C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\bin\Debug\netstandard2.0\EcsLte.dll
-C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\bin\Debug\netstandard2.0\EcsLte.pdb
-C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\obj\Debug\netstandard2.0\EcsLte.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\obj\Debug\netstandard2.0\EcsLte.AssemblyInfoInputs.cache
-C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\obj\Debug\netstandard2.0\EcsLte.AssemblyInfo.cs
-C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\obj\Debug\netstandard2.0\EcsLte.csproj.CoreCompileInputs.cache
-C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\obj\Debug\netstandard2.0\EcsLte.dll
-C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\obj\Debug\netstandard2.0\EcsLte.pdb
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\Git\EcsLte-main\EcsLte-main\EcsLte\bin\Debug\netstandard2.0\EcsLte.deps.json
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\Git\EcsLte-main\EcsLte-main\EcsLte\bin\Debug\netstandard2.0\EcsLte.dll
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\Git\EcsLte-main\EcsLte-main\EcsLte\bin\Debug\netstandard2.0\EcsLte.pdb
@@ -36,3 +27,13 @@ C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - Blittable Only\
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - Blittable Only\EcsLte\bin\Debug\netstandard2.0\EcsLte.deps.json
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - Blittable Only\EcsLte\bin\Debug\netstandard2.0\EcsLte.dll
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - Blittable Only\EcsLte\bin\Debug\netstandard2.0\EcsLte.pdb
+C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\bin\Debug\netstandard2.0\EcsLte.deps.json
+C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\bin\Debug\netstandard2.0\EcsLte.dll
+C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\bin\Debug\netstandard2.0\EcsLte.pdb
+C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\obj\Debug\netstandard2.0\EcsLte.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\obj\Debug\netstandard2.0\EcsLte.AssemblyInfoInputs.cache
+C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\obj\Debug\netstandard2.0\EcsLte.AssemblyInfo.cs
+C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\obj\Debug\netstandard2.0\EcsLte.csproj.CoreCompileInputs.cache
+C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\obj\Debug\netstandard2.0\EcsLte.dll
+C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\obj\Debug\netstandard2.0\EcsLte.pdb
+C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte\obj\Debug\netstandard2.0\EcsLte.csproj.AssemblyReference.cache

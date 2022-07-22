@@ -4,7 +4,7 @@ using System;
 
 namespace EcsLte
 {
-    internal unsafe class EntityTrackerData
+    /*internal unsafe class EntityTrackerData
     {
         private static readonly int _entitiesPerPage = MemoryPage.PageBufferSizeInBytes / TypeCache<Entity>.SizeInBytes;
 
@@ -126,5 +126,5 @@ namespace EcsLte
             var slotOffset = (entity.Id % _entitiesPerPage) * TypeCache<Entity>.SizeInBytes;
             *(Entity*)(pages[pageIndex].Buffer + slotOffset) = entity;
         }
-    }
+    }*/
 }

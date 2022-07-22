@@ -7,37 +7,55 @@ namespace EcsLte
 {
     public static class EcsContexts
     {
-        private static readonly Dictionary<string, EcsContext> _ecsContexts =
+        private static readonly Dictionary<string, EcsContext> _contexts =
             new Dictionary<string, EcsContext>();
-
         private static readonly object _lockObj = new object();
 
         public static EcsContext Default { get; set; } = CreateContext("Default");
 
         public static bool HasContext(string name)
-            => _ecsContexts.ContainsKey(name);
+        {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
 
-        public static EcsContext[] GetAllContexts() => _ecsContexts.Values.ToArray();
+            lock (_lockObj)
+            {
+                return _contexts.ContainsKey(name);
+            }
+        }
+
+        public static EcsContext[] GetAllContexts()
+        {
+            lock (_lockObj)
+            {
+                return _contexts.Values.ToArray();
+            }
+        }
 
         public static EcsContext GetContext(string name)
         {
-            if (!HasContext(name))
-                throw new EcsContextDoesNotExistException(name);
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
 
-            return _ecsContexts[name];
+            lock (_lockObj)
+            {
+                AssertNotExistContext(name);
+
+                return _contexts[name];
+            }
         }
 
         public static EcsContext CreateContext(string name)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
-            if (HasContext(name))
-                throw new EcsContextNameAlreadyExistException(name);
 
             lock (_lockObj)
             {
+                AssertAlreadyHaveContext(name);
+
                 var context = new EcsContext(name);
-                _ecsContexts.Add(name, context);
+                _contexts.Add(name, context);
 
                 return context;
             }
@@ -47,14 +65,27 @@ namespace EcsLte
         {
             if (context == null)
                 throw new ArgumentNullException();
-            if (context.IsDestroyed)
-                throw new EcsContextIsDestroyedException(context);
 
             lock (_lockObj)
             {
+                context.AssertContext();
+                AssertNotExistContext(context.Name);
+
                 context.InternalDestroy();
-                _ecsContexts.Remove(context.Name);
+                _contexts.Remove(context.Name);
             }
+        }
+
+        private static void AssertNotExistContext(string name)
+        {
+            if (!_contexts.ContainsKey(name))
+                throw new EcsContextNotExistException(name);
+        }
+
+        private static void AssertAlreadyHaveContext(string name)
+        {
+            if (_contexts.ContainsKey(name))
+                throw new EcsContextAlreadyExistException(name);
         }
     }
 }

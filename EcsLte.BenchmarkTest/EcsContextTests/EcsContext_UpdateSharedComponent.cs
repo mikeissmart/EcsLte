@@ -33,8 +33,8 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             CreateArcheTypes();
         }
 
-        private EntityArcheType BlueprintUpdateAndArcheType<T>(T component) where T : unmanaged, IComponent =>
-            _blueprint.UpdateComponent(component).GetEntityArcheType();
+        private EntityArcheType BlueprintUpdateAndArcheType<T>(T component) where T : unmanaged, ISharedComponent =>
+            _blueprint.SetSharedComponent(component).GetArcheType();
 
         [GlobalCleanup]
         public void GlobalCleanup()
@@ -44,49 +44,48 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         }
 
         [IterationSetup]
-        public void IterationSetup() => _entities = _context.CreateEntities(_entities.Length, _blueprint);
+        public void IterationSetup() => _entities = _context.Entities.CreateEntities(_blueprint, EntityState.Active, _entities.Length);
 
         [IterationCleanup]
-        public void IterationCleanup() => _context.DestroyEntities(_entities);
-
-        [Benchmark]
-        public void UpdateSharedComponent_Entities()
-        {
-            _context.UpdateSharedComponent(_entities, SharedComponent1);
-            _context.UpdateSharedComponent(_entities, SharedComponent2);
-            _context.UpdateSharedComponent(_entities, SharedComponent3);
-            _context.UpdateSharedComponent(_entities, SharedComponent4);
-        }
+        public void IterationCleanup() => _context.Entities.DestroyEntities(_entities);
 
         [Benchmark]
         public void UpdateSharedComponent_EntityArcheType()
         {
-            _context.UpdateSharedComponent(_archeType1, SharedComponent1);
-            _context.UpdateSharedComponent(_archeType2, SharedComponent2);
-            _context.UpdateSharedComponent(_archeType3, SharedComponent3);
-            _context.UpdateSharedComponent(_archeType4, SharedComponent4);
+            _context.Entities.UpdateSharedComponent(_archeType1, SharedComponent1);
+            _context.Entities.UpdateSharedComponent(_archeType2, SharedComponent2);
+            _context.Entities.UpdateSharedComponent(_archeType3, SharedComponent3);
+            _context.Entities.UpdateSharedComponent(_archeType4, SharedComponent4);
         }
 
         [Benchmark]
         public void UpdateSharedComponent_EntityQuery()
         {
-            _context.UpdateSharedComponent(_query1, SharedComponent1);
-            _context.UpdateSharedComponent(_query2, SharedComponent2);
-            _context.UpdateSharedComponent(_query3, SharedComponent3);
-            _context.UpdateSharedComponent(_query4, SharedComponent4);
+            _context.Entities.UpdateSharedComponents(_query1, SharedComponent1);
+            _context.Entities.UpdateSharedComponents(_query2, SharedComponent2);
+            _context.Entities.UpdateSharedComponents(_query3, SharedComponent3);
+            _context.Entities.UpdateSharedComponents(_query4, SharedComponent4);
         }
 
         private void CreateArcheTypes()
         {
-            _archeType1 = _blueprint.GetEntityArcheType();
+            _archeType1 = _blueprint.GetArcheType();
             _archeType2 = BlueprintUpdateAndArcheType(SharedComponent1);
             _archeType3 = BlueprintUpdateAndArcheType(SharedComponent2);
             _archeType4 = BlueprintUpdateAndArcheType(SharedComponent3);
 
-            _query1 = new EntityQuery().WhereAllOf(_archeType1);
-            _query2 = new EntityQuery().WhereAllOf(_archeType2);
-            _query3 = new EntityQuery().WhereAllOf(_archeType3);
-            _query4 = new EntityQuery().WhereAllOf(_archeType4);
+            _query1 = new EntityQuery(
+                _context,
+                new EntityFilter().WhereAllOf(_archeType1));
+            _query2 = new EntityQuery(
+                _context,
+                new EntityFilter().WhereAllOf(_archeType2));
+            _query3 = new EntityQuery(
+                _context,
+                new EntityFilter().WhereAllOf(_archeType3));
+            _query4 = new EntityQuery(
+                _context,
+                new EntityFilter().WhereAllOf(_archeType4));
         }
     }
 }

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>BenchmarkRun-joined-2022-07-22-19-34-24</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet=v0.13.1, OS=Windows 10.0.19043.1348 (21H1/May2021Update)
+AMD Ryzen 9 3900X, 1 CPU, 24 logical and 12 physical cores
+  [Host]     : .NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
+  Job-FTOBUC : .NET Framework 4.8 (4.8.4420.0), X86 LegacyJIT
+</code></pre>
+<pre><code>InvocationCount=1  UnrollFactor=1  
+</code></pre>
+
+<table>
+<thead><tr><th>                      Namespace</th><th>                      Type</th><th>                         Method</th><th>CompArr</th><th>ReadWrite</th><th>  Mean</th><th>Error</th><th>StdDev</th>
+</tr>
+</thead><tbody><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_GetComponent</td><td>GetComponent_Entity</td><td>?</td><td>?</td><td>328.205 ms</td><td>1.0821 ms</td><td>0.9592 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_GetComponent</td><td>GetComponents_EntityArcheType</td><td>?</td><td>?</td><td>9.983 ms</td><td>0.1994 ms</td><td>0.3745 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_GetComponent</td><td>GetComponents_EntityQuery</td><td>?</td><td>?</td><td>10.029 ms</td><td>0.2002 ms</td><td>0.3558 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateSharedComponent</td><td>UpdateSharedComponent_EntityArcheType</td><td>?</td><td>?</td><td>9.306 ms</td><td>0.0828 ms</td><td>0.0774 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateSharedComponent</td><td>UpdateSharedComponent_EntityQuery</td><td>?</td><td>?</td><td>25.272 ms</td><td>0.1376 ms</td><td>0.1149 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntities</td><td>Normal_x4</td><td>?</td><td>81.787 ms</td><td>0.2431 ms</td><td>0.2030 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntities</td><td>Shared_x4</td><td>?</td><td>58.360 ms</td><td>0.2449 ms</td><td>0.1912 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntities_Reuse</td><td>Normal_x4</td><td>?</td><td>76.730 ms</td><td>0.5489 ms</td><td>0.5135 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntities_Reuse</td><td>Shared_x4</td><td>?</td><td>56.930 ms</td><td>0.9947 ms</td><td>0.9304 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntity</td><td>Normal_x4</td><td>?</td><td>264.485 ms</td><td>1.6983 ms</td><td>1.5886 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntity</td><td>Shared_x4</td><td>?</td><td>179.710 ms</td><td>2.6752 ms</td><td>2.5024 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntity_Reuse</td><td>Normal_x4</td><td>?</td><td>241.094 ms</td><td>0.7683 ms</td><td>0.6810 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>CreateEntity_Reuse</td><td>Shared_x4</td><td>?</td><td>158.362 ms</td><td>0.9421 ms</td><td>0.8812 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntities</td><td>Normal_x4</td><td>?</td><td>46.998 ms</td><td>0.4012 ms</td><td>0.3557 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntities</td><td>Shared_x4</td><td>?</td><td>46.442 ms</td><td>0.4837 ms</td><td>0.4525 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntities_Reuse</td><td>Normal_x4</td><td>?</td><td>43.085 ms</td><td>0.1737 ms</td><td>0.1625 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntities_Reuse</td><td>Shared_x4</td><td>?</td><td>42.296 ms</td><td>0.1991 ms</td><td>0.1765 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntity</td><td>Normal_x4</td><td>?</td><td>60.375 ms</td><td>0.6421 ms</td><td>0.6007 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntity</td><td>Shared_x4</td><td>?</td><td>59.174 ms</td><td>0.2904 ms</td><td>0.2425 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntity_Reuse</td><td>Normal_x4</td><td>?</td><td>56.268 ms</td><td>0.2738 ms</td><td>0.2561 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_CreateEntity</td><td>DestroyEntity_Reuse</td><td>Shared_x4</td><td>?</td><td>54.146 ms</td><td>0.3837 ms</td><td>0.3402 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntities_NoDestroy</td><td>Normal_x4</td><td>?</td><td>186.615 ms</td><td>0.7735 ms</td><td>0.6856 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntities_NoDestroy</td><td>Shared_x4</td><td>?</td><td>346.349 ms</td><td>1.2276 ms</td><td>1.1483 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityArcheType_NoDestroy</td><td>Normal_x4</td><td>?</td><td>80.124 ms</td><td>0.7817 ms</td><td>0.7312 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityArcheType_NoDestroy</td><td>Shared_x4</td><td>?</td><td>59.741 ms</td><td>0.8909 ms</td><td>0.8333 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityQuery_NoDestroy</td><td>Normal_x4</td><td>?</td><td>81.728 ms</td><td>1.5261 ms</td><td>1.4275 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntityQuery_NoDestroy</td><td>Shared_x4</td><td>?</td><td>59.780 ms</td><td>0.6398 ms</td><td>0.5985 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntity_NoDestroy</td><td>Normal_x4</td><td>?</td><td>211.017 ms</td><td>0.8749 ms</td><td>0.8184 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_Transfer</td><td>TransferEntity_NoDestroy</td><td>Shared_x4</td><td>?</td><td>379.241 ms</td><td>1.2749 ms</td><td>1.1926 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent_Entity</td><td>Normal_x4</td><td>?</td><td>342.315 ms</td><td>0.9381 ms</td><td>0.8775 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EcsContextTests</td><td>EcsContext_UpdateComponent</td><td>UpdateComponent_Entity</td><td>Shared_x4</td><td>?</td><td>1,221.393 ms</td><td>9.4216 ms</td><td>8.8129 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>?</td><td>R0W0</td><td>98.479 ms</td><td>0.6759 ms</td><td>0.6322 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>?</td><td>R0W4_Normal_x4</td><td>302.455 ms</td><td>1.2713 ms</td><td>1.1892 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>?</td><td>R4W0_Normal_x4</td><td>197.857 ms</td><td>0.9451 ms</td><td>0.8378 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>?</td><td>R0W4_Shared_x4</td><td>537.055 ms</td><td>6.2652 ms</td><td>5.8605 ms</td>
+</tr><tr><td>EcsLte.BenchmarkTest.EntityQueryTests</td><td>EntityQuery_ForEach</td><td>ForEach</td><td>?</td><td>R4W0_Shared_x4</td><td>212.625 ms</td><td>1.8117 ms</td><td>1.6060 ms</td>
+</tr></tbody></table>
+</body>
+</html>

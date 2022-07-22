@@ -16,16 +16,83 @@ namespace EcsLte
         private int _pagesCount;
         private int _pagesLength;
         private int _slotsPerPage;
-        private int _slotSizeInBytes;
+        private byte* _sharedComponentsBuffer;
+        private int _sharedComponentsSizeInBytes;
 
         internal ArcheTypeIndex ArcheTypeIndex { get; private set; }
         internal ArcheType ArcheType { get; private set; }
         internal int EntityCount { get; private set; }
-        internal int ComponentsSizeInBytes => _slotSizeInBytes;
-        internal ComponentConfig* UniqueConfigs { get; private set; }
-        internal int UniqueConfigsLength { get; private set; }
+        internal int ComponentsSizeInBytes { get; private set; }
+        internal ComponentConfig[] GeneralConfigs { get; private set; }
+        internal ComponentConfig[] SharedConfigs { get; private set; }
+        internal ComponentConfig[] UniqueConfigs { get; private set; }
 
-        internal ArcheTypeData(ArcheType archeType, ArcheTypeIndex archeIndex) => Initialize(archeType, archeIndex);
+        internal ArcheTypeData(ArcheType archeType, ArcheTypeIndex archeIndex, SharedComponentIndexDictionaries sharedDics)
+        {
+            var sharedConfigs = new List<ComponentConfigOffset>();
+            var generalConfigs = new List<ComponentConfig>();
+            var uniqueConfigs = new List<ComponentConfig>();
+
+            _configOffsets = MemoryHelper.Alloc<ComponentConfigOffset>(ComponentConfigs.Instance.AllComponentCount);
+            var sharedOffset = 0;
+            for (var i = 0; i < archeType.ComponentConfigLength; i++)
+            {
+                var config = archeType.ComponentConfigs[i];
+                var configOffset = new ComponentConfigOffset
+                {
+                    Config = config,
+                    ConfigIndex = i,
+                };
+
+                if (config.IsShared)
+                {
+                    configOffset.OffsetInBytes = sharedOffset;
+                    sharedOffset += config.UnmanagedSizeInBytes == 0
+                        ? 1
+                        : config.UnmanagedSizeInBytes;
+                    sharedConfigs.Add(configOffset);
+                }
+                else
+                {
+                    configOffset.OffsetInBytes = ComponentsSizeInBytes;
+                    ComponentsSizeInBytes += config.UnmanagedSizeInBytes == 0
+                        ? 1
+                        : config.UnmanagedSizeInBytes;
+
+                    if (config.IsGeneral)
+                        generalConfigs.Add(config);
+                    else if (config.IsUnique)
+                        uniqueConfigs.Add(config);
+                    else
+                        throw new ArgumentException();
+                }
+
+                _configOffsets[config.ComponentIndex] = configOffset;
+            }
+
+            if (generalConfigs.Count > 0 || uniqueConfigs.Count > 0)
+                _slotsPerPage = MemoryPage.PageBufferSizeInBytes / ComponentsSizeInBytes;
+            ArcheTypeIndex = archeIndex;
+            ArcheType = archeType;
+
+            SharedConfigs = new ComponentConfig[sharedConfigs.Count];
+            if (sharedConfigs.Count > 0)
+            {
+                _sharedComponentsBuffer = MemoryHelper.Alloc<byte>(sharedOffset);
+                _sharedComponentsSizeInBytes = sharedOffset;
+;
+                for (var i = 0; i < SharedConfigs.Length; i++)
+                {
+                    var configOffset = sharedConfigs[i];
+                    SharedConfigs[i] = configOffset.Config;
+                    sharedDics.GetSharedIndexDic(configOffset.Config)
+                        .GetComponentData(archeType.SharedComponentDataIndexes[i])
+                        .CopyComponentData(GetSharedComponentOffsetPtr(configOffset));
+                }
+            }
+            GeneralConfigs = generalConfigs.ToArray();
+            UniqueConfigs = uniqueConfigs.ToArray();
+        }
 
         internal static EntityData TransferEntity(
             Entity entity,
@@ -38,9 +105,9 @@ namespace EcsLte
             var nextEntityData = nextArcheTypeData.AddEntity(entity, bookManager);
 
             MemoryHelper.Copy(
-                prevEntityData.Slot.Buffer,
-                nextEntityData.Slot.Buffer,
-                nextArcheTypeData._slotSizeInBytes);
+                prevEntityData.ComponentsBuffer,
+                nextEntityData.ComponentsBuffer,
+                nextArcheTypeData.ComponentsSizeInBytes);
 
             prevArcheTypeData.RemoveEntityReorder(entity, allEntityDatas, bookManager);
             allEntityDatas[entity.Id] = nextEntityData;
@@ -71,21 +138,21 @@ namespace EcsLte
                 MemoryHelper.Copy(
                     nextArcheTypeData._entities + nextArcheTypeData.EntityCount,
                     nextLastPageEntities,
-                    nextLastPage.SlotCount * TypeCache<Entity>.SizeInBytes);
+                    nextLastPage.SlotCount);
             }
             // Copy prev entities to end of next entities
             //  Overwrite nextLastPage slot count
             MemoryHelper.Copy(
                 prevArcheTypeData._entities,
                 nextArcheTypeData._entities + nextArcheTypeData.EntityCount,
-                prevArcheTypeData.EntityCount * TypeCache<Entity>.SizeInBytes);
+                prevArcheTypeData.EntityCount);
             if (nextLastPage.SlotCount > 0)
             {
                 // Copy nextLastPage slot count to end of entites
                 MemoryHelper.Copy(
                     nextLastPageEntities,
                     nextArcheTypeData._entities + nextArcheTypeData.EntityCount + prevArcheTypeData.EntityCount,
-                    nextLastPage.SlotCount * TypeCache<Entity>.SizeInBytes);
+                    nextLastPage.SlotCount);
             }
             for (var i = 0; i < prevArcheTypeData.EntityCount; i++)
             {
@@ -102,7 +169,7 @@ namespace EcsLte
             MemoryHelper.Copy(
                 prevArcheTypeData._pages,
                 nextArcheTypeData._pages + (nextArcheTypeData._pagesCount - 1),
-                prevArcheTypeData._pagesCount * TypeCache<MemoryPage>.SizeInBytes);
+                prevArcheTypeData._pagesCount);
             nextArcheTypeData._pagesCount += prevArcheTypeData._pagesCount - 1;
 
             // Is now where prevLastPage is
@@ -116,7 +183,7 @@ namespace EcsLte
                 MemoryHelper.Copy(
                     nextLastPage.GetBuffer(nextLastPage.SlotCount - transferSlotCount),
                     prevLastPage->GetBuffer(prevLastPage->SlotCount),
-                    transferSlotCount * (nextArcheTypeData._slotSizeInBytes));
+                    transferSlotCount * nextArcheTypeData.ComponentsSizeInBytes);
                 for (var i = 0; i < transferSlotCount; i++)
                 {
                     var entity = nextArcheTypeData._entities[nextArcheTypeData.EntityCount + i];
@@ -147,7 +214,7 @@ namespace EcsLte
             else
             {
                 // Dont need nextLast page anymore
-                bookManager.ReturnPage(nextLastPage);
+                bookManager.ReturnPage1(nextLastPage);
             }
 
             prevArcheTypeData._pagesCount = 0;
@@ -157,11 +224,17 @@ namespace EcsLte
         internal void PrecheckEntityAllocation(int count, MemoryBookManager bookManager)
         {
             CheckEntities(count);
-            bookManager.AllocatePages(count / _slotsPerPage +
-                (count % _slotsPerPage != 0 ? 1 : 0));
+            if (_slotsPerPage > 0)
+            {
+                bookManager.AllocatePages(count / _slotsPerPage +
+                    (count % _slotsPerPage != 0 ? 1 : 0));
+            }
         }
 
-        internal void CopyEntities(ref Entity[] entities, int startingIndex)
+        internal Entity GetEntity(int entityIndex)
+            => _entities[entityIndex];
+
+        internal void GetEntities(ref Entity[] entities, int startingIndex)
         {
             if (EntityCount == 0)
                 return;
@@ -171,12 +244,9 @@ namespace EcsLte
                 MemoryHelper.Copy(
                     _entities,
                     entitiesPtr,
-                    EntityCount * TypeCache<Entity>.SizeInBytes);
+                    EntityCount);
             }
         }
-
-        internal Entity GetEntity(int entityIndex)
-            => _entities[entityIndex];
 
         internal EntityData AddEntity(Entity entity, MemoryBookManager bookManager)
         {
@@ -196,7 +266,8 @@ namespace EcsLte
             return entityData;
         }
 
-        internal void RemoveEntity(Entity entity, EntityData* allEntityDatas, MemoryBookManager bookManager) => RemoveEntityReorder(entity, allEntityDatas, bookManager);
+        internal void RemoveEntity(Entity entity, EntityData* allEntityDatas, MemoryBookManager bookManager) =>
+            RemoveEntityReorder(entity, allEntityDatas, bookManager);
 
         internal void RemoveAllEntities(EntityData* allEntityDatas, MemoryBookManager bookManager,
             ref Entity[] entities, ref int entitiesCount)
@@ -212,137 +283,110 @@ namespace EcsLte
                 MemoryHelper.Copy(
                     _entities,
                     entitiesPtr,
-                    EntityCount * TypeCache<Entity>.SizeInBytes);
+                    EntityCount);
             }
             entitiesCount = EntityCount;
 
             if (_pagesCount > 0)
             {
-                bookManager.ReturnPages(_pages, _pagesCount, 0);
+                bookManager.ReturnPages1(_pages, 0, _pagesCount);
                 _pagesCount = 0;
             }
             EntityCount = 0;
         }
 
-        internal void CopyBlittableComponentDatasToBuffer(IComponentData[] blittableComponentDatas, byte* componentsBuffer)
-        {
-            for (var i = 0; i < blittableComponentDatas.Length; i++)
-            {
-                var componentData = blittableComponentDatas[i];
-                var configOffset = GetComponentConfigOffset(componentData.Config);
-                if (componentData.Config.UnmanagedSizeInBytes != 0)
-                    componentData.CopyComponentData(componentsBuffer + configOffset.OffsetInBytes);
-            }
-        }
+        internal byte* GetComponentPtr(EntityData entityData, ComponentConfig config)
+            => GetComponentOffsetPtr(entityData, GetComponentConfigOffset(config));
 
-        internal TComponent GetComponent<TComponent>(EntityData entityData, ComponentConfig config)
-            where TComponent : unmanaged, IComponent => GetComponentOffset<TComponent>(entityData, GetComponentConfigOffset(config));
+        internal byte* GetComponentOffsetPtr(EntityData entityData, ComponentConfigOffset configOffset)
+            => DataBufferToComponent(entityData, configOffset);
 
-        internal TComponent GetComponentOffset<TComponent>(EntityData entityData, ComponentConfigOffset configOffset)
-            where TComponent : unmanaged, IComponent =>
-            *(TComponent*)DataBufferToComponent(entityData, configOffset);
+        internal byte* GetSharedComponentPtr(ComponentConfig config)
+            => GetSharedComponentOffsetPtr(GetComponentConfigOffset(config));
+
+        internal byte* GetSharedComponentOffsetPtr(ComponentConfigOffset configOffset)
+            => _sharedComponentsBuffer + configOffset.OffsetInBytes;
 
         internal void GetComponents<TComponent>(ref TComponent[] components, int startingIndex, ComponentConfig config)
-            where TComponent : unmanaged, IComponent
+            where TComponent : unmanaged, IGeneralComponent
         {
             var configOffset = GetComponentConfigOffset(config);
-            var componentIndex = 0;
+            var componentIndex = startingIndex;
             for (var pageIndex = 0; pageIndex < _pagesCount; pageIndex++)
             {
                 var page = _pages[pageIndex];
                 var buffer = page.Buffer;
-                for (int slotIndex = 0, slotOffset = configOffset.OffsetInBytes; slotIndex < page.SlotCount;
-                    slotIndex++,
-                    slotOffset += _slotSizeInBytes,
-                    componentIndex++)
+                for (int slotIndex = 0, slotOffset = configOffset.OffsetInBytes;
+                    slotIndex < page.SlotCount;
+                    slotIndex++, slotOffset += ComponentsSizeInBytes, componentIndex++)
                 {
-                    components[componentIndex + startingIndex] = *(TComponent*)(buffer + slotOffset);
+                    components[componentIndex] = *(TComponent*)(buffer + slotOffset);
                 }
             }
         }
 
-        internal IComponent[] GetAllComponents(EntityData entityData)
+        internal void GetAllEntityComponents(EntityData entityData, ref IComponent[] components, int startingIndex)
         {
-            var components = new IComponent[ArcheType.ComponentConfigLength];
-            for (var i = 0; i < ArcheType.ComponentConfigLength; i++)
+            var componentIndex = startingIndex;
+            for (var i = 0; i < GeneralConfigs.Length; i++, componentIndex++)
             {
-                var configOffset = GetComponentConfigOffset(ArcheType.ComponentConfigs[i]);
-                components[i] = (IComponent)Marshal.PtrToStructure(
+                var configOffset = GetComponentConfigOffset(GeneralConfigs[i]);
+                components[componentIndex] = (IComponent)Marshal.PtrToStructure(
                     (IntPtr)DataBufferToComponent(entityData, configOffset),
-                    ComponentConfigs.Instance.AllComponentTypes[configOffset.Config.ComponentIndex]);
+                    configOffset.Config.ComponentType);
             }
-
-            return components;
-        }
-
-        internal void SetComponent<TComponent>(EntityData entityData, TComponent component, ComponentConfig config)
-            where TComponent : unmanaged, IComponent => SetComponentOffset(entityData, component, GetComponentConfigOffset(config));
-
-        internal void SetComponentOffset<TComponent>(EntityData entityData, TComponent component, ComponentConfigOffset configOffset)
-            where TComponent : unmanaged, IComponent => *(TComponent*)DataBufferToComponent(entityData, configOffset) = component;
-
-        internal void SetAllComponents<TComponent>(TComponent component, ComponentConfig config)
-            where TComponent : unmanaged, IComponent
-        {
-            var configOffset = GetComponentConfigOffset(config);
-            for (var pageIndex = 0; pageIndex < _pagesCount; pageIndex++)
+            for (var i = 0; i < SharedConfigs.Length; i++, componentIndex++)
             {
-                var page = _pages[pageIndex];
-                var buffer = page.Buffer;
-                for (int slotIndex = 0, slotOffset = configOffset.OffsetInBytes; slotIndex < page.SlotCount;
-                    slotIndex++,
-                    slotOffset += _slotSizeInBytes)
-                {
-                    *(TComponent*)(buffer + slotOffset) = component;
-                }
+                var configOffset = GetComponentConfigOffset(SharedConfigs[i]);
+                components[componentIndex] = (IComponent)Marshal.PtrToStructure(
+                    (IntPtr)GetSharedComponentOffsetPtr(configOffset),
+                    configOffset.Config.ComponentType);
+            }
+            for (var i = 0; i < UniqueConfigs.Length; i++, componentIndex++)
+            {
+                var configOffset = GetComponentConfigOffset(UniqueConfigs[i]);
+                components[componentIndex] = (IComponent)Marshal.PtrToStructure(
+                    (IntPtr)DataBufferToComponent(entityData, configOffset),
+                    configOffset.Config.ComponentType);
             }
         }
 
-        internal void SetComponentsBuffer(EntityData entityData, byte* componentsBuffer) => MemoryHelper.Copy(
+        internal void GetAllSharedComponents(ref ISharedComponent[] components, int startingIndex)
+        {
+            for (int i = 0, componentIndex = startingIndex;
+                i < SharedConfigs.Length;
+                i++, componentIndex++)
+            {
+                var configOffset = GetComponentConfigOffset(SharedConfigs[i]);
+                components[componentIndex] = (ISharedComponent)Marshal.PtrToStructure(
+                    (IntPtr)(_sharedComponentsBuffer + configOffset.OffsetInBytes),
+                    configOffset.Config.ComponentType);
+            }
+        }
+
+        internal void CopyComponentDatasToBuffer(IComponentData[] componentDatas, byte* componentsBuffer)
+        {
+            for (var i = 0; i < componentDatas.Length; i++)
+            {
+                var componentData = componentDatas[i];
+                if (componentData.Config.UnmanagedSizeInBytes != 0)
+                    componentData.CopyComponentData(componentsBuffer + GetComponentConfigOffset(componentData.Config).OffsetInBytes);
+            }
+        }
+
+        internal void SetComponentsFromBuffer(byte* componentsBuffer, EntityData entityData) =>
+            MemoryHelper.Copy(
                 componentsBuffer,
-                entityData.Slot.Buffer,
-                _slotSizeInBytes);
+                entityData.ComponentsBuffer,
+                ComponentsSizeInBytes);
+
+        internal void CopyComponents(EntityData srcEntityData, EntityData destEntityData) =>
+            MemoryHelper.Copy(
+                srcEntityData.ComponentsBuffer,
+                destEntityData.ComponentsBuffer,
+                ComponentsSizeInBytes);
 
         internal ComponentConfigOffset GetComponentConfigOffset(ComponentConfig config) => _configOffsets[config.ComponentIndex];
-
-        private void Initialize(ArcheType archeType, ArcheTypeIndex archeIndex)
-        {
-            var uniqueConfigs = new List<ComponentConfig>();
-
-            _configOffsets = MemoryHelper.Alloc<ComponentConfigOffset>(ComponentConfigs.Instance.AllComponentCount);
-            for (var i = 0; i < archeType.ComponentConfigLength; i++)
-            {
-                var config = archeType.ComponentConfigs[i];
-                var configOffset = new ComponentConfigOffset
-                {
-                    Config = config,
-                    ConfigIndex = i,
-                };
-
-                configOffset.OffsetInBytes = _slotSizeInBytes;
-                if (config.UnmanagedSizeInBytes == 0)
-                    _slotSizeInBytes++;
-                else
-                    _slotSizeInBytes += config.UnmanagedSizeInBytes;
-
-                if (config.IsUnique)
-                    uniqueConfigs.Add(config);
-
-                _configOffsets[config.ComponentIndex] = configOffset;
-            }
-
-            _slotsPerPage = MemoryPage.PageBufferSizeInBytes / _slotSizeInBytes;
-            ArcheTypeIndex = archeIndex;
-            ArcheType = archeType;
-
-            if (uniqueConfigs.Count > 0)
-            {
-                UniqueConfigs = MemoryHelper.Alloc<ComponentConfig>(uniqueConfigs.Count);
-                UniqueConfigsLength = uniqueConfigs.Count;
-                for (var i = 0; i < UniqueConfigsLength; i++)
-                    UniqueConfigs[i] = uniqueConfigs[i];
-            }
-        }
 
         internal void InternalDestroy()
         {
@@ -361,16 +405,13 @@ namespace EcsLte
                 _pagesLength = 0;
             }
             _slotsPerPage = 0;
-            _slotSizeInBytes = 0;
+            ComponentsSizeInBytes = 0;
             ArcheType.Dispose();
             ArcheType = new ArcheType();
             EntityCount = 0;
-            if (UniqueConfigsLength > 0)
-            {
-                MemoryHelper.Free(UniqueConfigs);
-                UniqueConfigs = null;
-                UniqueConfigsLength = 0;
-            }
+            GeneralConfigs = null;
+            SharedConfigs = null;
+            UniqueConfigs = null;
         }
 
         private void RemoveEntityReorder(Entity entity, EntityData* allEntityDatas, MemoryBookManager bookManager)
@@ -386,9 +427,9 @@ namespace EcsLte
 
                     _entities[entityData.EntityIndex] = lastEntity;
                     MemoryHelper.Copy(
-                        lastEntityData.Slot.Buffer,
-                        entityData.Slot.Buffer,
-                        _slotSizeInBytes);
+                        lastEntityData.ComponentsBuffer,
+                        entityData.ComponentsBuffer,
+                        ComponentsSizeInBytes);
 
                     allEntityDatas[lastEntity.Id] = entityData;
                 }
@@ -397,7 +438,7 @@ namespace EcsLte
             lastPage->SlotCount--;
             if (lastPage->SlotCount == 0)
             {
-                bookManager.ReturnPage(*lastPage);
+                bookManager.ReturnPage1(*lastPage);
                 _pagesCount--;
             }
             EntityCount--;
@@ -408,16 +449,9 @@ namespace EcsLte
             if (count > (_entitiesLength - EntityCount))
             {
                 var newLength = (int)Math.Pow(2, (int)Math.Log(_entitiesLength + count, 2) + 1);
-                var newBuffer = MemoryHelper.Alloc<Entity>(newLength);
-                if (_entities != null)
-                {
-                    MemoryHelper.Copy(
-                        _entities,
-                        newBuffer,
-                        EntityCount * TypeCache<Entity>.SizeInBytes);
-                    MemoryHelper.Free(_entities);
-                }
-                _entities = newBuffer;
+                _entities = _entities != null
+                    ? MemoryHelper.ReallocCopy1(_entities, _entitiesLength, newLength)
+                    : MemoryHelper.Alloc<Entity>(newLength);
                 _entitiesLength = newLength;
             }
         }
@@ -427,16 +461,9 @@ namespace EcsLte
             if (count > (_pagesLength - _pagesCount))
             {
                 var newLength = (int)Math.Pow(2, (int)Math.Log(_pagesLength + count, 2) + 1);
-                var newBuffer = MemoryHelper.Alloc<MemoryPage>(newLength);
-                if (_pages != null)
-                {
-                    MemoryHelper.Copy(
-                        _pages,
-                        newBuffer,
-                        _pagesCount * TypeCache<MemoryPage>.SizeInBytes);
-                    MemoryHelper.Free(_pages);
-                }
-                _pages = newBuffer;
+                _pages = _pages != null
+                    ? MemoryHelper.ReallocCopy1(_pages, _pagesLength, newLength)
+                    : MemoryHelper.Alloc<MemoryPage>(newLength);
                 _pagesLength = newLength;
             }
         }
@@ -455,7 +482,7 @@ namespace EcsLte
             {
                 CheckPages(1);
                 var page = bookManager.CheckoutPage();
-                page.Reset(_slotSizeInBytes, _slotsPerPage);
+                page.Reset(ComponentsSizeInBytes, _slotsPerPage);
                 _pages[_pagesCount] = page;
                 lastPage = &_pages[_pagesCount];
                 _pagesCount++;
@@ -466,6 +493,6 @@ namespace EcsLte
 
         private byte* DataBufferToComponent(EntityData entityData, ComponentConfig config) => DataBufferToComponent(entityData, GetComponentConfigOffset(config));
 
-        private byte* DataBufferToComponent(EntityData entityData, ComponentConfigOffset configOffset) => entityData.Slot.BlittableBuffer + configOffset.OffsetInBytes;
+        private byte* DataBufferToComponent(EntityData entityData, ComponentConfigOffset configOffset) => entityData.ComponentsBuffer + configOffset.OffsetInBytes;
     }
 }

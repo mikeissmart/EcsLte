@@ -1,10 +1,196 @@
-﻿using EcsLte.Utilities;
+﻿using EcsLte.Exceptions;
+using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace EcsLte
 {
+    /*public class EntityArcheType1 : IEquatable<EntityArcheType1>
+    {
+        private readonly Dictionary<EcsContext, ArcheTypeData> _archeTypeDatas;
+        private int _hashCode;
+        private readonly object _lockObj;
+
+        public Type[] ComponentTypes { get; private set; }
+        public ISharedComponent[] SharedComponents { get; private set; }
+        internal ComponentConfig[] ComponentConfigs { get; private set; }
+        internal IComponentData[] SharedComponentDatas { get; private set; }
+
+        public EntityArcheType1()
+        {
+            _archeTypeDatas = new Dictionary<EcsContext, ArcheTypeData>();
+            _lockObj = new object();
+
+            ComponentConfigs = new ComponentConfig[0];
+            SharedComponentDatas = new IComponentData[0];
+            ComponentTypes = new Type[0];
+            SharedComponents = new ISharedComponent[0];
+        }
+
+        private EntityArcheType1(EntityArcheType1 archeType, ComponentConfig config, bool isAdding)
+            : this()
+        {
+            ComponentConfigs = isAdding
+                ? Helper.CopyInsertSort(archeType.ComponentConfigs, config)
+                : archeType.ComponentConfigs
+                    .Where(x => x != config)
+                    .ToArray();
+            SharedComponentDatas = isAdding
+                ? archeType.SharedComponentDatas
+                : archeType.SharedComponentDatas
+                    .Where(x => x.Config != config)
+                    .ToArray();
+            ComponentTypes = ComponentConfigs.Select(x => x.ComponentType).ToArray();
+            SharedComponents = (ISharedComponent[])SharedComponentDatas.Select(x => x.Component).ToArray();
+        }
+
+        private EntityArcheType1(EntityArcheType1 archeType, IComponentData componentData)
+            : this()
+        {
+            ComponentConfigs = !archeType.ComponentConfigs.Any(x => x == componentData.Config)
+                ? Helper.CopyInsertSort(archeType.ComponentConfigs, componentData.Config)
+                : archeType.ComponentConfigs;
+            SharedComponentDatas = Helper.CopyAddOrReplaceSort(archeType.SharedComponentDatas, componentData);
+            ComponentTypes = ComponentConfigs.Select(x => x.ComponentType).ToArray();
+            SharedComponents = (ISharedComponent[])SharedComponentDatas.Select(x => x.Component).ToArray();
+        }
+
+        public bool HasComponentType<TComponent>() where TComponent : IComponent
+        {
+            var config = ComponentConfig<TComponent>.Config;
+            for (var i = 0; i < ComponentConfigs.Length; i++)
+            {
+                if (ComponentConfigs[i] == config)
+                    return true;
+            }
+
+            return false;
+        }
+
+        public bool HasSharedComponentData<TSharedComponent>(TSharedComponent component) where TSharedComponent : ISharedComponent
+        {
+            for (var i = 0; i < SharedComponentDatas.Length; i++)
+            {
+                if (SharedComponentDatas[i].ComponentEquals(component))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public EntityArcheType1 AddComponentType<TComponent>() where TComponent : unmanaged, IComponent
+        {
+            if (HasComponentType<TComponent>())
+                throw new EntityArcheTypeAlreadyHasComponentException(typeof(TComponent));
+
+            var config = ComponentConfig<TComponent>.Config;
+            if (config.IsShared)
+                throw new EntityArcheTypeSharedComponentException(typeof(TComponent));
+
+            return new EntityArcheType1(this, config, true);
+        }
+
+        public EntityArcheType1 RemoveComponentType<TComponent>() where TComponent : unmanaged, IComponent
+        {
+            if (!HasComponentType<TComponent>())
+                throw new EntityArcheTypeNotHaveComponentException(typeof(TComponent));
+
+            var config = ComponentConfig<TComponent>.Config;
+            if (config.IsShared)
+                throw new EntityArcheTypeSharedComponentException(typeof(TComponent));
+
+            return new EntityArcheType1(this, config, true);
+        }
+
+        public TSharedComponent GetSharedComponent<TSharedComponent>() where TSharedComponent : unmanaged, ISharedComponent
+        {
+            if (!HasComponentType<TSharedComponent>())
+                throw new EntityArcheTypeNotHaveComponentException(typeof(TSharedComponent));
+
+            var config = ComponentConfig<TSharedComponent>.Config;
+            return (TSharedComponent)SharedComponentDatas.First(x => x.Config == config).Component;
+        }
+
+        public EntityArcheType1 AddSharedComponent<TSharedComponent>(TSharedComponent component)
+            where TSharedComponent : unmanaged, ISharedComponent
+        {
+            if (HasComponentType<TSharedComponent>())
+                throw new EntityArcheTypeAlreadyHasComponentException(typeof(TSharedComponent));
+
+            return new EntityArcheType1(this, new ComponentData<TSharedComponent>(component));
+        }
+
+        public EntityArcheType1 ReplaceSharedComponent<TSharedComponent>(TSharedComponent component) where TSharedComponent : unmanaged, ISharedComponent
+        {
+            if (!HasComponentType<TSharedComponent>())
+                return AddSharedComponent(component);
+
+            return new EntityArcheType1(this, new ComponentData<TSharedComponent>(component));
+        }
+
+        public EntityArcheType1 RemoveSharedComponent<TSharedComponent>() where TSharedComponent : ISharedComponent
+        {
+            if (!HasComponentType<TSharedComponent>())
+                throw new EntityArcheTypeNotHaveComponentException(typeof(TSharedComponent));
+
+            return new EntityArcheType1(this, ComponentConfig<TSharedComponent>.Config, false);
+        }
+
+        public static bool operator !=(EntityArcheType1 lhs, EntityArcheType1 rhs)
+            => !(lhs == rhs);
+
+        public static bool operator ==(EntityArcheType1 lhs, EntityArcheType1 rhs)
+        {
+            if (ReferenceEquals(lhs, null) && ReferenceEquals(rhs, null))
+                return true;
+            if (ReferenceEquals(lhs, null) || ReferenceEquals(rhs, null))
+                return false;
+
+            if (lhs.ComponentConfigs.Length != rhs.ComponentConfigs.Length ||
+                lhs.SharedComponentDatas.Length != rhs.SharedComponentDatas.Length)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < lhs.ComponentConfigs.Length; i++)
+            {
+                if (lhs.ComponentConfigs[i] != rhs.ComponentConfigs[i])
+                    return false;
+            }
+            for (var i = 0; i < lhs.SharedComponentDatas.Length; i++)
+            {
+                if (!lhs.SharedComponentDatas[i].Equals(rhs.SharedComponentDatas[i]))
+                    return false;
+            }
+
+            return true;
+        }
+
+        public bool Equals(EntityArcheType1 other)
+            => this == other;
+
+        public override bool Equals(object other)
+            => other is EntityArcheType1 obj && this == obj;
+
+        public override int GetHashCode()
+        {
+            if (_hashCode == 0)
+            {
+                var hashCode = HashCodeHelper.StartHashCode()
+                    .AppendHashCode(ComponentTypes.Length)
+                    .AppendHashCode(SharedComponents.Length);
+                foreach (var type in ComponentTypes)
+                    hashCode = hashCode.AppendHashCode(type);
+                foreach (var component in SharedComponents)
+                    hashCode = hashCode.AppendHashCode(component);
+                _hashCode = hashCode.HashCode;
+            }
+
+            return _hashCode;
+        }
+    }
+
     internal class EntityArcheTypeData : IEquatable<EntityArcheTypeData>
     {
         private int _hashCode;
@@ -260,5 +446,5 @@ namespace EcsLte
 
             return _hashCode;
         }
-    }
+    }*/
 }
