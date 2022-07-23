@@ -3,7 +3,6 @@ using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace EcsLte
 {
@@ -466,12 +465,9 @@ namespace EcsLte
             ConfigCount = AllOfComponentConfigs.Length + AnyOfComponentConfigs.Length + NoneOfComponentConfigs.Length;
         }
 
-        private ComponentConfig[] AppendConfig(in ComponentConfig[] src, ComponentConfig config)
-        {
-            return !src.Any(x => x == config)
+        private ComponentConfig[] AppendConfig(in ComponentConfig[] src, ComponentConfig config) => !src.Any(x => x == config)
                 ? Helper.CopyInsertSort(src, config)
                 : src;
-        }
 
         private ComponentConfig[] AppendConfigs(in ComponentConfig[] src, ComponentConfig[] configs)
         {

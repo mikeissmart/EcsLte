@@ -13,10 +13,7 @@ namespace EcsLte
         internal bool IsShared { get; set; }
         internal bool IsUnique { get; set; }
 
-        internal Type ComponentType
-        {
-            get => ComponentConfigs.Instance.AllComponentTypes[ComponentIndex];
-        }
+        internal Type ComponentType => ComponentConfigs.Instance.AllComponentTypes[ComponentIndex];
 
         internal bool IsValidConfig()
         {

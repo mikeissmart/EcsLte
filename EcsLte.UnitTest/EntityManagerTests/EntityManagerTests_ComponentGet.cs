@@ -879,9 +879,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             return result;
         }
 
-        private Entity CreateTestEntity()
-        {
-            return Context.Entities.CreateEntity(
+        private Entity CreateTestEntity() => Context.Entities.CreateEntity(
                 new EntityBlueprint()
                     .SetComponent(new TestComponent1 { Prop = 1 })
                     .SetComponent(new TestComponent2 { Prop = 2 })
@@ -892,7 +890,6 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     .SetUniqueComponent(new TestUniqueComponent1 { Prop = 7 })
                     .SetUniqueComponent(new TestUniqueComponent2 { Prop = 8 }),
                 EntityState.Active);
-        }
 
         private Entity[] CreateTestEntities()
         {

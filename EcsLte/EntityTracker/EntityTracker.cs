@@ -23,7 +23,7 @@ namespace EcsLte
         public bool IsTrackingEntityStateChange { get; private set; }
         public bool IsTracking { get; private set; }
         public bool IsDestroyed { get; private set; }
-        internal Entity[] Entities { get => _entities; }
+        internal Entity[] Entities => _entities;
         internal Entity[] CachedEntities
         {
             get
@@ -281,16 +281,10 @@ namespace EcsLte
                 throw new EntityTrackerIsDestroyedException(this);
         }
 
-        internal bool HasArcheTypeData(ArcheTypeData archeTypeData)
-        {
-            return _archeTypeDatas.ContainsKey(archeTypeData);
-        }
+        internal bool HasArcheTypeData(ArcheTypeData archeTypeData) => _archeTypeDatas.ContainsKey(archeTypeData);
 
-        internal bool HasEntity(Entity entity)
-        {
-            return entity.Id < _entities.Length &&
+        internal bool HasEntity(Entity entity) => entity.Id < _entities.Length &&
                 _entities[entity.Id] == entity;
-        }
 
         internal void InternalDestroy()
         {
@@ -316,15 +310,9 @@ namespace EcsLte
             }
         }
 
-        internal void AddTracked(Entity entity, ArcheTypeData archeTypeData)
-        {
-            IncArcheTypeData(entity, archeTypeData);
-        }
+        internal void AddTracked(Entity entity, ArcheTypeData archeTypeData) => IncArcheTypeData(entity, archeTypeData);
 
-        internal void UpdateTracked(Entity entity, ArcheTypeData archeTypeData)
-        {
-            IncArcheTypeData(entity, archeTypeData);
-        }
+        internal void UpdateTracked(Entity entity, ArcheTypeData archeTypeData) => IncArcheTypeData(entity, archeTypeData);
 
         internal void ArcheTypeChangeTracked(Entity entity, ArcheTypeData prevArcheTypeData, ArcheTypeData nextArcheTypeData)
         {
@@ -347,15 +335,9 @@ namespace EcsLte
             }
         }
 
-        internal void EntityStateTracked(Entity entity, ArcheTypeData archeTypeData)
-        {
-            IncArcheTypeData(entity, archeTypeData);
-        }
+        internal void EntityStateTracked(Entity entity, ArcheTypeData archeTypeData) => IncArcheTypeData(entity, archeTypeData);
 
-        internal void RemoveTracked(Entity entity, ArcheTypeData archeTypeData)
-        {
-            DecArcheTypeData(entity, archeTypeData);
-        }
+        internal void RemoveTracked(Entity entity, ArcheTypeData archeTypeData) => DecArcheTypeData(entity, archeTypeData);
 
         internal void ResizeTracked(int entityCapacity)
         {

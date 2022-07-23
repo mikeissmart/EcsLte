@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace EcsLte
+﻿namespace EcsLte
 {
     internal interface IEntityCommand
     {
@@ -714,10 +712,7 @@ namespace EcsLte
     {
         private readonly TComponent _component;
 
-        public EntityCommand_UpdateUniqueComponent(TComponent component)
-        {
-            _component = component;
-        }
+        public EntityCommand_UpdateUniqueComponent(TComponent component) => _component = component;
 
         public void Execute(EcsContext context) => context.Entities.UpdateUniqueComponent(_component);
     }

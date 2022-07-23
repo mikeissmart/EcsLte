@@ -10,7 +10,7 @@ namespace EcsLte.UnitTest.EntityCommandsTests
         [TestMethod]
         public void HasCommands()
         {
-           Context.Commands.CreateCommands("Commands");
+            Context.Commands.CreateCommands("Commands");
 
             Assert.IsTrue(Context.Commands.HasCommands("Commands"));
             Assert.IsFalse(Context.Commands.HasCommands("Commands1"));

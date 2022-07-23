@@ -16,9 +16,9 @@ namespace EcsLte
         public IGeneralComponent[] Components { get; private set; }
         public ISharedComponent[] SharedComponents { get; private set; }
         public IUniqueComponent[] UniqueComponents { get; private set; }
-        internal IComponentData[] GeneralComponentDatas { get => _generalComponentDatas; }
-        internal IComponentData[] SharedComponentDatas { get => _sharedComponentDatas; }
-        internal IComponentData[] UniqueComponentDatas { get => _uniqueComponentDatas; }
+        internal IComponentData[] GeneralComponentDatas => _generalComponentDatas;
+        internal IComponentData[] SharedComponentDatas => _sharedComponentDatas;
+        internal IComponentData[] UniqueComponentDatas => _uniqueComponentDatas;
 
         public EntityBlueprint()
         {
@@ -139,10 +139,7 @@ namespace EcsLte
             return this;
         }
 
-        public EntityArcheType GetArcheType()
-        {
-            return new EntityArcheType(GetBlueprintArcheType());
-        }
+        public EntityArcheType GetArcheType() => new EntityArcheType(GetBlueprintArcheType());
 
         internal static void AssertEntityBlueprint(EntityBlueprint blueprint)
         {

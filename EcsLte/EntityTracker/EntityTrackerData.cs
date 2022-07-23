@@ -1,8 +1,4 @@
-﻿using EcsLte.Data;
-using EcsLte.Utilities;
-using System;
-
-namespace EcsLte
+﻿namespace EcsLte
 {
     /*internal unsafe class EntityTrackerData
     {

@@ -16,8 +16,8 @@ namespace EcsLte
         private int _pagesCount;
         private int _pagesLength;
         private int _slotsPerPage;
-        private byte* _sharedComponentsBuffer;
-        private int _sharedComponentsSizeInBytes;
+        private readonly byte* _sharedComponentsBuffer;
+        private readonly int _sharedComponentsSizeInBytes;
 
         internal ArcheTypeIndex ArcheTypeIndex { get; private set; }
         internal ArcheType ArcheType { get; private set; }
@@ -80,7 +80,7 @@ namespace EcsLte
             {
                 _sharedComponentsBuffer = MemoryHelper.Alloc<byte>(sharedOffset);
                 _sharedComponentsSizeInBytes = sharedOffset;
-;
+                ;
                 for (var i = 0; i < SharedConfigs.Length; i++)
                 {
                     var configOffset = sharedConfigs[i];

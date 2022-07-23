@@ -1,7 +1,6 @@
 ﻿using EcsLte.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Linq;
 
 namespace EcsLte.UnitTest.EntityTrackerTests
 {

@@ -97,15 +97,9 @@ namespace EcsLte
             }
         }
 
-        public void DestroyEntities(in Entity[] entities)
-        {
-            DestroyEntities(entities, 0, entities?.Length ?? 0);
-        }
+        public void DestroyEntities(in Entity[] entities) => DestroyEntities(entities, 0, entities?.Length ?? 0);
 
-        public void DestroyEntities(in Entity[] entities, int startingIndex)
-        {
-            DestroyEntities(entities, startingIndex, (entities?.Length ?? 0) - startingIndex);
-        }
+        public void DestroyEntities(in Entity[] entities, int startingIndex) => DestroyEntities(entities, startingIndex, (entities?.Length ?? 0) - startingIndex);
 
         public void DestroyEntities(in Entity[] entities, int startingIndex, int count)
         {
@@ -185,15 +179,9 @@ namespace EcsLte
             }
         }
 
-        public void ChangeEntityStates(in Entity[] entities, EntityState state)
-        {
-            ChangeEntityStates(entities, 0, entities?.Length ?? 0, state);
-        }
+        public void ChangeEntityStates(in Entity[] entities, EntityState state) => ChangeEntityStates(entities, 0, entities?.Length ?? 0, state);
 
-        public void ChangeEntityStates(in Entity[] entities, int startingIndex, EntityState state)
-        {
-            ChangeEntityStates(entities, startingIndex, (entities?.Length ?? 0) - startingIndex, state);
-        }
+        public void ChangeEntityStates(in Entity[] entities, int startingIndex, EntityState state) => ChangeEntityStates(entities, startingIndex, (entities?.Length ?? 0) - startingIndex, state);
 
         public void ChangeEntityStates(in Entity[] entities, int startingIndex, int count, EntityState state)
         {
@@ -274,16 +262,10 @@ namespace EcsLte
         }
 
         public void DuplicateEntities(in Entity[] srcEntities,
-            EntityState? state = null)
-        {
-            DuplicateEntities(srcEntities, 0, srcEntities?.Length ?? 0, state);
-        }
+            EntityState? state = null) => DuplicateEntities(srcEntities, 0, srcEntities?.Length ?? 0, state);
 
         public void DuplicateEntities(in Entity[] srcEntities, int srcStartingIndex,
-            EntityState? state = null)
-        {
-            DuplicateEntities(srcEntities, srcStartingIndex, (srcEntities?.Length ?? 0) - srcStartingIndex, state);
-        }
+            EntityState? state = null) => DuplicateEntities(srcEntities, srcStartingIndex, (srcEntities?.Length ?? 0) - srcStartingIndex, state);
 
         public void DuplicateEntities(in Entity[] srcEntities, int srcStartingIndex, int srcCount,
             EntityState? state = null)
@@ -372,17 +354,11 @@ namespace EcsLte
 
         public void CopyEntities(EntityManager srcEntityManager,
             in Entity[] srcEntities,
-            EntityState? state = null)
-        {
-            CopyEntities(srcEntityManager, srcEntities, 0, srcEntities?.Length ?? 0, state);
-        }
+            EntityState? state = null) => CopyEntities(srcEntityManager, srcEntities, 0, srcEntities?.Length ?? 0, state);
 
         public void CopyEntities(EntityManager srcEntityManager,
             in Entity[] srcEntities, int srcStartingIndex,
-            EntityState? state = null)
-        {
-            CopyEntities(srcEntityManager, srcEntities, srcStartingIndex, (srcEntities?.Length ?? 0) - srcStartingIndex, state);
-        }
+            EntityState? state = null) => CopyEntities(srcEntityManager, srcEntities, srcStartingIndex, (srcEntities?.Length ?? 0) - srcStartingIndex, state);
 
         public void CopyEntities(EntityManager srcEntityManager,
             in Entity[] srcEntities, int srcStartingIndex, int srcCount,

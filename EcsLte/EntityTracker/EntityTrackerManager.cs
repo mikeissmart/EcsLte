@@ -105,10 +105,7 @@ namespace EcsLte
             }
         }
 
-        internal void TrackStateChange(Entity entity, ArcheTypeData archeTypeData)
-        {
-            _stateChangeEvent?.Invoke(entity, archeTypeData);
-        }
+        internal void TrackStateChange(Entity entity, ArcheTypeData archeTypeData) => _stateChangeEvent?.Invoke(entity, archeTypeData);
 
         internal void TrackAdd(Entity entity, ArcheTypeData archeTypeData, ComponentConfig config) =>
             _events[config.ComponentIndex].ComponentAddedInvoke(entity, archeTypeData);
@@ -121,10 +118,7 @@ namespace EcsLte
 
         internal void TrackDestroy(Entity entity, ArcheTypeData archeTypeData) => _destroyEvent?.Invoke(entity, archeTypeData);
 
-        internal void ResizeTrackers(int entityCapacity)
-        {
-            _resizeEvent?.Invoke(entityCapacity);
-        }
+        internal void ResizeTrackers(int entityCapacity) => _resizeEvent?.Invoke(entityCapacity);
 
         internal void RegisterComponentEvent(EntityTracker tracker, int trackingState, ComponentConfig config)
         {

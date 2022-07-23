@@ -135,7 +135,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     EntityState.Active,
                     2));
 
-            int firstEntityId = 0;
+            var firstEntityId = 0;
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
                 () =>
                 {
@@ -237,7 +237,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     EntityState.Active,
                     2));
 
-            int firstEntityId = 0;
+            var firstEntityId = 0;
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
                 () =>
                 {

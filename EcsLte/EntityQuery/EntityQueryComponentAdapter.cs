@@ -38,7 +38,7 @@ namespace EcsLte
             Component = *(TComponent*)archeTypeData.GetComponentOffsetPtr(entityData, ConfigOffset);
         }
 
-        public unsafe virtual bool UpdateComponent(EntityData entityData, ArcheTypeData archeTypeData, ref ArcheType archeType)
+        public virtual unsafe bool UpdateComponent(EntityData entityData, ArcheTypeData archeTypeData, ref ArcheType archeType)
         {
             *(TComponent*)archeTypeData.GetComponentOffsetPtr(entityData, ConfigOffset) = Component;
             return false;
@@ -54,7 +54,7 @@ namespace EcsLte
             : base(config) =>
             _sharedComponentIndexDic = sharedIndexDics.GetSharedIndexDic<TComponent>();
 
-        public unsafe override bool UpdateComponent(EntityData entityData, ArcheTypeData archeTypeData, ref ArcheType archeType)
+        public override unsafe bool UpdateComponent(EntityData entityData, ArcheTypeData archeTypeData, ref ArcheType archeType)
         {
             archeType.ReplaceSharedComponentDataIndex(new SharedComponentDataIndex
             {

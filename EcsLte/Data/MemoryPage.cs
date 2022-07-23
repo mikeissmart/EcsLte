@@ -19,9 +19,6 @@
 
         internal byte* GetBuffer(int slotIndex) => Buffer + (slotIndex * SlotSizeInBytes);
 
-        internal void SetSlot(int slotIndex, ref EntityData entityData)
-        {
-            entityData.ComponentsBuffer = GetBuffer(slotIndex);
-        }
+        internal void SetSlot(int slotIndex, ref EntityData entityData) => entityData.ComponentsBuffer = GetBuffer(slotIndex);
     }
 }

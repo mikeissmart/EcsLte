@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace EcsLte
+﻿namespace EcsLte
 {
     /*internal class EntityQueryDataEqualityComparer : IEqualityComparer<EntityQueryData>
     {

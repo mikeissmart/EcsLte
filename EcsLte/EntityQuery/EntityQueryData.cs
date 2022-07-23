@@ -1,8 +1,4 @@
-﻿using EcsLte.Utilities;
-using System;
-using System.Collections.Generic;
-
-namespace EcsLte
+﻿namespace EcsLte
 {
     /*internal class EntityQueryData : IEquatable<EntityQueryData>
     {

@@ -7,8 +7,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
     [TestClass]
     public class EntityManagerTests_EntityDuplicate : BasePrePostTest
     {
-        private EntityState _orgState = EntityState.Active;
-        private EntityState _nonNullState = EntityState.Destroying;
+        private readonly EntityState _orgState = EntityState.Active;
+        private readonly EntityState _nonNullState = EntityState.Destroying;
 
         [TestMethod]
         public void DuplicateEntity()
@@ -158,9 +158,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 : _nonNullState));
         }
 
-        private void Assert_DuplicateEntities(Entity[] orgEntities, bool isNull)
-        {
-            AssertGetInRef_Valid_Invalid_StartingIndex_Null_OutOfRange(
+        private void Assert_DuplicateEntities(Entity[] orgEntities, bool isNull) => AssertGetInRef_Valid_Invalid_StartingIndex_Null_OutOfRange(
                 () => orgEntities,
                 () => new[] { Entity.Null, Entity.Null, Entity.Null, Entity.Null },
                 x => isNull
@@ -233,11 +231,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     }
                     return result;
                 });
-        }
 
-        private void Assert_DuplicateEntities_ContextDestroyed(bool isNull)
-        {
-            AssertGetInRef_ContextDestroyed<Entity, Entity>(
+        private void Assert_DuplicateEntities_ContextDestroyed(bool isNull) => AssertGetInRef_ContextDestroyed<Entity, Entity>(
                 x =>
                 {
                     if (isNull)
@@ -301,7 +296,6 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     else
                         Context.Entities.DuplicateEntities(inSrc, startingIndex, count, ref x, destStartingIndex, EntityState.Active);
                 });
-        }
 
         private void Assert_DuplicateEntities_ArcheType(EntityArcheType archeType, Entity[] orgEntities, bool isNull)
         {
@@ -374,9 +368,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 });
         }
 
-        private void Assert_DuplicateEntities_ArcheType_ContextDestroyed(EntityArcheType archeType, bool isNull)
-        {
-            AssertGetRef_ContextDestroyed<Entity>(
+        private void Assert_DuplicateEntities_ArcheType_ContextDestroyed(EntityArcheType archeType, bool isNull) => AssertGetRef_ContextDestroyed<Entity>(
                 () =>
                 {
                     if (isNull)
@@ -398,7 +390,6 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     else
                         Context.Entities.DuplicateEntities(archeType, ref x, startingIndex, _nonNullState);
                 });
-        }
 
         private void Assert_DuplicateEntities_Filter(EntityFilter filter, Entity[] orgEntities, bool isNull)
         {
@@ -471,9 +462,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 });
         }
 
-        private void Assert_DuplicateEntities_Filter_ContextDestroyed(EntityFilter filter, bool isNull)
-        {
-            AssertGetRef_ContextDestroyed<Entity>(
+        private void Assert_DuplicateEntities_Filter_ContextDestroyed(EntityFilter filter, bool isNull) => AssertGetRef_ContextDestroyed<Entity>(
                 () =>
                 {
                     if (isNull)
@@ -495,7 +484,6 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     else
                         Context.Entities.DuplicateEntities(filter, ref x, startingIndex, _nonNullState);
                 });
-        }
 
         private void Assert_DuplicateEntities_Tracker(EntityTracker tracker, Entity[] orgEntities, bool isNull)
         {
@@ -574,9 +562,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 });
         }
 
-        private void Assert_DuplicateEntities_Tracker_ContextDestroyed(EntityTracker tracker, bool isNull)
-        {
-            AssertGetRef_ContextDestroyed<Entity>(
+        private void Assert_DuplicateEntities_Tracker_ContextDestroyed(EntityTracker tracker, bool isNull) => AssertGetRef_ContextDestroyed<Entity>(
                 () =>
                 {
                     if (isNull)
@@ -598,7 +584,6 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     else
                         Context.Entities.DuplicateEntities(tracker, ref x, startingIndex, _nonNullState);
                 });
-        }
 
         private void Assert_DuplicateEntities_Query(EntityQuery queryFilter, EntityQuery queryFilterTracker, Entity[] orgEntities, bool isNull)
         {

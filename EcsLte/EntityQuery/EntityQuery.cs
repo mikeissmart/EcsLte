@@ -1351,7 +1351,7 @@ namespace EcsLte
             public int Index { get; private set; }
             public Entity CurrentEntity { get; private set; }
             public HashSet<ArcheTypeIndex> ArcheTypeDataHash { get; private set; }
-            public IComponentAdapter[] ComponentAdapters { get => _componentAdapters; }
+            public IComponentAdapter[] ComponentAdapters => _componentAdapters;
             public IComponentAdapter[] WriteComponentAdapters { get; private set; }
 
             public ForEachOptions(ArcheTypeData[] archeTypeDatas, IComponentAdapter[] componentAdapters, int writeCount)

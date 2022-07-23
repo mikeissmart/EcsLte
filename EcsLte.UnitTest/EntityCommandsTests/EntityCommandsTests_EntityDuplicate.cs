@@ -1,6 +1,5 @@
 ﻿using EcsLte.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Linq;
 
 namespace EcsLte.UnitTest.EntityCommandsTests
@@ -8,8 +7,8 @@ namespace EcsLte.UnitTest.EntityCommandsTests
     [TestClass]
     public class EntityCommandsTests_EntityDuplicate : BasePrePostTest
     {
-        private EntityState _orgState = EntityState.Active;
-        private EntityState _nonNullState = EntityState.Destroying;
+        private readonly EntityState _orgState = EntityState.Active;
+        private readonly EntityState _nonNullState = EntityState.Destroying;
 
         [TestMethod]
         public void DuplicateEntity()
@@ -184,9 +183,7 @@ namespace EcsLte.UnitTest.EntityCommandsTests
                 : _nonNullState));
         }
 
-        private void Assert_DuplicateEntities(EntityCommands commands, Entity[] orgEntities, bool isNull)
-        {
-            AssertGetIn_Valid_Invalid_StartingIndex_Null_OutOfRange(
+        private void Assert_DuplicateEntities(EntityCommands commands, Entity[] orgEntities, bool isNull) => AssertGetIn_Valid_Invalid_StartingIndex_Null_OutOfRange(
                 () => orgEntities,
                 null,
                 x =>
@@ -234,7 +231,6 @@ namespace EcsLte.UnitTest.EntityCommandsTests
                     }
                     return result;
                 });
-        }
 
         private void Assert_DuplicateEntities_ArcheType(EntityCommands commands, EntityArcheType archeType, Entity[] orgEntities, bool isNull)
         {

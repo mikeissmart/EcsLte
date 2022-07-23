@@ -91,7 +91,7 @@ namespace EcsLte
                         {
                             if (filter.IsFiltered(archeTypeData.ArcheType))
                             {
-                                bool isOk = true;
+                                var isOk = true;
                                 for (var j = 0; j < filter.FilterByComponentDatas.Length; j++)
                                 {
                                     var componentData = filter.FilterByComponentDatas[j];

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace EcsLte.Exceptions
+﻿namespace EcsLte.Exceptions
 {
     public class EntityArcheTypeNoSharedComponentException : EcsLteException
     {

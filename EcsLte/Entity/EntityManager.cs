@@ -20,11 +20,11 @@ namespace EcsLte
         private Stack<Entity> _reusableEntities;
         private Entity* _uniqueComponentEntities;
         private ArcheType _cachedArcheType;
-        private MemoryBookManager _bookManager;
+        private readonly MemoryBookManager _bookManager;
         private readonly object _lockObj;
 
         public EcsContext Context { get; private set; }
-        internal int EntityCapacity { get => _entityLength; }
+        internal int EntityCapacity => _entityLength;
 
         internal EntityManager(EcsContext context)
         {
@@ -202,10 +202,7 @@ namespace EcsLte
             }
         }
 
-        public int GetEntities(ref Entity[] entities)
-        {
-            return GetEntities(ref entities, 0);
-        }
+        public int GetEntities(ref Entity[] entities) => GetEntities(ref entities, 0);
 
         public int GetEntities(ref Entity[] entities, int startingIndex)
         {
@@ -225,10 +222,7 @@ namespace EcsLte
             return entities;
         }
 
-        public int GetEntities(EntityArcheType archeType, ref Entity[] entities)
-        {
-            return GetEntities(archeType, ref entities, 0);
-        }
+        public int GetEntities(EntityArcheType archeType, ref Entity[] entities) => GetEntities(archeType, ref entities, 0);
 
         public int GetEntities(EntityArcheType archeType, ref Entity[] entities, int startingIndex)
         {
@@ -254,10 +248,7 @@ namespace EcsLte
             return entities;
         }
 
-        public int GetEntities(EntityFilter filter, ref Entity[] entities)
-        {
-            return GetEntities(filter, ref entities, 0);
-        }
+        public int GetEntities(EntityFilter filter, ref Entity[] entities) => GetEntities(filter, ref entities, 0);
 
         public int GetEntities(EntityFilter filter, ref Entity[] entities, int startingIndex)
         {
@@ -289,10 +280,7 @@ namespace EcsLte
             return entities;
         }
 
-        public int GetEntities(EntityTracker tracker, ref Entity[] entities)
-        {
-            return GetEntities(tracker, ref entities, 0);
-        }
+        public int GetEntities(EntityTracker tracker, ref Entity[] entities) => GetEntities(tracker, ref entities, 0);
 
         public int GetEntities(EntityTracker tracker, ref Entity[] entities, int startingIndex)
         {
@@ -316,10 +304,7 @@ namespace EcsLte
             return entities;
         }
 
-        public int GetEntities(EntityQuery query, ref Entity[] entities)
-        {
-            return GetEntities(query, ref entities, 0);
-        }
+        public int GetEntities(EntityQuery query, ref Entity[] entities) => GetEntities(query, ref entities, 0);
 
         public int GetEntities(EntityQuery query, ref Entity[] entities, int startingIndex)
         {
@@ -425,10 +410,7 @@ namespace EcsLte
             return entities;
         }
 
-        public void CreateEntities(EntityArcheType archeType, EntityState state, ref Entity[] entities, int count)
-        {
-            CreateEntities(archeType, state, ref entities, 0, count);
-        }
+        public void CreateEntities(EntityArcheType archeType, EntityState state, ref Entity[] entities, int count) => CreateEntities(archeType, state, ref entities, 0, count);
 
         public void CreateEntities(EntityArcheType archeType, EntityState state, ref Entity[] entities, int startingIndex, int count)
         {
@@ -471,10 +453,7 @@ namespace EcsLte
             return entities;
         }
 
-        public void CreateEntities(EntityBlueprint blueprint, EntityState state, ref Entity[] entities, int count)
-        {
-            CreateEntities(blueprint, state, ref entities, 0, count);
-        }
+        public void CreateEntities(EntityBlueprint blueprint, EntityState state, ref Entity[] entities, int count) => CreateEntities(blueprint, state, ref entities, 0, count);
 
         public void CreateEntities(EntityBlueprint blueprint, EntityState state, ref Entity[] entities, int startingIndex, int count)
         {
@@ -537,15 +516,9 @@ namespace EcsLte
             }
         }
 
-        public void DestroyEntities(in Entity[] entities)
-        {
-            DestroyEntities(entities, 0, entities?.Length ?? 0);
-        }
+        public void DestroyEntities(in Entity[] entities) => DestroyEntities(entities, 0, entities?.Length ?? 0);
 
-        public void DestroyEntities(in Entity[] entities, int startingIndex)
-        {
-            DestroyEntities(entities, startingIndex, (entities?.Length ?? 0) - startingIndex);
-        }
+        public void DestroyEntities(in Entity[] entities, int startingIndex) => DestroyEntities(entities, startingIndex, (entities?.Length ?? 0) - startingIndex);
 
         public void DestroyEntities(in Entity[] entities, int startingIndex, int count)
         {
@@ -681,7 +654,7 @@ namespace EcsLte
 
             return states;
         }
-        
+
         public int GetEntityStates(in Entity[] entities,
             ref EntityState[] destStates)
         {
@@ -690,7 +663,7 @@ namespace EcsLte
 
             return entities.Length;
         }
-        
+
         public int GetEntityStates(in Entity[] entities, int startingIndex,
             ref EntityState[] destStates)
         {
@@ -699,14 +672,11 @@ namespace EcsLte
 
             return entities.Length - startingIndex;
         }
-        
+
         public void GetEntityStates(in Entity[] entities, int startingIndex, int count,
-            ref EntityState[] destStates)
-        {
-            GetEntityStates(entities, startingIndex, count,
+            ref EntityState[] destStates) => GetEntityStates(entities, startingIndex, count,
                 ref destStates, 0);
-        }
-        
+
         public int GetEntityStates(in Entity[] entities,
             ref EntityState[] destStates, int destStartingIndex)
         {
@@ -715,7 +685,7 @@ namespace EcsLte
 
             return entities.Length;
         }
-        
+
         public int GetEntityStates(in Entity[] entities, int startingIndex,
             ref EntityState[] destStates, int destStartingIndex)
         {
@@ -755,10 +725,7 @@ namespace EcsLte
         }
 
         public int GetEntityStates(EntityArcheType archeType,
-            ref EntityState[] destStates)
-        {
-            return GetEntityStates(archeType, ref destStates, 0);
-        }
+            ref EntityState[] destStates) => GetEntityStates(archeType, ref destStates, 0);
 
         public int GetEntityStates(EntityArcheType archeType,
             ref EntityState[] destStates, int destStartingIndex)
@@ -791,10 +758,7 @@ namespace EcsLte
         }
 
         public int GetEntityStates(EntityFilter filter,
-            ref EntityState[] destStates)
-        {
-            return GetEntityStates(filter, ref destStates, 0);
-        }
+            ref EntityState[] destStates) => GetEntityStates(filter, ref destStates, 0);
 
         public int GetEntityStates(EntityFilter filter,
             ref EntityState[] destStates, int destStartingIndex)
@@ -830,10 +794,7 @@ namespace EcsLte
         }
 
         public int GetEntityStates(EntityTracker tracker,
-            ref EntityState[] destStates)
-        {
-            return GetEntityStates(tracker, ref destStates, 0);
-        }
+            ref EntityState[] destStates) => GetEntityStates(tracker, ref destStates, 0);
 
         public int GetEntityStates(EntityTracker tracker,
             ref EntityState[] destStates, int destStartingIndex)
@@ -865,10 +826,7 @@ namespace EcsLte
         }
 
         public int GetEntityStates(EntityQuery query,
-            ref EntityState[] destStates)
-        {
-            return GetEntityStates(query, ref destStates, 0);
-        }
+            ref EntityState[] destStates) => GetEntityStates(query, ref destStates, 0);
 
         public int GetEntityStates(EntityQuery query,
             ref EntityState[] destStates, int destStartingIndex)
@@ -923,15 +881,9 @@ namespace EcsLte
             }
         }
 
-        public void SetEntityStates(in Entity[] entities, EntityState state)
-        {
-            SetEntityStates(in entities, 0, entities?.Length ?? 0, state);
-        }
+        public void SetEntityStates(in Entity[] entities, EntityState state) => SetEntityStates(in entities, 0, entities?.Length ?? 0, state);
 
-        public void SetEntityStates(in Entity[] entities, int startingIndex, EntityState state)
-        {
-            SetEntityStates(in entities, startingIndex, (entities?.Length ?? 0) - startingIndex, state);
-        }
+        public void SetEntityStates(in Entity[] entities, int startingIndex, EntityState state) => SetEntityStates(in entities, startingIndex, (entities?.Length ?? 0) - startingIndex, state);
 
         public void SetEntityStates(in Entity[] entities, int startingIndex, int count, EntityState state)
         {
@@ -1117,12 +1069,9 @@ namespace EcsLte
 
         public void DuplicateEntities(in Entity[] srcEntities, int srcStartingIndex, int srcCount,
             ref Entity[] destEntities,
-            EntityState? state = null)
-        {
-            DuplicateEntities(srcEntities, srcStartingIndex, srcCount,
+            EntityState? state = null) => DuplicateEntities(srcEntities, srcStartingIndex, srcCount,
                 ref destEntities, 0,
                 state);
-        }
 
         public int DuplicateEntities(in Entity[] srcEntities,
             ref Entity[] destEntities, int destStartingIndex,
@@ -1158,7 +1107,7 @@ namespace EcsLte
             {
                 CheckCapacity(srcCount);
 
-                for (int i = 0, entityIndex = srcStartingIndex,  destEntityIndex = destStartingIndex;
+                for (int i = 0, entityIndex = srcStartingIndex, destEntityIndex = destStartingIndex;
                     i < srcCount;
                     i++, entityIndex++, destEntityIndex++)
                 {
@@ -1184,10 +1133,7 @@ namespace EcsLte
 
         public int DuplicateEntities(EntityArcheType archeType,
             ref Entity[] destEntities,
-            EntityState? state = null)
-        {
-            return DuplicateEntities(archeType, ref destEntities, 0, state);
-        }
+            EntityState? state = null) => DuplicateEntities(archeType, ref destEntities, 0, state);
 
         public int DuplicateEntities(EntityArcheType archeType,
             ref Entity[] destEntities, int destStartingIndex,
@@ -1217,10 +1163,7 @@ namespace EcsLte
 
         public int DuplicateEntities(EntityFilter filter,
             ref Entity[] destEntities,
-            EntityState? state = null)
-        {
-            return DuplicateEntities(filter, ref destEntities, 0, state);
-        }
+            EntityState? state = null) => DuplicateEntities(filter, ref destEntities, 0, state);
 
         public int DuplicateEntities(EntityFilter filter,
             ref Entity[] destEntities, int destStartingIndex,
@@ -1258,10 +1201,7 @@ namespace EcsLte
 
         public int DuplicateEntities(EntityTracker tracker,
             ref Entity[] destEntities,
-            EntityState? state = null)
-        {
-            return DuplicateEntities(tracker, ref destEntities, 0, state);
-        }
+            EntityState? state = null) => DuplicateEntities(tracker, ref destEntities, 0, state);
 
         public int DuplicateEntities(EntityTracker tracker,
             ref Entity[] destEntities, int destStartingIndex,
@@ -1314,10 +1254,7 @@ namespace EcsLte
 
         public int DuplicateEntities(EntityQuery query,
             ref Entity[] destEntities,
-            EntityState? state = null)
-        {
-            return DuplicateEntities(query, ref destEntities, 0, state);
-        }
+            EntityState? state = null) => DuplicateEntities(query, ref destEntities, 0, state);
 
         public int DuplicateEntities(EntityQuery query,
             ref Entity[] destEntities, int destStartingIndex,
@@ -1458,13 +1395,10 @@ namespace EcsLte
         public void CopyEntities(EntityManager srcEntityManager,
             in Entity[] srcEntities, int srcStartingIndex, int srcCount,
             ref Entity[] destEntities,
-            EntityState? state = null)
-        {
-            CopyEntities(srcEntityManager,
+            EntityState? state = null) => CopyEntities(srcEntityManager,
                 srcEntities, srcStartingIndex, srcCount,
                 ref destEntities, 0,
                 state);
-        }
 
         public int CopyEntities(EntityManager srcEntityManager,
             in Entity[] srcEntities,
@@ -1539,10 +1473,7 @@ namespace EcsLte
         public int CopyEntities(EntityManager srcEntityManager,
             EntityArcheType archeType,
             ref Entity[] destEntities,
-            EntityState? state = null)
-        {
-            return CopyEntities(srcEntityManager, archeType, ref destEntities, 0, state);
-        }
+            EntityState? state = null) => CopyEntities(srcEntityManager, archeType, ref destEntities, 0, state);
 
         public int CopyEntities(EntityManager srcEntityManager,
             EntityArcheType archeType,
@@ -1587,10 +1518,7 @@ namespace EcsLte
         public int CopyEntities(EntityManager srcEntityManager,
             EntityFilter filter,
             ref Entity[] destEntities,
-            EntityState? state = null)
-        {
-            return CopyEntities(srcEntityManager, filter, ref destEntities, 0, state);
-        }
+            EntityState? state = null) => CopyEntities(srcEntityManager, filter, ref destEntities, 0, state);
 
         public int CopyEntities(EntityManager srcEntityManager,
             EntityFilter filter,
@@ -1640,10 +1568,7 @@ namespace EcsLte
 
         public int CopyEntities(EntityTracker tracker,
             ref Entity[] destEntities,
-            EntityState? state = null)
-        {
-            return CopyEntities(tracker, ref destEntities, 0, state);
-        }
+            EntityState? state = null) => CopyEntities(tracker, ref destEntities, 0, state);
 
         public int CopyEntities(EntityTracker tracker,
             ref Entity[] destEntities, int destStartingIndex,
@@ -1694,10 +1619,7 @@ namespace EcsLte
 
         public int CopyEntities(EntityQuery query,
             ref Entity[] destEntities,
-            EntityState? state = null)
-        {
-            return CopyEntities(query, ref destEntities, 0, state);
-        }
+            EntityState? state = null) => CopyEntities(query, ref destEntities, 0, state);
 
         public int CopyEntities(EntityQuery query,
             ref Entity[] destEntities, int destStartingIndex,
@@ -1813,10 +1735,7 @@ namespace EcsLte
         }
 
         public int GetAllComponents(Entity entity,
-            ref IComponent[] destComponents)
-        {
-            return GetAllComponents(entity, ref destComponents, 0);
-        }
+            ref IComponent[] destComponents) => GetAllComponents(entity, ref destComponents, 0);
 
         public int GetAllComponents(Entity entity,
             ref IComponent[] destComponents, int destStartingIndex)
@@ -2240,7 +2159,7 @@ namespace EcsLte
                 component7 = config7.IsShared
                     ? *(T7*)archeTypeData.GetSharedComponentPtr(config7)
                     : *(T7*)archeTypeData.GetComponentPtr(entityData, config7);
-                component8= config8.IsShared
+                component8 = config8.IsShared
                     ? *(T8*)archeTypeData.GetSharedComponentPtr(config8)
                     : *(T8*)archeTypeData.GetComponentPtr(entityData, config8);
             }
@@ -2256,10 +2175,7 @@ namespace EcsLte
 
         public int GetComponents<TComponent>(EntityArcheType archeType,
             ref TComponent[] destComponents)
-            where TComponent : unmanaged, IGeneralComponent
-        {
-            return GetComponents(archeType, ref destComponents, 0);
-        }
+            where TComponent : unmanaged, IGeneralComponent => GetComponents(archeType, ref destComponents, 0);
 
         public int GetComponents<TComponent>(EntityArcheType archeType,
             ref TComponent[] destComponents, int destStartingIndex)
@@ -2293,10 +2209,7 @@ namespace EcsLte
 
         public int GetComponents<TComponent>(EntityFilter filter,
             ref TComponent[] destComponents)
-            where TComponent : unmanaged, IGeneralComponent
-        {
-            return GetComponents(filter, ref destComponents, 0);
-        }
+            where TComponent : unmanaged, IGeneralComponent => GetComponents(filter, ref destComponents, 0);
 
         public int GetComponents<TComponent>(EntityFilter filter,
             ref TComponent[] destComponents, int destStartingIndex)
@@ -2339,10 +2252,7 @@ namespace EcsLte
 
         public int GetComponents<TComponent>(EntityTracker tracker,
             ref TComponent[] destComponents)
-            where TComponent : unmanaged, IGeneralComponent
-        {
-            return GetComponents(tracker, ref destComponents, 0);
-        }
+            where TComponent : unmanaged, IGeneralComponent => GetComponents(tracker, ref destComponents, 0);
 
         public int GetComponents<TComponent>(EntityTracker tracker,
             ref TComponent[] destComponents, int destStartingIndex)
@@ -2384,10 +2294,7 @@ namespace EcsLte
 
         public int GetComponents<TComponent>(EntityQuery query,
             ref TComponent[] destComponents)
-            where TComponent : unmanaged, IGeneralComponent
-        {
-            return GetComponents(query, ref destComponents, 0);
-        }
+            where TComponent : unmanaged, IGeneralComponent => GetComponents(query, ref destComponents, 0);
 
         public int GetComponents<TComponent>(EntityQuery query,
             ref TComponent[] destComponents, int destStartingIndex)
@@ -2480,10 +2387,7 @@ namespace EcsLte
 
         public int GetSharedComponents<TComponent>(EntityFilter filter,
             ref TComponent[] destComponents)
-            where TComponent : unmanaged, ISharedComponent
-        {
-            return GetSharedComponents(filter, ref destComponents, 0);
-        }
+            where TComponent : unmanaged, ISharedComponent => GetSharedComponents(filter, ref destComponents, 0);
 
         public int GetSharedComponents<TComponent>(EntityFilter filter,
             ref TComponent[] destComponents, int destStartingIndex)
@@ -2522,10 +2426,7 @@ namespace EcsLte
 
         public int GetSharedComponents<TComponent>(EntityTracker tracker,
             ref TComponent[] destComponents)
-            where TComponent : unmanaged, ISharedComponent
-        {
-            return GetSharedComponents(tracker, ref destComponents, 0);
-        }
+            where TComponent : unmanaged, ISharedComponent => GetSharedComponents(tracker, ref destComponents, 0);
 
         public int GetSharedComponents<TComponent>(EntityTracker tracker,
             ref TComponent[] destComponents, int destStartingIndex)
@@ -2564,10 +2465,7 @@ namespace EcsLte
 
         public int GetSharedComponents<TComponent>(EntityQuery query,
             ref TComponent[] destComponents)
-            where TComponent : unmanaged, ISharedComponent
-        {
-            return GetSharedComponents(query, ref destComponents, 0);
-        }
+            where TComponent : unmanaged, ISharedComponent => GetSharedComponents(query, ref destComponents, 0);
 
         public int GetSharedComponents<TComponent>(EntityQuery query,
             ref TComponent[] destComponents, int destStartingIndex)
@@ -3342,17 +3240,11 @@ namespace EcsLte
                 Array.Resize(ref states, startingIndex + count);
         }
 
-        private bool InternalHasEntity(Entity entity)
-        {
-            return entity.Id > 0 &&
+        private bool InternalHasEntity(Entity entity) => entity.Id > 0 &&
                 entity.Id < _entityLength &&
                 _entities[entity.Id] == entity;
-        }
 
-        private bool InternalHasEntity(Entity entity, EntityTracker tracker)
-        {
-            return tracker.HasEntity(entity);
-        }
+        private bool InternalHasEntity(Entity entity, EntityTracker tracker) => tracker.HasEntity(entity);
 
         private bool InternalHasEntity(Entity entity, EntityFilter filter)
         {
@@ -3620,11 +3512,8 @@ namespace EcsLte
         }
 
         private byte* InternalGetComponent(EntityData entityData, ArcheTypeData archeTypeData,
-            ComponentConfig config)
-        {
-            return InternalGetComponent(entityData, archeTypeData,
+            ComponentConfig config) => InternalGetComponent(entityData, archeTypeData,
                 archeTypeData.GetComponentConfigOffset(config));
-        }
 
         private byte* InternalGetComponent(EntityData entityData, ArcheTypeData archeTypeData,
             ComponentConfigOffset configOffset)
@@ -3637,11 +3526,8 @@ namespace EcsLte
 
         private bool InternalUpdateComponent<TComponent>(Entity entity, EntityData entityData, ArcheTypeData archeTypeData,
             ComponentConfig config, in TComponent component)
-            where TComponent : unmanaged, IComponent
-        {
-            return InternalUpdateComponent(entity, entityData, archeTypeData,
+            where TComponent : unmanaged, IComponent => InternalUpdateComponent(entity, entityData, archeTypeData,
                 archeTypeData.GetComponentConfigOffset(config), component);
-        }
 
         private bool InternalUpdateComponent<TComponent>(Entity entity, EntityData entityData, ArcheTypeData archeTypeData,
             ComponentConfigOffset configOffset, in TComponent component)

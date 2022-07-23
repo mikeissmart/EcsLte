@@ -40,7 +40,7 @@ namespace EcsLte.UnitTest.EntityBlueprintTests
         public void GetComponent()
         {
             var blueprint = new EntityBlueprint()
-                .SetComponent(new TestComponent1 { Prop = 1});
+                .SetComponent(new TestComponent1 { Prop = 1 });
 
             Assert.IsTrue(blueprint.GetComponent<TestComponent1>().Prop == 1);
 

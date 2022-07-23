@@ -1,7 +1,6 @@
 ﻿using EcsLte.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Linq;
 
 namespace EcsLte.UnitTest.EntityManagerTests
 {
@@ -40,7 +39,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     new EntityArcheType()
                         .AddComponentType<TestComponent1>(),
                     EntityState.Active, UnitTestConsts.SmallCount),
-                () => new[] { Entity.Null, Entity.Null, Entity.Null, Entity.Null},
+                () => new[] { Entity.Null, Entity.Null, Entity.Null, Entity.Null },
                 x =>
                 {
                     Context.Entities.DestroyEntities(x);
@@ -81,7 +80,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             AssertGetIn_ContextDestroyed<Entity>(
                 x => Context.Entities.Context.Entities.DestroyEntities(x),
                 (x, startingIndex) => Context.Entities.Context.Entities.DestroyEntities(x, startingIndex),
-                (x, startingIndex, count) => Context.Entities.Context.Entities.DestroyEntities(x, startingIndex,count));
+                (x, startingIndex, count) => Context.Entities.Context.Entities.DestroyEntities(x, startingIndex, count));
 
         }
 

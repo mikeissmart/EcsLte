@@ -1,7 +1,5 @@
 ﻿using EcsLte.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Linq;
 
 namespace EcsLte.UnitTest.EntityCommandsTests
 {
@@ -353,9 +351,7 @@ namespace EcsLte.UnitTest.EntityCommandsTests
                     new TestUniqueComponent2()));
         }
 
-        private Entity CreateTestEntity()
-        {
-            return Context.Entities.CreateEntity(
+        private Entity CreateTestEntity() => Context.Entities.CreateEntity(
                 new EntityBlueprint()
                     .SetComponent(new TestComponent1 { Prop = 0 })
                     .SetComponent(new TestComponent2 { Prop = 0 })
@@ -366,6 +362,5 @@ namespace EcsLte.UnitTest.EntityCommandsTests
                     .SetUniqueComponent(new TestUniqueComponent1 { Prop = 0 })
                     .SetUniqueComponent(new TestUniqueComponent2 { Prop = 0 }),
                 EntityState.Active);
-        }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using EcsLte.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 
 namespace EcsLte.UnitTest.EntityManagerTests
 {

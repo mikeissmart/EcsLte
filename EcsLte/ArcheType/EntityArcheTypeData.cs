@@ -1,10 +1,4 @@
-﻿using EcsLte.Exceptions;
-using EcsLte.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace EcsLte
+﻿namespace EcsLte
 {
     /*public class EntityArcheType1 : IEquatable<EntityArcheType1>
     {

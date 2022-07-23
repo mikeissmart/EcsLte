@@ -7,8 +7,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
     [TestClass]
     public class EntityManagerTests_EntityCopy : BasePrePostTest
     {
-        private EntityState _orgState = EntityState.Active;
-        private EntityState _nonNullState = EntityState.Destroying;
+        private readonly EntityState _orgState = EntityState.Active;
+        private readonly EntityState _nonNullState = EntityState.Destroying;
         private EcsContext _destContext;
 
         [TestMethod]
@@ -345,9 +345,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             }
         }
 
-        private void Assert_CopyEntities_ContextDestroyed(bool isNull)
-        {
-            AssertGetInRef_ContextDestroyed<Entity, Entity>(
+        private void Assert_CopyEntities_ContextDestroyed(bool isNull) => AssertGetInRef_ContextDestroyed<Entity, Entity>(
                 x =>
                 {
                     if (isNull)
@@ -411,7 +409,6 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     else
                         _destContext.Entities.CopyEntities(Context.Entities, inSrc, startingIndex, count, ref x, destStartingIndex, EntityState.Active);
                 });
-        }
 
         private void Assert_CopyEntities_ArcheType(EntityArcheType archeType, Entity[] orgEntities, bool isNull)
         {

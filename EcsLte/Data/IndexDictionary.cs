@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace EcsLte.Data
 {
@@ -62,10 +61,7 @@ namespace EcsLte.Data
             throw new InvalidCastException("key");
         }
 
-        public unsafe int GetOrAdd(byte* sharedComponentPtr)
-        {
-            return GetOrAdd(*(TKey*)sharedComponentPtr);
-        }
+        public unsafe int GetOrAdd(byte* sharedComponentPtr) => GetOrAdd(*(TKey*)sharedComponentPtr);
 
         internal int GetOrAdd(TKey key, Action<int> addAction)
         {

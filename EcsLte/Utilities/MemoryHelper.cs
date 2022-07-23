@@ -63,7 +63,7 @@ namespace EcsLte.Utilities
 
         internal static unsafe void Copy<T>(T* sourcePtr, T* destinationPtr, int count) where T : unmanaged
             => Buffer.MemoryCopy(sourcePtr, destinationPtr, count * TypeCache<T>.SizeInBytes, count * TypeCache<T>.SizeInBytes);
-        
+
         internal static unsafe void Clear1<T>(T* ptr, int count) where T : unmanaged
             => Unsafe.InitBlock(ptr, 0, (uint)(count * TypeCache<T>.SizeInBytes));
 
