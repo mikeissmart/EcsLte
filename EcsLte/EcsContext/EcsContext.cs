@@ -1,38 +1,49 @@
 ﻿using EcsLte.Exceptions;
 using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace EcsLte
 {
-    public unsafe class EcsContext
+    public class EcsContext
     {
         public string Name { get; private set; }
         public bool IsDestroyed { get; private set; }
-        public EntityCommandsManager Commands { get; private set; }
+        //public EntityCommandsManager Commands { get; private set; }
+        public ArcheTypeManager ArcheTypes { get; private set; }
         public EntityManager Entities { get; private set; }
-        public SystemsManager Systems { get; private set; }
+        public EntityFilterManager Filters { get; private set; }
+        //public SystemsManager Systems { get; private set; }
         public EntityTrackerManager Tracking { get; private set; }
-        internal SharedComponentIndexDictionaries SharedIndexDics { get; private set; }
-        internal ArcheTypeDataManager ArcheTypeManager { get; private set; }
+        public EntityQueryManager Queries { get; private set; }
+        internal SharedComponentDictionaries SharedComponentDics { get; private set; }
+        internal bool StructChangeAvailable { get; set; }
 
         internal EcsContext(string name)
         {
             Name = name;
-            Commands = new EntityCommandsManager(this);
+            //Commands = new EntityCommandsManager(this);
             Entities = new EntityManager(this);
-            Systems = new SystemsManager(this);
-            SharedIndexDics = new SharedComponentIndexDictionaries();
-            ArcheTypeManager = new ArcheTypeDataManager(this);
+            Filters = new EntityFilterManager(this);
+            //Systems = new SystemsManager(this);
+            SharedComponentDics = new SharedComponentDictionaries();
+            ArcheTypes = new ArcheTypeManager(this);
             Tracking = new EntityTrackerManager(this);
+            Queries = new EntityQueryManager(this);
+
+            StructChangeAvailable = true;
         }
 
         internal void InternalDestroy()
         {
-            Commands.InternalDestroy();
+            //Commands.InternalDestroy();
             Entities.InternalDestroy();
-            Systems.InternalDestroy();
+            Filters.InternalDestroy();
+            //Systems.InternalDestroy();
             Tracking.InternalDestroy();
-            SharedIndexDics.Clear();
-            ArcheTypeManager.InternalDestroy();
+            SharedComponentDics.InternalDestroy();
+            Queries.InternalDestroy();
+            ArcheTypes.InternalDestroy();
 
             IsDestroyed = true;
         }
@@ -49,6 +60,12 @@ namespace EcsLte
         {
             if (IsDestroyed)
                 throw new EcsContextIsDestroyedException(this);
+        }
+
+        internal void AssertStructualChangeAvailable()
+        {
+            if (!StructChangeAvailable)
+                throw new EcsContextStrualChangeNotAvailableException();
         }
     }
 }

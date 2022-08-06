@@ -34,7 +34,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         }
 
         private EntityArcheType BlueprintUpdateAndArcheType<T>(T component) where T : unmanaged, ISharedComponent =>
-            _blueprint.SetSharedComponent(component).GetArcheType();
+            _blueprint.SetSharedComponent(component).GetArcheType(_context);
 
         [GlobalCleanup]
         public void GlobalCleanup()
@@ -44,7 +44,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         }
 
         [IterationSetup]
-        public void IterationSetup() => _entities = _context.Entities.CreateEntities(_blueprint, EntityState.Active, _entities.Length);
+        public void IterationSetup() => _entities = _context.Entities.CreateEntities(_blueprint,  _entities.Length);
 
         [IterationCleanup]
         public void IterationCleanup() => _context.Entities.DestroyEntities(_entities);
@@ -69,23 +69,23 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
 
         private void CreateArcheTypes()
         {
-            _archeType1 = _blueprint.GetArcheType();
+            _archeType1 = _blueprint.GetArcheType(_context);
             _archeType2 = BlueprintUpdateAndArcheType(SharedComponent1);
             _archeType3 = BlueprintUpdateAndArcheType(SharedComponent2);
             _archeType4 = BlueprintUpdateAndArcheType(SharedComponent3);
 
-            _query1 = new EntityQuery(
-                _context,
-                new EntityFilter().WhereAllOf(_archeType1));
-            _query2 = new EntityQuery(
-                _context,
-                new EntityFilter().WhereAllOf(_archeType2));
-            _query3 = new EntityQuery(
-                _context,
-                new EntityFilter().WhereAllOf(_archeType3));
-            _query4 = new EntityQuery(
-                _context,
-                new EntityFilter().WhereAllOf(_archeType4));
+            _query1 = _context.Queries
+                .SetFilter(_context.Filters
+                    .WhereAllOf(_archeType1));
+            _query2= _context.Queries
+                .SetFilter(_context.Filters
+                    .WhereAllOf(_archeType2));
+            _query3 = _context.Queries
+                .SetFilter(_context.Filters
+                    .WhereAllOf(_archeType3));
+            _query4 = _context.Queries
+                .SetFilter(_context.Filters
+                    .WhereAllOf(_archeType4));
         }
     }
 }

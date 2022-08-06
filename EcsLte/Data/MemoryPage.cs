@@ -1,6 +1,6 @@
 ﻿namespace EcsLte.Data
 {
-    internal unsafe struct MemoryPage
+    /*internal unsafe struct MemoryPage
     {
         internal static int PageBufferSizeInBytes = 16384;
 
@@ -20,5 +20,5 @@
         internal byte* GetBuffer(int slotIndex) => Buffer + (slotIndex * SlotSizeInBytes);
 
         internal void SetSlot(int slotIndex, ref EntityData entityData) => entityData.ComponentsBuffer = GetBuffer(slotIndex);
-    }
+    }*/
 }

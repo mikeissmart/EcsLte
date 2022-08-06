@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EcsLte.Exceptions;
+using System;
 
 namespace EcsLte
 {
@@ -6,55 +7,95 @@ namespace EcsLte
     {
         internal int ComponentIndex { get; set; }
         internal int GeneralIndex { get; set; }
+        internal int ManagedIndex { get; set; }
         internal int SharedIndex { get; set; }
-        internal int UniqueIndex { get; set; }
         internal int UnmanagedSizeInBytes { get; set; }
         internal bool IsGeneral { get; set; }
+        internal bool IsManaged { get; set; }
         internal bool IsShared { get; set; }
-        internal bool IsUnique { get; set; }
 
-        internal Type ComponentType => ComponentConfigs.Instance.AllComponentTypes[ComponentIndex];
+        internal Type ComponentType => ComponentConfigs.AllComponentTypes[ComponentIndex];
 
-        internal bool IsValidConfig()
-        {
-            var realConfig = ComponentConfigs.Instance.AllComponentConfigs[ComponentIndex];
+        internal IComponentAdapter Adapter => ComponentConfigs.AllComponentAdapters[ComponentIndex];
 
-            return GeneralIndex != realConfig.GeneralIndex &&
-                SharedIndex != realConfig.SharedIndex &&
-                UniqueIndex != realConfig.UniqueIndex &&
-                UnmanagedSizeInBytes != realConfig.UnmanagedSizeInBytes &&
-                IsGeneral != realConfig.IsGeneral &&
-                IsShared != realConfig.IsShared &&
-                IsUnique != realConfig.IsUnique;
-        }
+        #region Equals
 
         public static bool operator !=(ComponentConfig lhs, ComponentConfig rhs)
             => !(lhs == rhs);
 
         public static bool operator ==(ComponentConfig lhs, ComponentConfig rhs)
-            => lhs.ComponentIndex == rhs.ComponentIndex;
-
-        public int CompareTo(ComponentConfig other)
-            => ComponentIndex.CompareTo(other.ComponentIndex);
+        {
+            return lhs.ComponentIndex == rhs.ComponentIndex &&
+                lhs.UnmanagedSizeInBytes == rhs.UnmanagedSizeInBytes &&
+                lhs.IsGeneral == rhs.IsGeneral &&
+                lhs.IsManaged == rhs.IsManaged &&
+                lhs.IsShared == rhs.IsShared;
+        }
 
         public bool Equals(ComponentConfig other)
             => this == other;
 
-        public override int GetHashCode() => ComponentIndex.GetHashCode();
-
         public override bool Equals(object obj) => obj is ComponentConfig config && config == this;
+
+        #endregion
+
+        public int CompareTo(ComponentConfig other)
+            => ComponentIndex.CompareTo(other.ComponentIndex);
+
+        public override int GetHashCode() => ComponentIndex.GetHashCode();
 
         public override string ToString()
         {
             if (IsGeneral)
-                return $"{ComponentIndex} General {GeneralIndex}";
+                return $"ComponentIndex {ComponentIndex}, GeneralIndex {GeneralIndex}";
+            else if (IsManaged)
+                return $"ComponentIndex {ComponentIndex}, ManagedIndex {ManagedIndex}";
             else if (IsShared)
-                return $"{ComponentIndex} Shared {SharedIndex}";
-            else if (IsUnique)
-                return $"{ComponentIndex} Unique {UniqueIndex}";
+                return $"ComponentIndex {ComponentIndex}, SharedIndex {SharedIndex}";
             else
-                throw new Exception("Unknown component type");
+                throw new Exception();
         }
+
+        // TODO
+        /*#region Assert
+
+        internal static void AssertNotUseGeneralConfig(ComponentConfig config)
+        {
+            if (config.IsGeneral)
+                throw new ComponentConfigNotUseGeneralException();
+        }
+
+        internal static void AssertNotUseManagedConfig(ComponentConfig config)
+        {
+            if (config.IsManaged)
+                throw new ComponentConfigNotUseManagedException();
+        }
+
+        internal static void AssertNotUseSharedConfig(ComponentConfig config)
+        {
+            if (config.IsShared)
+                throw new ComponentConfigNotUseSharedException();
+        }
+
+        internal static void AssertRequiredGeneralConfig(ComponentConfig config)
+        {
+            if (!config.IsGeneral)
+                throw new ComponentConfigRquiredGeneralException();
+        }
+
+        internal static void AssertRequiredManagedConfig(ComponentConfig config)
+        {
+            if (!config.IsManaged)
+                throw new ComponentConfigRquiredManagedException();
+        }
+
+        internal static void AssertRequiredSharedConfig(ComponentConfig config)
+        {
+            if (!config.IsShared)
+                throw new ComponentConfigRquiredSharedException();
+        }
+
+        #endregion*/
     }
 
     internal class ComponentConfig<TComponent> where TComponent : IComponent
@@ -68,7 +109,7 @@ namespace EcsLte
             {
                 if (!_hasConfig)
                 {
-                    _config = ComponentConfigs.Instance.GetConfig(typeof(TComponent));
+                    _config = ComponentConfigs.GetConfig(typeof(TComponent));
                     _hasConfig = true;
                 }
 

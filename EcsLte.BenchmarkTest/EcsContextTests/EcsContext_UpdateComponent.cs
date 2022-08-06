@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
+using System;
 
 namespace EcsLte.BenchmarkTest.EcsContextTests
 {
@@ -16,6 +17,10 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         private TestSharedComponent2 SharedComponent2 = new TestSharedComponent2 { Prop = 7 };
         private TestSharedComponent3 SharedComponent3 = new TestSharedComponent3 { Prop = 8 };
         private TestSharedComponent4 SharedComponent4 = new TestSharedComponent4 { Prop = 9 };
+        private TestManagedComponent1 ManagedComponent1 = new TestManagedComponent1 { Prop = 10 };
+        private TestManagedComponent2 ManagedComponent2 = new TestManagedComponent2 { Prop = 11 };
+        private TestManagedComponent3 ManagedComponent3 = new TestManagedComponent3 { Prop = 12 };
+        private TestManagedComponent4 ManagedComponent4 = new TestManagedComponent4 { Prop = 13 };
 
         [ParamsAllValues]
         public ComponentArrangement CompArr { get; set; }
@@ -38,7 +43,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         }
 
         [IterationSetup]
-        public void IterationSetup() => _entities = _context.Entities.CreateEntities(_blueprint, EntityState.Active, _entities.Length);
+        public void IterationSetup() => _entities = _context.Entities.CreateEntities(_blueprint, _entities.Length);
 
         [IterationCleanup]
         public void IterationCleanup() => _context.Entities.DestroyEntities(_entities);
@@ -59,6 +64,17 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
                     }
                     break;
 
+                case ComponentArrangement.Managed_x4:
+                    for (var i = 0; i < _entities.Length; i++)
+                    {
+                        var entity = _entities[i];
+                        _context.Entities.UpdateManagedComponent(entity, ManagedComponent1);
+                        _context.Entities.UpdateManagedComponent(entity, ManagedComponent2);
+                        _context.Entities.UpdateManagedComponent(entity, ManagedComponent3);
+                        _context.Entities.UpdateManagedComponent(entity, ManagedComponent4);
+                    }
+                    break;
+
                 case ComponentArrangement.Shared_x4:
                     for (var i = 0; i < _entities.Length; i++)
                     {
@@ -69,6 +85,9 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
                         _context.Entities.UpdateSharedComponent(entity, SharedComponent4);
                     }
                     break;
+
+                default:
+                    throw new Exception();
             }
         }
     }

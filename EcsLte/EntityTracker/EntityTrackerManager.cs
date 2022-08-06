@@ -2,36 +2,29 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace EcsLte
 {
-    internal delegate void TrackerChange(Entity entity, ArcheTypeData archeTypeData);
-    internal delegate void TrackerArcheTypeChange(Entity entity, ArcheTypeData prevArcheTypeData, ArcheTypeData nextArcheTypeData);
-    internal delegate void TrackerResize(int entityCapacity);
-
     public class EntityTrackerManager
     {
         private readonly Dictionary<string, EntityTracker> _trackers;
-        private readonly TrackEvents[] _events;
-        private readonly object _lockObj;
 
-        private event TrackerChange _stateChangeEvent;
-        private event TrackerChange _destroyEvent;
-        private event TrackerArcheTypeChange _archeTypeChange;
-        private event TrackerResize _resizeEvent;
+        private HashSet<EntityTracker>[] _addedEvent;
+        private HashSet<EntityTracker>[] _updatedEvent;
+        private HashSet<EntityTracker>[] _removedEvent;
 
         public EcsContext Context { get; private set; }
 
         internal EntityTrackerManager(EcsContext context)
         {
             _trackers = new Dictionary<string, EntityTracker>();
-            _events = new TrackEvents[ComponentConfigs.Instance.AllComponentCount];
-            _lockObj = new object();
+
+            _addedEvent = CreateComponentHashSet();
+            _updatedEvent = CreateComponentHashSet();
+            _removedEvent = CreateComponentHashSet();
 
             Context = context;
-
-            for (var i = 0; i < _events.Length; i++)
-                _events[i] = new TrackEvents();
         }
 
         public bool HasTracker(string name)
@@ -40,20 +33,14 @@ namespace EcsLte
                 throw new ArgumentNullException(nameof(name));
             Context.AssertContext();
 
-            lock (_lockObj)
-            {
-                return _trackers.ContainsKey(name);
-            }
+            return _trackers.ContainsKey(name);
         }
 
-        public EntityTracker[] GetAllTrackers()
+        public EntityTracker[] GetAllTracker()
         {
             Context.AssertContext();
 
-            lock (_lockObj)
-            {
-                return _trackers.Values.ToArray();
-            }
+            return _trackers.Values.ToArray();
         }
 
         public EntityTracker GetTracker(string name)
@@ -62,12 +49,9 @@ namespace EcsLte
                 throw new ArgumentNullException(nameof(name));
             Context.AssertContext();
 
-            lock (_lockObj)
-            {
-                AssertNotExistTracker(name);
+            AssertNotExistTracker(name);
 
-                return _trackers[name];
-            }
+            return _trackers[name];
         }
 
         public EntityTracker CreateTracker(string name)
@@ -76,105 +60,145 @@ namespace EcsLte
                 throw new ArgumentNullException(nameof(name));
             Context.AssertContext();
 
-            lock (_lockObj)
-            {
-                AssertAlreadyHaveTracker(name);
+            AssertAlreadyHaveTracker(name);
 
-                var tracker = new EntityTracker(Context, name);
-                _trackers.Add(name, tracker);
+            var tracker = new EntityTracker(Context, name);
+            _trackers.Add(name, tracker);
 
-                return tracker;
-            }
+            return tracker;
         }
 
         public void RemoveTracker(EntityTracker tracker)
         {
-            if (tracker == null)
-                throw new ArgumentNullException(nameof(tracker));
-            if (tracker.Context != Context)
-                throw new EcsContextDifferentException(Context, tracker.Context);
             Context.AssertContext();
+            EntityTracker.AssertEntityTracker(tracker, Context);
 
-            lock (_lockObj)
+            AssertNotExistTracker(tracker.Name);
+
+            tracker.InternalDestroy();
+            _trackers.Remove(tracker.Name);
+        }
+
+        internal void StartTracker(EntityTracker tracker)
+        {
+            foreach (var configState in tracker.TrackingConfigs)
             {
-                tracker.AssertTracker();
-                AssertNotExistTracker(tracker.Name);
-
-                tracker.InternalDestroy();
-                _trackers.Remove(tracker.Name);
+                if ((configState.Value & TrackingState.Added) == TrackingState.Added)
+                    _addedEvent[configState.Key.ComponentIndex].Add(tracker);
+                if ((configState.Value & TrackingState.Updated) == TrackingState.Updated)
+                    _updatedEvent[configState.Key.ComponentIndex].Add(tracker);
+                if ((configState.Value & TrackingState.Removed) == TrackingState.Removed)
+                    _removedEvent[configState.Key.ComponentIndex].Add(tracker);
             }
         }
 
-        internal void TrackStateChange(Entity entity, ArcheTypeData archeTypeData) => _stateChangeEvent?.Invoke(entity, archeTypeData);
-
-        internal void TrackAdd(Entity entity, ArcheTypeData archeTypeData, ComponentConfig config) =>
-            _events[config.ComponentIndex].ComponentAddedInvoke(entity, archeTypeData);
-
-        internal void TrackUpdate(Entity entity, ArcheTypeData archeTypeData, ComponentConfig config) =>
-            _events[config.ComponentIndex].ComponentUpdatedInvoke(entity, archeTypeData);
-
-        internal void TrackArcheTypeChange(Entity entity, ArcheTypeData prevArcheTypeData, ArcheTypeData nextArcheTypeData) =>
-            _archeTypeChange?.Invoke(entity, prevArcheTypeData, nextArcheTypeData);
-
-        internal void TrackDestroy(Entity entity, ArcheTypeData archeTypeData) => _destroyEvent?.Invoke(entity, archeTypeData);
-
-        internal void ResizeTrackers(int entityCapacity) => _resizeEvent?.Invoke(entityCapacity);
-
-        internal void RegisterComponentEvent(EntityTracker tracker, int trackingState, ComponentConfig config)
+        internal void StopTracker(EntityTracker tracker)
         {
-            var events = _events[config.ComponentIndex];
-
-            events.ComponentAdded -= tracker.AddTracked;
-            events.ComponentUpdated -= tracker.UpdateTracked;
-            switch (trackingState)
+            foreach (var config in tracker.TrackingConfigs.Keys)
             {
-                case (int)EntityTrackerState.Added:
-                    events.ComponentAdded += tracker.AddTracked;
-                    break;
-                case (int)EntityTrackerState.Updated:
-                    events.ComponentUpdated += tracker.UpdateTracked;
-                    break;
-                case (int)EntityTrackerState.AddedOrUpdated:
-                    events.ComponentAdded += tracker.AddTracked;
-                    events.ComponentUpdated += tracker.UpdateTracked;
-                    break;
+                _addedEvent[config.ComponentIndex].Remove(tracker);
+                _updatedEvent[config.ComponentIndex].Remove(tracker);
+                _removedEvent[config.ComponentIndex].Remove(tracker);
             }
         }
 
-        internal void RegisterEntityStateEvent(EntityTracker tracker, bool tracking)
+        internal void TrackerStateChanged(EntityTracker tracker, ComponentConfig config, TrackingState state)
         {
-            _stateChangeEvent -= tracker.EntityStateTracked;
-            if (tracking)
-                _stateChangeEvent += tracker.EntityStateTracked;
+            _addedEvent[config.ComponentIndex].Remove(tracker);
+            _updatedEvent[config.ComponentIndex].Remove(tracker);
+            _removedEvent[config.ComponentIndex].Remove(tracker);
+
+            if ((state & TrackingState.Added) == TrackingState.Added)
+                _addedEvent[config.ComponentIndex].Add(tracker);
+            if ((state & TrackingState.Updated) == TrackingState.Updated)
+                _updatedEvent[config.ComponentIndex].Add(tracker);
+            if ((state & TrackingState.Removed) == TrackingState.Removed)
+                _removedEvent[config.ComponentIndex].Add(tracker);
         }
 
-        internal void StartTraking(EntityTracker tracker)
+        internal void TrackArcheTypeDataChange(Entity entity,
+            ArcheTypeData prevArcheTypeData, ArcheTypeData nextArcheTypeData)
         {
-            _destroyEvent += tracker.RemoveTracked;
-            _resizeEvent += tracker.ResizeTracked;
-            _archeTypeChange += tracker.ArcheTypeChangeTracked;
-
-            tracker.ResizeTracked(Context.Entities.EntityCapacity);
+            foreach (var tracker in _trackers.Values)
+                tracker.TrackArcheTypeDataChange(entity, prevArcheTypeData, nextArcheTypeData);
         }
 
-        internal void StopTracking(EntityTracker tracker)
+        internal void TrackAllArcheTypeDataChange(
+            ArcheTypeData prevArcheTypeData, ArcheTypeData nextArcheTypeData)
         {
-            _destroyEvent -= tracker.RemoveTracked;
-            _resizeEvent -= tracker.ResizeTracked;
-            _archeTypeChange -= tracker.ArcheTypeChangeTracked;
+            foreach (var tracker in _trackers.Values)
+                tracker.TrackAllArcheTypeDataChange(prevArcheTypeData, nextArcheTypeData);
+        }
+
+        internal void TrackAdd(Entity entity, ComponentConfig config, ArcheTypeData archeTypeData)
+        {
+            foreach (var tracker in _addedEvent[config.ComponentIndex])
+                tracker.Tracked(entity, archeTypeData);
+        }
+
+        internal void TrackAdds(in Entity[] entities, int startingIndex, int count,
+            ComponentConfig config, ArcheTypeData archeTypeData)
+        {
+            foreach (var tracker in _addedEvent[config.ComponentIndex])
+                tracker.Tracked(entities, startingIndex, count, archeTypeData);
+        }
+
+        internal void TrackUpdate(Entity entity, ComponentConfig config, ArcheTypeData archeTypeData)
+        {
+            foreach (var tracker in _updatedEvent[config.ComponentIndex])
+                tracker.Tracked(entity, archeTypeData);
+        }
+
+        internal void TrackUpdates(in Entity[] entities, int startingIndex, int count,
+            ComponentConfig config, ArcheTypeData archeTypeData)
+        {
+            foreach (var tracker in _updatedEvent[config.ComponentIndex])
+                tracker.Tracked(entities, startingIndex, count, archeTypeData);
+        }
+
+        internal void TrackRemove(Entity entity, ComponentConfig config, ArcheTypeData archeTypeData)
+        {
+            foreach (var tracker in _removedEvent[config.ComponentIndex])
+                tracker.Tracked(entity, archeTypeData);
+        }
+
+        internal void TrackRemoves(in Entity[] entities, int startingIndex, int count,
+            ComponentConfig config, ArcheTypeData archeTypeData)
+        {
+            foreach (var tracker in _removedEvent[config.ComponentIndex])
+                tracker.Tracked(entities, startingIndex, count, archeTypeData);
+        }
+
+        internal void EntityDestroyed(Entity entity, ArcheTypeData archeTypeData)
+        {
+            foreach (var tracker in _trackers.Values)
+                tracker.Untracked(entity, archeTypeData);
+        }
+
+        internal void ArcheTypeEntitiesDestroyed(ArcheTypeData archeTypeData)
+        {
+            foreach (var tracker in _trackers.Values)
+                tracker.UntrackedArcheTypeData(archeTypeData);
         }
 
         internal void InternalDestroy()
         {
             foreach (var tracker in _trackers.Values)
                 tracker.InternalDestroy();
-            _trackers.Clear();
-            Array.Clear(_events, 0, _events.Length);
 
-            _stateChangeEvent = null;
-            _destroyEvent = null;
-            _resizeEvent = null;
-            _archeTypeChange = null;
+            _trackers.Clear();
+            _addedEvent = null;
+            _updatedEvent = null;
+            _removedEvent = null;
+        }
+
+        private HashSet<EntityTracker>[] CreateComponentHashSet()
+        {
+            var sets = new HashSet<EntityTracker>[ComponentConfigs.AllComponentCount];
+            for (var i = 0; i < ComponentConfigs.AllComponentCount; i++)
+                sets[i] = new HashSet<EntityTracker>();
+
+            return sets;
         }
 
         private void AssertNotExistTracker(string name)
@@ -187,16 +211,6 @@ namespace EcsLte
         {
             if (_trackers.ContainsKey(name))
                 throw new EntityTrackerAlreadyExistException(name);
-        }
-
-        private class TrackEvents
-        {
-            internal event TrackerChange ComponentAdded;
-            internal event TrackerChange ComponentUpdated;
-
-            internal void ComponentAddedInvoke(Entity entity, ArcheTypeData archeTypeData) => ComponentAdded?.Invoke(entity, archeTypeData);
-
-            internal void ComponentUpdatedInvoke(Entity entity, ArcheTypeData archeTypeData) => ComponentUpdated?.Invoke(entity, archeTypeData);
         }
     }
 }

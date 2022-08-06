@@ -9,7 +9,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
     public class EntityManagerTests_ComponentGetAll : BasePrePostTest
     {
         [TestMethod]
-        public void HasComponent()
+        public void GetAllComponents()
         {
             var entity = Context.Entities.CreateEntity(
                 new EntityBlueprint()
@@ -17,9 +17,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     .SetComponent(new TestComponent2 { Prop = 2 })
                     .SetSharedComponent(new TestSharedComponent1 { Prop = 3 })
                     .SetSharedComponent(new TestSharedComponent2 { Prop = 4 })
-                    .SetUniqueComponent(new TestUniqueComponent1 { Prop = 5 })
-                    .SetUniqueComponent(new TestUniqueComponent2 { Prop = 6 }),
-                EntityState.Active);
+                    .SetManagedComponent(new TestManagedComponent1 { Prop = 5 })
+                    .SetManagedComponent(new TestManagedComponent2 { Prop = 6 }));
 
             var components = Context.Entities.GetAllComponents(entity);
             Assert.IsTrue(components.Length == 6);
@@ -27,8 +26,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
             AssertComponent<TestComponent2>(components, 0, 2);
             AssertComponent<TestSharedComponent1>(components, 0, 3);
             AssertComponent<TestSharedComponent2>(components, 0, 4);
-            AssertComponent<TestUniqueComponent1>(components, 0, 5);
-            AssertComponent<TestUniqueComponent2>(components, 0, 6);
+            AssertComponent<TestManagedComponent1>(components, 0, 5);
+            AssertComponent<TestManagedComponent2>(components, 0, 6);
 
             components = new IComponent[0];
             var componentCount = Context.Entities.GetAllComponents(entity, ref components);
@@ -38,8 +37,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
             AssertComponent<TestComponent2>(components, 0, 2);
             AssertComponent<TestSharedComponent1>(components, 0, 3);
             AssertComponent<TestSharedComponent2>(components, 0, 4);
-            AssertComponent<TestUniqueComponent1>(components, 0, 5);
-            AssertComponent<TestUniqueComponent2>(components, 0, 6);
+            AssertComponent<TestManagedComponent1>(components, 0, 5);
+            AssertComponent<TestManagedComponent2>(components, 0, 6);
 
             components = new IComponent[5];
             componentCount = Context.Entities.GetAllComponents(entity, ref components, 5);
@@ -49,8 +48,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
             AssertComponent<TestComponent2>(components, 5, 2);
             AssertComponent<TestSharedComponent1>(components, 5, 3);
             AssertComponent<TestSharedComponent2>(components, 5, 4);
-            AssertComponent<TestUniqueComponent1>(components, 5, 5);
-            AssertComponent<TestUniqueComponent2>(components, 5, 6);
+            AssertComponent<TestManagedComponent1>(components, 5, 5);
+            AssertComponent<TestManagedComponent2>(components, 5, 6);
 
             Assert.ThrowsException<EntityNotExistException>(() =>
                 Context.Entities.GetAllComponents(Entity.Null));

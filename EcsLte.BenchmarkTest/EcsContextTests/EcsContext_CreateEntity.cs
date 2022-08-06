@@ -51,14 +51,14 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         {
             var blueprint = EcsContextSetupCleanup.CreateBlueprint(CompArr);
             for (var i = 0; i < _entities.Length; i++)
-                _entities[i] = _context.Entities.CreateEntity(blueprint, EntityState.Active);
+                _entities[i] = _context.Entities.CreateEntity(blueprint);
         }
 
         [Benchmark]
         public void CreateEntities()
         {
             var blueprint = EcsContextSetupCleanup.CreateBlueprint(CompArr);
-            _entities = _context.Entities.CreateEntities(blueprint, EntityState.Active, _entities.Length);
+            _entities = _context.Entities.CreateEntities(blueprint, _entities.Length);
         }
 
         #endregion Create
@@ -77,14 +77,14 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         {
             var blueprint = EcsContextSetupCleanup.CreateBlueprint(CompArr);
             for (var i = 0; i < _entities.Length; i++)
-                _entities[i] = _context.Entities.CreateEntity(blueprint, EntityState.Active);
+                _entities[i] = _context.Entities.CreateEntity(blueprint);
         }
 
         [Benchmark]
         public void CreateEntities_Reuse()
         {
             var blueprint = EcsContextSetupCleanup.CreateBlueprint(CompArr);
-            _entities = _context.Entities.CreateEntities(blueprint, EntityState.Active, _entities.Length);
+            _entities = _context.Entities.CreateEntities(blueprint, _entities.Length);
         }
 
         #endregion Create Reuse
@@ -101,7 +101,6 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             _context = EcsContexts.CreateContext("Test_Create");
             _entities = _context.Entities.CreateEntities(
                 EcsContextSetupCleanup.CreateBlueprint(CompArr),
-                EntityState.Active,
                 _entities.Length);
         }
 
@@ -133,7 +132,6 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         })]
         public void IterationSetup_Destroy_Reuse() => _entities = _context.Entities.CreateEntities(
                 EcsContextSetupCleanup.CreateBlueprint(CompArr),
-                EntityState.Active,
                 _entities.Length);
 
         [Benchmark]

@@ -1,0 +1,157 @@
+﻿using EcsLte.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace EcsLte
+{
+    public unsafe partial class EntityManager
+    {
+        public Entity[] GetEntities()
+        {
+            var entities = new Entity[0];
+            GetEntities(ref entities, 0);
+
+            return entities;
+        }
+
+        public int GetEntities(ref Entity[] entities)
+            => GetEntities(ref entities, 0);
+
+        public int GetEntities(ref Entity[] entities, int startingIndex)
+        {
+            Context.AssertContext();
+            Helper.AssertEntities(entities, startingIndex);
+
+            Context.ArcheTypes.GetAllEntities(ref entities, startingIndex);
+
+            return _entitiesCount;
+        }
+
+        public Entity[] GetEntities(EntityArcheType archeType)
+        {
+            var entities = new Entity[0];
+            GetEntities(archeType, ref entities, 0);
+
+            return entities;
+        }
+
+        public int GetEntities(EntityArcheType archeType, ref Entity[] entities)
+            => GetEntities(archeType, ref entities, 0);
+
+        public int GetEntities(EntityArcheType archeType, ref Entity[] entities, int startingIndex)
+        {
+            Context.AssertContext();
+            EntityArcheType.AssertEntityArcheType(archeType, Context);
+
+            var archeTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
+            if (archeTypeData.EntityCount > 0)
+            {
+                Helper.AssertAndResizeEntities(ref entities, startingIndex, archeTypeData.EntityCount);
+                archeTypeData.GetEntities(ref entities, startingIndex);
+            }
+
+            return archeTypeData.EntityCount;
+        }
+
+        public Entity[] GetEntities(EntityFilter filter)
+        {
+            var entities = new Entity[0];
+            GetEntities(filter, ref entities, 0);
+
+            return entities;
+        }
+
+        public int GetEntities(EntityFilter filter, ref Entity[] entities)
+            => GetEntities(filter, ref entities, 0);
+
+        public int GetEntities(EntityFilter filter, ref Entity[] entities, int startingIndex)
+        {
+            Context.AssertContext();
+            EntityFilter.AssertEntityFilter(filter, Context);
+            Helper.AssertEntities(entities, startingIndex);
+
+            var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
+            var entityIndex = startingIndex;
+            for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
+            {
+                var archeTypeData = filteredArcheTypeDatas[i];
+                if (archeTypeData.EntityCount > 0)
+                {
+                    Helper.ResizeRefEntities(ref entities, entityIndex, archeTypeData.EntityCount);
+                    archeTypeData.GetEntities(ref entities, entityIndex);
+                    entityIndex += archeTypeData.EntityCount;
+                }
+            }
+
+            return entityIndex - startingIndex;
+        }
+
+        public Entity[] GetEntities(EntityTracker tracker)
+        {
+            var entities = new Entity[0];
+            GetEntities(tracker, ref entities, 0);
+
+            return entities;
+        }
+
+        public int GetEntities(EntityTracker tracker, ref Entity[] entities)
+            => GetEntities(tracker, ref entities, 0);
+
+        public int GetEntities(EntityTracker tracker, ref Entity[] entities, int startingIndex)
+        {
+            Context.AssertContext();
+            EntityTracker.AssertEntityTracker(tracker, Context);
+            Helper.AssertEntities(entities, startingIndex);
+
+            return tracker.GetAllEntities(ref entities, startingIndex);
+        }
+
+        public Entity[] GetEntities(EntityQuery query)
+        {
+            var entities = new Entity[0];
+            GetEntities(query, ref entities, 0);
+
+            return entities;
+        }
+
+        public int GetEntities(EntityQuery query, ref Entity[] entities)
+            => GetEntities(query, ref entities, 0);
+
+        public int GetEntities(EntityQuery query, ref Entity[] entities, int startingIndex)
+        {
+            Context.AssertContext();
+            EntityQuery.AssertEntityQuery(query, Context);
+
+            if (query.Filter != null && query.Tracker == null)
+                return GetEntities(query.Filter, ref entities, startingIndex);
+            else if (query.Filter == null && query.Tracker != null)
+                return GetEntities(query.Tracker, ref entities, startingIndex);
+            else if (query.Filter != null && query.Tracker != null)
+            {
+                Helper.AssertEntities(entities, startingIndex);
+
+                var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(query.Filter);
+                var entityIndex = startingIndex;
+                for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
+                {
+                    entityIndex += query.Tracker.GetArcheTypeDataEntities(filteredArcheTypeDatas[i],
+                        ref entities, entityIndex);
+                }
+
+                return entityIndex - startingIndex;
+            }
+
+            return 0;
+        }
+
+        public EntityArcheType GetArcheType(Entity entity)
+        {
+            Context.AssertContext();
+            AssertNotExistEntity(entity,
+                out var _, out var archeTypeData);
+
+            return new EntityArcheType(Context, archeTypeData);
+        }
+    }
+}

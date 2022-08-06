@@ -7,12 +7,10 @@ namespace EcsLte.UnitTest.EntityManagerTests
     [TestClass]
     public class EntityManagerTests_EntityCopy : BasePrePostTest
     {
-        private readonly EntityState _orgState = EntityState.Active;
-        private readonly EntityState _nonNullState = EntityState.Destroying;
         private EcsContext _destContext;
 
         [TestMethod]
-        public void CopyEntity()
+        public void CopyEntityTo()
         {
             _destContext = EcsContexts.CreateContext("DestContext");
 
@@ -20,227 +18,171 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 .SetComponent(new TestComponent1 { Prop = 1 })
                 .SetSharedComponent(new TestSharedComponent1 { Prop = 2 });
 
-            var entity = Context.Entities.CreateEntity(
-                blueprint,
-                EntityState.Active);
+            var orgEntity = Context.Entities.CreateEntity(
+                blueprint);
 
-            var uniqueArcheType = new EntityArcheType()
-                .AddComponentType<TestComponent1>()
-                .AddSharedComponent(new TestSharedComponent1 { Prop = 2 })
-                .AddUniqueComponentType<TestUniqueComponent1>();
-            var uniqueEntity = Context.Entities.CreateEntity(uniqueArcheType, EntityState.Active);
-            _destContext.Entities.CreateEntity(uniqueArcheType, EntityState.Active);
+            var copyEntity = _destContext.Entities.CopyEntityTo(Context.Entities, orgEntity);
 
-            Assert_CopyEntity(entity, uniqueEntity, false);
-            Assert_CopyEntity(entity, uniqueEntity, true);
+            Assert.ThrowsException<EntityNotExistException>(() =>
+                _destContext.Entities.CopyEntityTo(Context.Entities, Entity.Null));
+            Assert.ThrowsException<EntityCopyToSameContextException>(() =>
+                Context.Entities.CopyEntityTo(Context.Entities, orgEntity));
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _destContext.Entities.CopyEntityTo(null, orgEntity));
+
+            Assert.IsTrue(_destContext.Entities.GetComponent<TestComponent1>(copyEntity).Prop == orgEntity.Id);
+            Assert.IsTrue(_destContext.Entities.GetSharedComponent<TestSharedComponent1>(copyEntity).Prop == 2);
 
             EcsContexts.DestroyContext(Context);
             EcsContexts.DestroyContext(_destContext);
-            Assert_CopyEntity_ContextDestroyed(entity);
+            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
+                Context.Entities.CopyEntityTo(_destContext.Entities, orgEntity));
+            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
+                Context.Entities.CopyEntityTo(_destContext.Entities, orgEntity));
         }
 
         [TestMethod]
-        public void CopyEntities()
+        public void CopyEntitiesTo()
         {
             _destContext = EcsContexts.CreateContext("DestContext");
 
             var entities = CreateTestEntities();
 
-            Assert_CopyEntities(entities, false);
-            Assert_CopyEntities(entities, true);
+            Assert_CopyEntitiesTo(entities);
 
             EcsContexts.DestroyContext(Context);
             EcsContexts.DestroyContext(_destContext);
-            Assert_CopyEntities_ContextDestroyed(false);
-            Assert_CopyEntities_ContextDestroyed(true);
+            Assert_CopyEntitiesTo_ContextDestroyed();
         }
 
         [TestMethod]
-        public void CopyEntities_ArcheType()
+        public void CopyEntitiesTo_ArcheType()
         {
             _destContext = EcsContexts.CreateContext("DestContext");
 
-            var archeType = new EntityArcheType()
+            var archeType = Context.ArcheTypes
                 .AddComponentType<TestComponent1>()
                 .AddSharedComponent(new TestSharedComponent1 { Prop = 2 });
 
             var entities = CreateTestEntities();
 
-            Assert_CopyEntities_ArcheType(archeType, entities, false);
-            Assert_CopyEntities_ArcheType(archeType, entities, true);
+            Assert_CopyEntitiesTo_ArcheType(archeType, entities);
 
             EcsContexts.DestroyContext(Context);
             EcsContexts.DestroyContext(_destContext);
-            Assert_CopyEntities_ArcheType_ContextDestroyed(archeType, false);
-            Assert_CopyEntities_ArcheType_ContextDestroyed(archeType, true);
+            Assert_CopyEntitiesTo_ArcheType_ContextDestroyed(archeType);
         }
 
         [TestMethod]
-        public void CopyEntities_Filter()
+        public void CopyEntitiesTo_Filter()
         {
             _destContext = EcsContexts.CreateContext("DestContext");
 
-            var filter = new EntityFilter()
+            var filter = Context.Filters
                 .WhereAllOf<TestComponent1>();
 
             var entities = CreateTestEntities();
 
-            Assert_CopyEntities_Filter(filter, entities, false);
-            Assert_CopyEntities_Filter(filter, entities, true);
+            Assert_CopyEntitiesTo_Filter(filter, entities);
 
             EcsContexts.DestroyContext(Context);
             EcsContexts.DestroyContext(_destContext);
-            Assert_CopyEntities_Filter_ContextDestroyed(filter, false);
-            Assert_CopyEntities_Filter_ContextDestroyed(filter, true);
+            Assert_CopyEntitiesTo_Filter_ContextDestroyed(filter);
         }
 
         [TestMethod]
-        public void CopyEntities_Tracker()
+        public void CopyEntitiesTo_Tracker()
         {
             _destContext = EcsContexts.CreateContext("DestContext");
 
-            var tracker = Context.Tracking.CreateTracker("Tracker");
-            tracker.SetComponentState<TestComponent1>(EntityTrackerState.Added);
-            tracker.StartTracking();
+            var tracker = Context.Tracking.CreateTracker("Tracker")
+                .SetTrackingState<TestComponent1>(TrackingState.Added)
+                .StartTracking();
 
             var entities = CreateTestEntities();
 
-            Assert_CopyEntities_Tracker(tracker, entities, false);
-            Assert_CopyEntities_Tracker(tracker, entities, true);
+            Assert_CopyEntitiesTo_Tracker(tracker, entities);
 
             EcsContexts.DestroyContext(Context);
             EcsContexts.DestroyContext(_destContext);
-            Assert_CopyEntities_Tracker_ContextDestroyed(tracker, false);
-            Assert_CopyEntities_Tracker_ContextDestroyed(tracker, true);
+            var emptyEntities = new Entity[0];
+            Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
+                _destContext.Entities.CopyEntitiesTo(tracker), "Context Destroyed");
+            Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
+                _destContext.Entities.CopyEntitiesTo(tracker, ref emptyEntities), "Ref Context Destroyed");
+            Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
+                _destContext.Entities.CopyEntitiesTo(tracker, ref emptyEntities, 0),
+                "Ref StartingIndex Context Destroyed");
         }
 
         [TestMethod]
-        public void CopyEntities_Query()
+        public void CopyEntitiesTo_Query()
         {
             _destContext = EcsContexts.CreateContext("DestContext");
 
-            var filter = new EntityFilter()
+            var filter = Context.Filters
                 .WhereAllOf<TestComponent1>();
 
-            var queryFilter = new EntityQuery(Context, filter);
-
-            var queryFilterTracker = new EntityQuery(Context.Tracking.CreateTracker("Tracker1"),
-                filter);
-            queryFilterTracker.Tracker.SetComponentState<TestComponent1>(EntityTrackerState.Added);
-            queryFilterTracker.Tracker.StartTracking();
+            var queryFilterTracker = Context.Queries
+                .SetFilter(filter)
+                .SetTracker(Context.Tracking.CreateTracker("Tracker1")
+                    .SetTrackingState<TestComponent1>(TrackingState.Added)
+                    .StartTracking());
 
             var entities = CreateTestEntities();
 
-            Assert_CopyEntities_Query(queryFilter, queryFilterTracker, entities, false);
-            Assert_CopyEntities_Query(queryFilter, queryFilterTracker, entities, true);
+            Assert_CopyEntitiesTo_Query(queryFilterTracker, entities);
 
             EcsContexts.DestroyContext(Context);
             EcsContexts.DestroyContext(_destContext);
-            Assert_CopyEntities_Query_ContextDestroyed(queryFilter, queryFilterTracker, false);
-            Assert_CopyEntities_Query_ContextDestroyed(queryFilter, queryFilterTracker, true);
+            var emptyEntities = new Entity[0];
+            Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
+                _destContext.Entities.CopyEntitiesTo(queryFilterTracker), "Context Destroyed");
+            Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
+                _destContext.Entities.CopyEntitiesTo(queryFilterTracker, ref emptyEntities), "Ref Context Destroyed");
+            Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
+                _destContext.Entities.CopyEntitiesTo(queryFilterTracker, ref emptyEntities, 0),
+                "Ref StartingIndex Context Destroyed");
         }
 
-        private void Assert_CopyEntity(Entity orgEntity, Entity uniqueEntity, bool isNull)
-        {
-            Entity copyEntity;
-            if (isNull)
-            {
-                copyEntity = _destContext.Entities.CopyEntity(Context.Entities, orgEntity);
-
-                Assert.ThrowsException<EntityNotExistException>(() =>
-                    _destContext.Entities.CopyEntity(Context.Entities, Entity.Null));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntity(Context.Entities, orgEntity));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntity(null, orgEntity));
-                Assert.ThrowsException<EntityUniqueComponentExistsException>(() =>
-                    _destContext.Entities.CopyEntity(Context.Entities, uniqueEntity));
-            }
-            else
-            {
-                copyEntity = _destContext.Entities.CopyEntity(Context.Entities, orgEntity, _nonNullState);
-
-                Assert.ThrowsException<EntityNotExistException>(() =>
-                    _destContext.Entities.CopyEntity(Context.Entities, Entity.Null, _nonNullState));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntity(Context.Entities, orgEntity, _nonNullState));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntity(null, orgEntity, _nonNullState));
-                Assert.ThrowsException<EntityUniqueComponentExistsException>(() =>
-                    _destContext.Entities.CopyEntity(Context.Entities, uniqueEntity, _nonNullState));
-            }
-
-            Assert.IsTrue(_destContext.Entities.GetComponent<TestComponent1>(copyEntity).Prop == orgEntity.Id);
-            Assert.IsTrue(_destContext.Entities.GetSharedComponent<TestSharedComponent1>(copyEntity).Prop == 2);
-            Assert.IsTrue(_destContext.Entities.GetEntityState(copyEntity) == (isNull
-                ? _orgState
-                : _nonNullState));
-        }
-
-        private void Assert_CopyEntity_ContextDestroyed(Entity entity)
-        {
-            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.Entities.CopyEntity(_destContext.Entities, entity));
-            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.Entities.CopyEntity(_destContext.Entities, entity, _nonNullState));
-        }
-
-        private void Assert_CopyEntities(Entity[] orgEntities, bool isNull)
+        private void Assert_CopyEntitiesTo(Entity[] orgEntities)
         {
             AssertGetInRef_Valid_Invalid_StartingIndex_Null_OutOfRange(
                 () => orgEntities,
                 () => new[] { Entity.Null, Entity.Null, Entity.Null, Entity.Null },
-                x => isNull
-                    ? _destContext.Entities.CopyEntities(Context.Entities, x)
-                    : _destContext.Entities.CopyEntities(Context.Entities, x, _nonNullState),
-                (x, startingIndex) => isNull
-                    ? _destContext.Entities.CopyEntities(Context.Entities, x, startingIndex)
-                    : _destContext.Entities.CopyEntities(Context.Entities, x, startingIndex, _nonNullState),
-                (x, startingIndex, count) => isNull
-                    ? _destContext.Entities.CopyEntities(Context.Entities, x, startingIndex, count)
-                    : _destContext.Entities.CopyEntities(Context.Entities, x, startingIndex, count, _nonNullState),
+                x => _destContext.Entities.CopyEntitiesTo(Context.Entities, x),
+                (x, startingIndex) =>
+                    _destContext.Entities.CopyEntitiesTo(Context.Entities, x, startingIndex),
+                (x, startingIndex, count) =>
+                    _destContext.Entities.CopyEntitiesTo(Context.Entities, x, startingIndex, count),
                 (inSrc, x) =>
                 {
-                    var count = isNull
-                        ? _destContext.Entities.CopyEntities(Context.Entities, inSrc, ref x)
-                        : _destContext.Entities.CopyEntities(Context.Entities, inSrc, ref x, _nonNullState);
+                    var count = _destContext.Entities.CopyEntitiesTo(Context.Entities, inSrc, ref x);
                     return (x, count);
                 },
                 (inSrc, startingIndex, x) =>
                 {
-                    var count = isNull
-                        ? _destContext.Entities.CopyEntities(Context.Entities, inSrc, startingIndex, ref x)
-                        : _destContext.Entities.CopyEntities(Context.Entities, inSrc, startingIndex, ref x, _nonNullState);
+                    var count = _destContext.Entities.CopyEntitiesTo(Context.Entities, inSrc, startingIndex, ref x);
                     return (x, count);
                 },
                 (inSrc, startingIndex, count, x) =>
                 {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(Context.Entities, inSrc, startingIndex, count, ref x);
-                    else
-                        _destContext.Entities.CopyEntities(Context.Entities, inSrc, startingIndex, count, ref x, _nonNullState);
+                    _destContext.Entities.CopyEntitiesTo(Context.Entities, inSrc, startingIndex, count, ref x);
                     return x;
                 },
                 (inSrc, x, destStartingIndex) =>
                 {
-                    var count = isNull
-                        ? _destContext.Entities.CopyEntities(Context.Entities, inSrc, ref x, destStartingIndex)
-                        : _destContext.Entities.CopyEntities(Context.Entities, inSrc, ref x, destStartingIndex, _nonNullState);
+                    var count = _destContext.Entities.CopyEntitiesTo(Context.Entities, inSrc, ref x, destStartingIndex);
                     return (x, count);
                 },
                 (inSrc, startingIndex, x, destStartingIndex) =>
                 {
-                    var count = isNull
-                        ? _destContext.Entities.CopyEntities(Context.Entities, inSrc, startingIndex, ref x, destStartingIndex)
-                        : _destContext.Entities.CopyEntities(Context.Entities, inSrc, startingIndex, ref x, destStartingIndex, _nonNullState);
+                    var count = _destContext.Entities.CopyEntitiesTo(Context.Entities, inSrc, startingIndex, ref x, destStartingIndex);
                     return (x, count);
                 },
                 (inSrc, startingIndex, count, x, destStartingIndex) =>
                 {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(Context.Entities, inSrc, startingIndex, count, ref x, destStartingIndex);
-                    else
-                        _destContext.Entities.CopyEntities(Context.Entities, inSrc, startingIndex, count, ref x, destStartingIndex, _nonNullState);
+                    _destContext.Entities.CopyEntitiesTo(Context.Entities, inSrc, startingIndex, count, ref x, destStartingIndex);
                     return x;
                 },
                 (inSrc, startingIndex, outRef, destStartingIndex, destCount) =>
@@ -253,184 +195,107 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     }
                     else
                     {
-                        result = AssertEntities(inSrc, startingIndex, outRef, destStartingIndex, destCount,
-                            isNull
-                                ? _orgState
-                                : _nonNullState);
+                        result = AssertEntities(inSrc, startingIndex, outRef, destStartingIndex, destCount);
                     }
                     return result;
                 });
 
             var emptyEntities = new Entity[0];
             EntityManager nullEntities = null;
-            if (isNull)
-            {
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, orgEntities));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, orgEntities, 0));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, orgEntities, 0, 1));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, orgEntities, ref emptyEntities));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, orgEntities, 0, ref emptyEntities));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, orgEntities, 0, 1, ref emptyEntities));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, orgEntities, ref emptyEntities, 0));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, orgEntities, 0, ref emptyEntities, 0));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, orgEntities, 0, 1, ref emptyEntities, 0));
 
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, orgEntities));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, orgEntities, 0));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, orgEntities, 0, 1));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, orgEntities, ref emptyEntities));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, orgEntities, 0, ref emptyEntities));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, orgEntities, 0, 1, ref emptyEntities));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, orgEntities, ref emptyEntities, 0));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, orgEntities, 0, ref emptyEntities, 0));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, orgEntities, 0, 1, ref emptyEntities, 0));
-            }
-            else
-            {
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, orgEntities, _nonNullState));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, orgEntities, 0, _nonNullState));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, orgEntities, 0, 1, _nonNullState));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, orgEntities, ref emptyEntities, _nonNullState));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, orgEntities, 0, ref emptyEntities, _nonNullState));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, orgEntities, 0, 1, ref emptyEntities, _nonNullState));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, orgEntities, ref emptyEntities, 0, _nonNullState));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, orgEntities, 0, ref emptyEntities, 0, _nonNullState));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, orgEntities, 0, 1, ref emptyEntities, 0, _nonNullState));
+            Assert.ThrowsException<EntityCopyToSameContextException>(() =>
+                Context.Entities.CopyEntitiesTo(Context.Entities, orgEntities));
+            Assert.ThrowsException<EntityCopyToSameContextException>(() =>
+                Context.Entities.CopyEntitiesTo(Context.Entities, orgEntities, 0));
+            Assert.ThrowsException<EntityCopyToSameContextException>(() =>
+                Context.Entities.CopyEntitiesTo(Context.Entities, orgEntities, 0, 1));
+            Assert.ThrowsException<EntityCopyToSameContextException>(() =>
+                Context.Entities.CopyEntitiesTo(Context.Entities, orgEntities, ref emptyEntities));
+            Assert.ThrowsException<EntityCopyToSameContextException>(() =>
+                Context.Entities.CopyEntitiesTo(Context.Entities, orgEntities, 0, ref emptyEntities));
+            Assert.ThrowsException<EntityCopyToSameContextException>(() =>
+                Context.Entities.CopyEntitiesTo(Context.Entities, orgEntities, 0, 1, ref emptyEntities));
+            Assert.ThrowsException<EntityCopyToSameContextException>(() =>
+                Context.Entities.CopyEntitiesTo(Context.Entities, orgEntities, ref emptyEntities, 0));
+            Assert.ThrowsException<EntityCopyToSameContextException>(() =>
+                Context.Entities.CopyEntitiesTo(Context.Entities, orgEntities, 0, ref emptyEntities, 0));
+            Assert.ThrowsException<EntityCopyToSameContextException>(() =>
+                Context.Entities.CopyEntitiesTo(Context.Entities, orgEntities, 0, 1, ref emptyEntities, 0));
 
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, orgEntities, _nonNullState));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, orgEntities, 0, _nonNullState));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, orgEntities, 0, 1, _nonNullState));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, orgEntities, ref emptyEntities, _nonNullState));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, orgEntities, 0, ref emptyEntities, _nonNullState));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, orgEntities, 0, 1, ref emptyEntities, _nonNullState));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, orgEntities, ref emptyEntities, 0, _nonNullState));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, orgEntities, 0, ref emptyEntities, 0, _nonNullState));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, orgEntities, 0, 1, ref emptyEntities, 0, _nonNullState));
-            }
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _destContext.Entities.CopyEntitiesTo(nullEntities, orgEntities));
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _destContext.Entities.CopyEntitiesTo(nullEntities, orgEntities, 0));
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _destContext.Entities.CopyEntitiesTo(nullEntities, orgEntities, 0, 1));
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _destContext.Entities.CopyEntitiesTo(nullEntities, orgEntities, ref emptyEntities));
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _destContext.Entities.CopyEntitiesTo(nullEntities, orgEntities, 0, ref emptyEntities));
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _destContext.Entities.CopyEntitiesTo(nullEntities, orgEntities, 0, 1, ref emptyEntities));
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _destContext.Entities.CopyEntitiesTo(nullEntities, orgEntities, ref emptyEntities, 0));
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _destContext.Entities.CopyEntitiesTo(nullEntities, orgEntities, 0, ref emptyEntities, 0));
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _destContext.Entities.CopyEntitiesTo(nullEntities, orgEntities, 0, 1, ref emptyEntities, 0));
         }
 
-        private void Assert_CopyEntities_ContextDestroyed(bool isNull) => AssertGetInRef_ContextDestroyed<Entity, Entity>(
+        private void Assert_CopyEntitiesTo_ContextDestroyed()
+            => AssertGetInRef_ContextDestroyed<Entity, Entity>(
                 x =>
                 {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(Context.Entities, x);
-                    else
-                        _destContext.Entities.CopyEntities(Context.Entities, x, EntityState.Active);
+                    _destContext.Entities.CopyEntitiesTo(Context.Entities, x);
                 },
                 (x, startingIndex) =>
                 {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(Context.Entities, x, startingIndex);
-                    else
-                        _destContext.Entities.CopyEntities(Context.Entities, x, startingIndex, EntityState.Active);
+                    _destContext.Entities.CopyEntitiesTo(Context.Entities, x, startingIndex);
                 },
                 (x, startingIndex, count) =>
                 {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(Context.Entities, x, startingIndex, count);
-                    else
-                        _destContext.Entities.CopyEntities(Context.Entities, x, startingIndex, count, EntityState.Active);
+                    _destContext.Entities.CopyEntitiesTo(Context.Entities, x, startingIndex, count);
                 },
                 (inSrc, x) =>
                 {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(Context.Entities, inSrc, ref x);
-                    else
-                        _destContext.Entities.CopyEntities(Context.Entities, inSrc, ref x, EntityState.Active);
+                    _destContext.Entities.CopyEntitiesTo(Context.Entities, inSrc, ref x);
                 },
                 (inSrc, startingIndex, x) =>
                 {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(Context.Entities, inSrc, startingIndex, ref x);
-                    else
-                        _destContext.Entities.CopyEntities(Context.Entities, inSrc, startingIndex, ref x, EntityState.Active);
+                    _destContext.Entities.CopyEntitiesTo(Context.Entities, inSrc, startingIndex, ref x);
                 },
                 (inSrc, startingIndex, count, x) =>
                 {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(Context.Entities, inSrc, startingIndex, count, ref x);
-                    else
-                        _destContext.Entities.CopyEntities(Context.Entities, inSrc, startingIndex, count, ref x, EntityState.Active);
+                    _destContext.Entities.CopyEntitiesTo(Context.Entities, inSrc, startingIndex, count, ref x);
                 },
                 (inSrc, x, destStartingIndex) =>
                 {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(Context.Entities, inSrc, ref x, destStartingIndex);
-                    else
-                        _destContext.Entities.CopyEntities(Context.Entities, inSrc, ref x, destStartingIndex, EntityState.Active);
+                     _destContext.Entities.CopyEntitiesTo(Context.Entities, inSrc, ref x, destStartingIndex);
                 },
                 (inSrc, startingIndex, x, destStartingIndex) =>
                 {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(Context.Entities, inSrc, startingIndex, ref x, destStartingIndex);
-                    else
-                        _destContext.Entities.CopyEntities(Context.Entities, inSrc, startingIndex, ref x, destStartingIndex, EntityState.Active);
+                    _destContext.Entities.CopyEntitiesTo(Context.Entities, inSrc, startingIndex, ref x, destStartingIndex);
                 },
                 (inSrc, startingIndex, count, x, destStartingIndex) =>
                 {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(Context.Entities, inSrc, startingIndex, count, ref x, destStartingIndex);
-                    else
-                        _destContext.Entities.CopyEntities(Context.Entities, inSrc, startingIndex, count, ref x, destStartingIndex, EntityState.Active);
+                    _destContext.Entities.CopyEntitiesTo(Context.Entities, inSrc, startingIndex, count, ref x, destStartingIndex);
                 });
 
-        private void Assert_CopyEntities_ArcheType(EntityArcheType archeType, Entity[] orgEntities, bool isNull)
+        private void Assert_CopyEntitiesTo_ArcheType(EntityArcheType archeType, Entity[] orgEntities)
         {
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
                 () =>
                 {
-                    return isNull
-                        ? _destContext.Entities.CopyEntities(Context.Entities, archeType)
-                        : _destContext.Entities.CopyEntities(Context.Entities, archeType, _nonNullState);
+                    return _destContext.Entities.CopyEntitiesTo(archeType);
                 },
                 x =>
                 {
-                    var count = isNull
-                        ? _destContext.Entities.CopyEntities(Context.Entities, archeType, ref x)
-                        : _destContext.Entities.CopyEntities(Context.Entities, archeType, ref x, _nonNullState);
+                    var count = _destContext.Entities.CopyEntitiesTo(archeType, ref x);
                     return (x, count);
                 },
                 (x, startingIndex) =>
                 {
-                    var count = isNull
-                        ? _destContext.Entities.CopyEntities(Context.Entities, archeType, ref x, startingIndex)
-                        : _destContext.Entities.CopyEntities(Context.Entities, archeType, ref x, startingIndex, _nonNullState);
+                    var count = _destContext.Entities.CopyEntitiesTo(archeType, ref x, startingIndex);
                     return (x, count);
                 },
                 (x, startingIndex, count) =>
@@ -443,10 +308,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     }
                     else
                     {
-                        result = AssertEntities(orgEntities, 0, x, startingIndex, orgEntities.Length,
-                            isNull
-                                ? _orgState
-                                : _nonNullState);
+                        result = AssertEntities(orgEntities, 0, x, startingIndex, orgEntities.Length);
                         if (result.Success)
                             _destContext.Entities.DestroyEntities(x, startingIndex);
                     }
@@ -454,121 +316,51 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 });
 
             var emptyEntities = new Entity[0];
-            AssertArcheType_Invalid_Null(
-                new Action<EntityArcheType>[]
-                {
-                    x =>
-                    {
-                        if (isNull)
-                            _destContext.Entities.CopyEntities(Context.Entities, x);
-                        else
-                            _destContext.Entities.CopyEntities(Context.Entities, x, _nonNullState);
-                    },
-                    x =>
-                    {
-                        if (isNull)
-                            _destContext.Entities.CopyEntities(Context.Entities, x, ref emptyEntities);
-                        else
-                            _destContext.Entities.CopyEntities(Context.Entities, x, ref emptyEntities, _nonNullState);
-                    },
-                    x =>
-                    {
-                        if (isNull)
-                            _destContext.Entities.CopyEntities(Context.Entities, x, ref emptyEntities, 0);
-                        else
-                            _destContext.Entities.CopyEntities(Context.Entities, x, ref emptyEntities, 0, _nonNullState);
-                    }
-                });
-
-            EntityManager nullEntities = null;
-            if (isNull)
-            {
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, archeType));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, archeType, ref emptyEntities));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, archeType, ref emptyEntities, 0));
-
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, archeType));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, archeType, ref emptyEntities));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, archeType, ref emptyEntities, 0));
-            }
-            else
-            {
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, archeType, _nonNullState));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, archeType, ref emptyEntities, _nonNullState));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, archeType, ref emptyEntities, 0, _nonNullState));
-
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, archeType, _nonNullState));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, archeType, ref emptyEntities, _nonNullState));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, archeType, ref emptyEntities, 0, _nonNullState));
-            }
+            EntityArcheType nullable = null;
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _destContext.Entities.CopyEntitiesTo(nullable));
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _destContext.Entities.CopyEntitiesTo(nullable, ref emptyEntities));
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _destContext.Entities.CopyEntitiesTo(nullable, ref emptyEntities, 0));
         }
 
-        private void Assert_CopyEntities_ArcheType_ContextDestroyed(EntityArcheType archeType, bool isNull)
+        private void Assert_CopyEntitiesTo_ArcheType_ContextDestroyed(EntityArcheType archeType)
         {
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
             {
-                if (isNull)
-                    _destContext.Entities.CopyEntities(Context.Entities, archeType);
-                else
-                    _destContext.Entities.CopyEntities(Context.Entities, archeType, _nonNullState);
+                _destContext.Entities.CopyEntitiesTo(archeType);
             });
             AssertGetRef_ContextDestroyed<Entity>(
                 () =>
                 {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(Context.Entities, archeType);
-                    else
-                        _destContext.Entities.CopyEntities(Context.Entities, archeType, _nonNullState);
+                    _destContext.Entities.CopyEntitiesTo(archeType);
                 },
                 x =>
                 {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(Context.Entities, archeType, ref x);
-                    else
-                        _destContext.Entities.CopyEntities(Context.Entities, archeType, ref x, _nonNullState);
+                    _destContext.Entities.CopyEntitiesTo(archeType, ref x);
                 },
                 (x, startingIndex) =>
                 {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(Context.Entities, archeType, ref x, startingIndex);
-                    else
-                        _destContext.Entities.CopyEntities(Context.Entities, archeType, ref x, startingIndex, _nonNullState);
+                    _destContext.Entities.CopyEntitiesTo(archeType, ref x, startingIndex);
                 });
         }
 
-        private void Assert_CopyEntities_Filter(EntityFilter filter, Entity[] orgEntities, bool isNull)
+        private void Assert_CopyEntitiesTo_Filter(EntityFilter filter, Entity[] orgEntities)
         {
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
                 () =>
                 {
-                    return isNull
-                        ? _destContext.Entities.CopyEntities(Context.Entities, filter)
-                        : _destContext.Entities.CopyEntities(Context.Entities, filter, _nonNullState);
+                    return _destContext.Entities.CopyEntitiesTo(filter);
                 },
                 x =>
                 {
-                    var count = isNull
-                        ? _destContext.Entities.CopyEntities(Context.Entities, filter, ref x)
-                        : _destContext.Entities.CopyEntities(Context.Entities, filter, ref x, _nonNullState);
+                    var count = _destContext.Entities.CopyEntitiesTo(filter, ref x);
                     return (x, count);
                 },
                 (x, startingIndex) =>
                 {
-                    var count = isNull
-                        ? _destContext.Entities.CopyEntities(Context.Entities, filter, ref x, startingIndex)
-                        : _destContext.Entities.CopyEntities(Context.Entities, filter, ref x, startingIndex, _nonNullState);
+                    var count = _destContext.Entities.CopyEntitiesTo(filter, ref x, startingIndex);
                     return (x, count);
                 },
                 (x, startingIndex, count) =>
@@ -581,10 +373,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     }
                     else
                     {
-                        result = AssertEntities(orgEntities, 0, x, startingIndex, orgEntities.Length,
-                            isNull
-                                ? _orgState
-                                : _nonNullState);
+                        result = AssertEntities(orgEntities, 0, x, startingIndex, orgEntities.Length);
                         if (result.Success)
                             _destContext.Entities.DestroyEntities(x, startingIndex);
                     }
@@ -597,116 +386,63 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 {
                     x =>
                     {
-                        if (isNull)
-                            _destContext.Entities.CopyEntities(Context.Entities, x);
-                        else
-                            _destContext.Entities.CopyEntities(Context.Entities, x, _nonNullState);
+                        _destContext.Entities.CopyEntitiesTo(x);
                     },
                     x =>
                     {
-                        if (isNull)
-                            _destContext.Entities.CopyEntities(Context.Entities, x, ref emptyEntities);
-                        else
-                            _destContext.Entities.CopyEntities(Context.Entities, x, ref emptyEntities, _nonNullState);
+                        _destContext.Entities.CopyEntitiesTo(x, ref emptyEntities);
                     },
                     x =>
                     {
-                        if (isNull)
-                            _destContext.Entities.CopyEntities(Context.Entities, x, ref emptyEntities, 0);
-                        else
-                            _destContext.Entities.CopyEntities(Context.Entities, x, ref emptyEntities, 0, _nonNullState);
+                        _destContext.Entities.CopyEntitiesTo(x, ref emptyEntities, 0);
                     }
                 });
 
             EntityManager nullEntities = null;
-            if (isNull)
-            {
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, filter));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, filter, ref emptyEntities));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, filter, ref emptyEntities, 0));
-
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, filter));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, filter, ref emptyEntities));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, filter, ref emptyEntities, 0));
-            }
-            else
-            {
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, filter, _nonNullState));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, filter, ref emptyEntities, _nonNullState));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(Context.Entities, filter, ref emptyEntities, 0, _nonNullState));
-
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, filter, _nonNullState));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, filter, ref emptyEntities, _nonNullState));
-                Assert.ThrowsException<ArgumentNullException>(() =>
-                    _destContext.Entities.CopyEntities(nullEntities, filter, ref emptyEntities, 0, _nonNullState));
-            }
+            Assert.ThrowsException<EntityCopyToSameContextException>(() =>
+                    Context.Entities.CopyEntitiesTo(filter));
+            Assert.ThrowsException<EntityCopyToSameContextException>(() =>
+                Context.Entities.CopyEntitiesTo(filter, ref emptyEntities));
+            Assert.ThrowsException<EntityCopyToSameContextException>(() =>
+                Context.Entities.CopyEntitiesTo(filter, ref emptyEntities, 0));
         }
 
-        private void Assert_CopyEntities_Filter_ContextDestroyed(EntityFilter filter, bool isNull)
+        private void Assert_CopyEntitiesTo_Filter_ContextDestroyed(EntityFilter filter)
         {
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
             {
-                if (isNull)
-                    _destContext.Entities.CopyEntities(Context.Entities, filter);
-                else
-                    _destContext.Entities.CopyEntities(Context.Entities, filter, _nonNullState);
+                _destContext.Entities.CopyEntitiesTo(filter);
             });
             AssertGetRef_ContextDestroyed<Entity>(
                 () =>
                 {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(Context.Entities, filter);
-                    else
-                        _destContext.Entities.CopyEntities(Context.Entities, filter, _nonNullState);
+                    _destContext.Entities.CopyEntitiesTo(filter);
                 },
                 x =>
                 {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(Context.Entities, filter, ref x);
-                    else
-                        _destContext.Entities.CopyEntities(Context.Entities, filter, ref x, _nonNullState);
+                    _destContext.Entities.CopyEntitiesTo(filter, ref x);
                 },
                 (x, startingIndex) =>
                 {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(Context.Entities, filter, ref x, startingIndex);
-                    else
-                        _destContext.Entities.CopyEntities(Context.Entities, filter, ref x, startingIndex, _nonNullState);
+                    _destContext.Entities.CopyEntitiesTo(filter, ref x, startingIndex);
                 });
         }
 
-        private void Assert_CopyEntities_Tracker(EntityTracker tracker, Entity[] orgEntities, bool isNull)
+        private void Assert_CopyEntitiesTo_Tracker(EntityTracker tracker, Entity[] orgEntities)
         {
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange<Entity>(
                 () =>
                 {
-                    return isNull
-                        ? _destContext.Entities.CopyEntities(tracker)
-                        : _destContext.Entities.CopyEntities(tracker, _nonNullState);
+                    return _destContext.Entities.CopyEntitiesTo(tracker);
                 },
                 x =>
                 {
-                    var count = isNull
-                        ? _destContext.Entities.CopyEntities(tracker, ref x)
-                        : _destContext.Entities.CopyEntities(tracker, ref x, _nonNullState);
+                    var count = _destContext.Entities.CopyEntitiesTo(tracker, ref x);
                     return (x, count);
                 },
                 (x, startingIndex) =>
                 {
-                    var count = isNull
-                        ? _destContext.Entities.CopyEntities(tracker, ref x, startingIndex)
-                        : _destContext.Entities.CopyEntities(tracker, ref x, startingIndex, _nonNullState);
+                    var count = _destContext.Entities.CopyEntitiesTo(tracker, ref x, startingIndex);
                     return (x, count);
                 },
                 (x, startingIndex, count) =>
@@ -719,10 +455,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     }
                     else
                     {
-                        result = AssertEntities(orgEntities, 0, x, startingIndex, orgEntities.Length,
-                            isNull
-                                ? _orgState
-                                : _nonNullState);
+                        result = AssertEntities(orgEntities, 0, x, startingIndex, orgEntities.Length);
                         if (result.Success)
                             _destContext.Entities.DestroyEntities(x, startingIndex);
                     }
@@ -739,101 +472,41 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 {
                     x =>
                     {
-                        if (isNull)
-                            _destContext.Entities.CopyEntities(x);
-                        else
-                            _destContext.Entities.CopyEntities(x, _nonNullState);
+                        _destContext.Entities.CopyEntitiesTo(x);
                     },
                     x =>
                     {
-                        if (isNull)
-                            _destContext.Entities.CopyEntities(x, ref emptyEntities);
-                        else
-                            _destContext.Entities.CopyEntities(x, ref emptyEntities, _nonNullState);
+                        _destContext.Entities.CopyEntitiesTo(x, ref emptyEntities);
                     },
                     x =>
                     {
-                        if (isNull)
-                            _destContext.Entities.CopyEntities(x, ref emptyEntities, 0);
-                        else
-                            _destContext.Entities.CopyEntities(x, ref emptyEntities, 0, _nonNullState);
+                        _destContext.Entities.CopyEntitiesTo(x, ref emptyEntities, 0);
                     }
                 });
 
-            if (isNull)
-            {
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(tracker));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(tracker, ref emptyEntities));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(tracker, ref emptyEntities, 0));
-            }
-            else
-            {
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(tracker, _nonNullState));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(tracker, ref emptyEntities, _nonNullState));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(tracker, ref emptyEntities, 0, _nonNullState));
-            }
+            Assert.ThrowsException<EntityCopyToSameContextException>(() =>
+                Context.Entities.CopyEntitiesTo(tracker));
+            Assert.ThrowsException<EntityCopyToSameContextException>(() =>
+                Context.Entities.CopyEntitiesTo(tracker, ref emptyEntities));
+            Assert.ThrowsException<EntityCopyToSameContextException>(() =>
+                Context.Entities.CopyEntitiesTo(tracker, ref emptyEntities, 0));
         }
 
-        private void Assert_CopyEntities_Tracker_ContextDestroyed(EntityTracker tracker, bool isNull)
-        {
-            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-            {
-                if (isNull)
-                    Context.Entities.CopyEntities(tracker);
-                else
-                    Context.Entities.CopyEntities(tracker, _nonNullState);
-            });
-            AssertGetRef_ContextDestroyed<Entity>(
-                () =>
-                {
-                    if (isNull)
-                        Context.Entities.CopyEntities(tracker);
-                    else
-                        Context.Entities.CopyEntities(tracker, _nonNullState);
-                },
-                x =>
-                {
-                    if (isNull)
-                        Context.Entities.CopyEntities(tracker, ref x);
-                    else
-                        Context.Entities.CopyEntities(tracker, ref x, _nonNullState);
-                },
-                (x, startingIndex) =>
-                {
-                    if (isNull)
-                        Context.Entities.CopyEntities(tracker, ref x, startingIndex);
-                    else
-                        Context.Entities.CopyEntities(tracker, ref x, startingIndex, _nonNullState);
-                });
-        }
-
-        private void Assert_CopyEntities_Query(EntityQuery queryFilter, EntityQuery queryFilterTracker, Entity[] orgEntities, bool isNull)
+        private void Assert_CopyEntitiesTo_Query(EntityQuery queryFilterTracker, Entity[] orgEntities)
         {
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
                 () =>
                 {
-                    return isNull
-                        ? _destContext.Entities.CopyEntities(queryFilter)
-                        : _destContext.Entities.CopyEntities(queryFilter, _nonNullState);
+                    return _destContext.Entities.CopyEntitiesTo(queryFilterTracker);
                 },
                 x =>
                 {
-                    var count = isNull
-                        ? _destContext.Entities.CopyEntities(queryFilter, ref x)
-                        : _destContext.Entities.CopyEntities(queryFilter, ref x, _nonNullState);
+                    var count = _destContext.Entities.CopyEntitiesTo(queryFilterTracker, ref x);
                     return (x, count);
                 },
                 (x, startingIndex) =>
                 {
-                    var count = isNull
-                        ? _destContext.Entities.CopyEntities(queryFilter, ref x, startingIndex)
-                        : _destContext.Entities.CopyEntities(queryFilter, ref x, startingIndex, _nonNullState);
+                    var count = _destContext.Entities.CopyEntitiesTo(queryFilterTracker, ref x, startingIndex);
                     return (x, count);
                 },
                 (x, startingIndex, count) =>
@@ -846,173 +519,36 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     }
                     else
                     {
-                        result = AssertEntities(orgEntities, 0, x, startingIndex, orgEntities.Length,
-                            isNull
-                                ? _orgState
-                                : _nonNullState);
-                        if (result.Success)
-                            _destContext.Entities.DestroyEntities(x, startingIndex);
-                    }
-                    return result;
-                });
-            AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
-                () =>
-                {
-                    return isNull
-                        ? _destContext.Entities.CopyEntities(queryFilterTracker)
-                        : _destContext.Entities.CopyEntities(queryFilterTracker, _nonNullState);
-                },
-                x =>
-                {
-                    var count = isNull
-                        ? _destContext.Entities.CopyEntities(queryFilterTracker, ref x)
-                        : _destContext.Entities.CopyEntities(queryFilterTracker, ref x, _nonNullState);
-                    return (x, count);
-                },
-                (x, startingIndex) =>
-                {
-                    var count = isNull
-                        ? _destContext.Entities.CopyEntities(queryFilterTracker, ref x, startingIndex)
-                        : _destContext.Entities.CopyEntities(queryFilterTracker, ref x, startingIndex, _nonNullState);
-                    return (x, count);
-                },
-                (x, startingIndex, count) =>
-                {
-                    var result = new TestResult();
-                    if (x.Length != startingIndex + count)
-                    {
-                        result.Success = false;
-                        result.Error = $"Ref Length: {x.Length}, StartingIndex: {startingIndex}, Count: {count}";
-                    }
-                    else
-                    {
-                        result = AssertEntities(orgEntities, 0, x, startingIndex, orgEntities.Length,
-                            isNull
-                                ? _orgState
-                                : _nonNullState);
+                        result = AssertEntities(orgEntities, 0, x, startingIndex, orgEntities.Length);
                         if (result.Success)
                             _destContext.Entities.DestroyEntities(x, startingIndex);
                     }
                     return result;
                 });
 
-            var destroyedTracker = new EntityQuery(
-                Context.Tracking.CreateTracker("Destroyed"),
-                new EntityFilter().WhereAllOf<TestComponent1>());
-            Context.Tracking.RemoveTracker(destroyedTracker.Tracker);
             var emptyEntities = new Entity[0];
-            AssertQuery_DiffContext_DestroyedTracker_Null(
-                null,
-                destroyedTracker,
-                new Action<EntityQuery>[]
-                {
-                    x =>
-                    {
-                        if (isNull)
-                            _destContext.Entities.CopyEntities(x);
-                        else
-                            _destContext.Entities.CopyEntities(x, _nonNullState);
-                    },
-                    x =>
-                    {
-                        if (isNull)
-                            _destContext.Entities.CopyEntities(x, ref emptyEntities);
-                        else
-                            _destContext.Entities.CopyEntities(x, ref emptyEntities, _nonNullState);
-                    },
-                    x =>
-                    {
-                        if (isNull)
-                            _destContext.Entities.CopyEntities(x, ref emptyEntities, 0);
-                        else
-                            _destContext.Entities.CopyEntities(x, ref emptyEntities, 0, _nonNullState);
-                    }
-                });
+            EntityQuery nullable = null;
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _destContext.Entities.CopyEntitiesTo(nullable), "Null");
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _destContext.Entities.CopyEntitiesTo(nullable, ref emptyEntities), "Null");
+            Assert.ThrowsException<ArgumentNullException>(() =>
+                _destContext.Entities.CopyEntitiesTo(nullable, ref emptyEntities, 0), "Null");
 
-            if (isNull)
-            {
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(queryFilter));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(queryFilter, ref emptyEntities));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(queryFilter, ref emptyEntities, 0));
-            }
-            else
-            {
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(queryFilter, _nonNullState));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(queryFilter, ref emptyEntities, _nonNullState));
-                Assert.ThrowsException<EntityCopySameContextException>(() =>
-                    Context.Entities.CopyEntities(queryFilter, ref emptyEntities, 0, _nonNullState));
-            }
-        }
-
-        private void Assert_CopyEntities_Query_ContextDestroyed(EntityQuery queryFilter, EntityQuery queryFilterTracker, bool isNull)
-        {
-            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-            {
-                if (isNull)
-                    _destContext.Entities.CopyEntities(queryFilter);
-                else
-                    _destContext.Entities.CopyEntities(queryFilter, _nonNullState);
-            });
-            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-            {
-                if (isNull)
-                    _destContext.Entities.CopyEntities(queryFilterTracker);
-                else
-                    _destContext.Entities.CopyEntities(queryFilterTracker, _nonNullState);
-            });
-            AssertGetRef_ContextDestroyed<Entity>(
-                () =>
-                {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(queryFilter);
-                    else
-                        _destContext.Entities.CopyEntities(queryFilter, _nonNullState);
-                },
-                x =>
-                {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(queryFilter, ref x);
-                    else
-                        _destContext.Entities.CopyEntities(queryFilter, ref x, _nonNullState);
-                },
-                (x, startingIndex) =>
-                {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(queryFilter, ref x, startingIndex);
-                    else
-                        _destContext.Entities.CopyEntities(queryFilter, ref x, startingIndex, _nonNullState);
-                });
-            AssertGetRef_ContextDestroyed<Entity>(
-                () =>
-                {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(queryFilterTracker);
-                    else
-                        _destContext.Entities.CopyEntities(queryFilterTracker, _nonNullState);
-                },
-                x =>
-                {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(queryFilterTracker, ref x);
-                    else
-                        _destContext.Entities.CopyEntities(queryFilterTracker, ref x, _nonNullState);
-                },
-                (x, startingIndex) =>
-                {
-                    if (isNull)
-                        _destContext.Entities.CopyEntities(queryFilterTracker, ref x, startingIndex);
-                    else
-                        _destContext.Entities.CopyEntities(queryFilterTracker, ref x, startingIndex, _nonNullState);
-                });
+            var destroyedTracker = Context.Queries
+                .SetTracker(Context.Tracking.CreateTracker("Destroyed"))
+                .SetFilter(Context.Filters.WhereAllOf<TestComponent1>());
+            Context.Tracking.RemoveTracker(destroyedTracker.Tracker);
+            Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
+                _destContext.Entities.CopyEntitiesTo(destroyedTracker), "Tracker Destroyed");
+            Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
+                _destContext.Entities.CopyEntitiesTo(destroyedTracker, ref emptyEntities), "Tracker Destroyed");
+            Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
+                _destContext.Entities.CopyEntitiesTo(destroyedTracker, ref emptyEntities, 0), "Tracker Destroyed");
         }
 
         private TestResult AssertEntities(Entity[] orgEntities, int startingIndex,
-            Entity[] copyEntities, int destStartingIndex, int destCount, EntityState state)
+            Entity[] copyEntities, int destStartingIndex, int destCount)
         {
             var result = new TestResult();
             for (var i = destStartingIndex; i < destCount; i++)
@@ -1022,24 +558,17 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
                 var orgComponent = Context.Entities.GetComponent<TestComponent1>(orgEntity);
                 var copyComponent = _destContext.Entities.GetComponent<TestComponent1>(copyEntity);
-                var copyState = _destContext.Entities.GetEntityState(copyEntity);
 
                 if (_destContext.Entities.GetComponent<TestComponent1>(copyEntity).Prop != orgEntity.Id)
                 {
                     result.Success = false;
-                    result.Error = $"GeneralComponent OrgEntity: {orgEntity}, CopyEntity: {copyEntity}";
+                    result.Error = $"GeneralComponent OrgEntity: {orgEntity}, CopyEntityTo: {copyEntity}";
                     break;
                 }
                 else if (_destContext.Entities.GetSharedComponent<TestSharedComponent1>(copyEntity).Prop != 2)
                 {
                     result.Success = false;
-                    result.Error = $"SharedComponent OrgEntity: {orgEntity}, CopyEntity: {copyEntity}";
-                    break;
-                }
-                else if (_destContext.Entities.GetEntityState(copyEntity) != state)
-                {
-                    result.Success = false;
-                    result.Error = $"EntityState OrgEntity: {orgEntity}, CopyEntity: {copyEntity}";
+                    result.Error = $"SharedComponent OrgEntity: {orgEntity}, CopyEntityTo: {copyEntity}";
                     break;
                 }
             }
@@ -1056,7 +585,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             {
                 blueprint.SetComponent(
                     new TestComponent1 { Prop = Context.Entities.EntityCount() + 1 });
-                entities[i] = Context.Entities.CreateEntity(blueprint, EntityState.Active);
+                entities[i] = Context.Entities.CreateEntity(blueprint);
             }
 
             return entities;

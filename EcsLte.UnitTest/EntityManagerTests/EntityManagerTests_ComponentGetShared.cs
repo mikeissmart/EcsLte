@@ -12,12 +12,11 @@ namespace EcsLte.UnitTest.EntityManagerTests
         {
             var entity = Context.Entities.CreateEntity(
                 new EntityBlueprint()
-                    .SetSharedComponent(new TestSharedComponent1 { Prop = 1 }),
-                EntityState.Active);
+                    .SetSharedComponent(new TestSharedComponent1 { Prop = 1 }));
 
             Assert.IsTrue(Context.Entities.GetSharedComponent<TestSharedComponent1>(entity).Prop == 1);
 
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetSharedComponent<TestSharedComponent2>(entity));
 
             Assert.ThrowsException<EntityNotExistException>(() =>
@@ -31,19 +30,18 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void GetSharedComponent_ArcheType()
         {
-            var archeType = new EntityArcheType()
+            var archeType = Context.ArcheTypes
                     .AddSharedComponent(new TestSharedComponent1 { Prop = 1 });
 
             Context.Entities.CreateEntity(
-                archeType,
-                EntityState.Active);
+                archeType);
 
             Assert.IsTrue(Context.Entities.GetSharedComponent<TestSharedComponent1>(archeType).Prop == 1);
 
-            Assert.ThrowsException<EntityArcheTypeNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetSharedComponent<TestSharedComponent2>(archeType));
 
-            AssertArcheType_Invalid_Null(
+            AssertArcheType_DiffContext_Null(
                 new Action<EntityArcheType>[]
                 {
                     x => Context.Entities.GetSharedComponent<TestSharedComponent1>(x),
@@ -57,14 +55,14 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void GetSharedComponents_Filter()
         {
-            var filter = new EntityFilter()
+            var filter = Context.Filters
                     .WhereAllOf<TestSharedComponent1>();
 
             var blueprint = new EntityBlueprint();
             for (var i = 0; i < 5; i++)
             {
                 blueprint.SetSharedComponent(new TestSharedComponent1 { Prop = i + 1 });
-                Context.Entities.CreateEntity(blueprint, EntityState.Active);
+                Context.Entities.CreateEntity(blueprint);
             }
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
@@ -113,15 +111,15 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void GetComponent_Tracker()
         {
-            var tracker = Context.Tracking.CreateTracker("Tracker");
-            tracker.SetComponentState<TestSharedComponent1>(EntityTrackerState.Added);
-            tracker.StartTracking();
+            var tracker = Context.Tracking.CreateTracker("Tracker")
+                .SetTrackingState<TestSharedComponent1>(TrackingState.Added)
+                .StartTracking();
 
             var blueprint = new EntityBlueprint();
             for (var i = 0; i < 5; i++)
             {
                 blueprint.SetSharedComponent(new TestSharedComponent1 { Prop = i + 1 });
-                Context.Entities.CreateEntity(blueprint, EntityState.Active);
+                Context.Entities.CreateEntity(blueprint);
             }
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
@@ -176,59 +174,30 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void GetComponent_Query()
         {
-            var filter = new EntityFilter()
-                .WhereAllOf<TestSharedComponent1>();
-
-            var queryFilter = new EntityQuery(Context, filter);
-
-            var queryFilterTracker = new EntityQuery(Context.Tracking.CreateTracker("Tracker1"),
-                filter);
-            queryFilterTracker.Tracker.SetComponentState<TestSharedComponent1>(EntityTrackerState.Added);
-            queryFilterTracker.Tracker.StartTracking();
+            var query = Context.Queries
+                .SetFilter(Context.Filters
+                    .WhereAllOf<TestComponent1>())
+                .SetTracker(Context.Tracking.CreateTracker("Tracker1")
+                    .SetTrackingState<TestComponent1>(TrackingState.Added)
+                    .StartTracking());
 
             var blueprint = new EntityBlueprint();
             for (var i = 0; i < 5; i++)
             {
                 blueprint.SetSharedComponent(new TestSharedComponent1 { Prop = i + 1 });
-                Context.Entities.CreateEntity(blueprint, EntityState.Active);
+                Context.Entities.CreateEntity(blueprint);
             }
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
-                () => Context.Entities.GetSharedComponents<TestSharedComponent1>(queryFilter),
+                () => Context.Entities.GetSharedComponents<TestSharedComponent1>(query),
                 x =>
                 {
-                    var count = Context.Entities.GetSharedComponents(queryFilter, ref x);
+                    var count = Context.Entities.GetSharedComponents(query, ref x);
                     return (x, count);
                 },
                 (x, startingIndex) =>
                 {
-                    var count = Context.Entities.GetSharedComponents(queryFilter, ref x, startingIndex);
-                    return (x, count);
-                },
-                (x, startingIndex, count) =>
-                {
-                    var result = new TestResult();
-                    if (x.Length != startingIndex + count)
-                    {
-                        result.Success = false;
-                        result.Error = $"Ref Length: {x.Length}, StartingIndex: {startingIndex}, Count: {count}";
-                    }
-                    else
-                    {
-                        result = AssertSharedComponents(x, startingIndex, count);
-                    }
-                    return result;
-                });
-            AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
-                () => Context.Entities.GetSharedComponents<TestSharedComponent1>(queryFilterTracker),
-                x =>
-                {
-                    var count = Context.Entities.GetSharedComponents(queryFilterTracker, ref x);
-                    return (x, count);
-                },
-                (x, startingIndex) =>
-                {
-                    var count = Context.Entities.GetSharedComponents(queryFilterTracker, ref x, startingIndex);
+                    var count = Context.Entities.GetSharedComponents(query, ref x, startingIndex);
                     return (x, count);
                 },
                 (x, startingIndex, count) =>
@@ -247,10 +216,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 });
 
             var emptyComponents = new TestSharedComponent1[0];
-            Context.Tracking.RemoveTracker(queryFilterTracker.Tracker);
+            Context.Tracking.RemoveTracker(query.Tracker);
             AssertQuery_DiffContext_DestroyedTracker_Null(
-                new EntityQuery(EcsContexts.CreateContext("DiffContext"), filter),
-                queryFilterTracker,
+                query,
                 new Action<EntityQuery>[]
                 {
                     x => Context.Entities.GetSharedComponents<TestSharedComponent1>(x),
@@ -260,9 +228,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             EcsContexts.DestroyContext(Context);
             AssertGetRef_ContextDestroyed<TestSharedComponent1>(
-                () => Context.Entities.GetSharedComponents<TestSharedComponent1>(queryFilter),
-                x => Context.Entities.GetSharedComponents(queryFilter, ref x),
-                (x, startingIndex) => Context.Entities.GetSharedComponents(queryFilter, ref x, startingIndex));
+                () => Context.Entities.GetSharedComponents<TestSharedComponent1>(query),
+                x => Context.Entities.GetSharedComponents(query, ref x),
+                (x, startingIndex) => Context.Entities.GetSharedComponents(query, ref x, startingIndex));
         }
 
         private TestResult AssertSharedComponents(TestSharedComponent1[] components, int startingIndex, int count)

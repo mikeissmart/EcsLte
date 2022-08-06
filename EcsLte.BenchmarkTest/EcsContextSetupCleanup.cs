@@ -1,5 +1,4 @@
-﻿using EcsLte.BenchmarkTest.EntityQueryTests;
-using System;
+﻿using System;
 
 namespace EcsLte.BenchmarkTest
 {
@@ -13,6 +12,10 @@ namespace EcsLte.BenchmarkTest
         public static TestSharedComponent2 SharedComponent2 = new TestSharedComponent2 { Prop = 6 };
         public static TestSharedComponent3 SharedComponent3 = new TestSharedComponent3 { Prop = 7 };
         public static TestSharedComponent4 SharedComponent4 = new TestSharedComponent4 { Prop = 8 };
+        public static TestManagedComponent1 ManagedComponent1 = new TestManagedComponent1 { Prop = 10 };
+        public static TestManagedComponent2 ManagedComponent2 = new TestManagedComponent2 { Prop = 11 };
+        public static TestManagedComponent3 ManagedComponent3 = new TestManagedComponent3 { Prop = 12 };
+        public static TestManagedComponent4 ManagedComponent4 = new TestManagedComponent4 { Prop = 13 };
 
         public static EntityBlueprint CreateBlueprint(ComponentArrangement compArr)
         {
@@ -25,6 +28,14 @@ namespace EcsLte.BenchmarkTest
                         .SetComponent(Component2)
                         .SetComponent(Component3)
                         .SetComponent(Component4);
+                    break;
+
+                case ComponentArrangement.Managed_x4:
+                    blueprint = blueprint
+                        .SetManagedComponent(ManagedComponent1)
+                        .SetManagedComponent(ManagedComponent2)
+                        .SetManagedComponent(ManagedComponent3)
+                        .SetManagedComponent(ManagedComponent4);
                     break;
 
                 case ComponentArrangement.Shared_x4:
@@ -42,7 +53,7 @@ namespace EcsLte.BenchmarkTest
             return blueprint;
         }
 
-        public static EntityBlueprint CreateBlueprint(EntityQuery_ForEach.ReadWriteType rwType)
+        /*public static EntityBlueprint CreateBlueprint(EntityQuery_ForEach.ReadWriteType rwType)
         {
             var blueprint = new EntityBlueprint();
             switch (rwType)
@@ -71,6 +82,6 @@ namespace EcsLte.BenchmarkTest
                     break;
             }
             return blueprint;
-        }
+        }*/
     }
 }

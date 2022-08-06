@@ -1,7 +1,7 @@
 ﻿using EcsLte;
 using System.Collections.Generic;
 
-public class SystemOrder
+/*public class SystemOrder
 {
     public List<SystemBase> Order { get; set; } = new List<SystemBase>();
 }
@@ -204,4 +204,4 @@ public class System_TearDown : SystemBase, ITearDownSystem
             SystemOrder.Order.Add(this);
         TearDownCalledCount++;
     }
-}
+}*/

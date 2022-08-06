@@ -7,54 +7,61 @@ using System.Runtime.Serialization;
 
 namespace EcsLte
 {
-    internal class ComponentConfigs
+    internal static class ComponentConfigs
     {
-        private static ComponentConfigs _instance;
-        private Dictionary<Type, ComponentConfig> _componentConfigTypes;
+        private static ComponentConfigInit _instance = new ComponentConfigInit();
+        private static Dictionary<Type, ComponentConfig> _componentConfigTypes;
 
-        private ComponentConfigs() => Initialize();
+        internal static ComponentConfig[] AllComponentConfigs { get; private set; }
+        internal static ComponentConfig[] AllGeneralConfigs { get; private set; }
+        internal static ComponentConfig[] AllManagedConfigs { get; private set; }
+        internal static ComponentConfig[] AllSharedConfigs { get; private set; }
 
-        internal static ComponentConfigs Instance
-        {
-            get
-            {
-                if (_instance == null)
-                    _instance = new ComponentConfigs();
-                return _instance;
-            }
-        }
+        internal static Type[] AllComponentTypes { get; private set; }
+        internal static Type[] AllGeneralTypes { get; private set; }
+        internal static Type[] AllManagedTypes { get; private set; }
+        internal static Type[] AllSharedTypes { get; private set; }
 
-        internal ComponentConfig[] AllComponentConfigs { get; private set; }
-        internal ComponentConfig[] AllGeneralConfigs { get; private set; }
-        internal ComponentConfig[] AllUniqueConfigs { get; private set; }
-        internal ComponentConfig[] AllSharedConfigs { get; private set; }
+        internal static int[] AllComponentIndexes { get; private set; }
+        internal static int[] AllGeneralIndexes { get; private set; }
+        internal static int[] AllManagedIndexes { get; private set; }
+        internal static int[] AllSharedIndexes { get; private set; }
 
-        internal Type[] AllComponentTypes { get; private set; }
-        internal Type[] AllGeneralTypes { get; private set; }
-        internal Type[] AllUniqueTypes { get; private set; }
-        internal Type[] AllSharedTypes { get; private set; }
+        internal static int AllComponentCount { get => AllComponentConfigs.Length; }
+        internal static int AllGeneralCount { get => AllGeneralConfigs.Length; }
+        internal static int AllManagedCount { get => AllManagedConfigs.Length; }
+        internal static int AllSharedCount { get => AllSharedConfigs.Length; }
 
-        internal int[] AllComponentIndexes { get; private set; }
-        internal int[] AllGeneralIndexes { get; private set; }
-        internal int[] AllUniqueIndexes { get; private set; }
-        internal int[] AllSharedIndexes { get; private set; }
+        internal static IComponentAdapter[] AllComponentAdapters { get; private set; }
+        internal static IComponentAdapter[] AllGeneralAdapters { get; private set; }
+        internal static IComponentAdapter[] AllManagedAdapters { get; private set; }
+        internal static IComponentAdapter[] AllSharedAdapters { get; private set; }
 
-        internal int AllComponentCount => AllComponentConfigs.Length;
-        internal int AllGeneralCount => AllGeneralConfigs.Length;
-        internal int AllUniqueCount => AllUniqueConfigs.Length;
-        internal int AllSharedCount => AllSharedConfigs.Length;
-
-        internal ComponentConfig GetConfig(Type componentType)
+        public static ComponentConfig GetConfig(Type componentType)
             => _componentConfigTypes[componentType];
 
-        internal ComponentConfig GetConfig(int componentIndex)
+        public static ComponentConfig GetConfig(int componentIndex)
             => AllComponentConfigs[componentIndex];
 
-        private void Initialize()
+        internal static IComponentPool[] CreateComponentPools(ComponentConfigOffset[] manageConfigs)
+        {
+            var pools = new IComponentPool[manageConfigs.Length];
+            var poolType = typeof(ComponentPool<>);
+
+            for (var i = 0; i < manageConfigs.Length; i++)
+            {
+                pools[i] = (IComponentPool)Activator.CreateInstance(
+                    poolType.MakeGenericType(AllManagedTypes[manageConfigs[i].Config.ManagedIndex]));
+            }
+
+            return pools;
+        }
+
+        private static void Initialize()
         {
             var iComponentType = typeof(IComponent);
             var iGeneralComponentType = typeof(IGeneralComponent);
-            var iUniqueComponentType = typeof(IUniqueComponent);
+            var iManagedComponentType = typeof(IManagedComponent);
             var iSharedComponentType = typeof(ISharedComponent);
             var equatableType = typeof(IEquatable<>);
             var componentTypes = AppDomain.CurrentDomain.GetAssemblies()
@@ -66,12 +73,14 @@ namespace EcsLte
 
             _componentConfigTypes = new Dictionary<Type, ComponentConfig>();
             var GeneralIndex = 0;
-            var uniqueIndex = 0;
+            var managedIndex = 0;
             var sharedIndex = 0;
-            var sharedNoEquatableOrGetHashCode = new List<Type>();
-            var multipleComponentTypes = new List<Type>();
-            var notBlittableTypes = new List<Type>();
             var configTypes = new List<ConfigType>();
+            var errorSharedNoEquatableOrGetHashCode = new List<Type>();
+            var errorGeneralSharedTypes = new List<Type>();
+            var errorManagedGeneralSharedTypes = new List<Type>();
+            var errorBlittableManagedTypes = new List<Type>();
+            var errorNonBlittableNotManagedTypes = new List<Type>();
 
             foreach (var type in componentTypes.OrderBy(x => x.FullName.ToString()))
             {
@@ -83,12 +92,6 @@ namespace EcsLte
                     config.IsGeneral = true;
                 }
 
-                if (iUniqueComponentType.IsAssignableFrom(type))
-                {
-                    config.UniqueIndex = uniqueIndex++;
-                    config.IsUnique = true;
-                }
-
                 if (iSharedComponentType.IsAssignableFrom(type))
                 {
                     config.SharedIndex = sharedIndex++;
@@ -97,16 +100,31 @@ namespace EcsLte
                     var hasEquatable = type.GetInterfaces().Any(x => x.IsGenericType && x == sharedEquatableType);
                     var getHashOverride = type.GetMethod("GetHashCode").DeclaringType == type;
                     if (!hasEquatable || !getHashOverride)
-                        sharedNoEquatableOrGetHashCode.Add(type);
+                        errorSharedNoEquatableOrGetHashCode.Add(type);
+
+                    if (config.IsGeneral)
+                        errorGeneralSharedTypes.Add(type);
+                }
+
+                if (iManagedComponentType.IsAssignableFrom(type))
+                {
+                    config.ManagedIndex = managedIndex++;
+                    config.IsManaged = true;
+                    if (config.IsShared || config.IsGeneral)
+                        errorManagedGeneralSharedTypes.Add(type);
                 }
 
                 if (IsBlittable(type))
                 {
-                    config.UnmanagedSizeInBytes = Marshal.SizeOf(type);
+                    // TODO need to check how flag components play in unmanaged arrays
+                    config.UnmanagedSizeInBytes = Math.Max(1, Marshal.SizeOf(type));
+                    if (config.IsManaged)
+                        errorBlittableManagedTypes.Add(type);
                 }
                 else
                 {
-                    notBlittableTypes.Add(type);
+                    if (!config.IsManaged)
+                        errorNonBlittableNotManagedTypes.Add(type);
                 }
 
                 configTypes.Add(new ConfigType
@@ -118,18 +136,22 @@ namespace EcsLte
 
             if (configTypes.Count == 0)
                 throw new ComponentNoneException();
-            if (notBlittableTypes.Count > 0)
-                throw new ComponentNotBlittalbeException(notBlittableTypes);
-            if (multipleComponentTypes.Count > 0)
-                throw new ComponentMultipleTypesException(multipleComponentTypes);
-            if (sharedNoEquatableOrGetHashCode.Count > 0)
-                throw new ComponentNoSharedEquatableHashCodeException(sharedNoEquatableOrGetHashCode);
+            if (errorSharedNoEquatableOrGetHashCode.Count > 0)
+                throw new ComponentNoSharedEquatableHashCodeException(errorSharedNoEquatableOrGetHashCode);
+            if (errorGeneralSharedTypes.Count > 0)
+                throw new ComponentGeneralSharedException(errorGeneralSharedTypes);
+            if (errorManagedGeneralSharedTypes.Count > 0)
+                throw new ComponentManagedGeneralSharedException(errorGeneralSharedTypes);
+            if (errorBlittableManagedTypes.Count > 0)
+                throw new ComponentBlittableManagedException(errorBlittableManagedTypes);
+            if (errorNonBlittableNotManagedTypes.Count > 0)
+                throw new ComponentNotBlittableNotManagedException(errorNonBlittableNotManagedTypes);
 
             /*configTypes = configTypes
                 .OrderBy(x => x.Config.BlittableIndex)
                 .ThenBy(x => x.Config.GeneralIndex)
                 .ThenBy(x => x.Config.SharedIndex)
-                .ThenBy(x => x.Config.UniqueIndex)
+                .ThenBy(x => x.Config.ManagedIndex)
                 .ThenBy(x => x.Type.Name)
                 .ToList();*/
 
@@ -149,9 +171,9 @@ namespace EcsLte
                 .Where(x => x.IsGeneral)
                 .OrderBy(x => x.GeneralIndex)
                 .ToArray();
-            AllUniqueConfigs = componentConfigIndexes
-                .Where(x => x.IsUnique)
-                .OrderBy(x => x.UniqueIndex)
+            AllManagedConfigs = componentConfigIndexes
+                .Where(x => x.IsManaged)
+                .OrderBy(x => x.ManagedIndex)
                 .ToArray();
             AllSharedConfigs = componentConfigIndexes
                 .Where(x => x.IsShared)
@@ -167,9 +189,9 @@ namespace EcsLte
                 .OrderBy(x => x.Value.GeneralIndex)
                 .Select(x => x.Key)
                 .ToArray();
-            AllUniqueTypes = _componentConfigTypes
-                .Where(x => x.Value.IsUnique)
-                .OrderBy(x => x.Value.UniqueIndex)
+            AllManagedTypes = _componentConfigTypes
+                .Where(x => x.Value.IsManaged)
+                .OrderBy(x => x.Value.ManagedIndex)
                 .Select(x => x.Key)
                 .ToArray();
             AllSharedTypes = _componentConfigTypes
@@ -187,19 +209,47 @@ namespace EcsLte
                 .OrderBy(x => x.GeneralIndex)
                 .Select(x => x.GeneralIndex)
                 .ToArray();
-            AllUniqueIndexes = componentConfigIndexes
-                .Where(x => x.IsUnique)
-                .OrderBy(x => x.UniqueIndex)
-                .Select(x => x.UniqueIndex)
+            AllManagedIndexes = componentConfigIndexes
+                .Where(x => x.IsManaged)
+                .OrderBy(x => x.ManagedIndex)
+                .Select(x => x.ManagedIndex)
                 .ToArray();
             AllSharedIndexes = componentConfigIndexes
                 .Where(x => x.IsShared)
                 .OrderBy(x => x.SharedIndex)
                 .Select(x => x.SharedIndex)
                 .ToArray();
+
+            var adapterGeneralType = typeof(ComponentGeneralAdapter<>);
+            var adapterManagedType = typeof(ComponentManagedAdapter<>);
+            var adapterSharedType = typeof(ComponentSharedAdapter<>);
+            AllGeneralAdapters = _componentConfigTypes
+                .Where(x => x.Value.IsGeneral)
+                .OrderBy(x => x.Value.GeneralIndex)
+                .Select(x => (IComponentAdapter)Activator.CreateInstance(
+                    adapterGeneralType.MakeGenericType(x.Key)))
+                .ToArray();
+            AllManagedAdapters = _componentConfigTypes
+                .Where(x => x.Value.IsManaged)
+                .OrderBy(x => x.Value.ManagedIndex)
+                .Select(x => (IComponentAdapter)Activator.CreateInstance(
+                    adapterManagedType.MakeGenericType(x.Key)))
+                .ToArray();
+            AllSharedAdapters = _componentConfigTypes
+                .Where(x => x.Value.IsShared)
+                .OrderBy(x => x.Value.SharedIndex)
+                .Select(x => (IComponentAdapter)Activator.CreateInstance(
+                    adapterSharedType.MakeGenericType(x.Key)))
+                .ToArray();
+            var allAdapterList = new List<IComponentAdapter>(AllGeneralAdapters);
+            allAdapterList.AddRange(AllManagedAdapters);
+            allAdapterList.AddRange(AllSharedAdapters);
+            AllComponentAdapters = allAdapterList
+                .OrderBy(x => x.Config.ComponentIndex)
+                .ToArray();
         }
 
-        private bool IsBlittable(Type type)
+        private static bool IsBlittable(Type type)
         {
             try
             {
@@ -217,8 +267,16 @@ namespace EcsLte
 
         private class ConfigType
         {
-            public ComponentConfig Config;
-            public Type Type;
+            internal ComponentConfig Config;
+            internal Type Type;
+        }
+
+        private class ComponentConfigInit
+        {
+            internal ComponentConfigInit()
+            {
+                ComponentConfigs.Initialize();
+            }
         }
     }
 }

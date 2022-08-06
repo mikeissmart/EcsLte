@@ -1,6 +1,7 @@
 ﻿using EcsLte.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace EcsLte.Utilities
 {
@@ -47,15 +48,86 @@ namespace EcsLte.Utilities
             return destination;
         }
 
-        internal static bool HasArcheTypeData(in ArcheTypeData[] archeTypeDatas, ArcheTypeIndex archeTypeIndex)
+        internal static void ResizeRefEntities(ref Entity[] entities, int startingIndex, int count)
         {
-            for (var i = 0; i < archeTypeDatas.Length; i++)
-            {
-                if (archeTypeDatas[i].ArcheTypeIndex == archeTypeIndex)
-                    return true;
-            }
+            if (startingIndex + count > entities.Length)
+                Array.Resize(ref entities, startingIndex + count);
+        }
 
-            return false;
+        internal static void ResizeRefComponents<TComponent>(ref TComponent[] components, int startingIndex, int count)
+            where TComponent : IComponent
+        {
+            if (startingIndex + count > components.Length)
+                Array.Resize(ref components, startingIndex + count);
+        }
+
+        #region Assert
+
+        internal static void AssertEntities(in Entity[] entities, int startingIndex)
+        {
+            if (entities == null)
+                throw new ArgumentNullException(nameof(entities));
+            if (startingIndex < 0 || startingIndex > entities.Length)
+                throw new ArgumentOutOfRangeException(nameof(startingIndex));
+        }
+
+        internal static void AssertEntities(in Entity[] entities, int startingIndex, int count)
+        {
+            if (entities == null)
+                throw new ArgumentNullException(nameof(entities));
+            if (startingIndex < 0 || startingIndex > entities.Length)
+                throw new ArgumentOutOfRangeException(nameof(startingIndex));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            if (startingIndex + count < 0 || startingIndex + count >= entities.Length + 1)
+                throw new ArgumentOutOfRangeException();
+        }
+
+        internal static void AssertAndResizeEntities(ref Entity[] entities, int startingIndex, int count)
+        {
+            if (entities == null)
+                throw new ArgumentNullException(nameof(entities));
+            if (startingIndex < 0 || startingIndex > entities.Length)
+                throw new ArgumentOutOfRangeException(nameof(startingIndex));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+
+            ResizeRefEntities(ref entities, startingIndex, count);
+        }
+
+        internal static void AssertComponents<TComponent>(in TComponent[] components, int startingIndex)
+            where TComponent : IComponent
+        {
+            if (components == null)
+                throw new ArgumentNullException(nameof(components));
+            if (startingIndex < 0 || startingIndex > components.Length)
+                throw new ArgumentOutOfRangeException(nameof(startingIndex));
+        }
+
+        internal static void AssertComponents<TComponent>(in TComponent[] components, int startingIndex, int count)
+            where TComponent : IComponent
+        {
+            if (components == null)
+                throw new ArgumentNullException(nameof(components));
+            if (startingIndex < 0 || startingIndex > components.Length)
+                throw new ArgumentOutOfRangeException(nameof(startingIndex));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            if (startingIndex + count < 0 || startingIndex + count >= components.Length + 1)
+                throw new ArgumentOutOfRangeException();
+        }
+
+        internal static void AssertAndResizeComponents<TComponent>(ref TComponent[] components, int startingIndex, int count)
+            where TComponent : IComponent
+        {
+            if (components == null)
+                throw new ArgumentNullException(nameof(components));
+            if (startingIndex < 0 || startingIndex > components.Length)
+                throw new ArgumentOutOfRangeException(nameof(startingIndex));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+
+            ResizeRefComponents(ref components, startingIndex, count);
         }
 
         internal static void AssertDuplicateConfigs(params ComponentConfig[] configs)
@@ -70,48 +142,6 @@ namespace EcsLte.Utilities
             }
         }
 
-        internal static IComponentData[] CopyAddOrReplaceSort(in IComponentData[] src, IComponentData addReplace)
-        {
-            IComponentData[] dest;
-            for (var i = 0; i < src.Length; i++)
-            {
-                if (src[i].Config == addReplace.Config)
-                {
-                    dest = new IComponentData[src.Length];
-                    Array.Copy(src, dest, src.Length);
-
-                    dest[i] = addReplace;
-                    return dest;
-                }
-            }
-
-            return CopyInsertSort(src, addReplace);
-        }
-
-        internal static IComponentData[] CopyAddOrReplaceSorts(in IComponentData[] src, IComponentData[] addReplaces)
-        {
-            var dest = new List<IComponentData>(src);
-            for (var i = 0; i < addReplaces.Length; i++)
-            {
-                var addReplace = addReplaces[i];
-                var replaced = false;
-                for (var j = 0; j < dest.Count; j++)
-                {
-                    if (dest[j].Config == addReplace.Config)
-                    {
-                        dest[j] = addReplace;
-                        break;
-                    }
-                }
-
-                if (!replaced)
-                    dest.Add(addReplace);
-            }
-
-            if (dest.Count != src.Length)
-                dest.Sort();
-
-            return dest.ToArray();
-        }
+        #endregion
     }
 }

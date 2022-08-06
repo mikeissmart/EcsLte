@@ -11,7 +11,7 @@ namespace EcsLte.UnitTest.EntityFilterTests
         [TestMethod]
         public void HasWhereAllOf()
         {
-            var filter = new EntityFilter()
+            var filter = Context.Filters
                 .WhereAllOf<TestComponent1>();
 
             Assert.IsTrue(filter.HasWhereAllOf<TestComponent1>());
@@ -20,14 +20,14 @@ namespace EcsLte.UnitTest.EntityFilterTests
         [TestMethod]
         public void WhereAllOf()
         {
-            var filter = new EntityFilter()
+            var filter = Context.Filters
                 .WhereAllOf<TestComponent1>();
 
             Assert.IsTrue(filter.HasWhereAllOf<TestComponent1>());
-            Assert.IsTrue(filter.AllOfComponentTypes.Length == 1);
-            Assert.IsTrue(filter.AllOfComponentTypes[0] == typeof(TestComponent1));
-            Assert.IsTrue(filter.AnyOfComponentTypes.Length == 0);
-            Assert.IsTrue(filter.NoneOfComponentTypes.Length == 0);
+            Assert.IsTrue(filter.AllOfTypes.Length == 1);
+            Assert.IsTrue(filter.AllOfTypes[0] == typeof(TestComponent1));
+            Assert.IsTrue(filter.AnyOfTypes.Length == 0);
+            Assert.IsTrue(filter.NoneOfTypes.Length == 0);
             Assert.IsTrue(filter.FilterByComponents.Length == 0);
 
             Assert.ThrowsException<EntityFilterAlreadyHasWhereAllOfException>(() =>
@@ -35,10 +35,10 @@ namespace EcsLte.UnitTest.EntityFilterTests
             Assert.ThrowsException<EntityFilterAlreadyHasWhereAllOfException>(() =>
                 filter.WhereNoneOf<TestComponent1>());
 
-            var archeType = new EntityArcheType()
+            var archeType = Context.ArcheTypes
                 .AddComponentType<TestComponent2>()
                 .AddComponentType<TestComponent3>();
-            filter = new EntityFilter()
+            filter = Context.Filters
                 .WhereAllOf(archeType);
 
             Assert.ThrowsException<EntityFilterAlreadyHasWhereAllOfException>(() =>
@@ -48,14 +48,14 @@ namespace EcsLte.UnitTest.EntityFilterTests
 
             Assert.IsTrue(filter.HasWhereAllOf<TestComponent2>());
             Assert.IsTrue(filter.HasWhereAllOf<TestComponent3>());
-            Assert.IsTrue(filter.AllOfComponentTypes.Length == 2);
-            Assert.IsTrue(filter.AllOfComponentTypes.Where(x => x == typeof(TestComponent2)).Count() == 1);
-            Assert.IsTrue(filter.AllOfComponentTypes.Where(x => x == typeof(TestComponent3)).Count() == 1);
-            Assert.IsTrue(filter.AnyOfComponentTypes.Length == 0);
-            Assert.IsTrue(filter.NoneOfComponentTypes.Length == 0);
+            Assert.IsTrue(filter.AllOfTypes.Length == 2);
+            Assert.IsTrue(filter.AllOfTypes.Where(x => x == typeof(TestComponent2)).Count() == 1);
+            Assert.IsTrue(filter.AllOfTypes.Where(x => x == typeof(TestComponent3)).Count() == 1);
+            Assert.IsTrue(filter.AnyOfTypes.Length == 0);
+            Assert.IsTrue(filter.NoneOfTypes.Length == 0);
             Assert.IsTrue(filter.FilterByComponents.Length == 0);
 
-            AssertArcheType_Invalid_Null(
+            AssertArcheType_DiffContext_Null(
                 new Action<EntityArcheType>[]
                 {
                     x => filter.WhereAllOf(x)
@@ -65,7 +65,7 @@ namespace EcsLte.UnitTest.EntityFilterTests
         [TestMethod]
         public void HasWhereAnyOf()
         {
-            var filter = new EntityFilter()
+            var filter = Context.Filters
                 .WhereAnyOf<TestComponent1>();
 
             Assert.IsTrue(filter.HasWhereAnyOf<TestComponent1>());
@@ -74,14 +74,14 @@ namespace EcsLte.UnitTest.EntityFilterTests
         [TestMethod]
         public void WhereAnyOf()
         {
-            var filter = new EntityFilter()
+            var filter = Context.Filters
                 .WhereAnyOf<TestComponent1>();
 
             Assert.IsTrue(filter.HasWhereAnyOf<TestComponent1>());
-            Assert.IsTrue(filter.AllOfComponentTypes.Length == 0);
-            Assert.IsTrue(filter.AnyOfComponentTypes.Length == 1);
-            Assert.IsTrue(filter.AnyOfComponentTypes[0] == typeof(TestComponent1));
-            Assert.IsTrue(filter.NoneOfComponentTypes.Length == 0);
+            Assert.IsTrue(filter.AllOfTypes.Length == 0);
+            Assert.IsTrue(filter.AnyOfTypes.Length == 1);
+            Assert.IsTrue(filter.AnyOfTypes[0] == typeof(TestComponent1));
+            Assert.IsTrue(filter.NoneOfTypes.Length == 0);
             Assert.IsTrue(filter.FilterByComponents.Length == 0);
 
             Assert.ThrowsException<EntityFilterAlreadyHasWhereAnyOfException>(() =>
@@ -89,10 +89,10 @@ namespace EcsLte.UnitTest.EntityFilterTests
             Assert.ThrowsException<EntityFilterAlreadyHasWhereAnyOfException>(() =>
                 filter.WhereNoneOf<TestComponent1>());
 
-            var archeType = new EntityArcheType()
+            var archeType = Context.ArcheTypes
                 .AddComponentType<TestComponent2>()
                 .AddComponentType<TestComponent3>();
-            filter = new EntityFilter()
+            filter = Context.Filters
                 .WhereAnyOf(archeType);
 
             Assert.ThrowsException<EntityFilterAlreadyHasWhereAnyOfException>(() =>
@@ -102,14 +102,14 @@ namespace EcsLte.UnitTest.EntityFilterTests
 
             Assert.IsTrue(filter.HasWhereAnyOf<TestComponent2>());
             Assert.IsTrue(filter.HasWhereAnyOf<TestComponent3>());
-            Assert.IsTrue(filter.AllOfComponentTypes.Length == 0);
-            Assert.IsTrue(filter.AnyOfComponentTypes.Length == 2);
-            Assert.IsTrue(filter.AnyOfComponentTypes.Where(x => x == typeof(TestComponent2)).Count() == 1);
-            Assert.IsTrue(filter.AnyOfComponentTypes.Where(x => x == typeof(TestComponent3)).Count() == 1);
-            Assert.IsTrue(filter.NoneOfComponentTypes.Length == 0);
+            Assert.IsTrue(filter.AllOfTypes.Length == 0);
+            Assert.IsTrue(filter.AnyOfTypes.Length == 2);
+            Assert.IsTrue(filter.AnyOfTypes.Where(x => x == typeof(TestComponent2)).Count() == 1);
+            Assert.IsTrue(filter.AnyOfTypes.Where(x => x == typeof(TestComponent3)).Count() == 1);
+            Assert.IsTrue(filter.NoneOfTypes.Length == 0);
             Assert.IsTrue(filter.FilterByComponents.Length == 0);
 
-            AssertArcheType_Invalid_Null(
+            AssertArcheType_DiffContext_Null(
                 new Action<EntityArcheType>[]
                 {
                     x => filter.WhereAnyOf(x)
@@ -119,7 +119,7 @@ namespace EcsLte.UnitTest.EntityFilterTests
         [TestMethod]
         public void HasWhereNoneOf()
         {
-            var filter = new EntityFilter()
+            var filter = Context.Filters
                 .WhereNoneOf<TestComponent1>();
 
             Assert.IsTrue(filter.HasWhereNoneOf<TestComponent1>());
@@ -128,14 +128,14 @@ namespace EcsLte.UnitTest.EntityFilterTests
         [TestMethod]
         public void WhereNoneOf()
         {
-            var filter = new EntityFilter()
+            var filter = Context.Filters
                 .WhereNoneOf<TestComponent1>();
 
             Assert.IsTrue(filter.HasWhereNoneOf<TestComponent1>());
-            Assert.IsTrue(filter.AllOfComponentTypes.Length == 0);
-            Assert.IsTrue(filter.AnyOfComponentTypes.Length == 0);
-            Assert.IsTrue(filter.NoneOfComponentTypes.Length == 1);
-            Assert.IsTrue(filter.NoneOfComponentTypes[0] == typeof(TestComponent1));
+            Assert.IsTrue(filter.AllOfTypes.Length == 0);
+            Assert.IsTrue(filter.AnyOfTypes.Length == 0);
+            Assert.IsTrue(filter.NoneOfTypes.Length == 1);
+            Assert.IsTrue(filter.NoneOfTypes[0] == typeof(TestComponent1));
             Assert.IsTrue(filter.FilterByComponents.Length == 0);
 
             Assert.ThrowsException<EntityFilterAlreadyHasWhereNoneOfException>(() =>
@@ -143,10 +143,10 @@ namespace EcsLte.UnitTest.EntityFilterTests
             Assert.ThrowsException<EntityFilterAlreadyHasWhereNoneOfException>(() =>
                 filter.WhereAnyOf<TestComponent1>());
 
-            var archeType = new EntityArcheType()
+            var archeType = Context.ArcheTypes
                 .AddComponentType<TestComponent2>()
                 .AddComponentType<TestComponent3>();
-            filter = new EntityFilter()
+            filter = Context.Filters
                 .WhereNoneOf(archeType);
 
             Assert.ThrowsException<EntityFilterAlreadyHasWhereNoneOfException>(() =>
@@ -156,14 +156,14 @@ namespace EcsLte.UnitTest.EntityFilterTests
 
             Assert.IsTrue(filter.HasWhereNoneOf<TestComponent2>());
             Assert.IsTrue(filter.HasWhereNoneOf<TestComponent3>());
-            Assert.IsTrue(filter.AllOfComponentTypes.Length == 0);
-            Assert.IsTrue(filter.AnyOfComponentTypes.Length == 0);
-            Assert.IsTrue(filter.NoneOfComponentTypes.Length == 2);
-            Assert.IsTrue(filter.NoneOfComponentTypes.Where(x => x == typeof(TestComponent2)).Count() == 1);
-            Assert.IsTrue(filter.NoneOfComponentTypes.Where(x => x == typeof(TestComponent3)).Count() == 1);
+            Assert.IsTrue(filter.AllOfTypes.Length == 0);
+            Assert.IsTrue(filter.AnyOfTypes.Length == 0);
+            Assert.IsTrue(filter.NoneOfTypes.Length == 2);
+            Assert.IsTrue(filter.NoneOfTypes.Where(x => x == typeof(TestComponent2)).Count() == 1);
+            Assert.IsTrue(filter.NoneOfTypes.Where(x => x == typeof(TestComponent3)).Count() == 1);
             Assert.IsTrue(filter.FilterByComponents.Length == 0);
 
-            AssertArcheType_Invalid_Null(
+            AssertArcheType_DiffContext_Null(
                 new Action<EntityArcheType>[]
                 {
                     x => filter.WhereNoneOf(x)
@@ -173,7 +173,7 @@ namespace EcsLte.UnitTest.EntityFilterTests
         [TestMethod]
         public void HasFilterBy()
         {
-            var filter = new EntityFilter()
+            var filter = Context.Filters
                 .FilterBy(new TestSharedComponent1());
 
             Assert.IsTrue(filter.HasFilterBy<TestSharedComponent1>());
@@ -182,7 +182,7 @@ namespace EcsLte.UnitTest.EntityFilterTests
         [TestMethod]
         public void GetFilterBy()
         {
-            var filter = new EntityFilter()
+            var filter = Context.Filters
                 .FilterBy(new TestSharedComponent1 { Prop = 1 });
 
             Assert.IsTrue(filter.GetFilterBy<TestSharedComponent1>().Prop == 1);
@@ -194,34 +194,34 @@ namespace EcsLte.UnitTest.EntityFilterTests
         [TestMethod]
         public void FilterBy()
         {
-            var filter = new EntityFilter()
+            var filter = Context.Filters
                 .FilterBy(new TestSharedComponent1 { Prop = 1 });
 
             Assert.IsTrue(filter.HasWhereAllOf<TestSharedComponent1>());
-            Assert.IsTrue(filter.AllOfComponentTypes.Length == 1);
-            Assert.IsTrue(filter.AllOfComponentTypes[0] == typeof(TestSharedComponent1));
-            Assert.IsTrue(filter.AnyOfComponentTypes.Length == 0);
-            Assert.IsTrue(filter.NoneOfComponentTypes.Length == 0);
+            Assert.IsTrue(filter.AllOfTypes.Length == 1);
+            Assert.IsTrue(filter.AllOfTypes[0] == typeof(TestSharedComponent1));
+            Assert.IsTrue(filter.AnyOfTypes.Length == 0);
+            Assert.IsTrue(filter.NoneOfTypes.Length == 0);
             Assert.IsTrue(filter.FilterByComponents.Length == 1);
             Assert.IsTrue(filter.FilterByComponents[0].Equals(new TestSharedComponent1 { Prop = 1 }));
 
-            var archeType = new EntityArcheType()
+            var archeType = Context.ArcheTypes
                 .AddSharedComponent(new TestSharedComponent2 { Prop = 2 })
                 .AddSharedComponent(new TestSharedComponent3 { Prop = 3 });
-            filter = new EntityFilter()
+            filter = Context.Filters
                 .FilterBy(archeType);
 
             Assert.IsTrue(filter.HasWhereAllOf<TestSharedComponent2>());
             Assert.IsTrue(filter.HasWhereAllOf<TestSharedComponent3>());
-            Assert.IsTrue(filter.AllOfComponentTypes.Length == 2);
-            Assert.IsTrue(filter.AllOfComponentTypes.Where(x => x == typeof(TestSharedComponent2)).Count() == 1);
-            Assert.IsTrue(filter.AllOfComponentTypes.Where(x => x == typeof(TestSharedComponent3)).Count() == 1);
-            Assert.IsTrue(filter.AnyOfComponentTypes.Length == 0);
-            Assert.IsTrue(filter.NoneOfComponentTypes.Length == 0);
+            Assert.IsTrue(filter.AllOfTypes.Length == 2);
+            Assert.IsTrue(filter.AllOfTypes.Where(x => x == typeof(TestSharedComponent2)).Count() == 1);
+            Assert.IsTrue(filter.AllOfTypes.Where(x => x == typeof(TestSharedComponent3)).Count() == 1);
+            Assert.IsTrue(filter.AnyOfTypes.Length == 0);
+            Assert.IsTrue(filter.NoneOfTypes.Length == 0);
             Assert.IsTrue(filter.FilterByComponents.Where(x => x.Equals(new TestSharedComponent2 { Prop = 2 })).Count() == 1);
             Assert.IsTrue(filter.FilterByComponents.Where(x => x.Equals(new TestSharedComponent3 { Prop = 3 })).Count() == 1);
 
-            AssertArcheType_Invalid_Null(
+            AssertArcheType_DiffContext_Null(
                 new Action<EntityArcheType>[]
                 {
                     x => filter.FilterBy(x)

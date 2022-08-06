@@ -12,12 +12,11 @@ namespace EcsLte.UnitTest.EntityManagerTests
         {
             var entity = Context.Entities.CreateEntity(
                 new EntityBlueprint()
-                    .SetComponent(new TestComponent1 { Prop = 1 }),
-                EntityState.Active);
+                    .SetComponent(new TestComponent1 { Prop = 1 }));
 
             Assert.IsTrue(Context.Entities.GetComponent<TestComponent1>(entity).Prop == 1);
 
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponent<TestComponent2>(entity));
 
             Assert.ThrowsException<EntityNotExistException>(() =>
@@ -45,11 +44,11 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestComponent1 _,
                     out TestComponent1 _));
 
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent4 _,
                     out TestComponent1 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent4 _));
@@ -86,17 +85,17 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestComponent1 _,
                     out TestComponent1 _));
 
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent4 _,
                     out TestComponent2 _,
                     out TestComponent3 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent4 _,
                     out TestComponent3 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
@@ -139,25 +138,25 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestComponent1 _,
                     out TestComponent1 _));
 
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent4 _,
                     out TestComponent2 _,
                     out TestComponent3 _,
                     out TestSharedComponent1 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent4 _,
                     out TestComponent3 _,
                     out TestSharedComponent1 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
                     out TestComponent4 _,
                     out TestSharedComponent1 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
@@ -206,35 +205,35 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestComponent1 _,
                     out TestComponent1 _));
 
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent4 _,
                     out TestComponent2 _,
                     out TestComponent3 _,
                     out TestSharedComponent1 _,
                     out TestSharedComponent2 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent4 _,
                     out TestComponent3 _,
                     out TestSharedComponent1 _,
                     out TestSharedComponent2 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
                     out TestComponent4 _,
                     out TestSharedComponent1 _,
                     out TestSharedComponent2 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
                     out TestComponent3 _,
                     out TestComponent4 _,
                     out TestSharedComponent2 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
@@ -289,7 +288,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestComponent1 _,
                     out TestComponent1 _));
 
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent4 _,
                     out TestComponent2 _,
@@ -297,7 +296,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent1 _,
                     out TestSharedComponent2 _,
                     out TestSharedComponent3 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent4 _,
@@ -305,7 +304,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent1 _,
                     out TestSharedComponent2 _,
                     out TestSharedComponent3 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
@@ -313,7 +312,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent1 _,
                     out TestSharedComponent2 _,
                     out TestSharedComponent3 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
@@ -321,7 +320,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestComponent4 _,
                     out TestSharedComponent2 _,
                     out TestSharedComponent3 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
@@ -329,7 +328,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent1 _,
                     out TestComponent4 _,
                     out TestSharedComponent3 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
@@ -370,7 +369,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 out TestSharedComponent1 component4,
                 out TestSharedComponent2 component5,
                 out TestSharedComponent3 component6,
-                out TestUniqueComponent1 component7);
+                out TestManagedComponent1 component7);
 
             Assert.IsTrue(component1.Prop == 1);
             Assert.IsTrue(component2.Prop == 2);
@@ -390,7 +389,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestComponent1 _,
                     out TestComponent1 _));
 
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent4 _,
                     out TestComponent2 _,
@@ -398,8 +397,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent1 _,
                     out TestSharedComponent2 _,
                     out TestSharedComponent3 _,
-                    out TestUniqueComponent1 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+                    out TestManagedComponent1 _));
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent4 _,
@@ -407,8 +406,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent1 _,
                     out TestSharedComponent2 _,
                     out TestSharedComponent3 _,
-                    out TestUniqueComponent1 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+                    out TestManagedComponent1 _));
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
@@ -416,7 +415,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent1 _,
                     out TestSharedComponent2 _,
                     out TestSharedComponent3 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
@@ -424,8 +423,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestComponent4 _,
                     out TestSharedComponent2 _,
                     out TestSharedComponent3 _,
-                    out TestUniqueComponent1 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+                    out TestManagedComponent1 _));
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
@@ -433,8 +432,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent1 _,
                     out TestComponent4 _,
                     out TestSharedComponent3 _,
-                    out TestUniqueComponent1 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+                    out TestManagedComponent1 _));
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
@@ -442,8 +441,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent1 _,
                     out TestSharedComponent2 _,
                     out TestComponent4 _,
-                    out TestUniqueComponent1 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+                    out TestManagedComponent1 _));
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
@@ -461,7 +460,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent1 _,
                     out TestSharedComponent2 _,
                     out TestSharedComponent3 _,
-                    out TestUniqueComponent1 _));
+                    out TestManagedComponent1 _));
 
             EcsContexts.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
@@ -472,7 +471,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent1 _,
                     out TestSharedComponent2 _,
                     out TestSharedComponent3 _,
-                    out TestUniqueComponent1 _));
+                    out TestManagedComponent1 _));
         }
 
         [TestMethod]
@@ -487,8 +486,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 out TestSharedComponent1 component4,
                 out TestSharedComponent2 component5,
                 out TestSharedComponent3 component6,
-                out TestUniqueComponent1 component7,
-                out TestUniqueComponent2 component8);
+                out TestManagedComponent1 component7,
+                out TestManagedComponent2 component8);
 
             Assert.IsTrue(component1.Prop == 1);
             Assert.IsTrue(component2.Prop == 2);
@@ -510,7 +509,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestComponent1 _,
                     out TestComponent1 _));
 
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent4 _,
                     out TestComponent2 _,
@@ -518,9 +517,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent1 _,
                     out TestSharedComponent2 _,
                     out TestSharedComponent3 _,
-                    out TestUniqueComponent1 _,
-                    out TestUniqueComponent2 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+                    out TestManagedComponent1 _,
+                    out TestManagedComponent2 _));
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent4 _,
@@ -528,9 +527,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent1 _,
                     out TestSharedComponent2 _,
                     out TestSharedComponent3 _,
-                    out TestUniqueComponent1 _,
-                    out TestUniqueComponent2 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+                    out TestManagedComponent1 _,
+                    out TestManagedComponent2 _));
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
@@ -538,8 +537,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent1 _,
                     out TestSharedComponent2 _,
                     out TestSharedComponent3 _,
-                    out TestUniqueComponent2 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+                    out TestManagedComponent2 _));
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
@@ -547,9 +546,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestComponent4 _,
                     out TestSharedComponent2 _,
                     out TestSharedComponent3 _,
-                    out TestUniqueComponent1 _,
-                    out TestUniqueComponent2 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+                    out TestManagedComponent1 _,
+                    out TestManagedComponent2 _));
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
@@ -557,9 +556,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent1 _,
                     out TestComponent4 _,
                     out TestSharedComponent3 _,
-                    out TestUniqueComponent1 _,
-                    out TestUniqueComponent2 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+                    out TestManagedComponent1 _,
+                    out TestManagedComponent2 _));
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
@@ -567,9 +566,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent1 _,
                     out TestSharedComponent2 _,
                     out TestComponent4 _,
-                    out TestUniqueComponent1 _,
-                    out TestUniqueComponent2 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+                    out TestManagedComponent1 _,
+                    out TestManagedComponent2 _));
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
@@ -578,8 +577,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent2 _,
                     out TestSharedComponent3 _,
                     out TestComponent4 _,
-                    out TestUniqueComponent2 _));
-            Assert.ThrowsException<EntityNotHaveComponentException>(() =>
+                    out TestManagedComponent2 _));
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.GetComponents(entity,
                     out TestComponent1 _,
                     out TestComponent2 _,
@@ -587,7 +586,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent1 _,
                     out TestSharedComponent2 _,
                     out TestSharedComponent3 _,
-                    out TestUniqueComponent1 _,
+                    out TestManagedComponent1 _,
                     out TestComponent4 _));
 
             Assert.ThrowsException<EntityNotExistException>(() =>
@@ -598,8 +597,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent1 _,
                     out TestSharedComponent2 _,
                     out TestSharedComponent3 _,
-                    out TestUniqueComponent1 _,
-                    out TestUniqueComponent2 _));
+                    out TestManagedComponent1 _,
+                    out TestManagedComponent2 _));
 
             EcsContexts.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
@@ -610,15 +609,16 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     out TestSharedComponent1 _,
                     out TestSharedComponent2 _,
                     out TestSharedComponent3 _,
-                    out TestUniqueComponent1 _,
-                    out TestUniqueComponent2 _));
+                    out TestManagedComponent1 _,
+                    out TestManagedComponent2 _));
         }
 
         [TestMethod]
         public void GetComponent_ArcheType()
         {
-            var archeType = new EntityArcheType()
-                    .AddComponentType<TestComponent1>();
+            var archeType = Context.ArcheTypes
+                .AddComponentType<TestComponent1>()
+                .AddSharedComponent(new TestSharedComponent1 { Prop = 2 });
 
             var entities = CreateTestEntities();
 
@@ -650,7 +650,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 });
 
             var emptyComponents = new TestComponent1[0];
-            AssertArcheType_Invalid_Null(
+            AssertArcheType_DiffContext_Null(
                 new Action<EntityArcheType>[]
                 {
                     x => Context.Entities.GetComponents<TestComponent1>(x),
@@ -668,7 +668,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void GetComponent_Filter()
         {
-            var filter = new EntityFilter()
+            var filter = Context.Filters
                     .WhereAllOf<TestComponent1>();
 
             var entities = CreateTestEntities();
@@ -719,9 +719,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void GetComponent_Tracker()
         {
-            var tracker = Context.Tracking.CreateTracker("Tracker");
-            tracker.SetComponentState<TestComponent1>(EntityTrackerState.Added);
-            tracker.StartTracking();
+            var tracker = Context.Tracking.CreateTracker("Tracker")
+                .SetTrackingState<TestComponent1>(TrackingState.Added)
+                .StartTracking();
 
             var entities = CreateTestEntities();
 
@@ -757,7 +757,6 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 .Tracking.CreateTracker("Tracker");
             var destroyedTracker = Context.Tracking.CreateTracker("Destroyed");
             Context.Tracking.RemoveTracker(destroyedTracker);
-            var refStates = new EntityState[0];
             AssertTracker_Destroyed_Null(
                 diffContext,
                 destroyedTracker,
@@ -778,54 +777,25 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void GetComponent_Query()
         {
-            var filter = new EntityFilter()
-                .WhereAllOf<TestComponent1>();
-
-            var queryFilter = new EntityQuery(Context, filter);
-
-            var queryFilterTracker = new EntityQuery(Context.Tracking.CreateTracker("Tracker1"),
-                filter);
-            queryFilterTracker.Tracker.SetComponentState<TestComponent1>(EntityTrackerState.Added);
-            queryFilterTracker.Tracker.StartTracking();
+            var query = Context.Queries
+                .SetFilter(Context.Filters
+                    .WhereAllOf<TestComponent1>())
+                .SetTracker(Context.Tracking.CreateTracker("Tracker1")
+                    .SetTrackingState<TestComponent1>(TrackingState.Added)
+                    .StartTracking());
 
             var entities = CreateTestEntities();
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
-                () => Context.Entities.GetComponents<TestComponent1>(queryFilter),
+                () => Context.Entities.GetComponents<TestComponent1>(query),
                 x =>
                 {
-                    var count = Context.Entities.GetComponents(queryFilter, ref x);
+                    var count = Context.Entities.GetComponents(query, ref x);
                     return (x, count);
                 },
                 (x, startingIndex) =>
                 {
-                    var count = Context.Entities.GetComponents(queryFilter, ref x, startingIndex);
-                    return (x, count);
-                },
-                (x, startingIndex, count) =>
-                {
-                    var result = new TestResult();
-                    if (x.Length != startingIndex + count)
-                    {
-                        result.Success = false;
-                        result.Error = $"Ref Length: {x.Length}, StartingIndex: {startingIndex}, Count: {count}";
-                    }
-                    else
-                    {
-                        result = AssertComponents(x, startingIndex, count);
-                    }
-                    return result;
-                });
-            AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
-                () => Context.Entities.GetComponents<TestComponent1>(queryFilterTracker),
-                x =>
-                {
-                    var count = Context.Entities.GetComponents(queryFilterTracker, ref x);
-                    return (x, count);
-                },
-                (x, startingIndex) =>
-                {
-                    var count = Context.Entities.GetComponents(queryFilterTracker, ref x, startingIndex);
+                    var count = Context.Entities.GetComponents(query, ref x, startingIndex);
                     return (x, count);
                 },
                 (x, startingIndex, count) =>
@@ -844,11 +814,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 });
 
             var emptyComponents = new TestComponent1[0];
-            Context.Tracking.RemoveTracker(queryFilterTracker.Tracker);
-            var refStates = new EntityState[0];
+            Context.Tracking.RemoveTracker(query.Tracker);
             AssertQuery_DiffContext_DestroyedTracker_Null(
-                new EntityQuery(EcsContexts.CreateContext("DiffContext"), filter),
-                queryFilterTracker,
+                query,
                 new Action<EntityQuery>[]
                 {
                     x => Context.Entities.GetComponents<TestComponent1>(x),
@@ -858,9 +826,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             EcsContexts.DestroyContext(Context);
             AssertGetRef_ContextDestroyed<TestComponent1>(
-                () => Context.Entities.GetComponents<TestComponent1>(queryFilter),
-                x => Context.Entities.GetComponents(queryFilter, ref x),
-                (x, startingIndex) => Context.Entities.GetComponents(queryFilter, ref x, startingIndex));
+                () => Context.Entities.GetComponents<TestComponent1>(query),
+                x => Context.Entities.GetComponents(query, ref x),
+                (x, startingIndex) => Context.Entities.GetComponents(query, ref x, startingIndex));
         }
 
         private TestResult AssertComponents(TestComponent1[] components, int startingIndex, int count)
@@ -887,9 +855,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     .SetSharedComponent(new TestSharedComponent1 { Prop = 4 })
                     .SetSharedComponent(new TestSharedComponent2 { Prop = 5 })
                     .SetSharedComponent(new TestSharedComponent3 { Prop = 6 })
-                    .SetUniqueComponent(new TestUniqueComponent1 { Prop = 7 })
-                    .SetUniqueComponent(new TestUniqueComponent2 { Prop = 8 }),
-                EntityState.Active);
+                    .SetManagedComponent(new TestManagedComponent1 { Prop = 7 })
+                    .SetManagedComponent(new TestManagedComponent2 { Prop = 8 }));
 
         private Entity[] CreateTestEntities()
         {
@@ -901,7 +868,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             {
                 blueprint.SetComponent(
                     new TestComponent1 { Prop = Context.Entities.EntityCount() + 1 });
-                entities[i] = Context.Entities.CreateEntity(blueprint, EntityState.Active);
+                entities[i] = Context.Entities.CreateEntity(blueprint);
             }
 
             return entities;

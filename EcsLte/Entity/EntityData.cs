@@ -1,9 +1,14 @@
-﻿namespace EcsLte
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace EcsLte
 {
-    internal unsafe struct EntityData
+    internal struct EntityData
     {
+        public static readonly EntityData Null = new EntityData();
+
         internal ArcheTypeIndex ArcheTypeIndex;
-        internal byte* ComponentsBuffer;
         internal int EntityIndex;
     }
 }

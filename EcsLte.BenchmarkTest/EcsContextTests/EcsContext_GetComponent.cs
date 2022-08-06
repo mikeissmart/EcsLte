@@ -25,11 +25,10 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         [IterationSetup]
         public void IterationSetup()
         {
-            _entities = _entities = _context.Entities.CreateEntities(_blueprint, EntityState.Active, EntityCount);
-            _archeType = _blueprint.GetArcheType();
-            _query = new EntityQuery(
-                _context,
-                new EntityFilter()
+            _entities = _entities = _context.Entities.CreateEntities(_blueprint, EntityCount);
+            _archeType = _blueprint.GetArcheType(_context);
+            _query = _context.Queries
+                .SetFilter(_context.Filters
                     .WhereAllOf(_archeType));
         }
 

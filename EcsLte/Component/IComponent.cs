@@ -12,7 +12,7 @@
     {
     }
 
-    public interface IUniqueComponent : IComponent
+    public interface IManagedComponent : IComponent
     {
     }
 }
