@@ -261,6 +261,7 @@
     <Compile Include="EcsContextTests\EcsContext_Transfer.cs" />
     <Compile Include="EcsContextTests\EcsContext_UpdateComponent.cs" />
     <Compile Include="EcsContextTests\EcsContext_UpdateSharedComponent.cs" />
+    <Compile Include="EcsContextTests\EntityQueryForEachTests.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

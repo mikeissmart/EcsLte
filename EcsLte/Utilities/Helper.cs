@@ -61,6 +61,12 @@ namespace EcsLte.Utilities
                 Array.Resize(ref components, startingIndex + count);
         }
 
+        internal static void ResizeRefArcheTypes(ref EntityArcheType[] archeTypes, int startingIndex, int count)
+        {
+            if (startingIndex + count > archeTypes.Length)
+                Array.Resize(ref archeTypes, startingIndex + count);
+        }
+
         #region Assert
 
         internal static void AssertEntities(in Entity[] entities, int startingIndex)
@@ -128,6 +134,38 @@ namespace EcsLte.Utilities
                 throw new ArgumentOutOfRangeException(nameof(count));
 
             ResizeRefComponents(ref components, startingIndex, count);
+        }
+
+        internal static void AssertArcheTypes(in EntityArcheType[] archeTypes, int startingIndex)
+        {
+            if (archeTypes == null)
+                throw new ArgumentNullException(nameof(archeTypes));
+            if (startingIndex < 0 || startingIndex > archeTypes.Length)
+                throw new ArgumentOutOfRangeException(nameof(startingIndex));
+        }
+
+        internal static void AssertArcheTypes(in EntityArcheType[] archeTypes, int startingIndex, int count)
+        {
+            if (archeTypes == null)
+                throw new ArgumentNullException(nameof(archeTypes));
+            if (startingIndex < 0 || startingIndex > archeTypes.Length)
+                throw new ArgumentOutOfRangeException(nameof(startingIndex));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            if (startingIndex + count < 0 || startingIndex + count >= archeTypes.Length + 1)
+                throw new ArgumentOutOfRangeException();
+        }
+
+        internal static void AssertAndResizeArcheTypes(ref EntityArcheType[] archeTypes, int startingIndex, int count)
+        {
+            if (archeTypes == null)
+                throw new ArgumentNullException(nameof(archeTypes));
+            if (startingIndex < 0 || startingIndex > archeTypes.Length)
+                throw new ArgumentOutOfRangeException(nameof(startingIndex));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+
+            ResizeRefArcheTypes(ref archeTypes, startingIndex, count);
         }
 
         internal static void AssertDuplicateConfigs(params ComponentConfig[] configs)

@@ -7,7 +7,6 @@ namespace EcsLte
 {
     public unsafe partial class EntityManager
     {
-
         public Entity CreateEntity()
         {
             Context.AssertContext();

@@ -39,6 +39,11 @@ namespace EcsLte
             return _components[index];
         }
 
+        public ref TComponent GetComponentRef(int index)
+        {
+            return ref _components[index];
+        }
+
         public void GetComponents(ref TComponent[] components, int startingIndex)
         {
             Array.Copy(_components, 0, components, startingIndex, _components.Length);

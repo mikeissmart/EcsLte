@@ -9,6 +9,7 @@ namespace EcsLte
     public class EntityTrackerManager
     {
         private readonly Dictionary<string, EntityTracker> _trackers;
+        private readonly object _lockObj;
 
         private HashSet<EntityTracker>[] _addedEvent;
         private HashSet<EntityTracker>[] _updatedEvent;
@@ -19,6 +20,7 @@ namespace EcsLte
         internal EntityTrackerManager(EcsContext context)
         {
             _trackers = new Dictionary<string, EntityTracker>();
+            _lockObj = new object();
 
             _addedEvent = CreateComponentHashSet();
             _updatedEvent = CreateComponentHashSet();
@@ -156,6 +158,16 @@ namespace EcsLte
                 tracker.Tracked(entities, startingIndex, count, archeTypeData);
         }
 
+        internal void TrackParallelUpdates(in Entity[] entities, int startingIndex, int count,
+            ComponentConfig config, ArcheTypeData archeTypeData)
+        {
+            lock (_lockObj)
+            {
+                foreach (var tracker in _updatedEvent[config.ComponentIndex])
+                    tracker.Tracked(entities, startingIndex, count, archeTypeData);
+            }
+        }
+
         internal void TrackRemove(Entity entity, ComponentConfig config, ArcheTypeData archeTypeData)
         {
             foreach (var tracker in _removedEvent[config.ComponentIndex])
@@ -179,6 +191,12 @@ namespace EcsLte
         {
             foreach (var tracker in _trackers.Values)
                 tracker.UntrackedArcheTypeData(archeTypeData);
+        }
+
+        internal void AllEntitiesDestroyed()
+        {
+            foreach (var tracker in _trackers.Values)
+                tracker.UntrackedAllEntities();
         }
 
         internal void InternalDestroy()

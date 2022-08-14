@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EcsLte.BenchmarkTest.EcsContextTests;
+using System;
 
 namespace EcsLte.BenchmarkTest
 {
@@ -53,18 +54,18 @@ namespace EcsLte.BenchmarkTest
             return blueprint;
         }
 
-        /*public static EntityBlueprint CreateBlueprint(EntityQuery_ForEach.ReadWriteType rwType)
+        public static EntityBlueprint CreateBlueprint(ReadWriteType rwType)
         {
             var blueprint = new EntityBlueprint();
             switch (rwType)
             {
-                case EntityQuery_ForEach.ReadWriteType.R0W0:
+                case ReadWriteType.R0W0:
                     blueprint = blueprint
                         .SetComponent(Component1);
                     break;
 
-                case EntityQuery_ForEach.ReadWriteType.R0W4_Normal_x4:
-                case EntityQuery_ForEach.ReadWriteType.R4W0_Normal_x4:
+                case ReadWriteType.R0W4_Normal_x4:
+                case ReadWriteType.R4W0_Normal_x4:
                     blueprint = blueprint
                         .SetComponent(Component1)
                         .SetComponent(Component2)
@@ -72,8 +73,17 @@ namespace EcsLte.BenchmarkTest
                         .SetComponent(Component4);
                     break;
 
-                case EntityQuery_ForEach.ReadWriteType.R0W4_Shared_x4:
-                case EntityQuery_ForEach.ReadWriteType.R4W0_Shared_x4:
+                case ReadWriteType.R0W4_Managed_x4:
+                case ReadWriteType.R4W0_Managed_x4:
+                    blueprint = blueprint
+                        .SetManagedComponent(ManagedComponent1)
+                        .SetManagedComponent(ManagedComponent2)
+                        .SetManagedComponent(ManagedComponent3)
+                        .SetManagedComponent(ManagedComponent4);
+                    break;
+
+                case ReadWriteType.R0W4_Shared_x4:
+                case ReadWriteType.R4W0_Shared_x4:
                     blueprint = blueprint
                         .SetSharedComponent(SharedComponent1)
                         .SetSharedComponent(SharedComponent2)
@@ -82,6 +92,6 @@ namespace EcsLte.BenchmarkTest
                     break;
             }
             return blueprint;
-        }*/
+        }
     }
 }

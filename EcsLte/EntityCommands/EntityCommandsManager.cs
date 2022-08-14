@@ -9,14 +9,12 @@ namespace EcsLte
     public class EntityCommandsManager
     {
         private readonly Dictionary<string, EntityCommands> _commands;
-        private readonly object _lockObj;
 
         public EcsContext Context { get; private set; }
 
         internal EntityCommandsManager(EcsContext context)
         {
             _commands = new Dictionary<string, EntityCommands>();
-            _lockObj = new object();
 
             Context = context;
         }
@@ -27,20 +25,14 @@ namespace EcsLte
                 throw new ArgumentNullException(nameof(name));
             Context.AssertContext();
 
-            lock (_lockObj)
-            {
-                return _commands.ContainsKey(name);
-            }
+            return _commands.ContainsKey(name);
         }
 
         public EntityCommands[] GetAllCommands()
         {
             Context.AssertContext();
 
-            lock (_lockObj)
-            {
-                return _commands.Values.ToArray();
-            }
+            return _commands.Values.ToArray();
         }
 
         public EntityCommands GetCommands(string name)
@@ -49,12 +41,9 @@ namespace EcsLte
                 throw new ArgumentNullException(nameof(name));
             Context.AssertContext();
 
-            lock (_lockObj)
-            {
-                AssertNotExistCommands(name);
+            AssertNotExistCommands(name);
 
-                return _commands[name];
-            }
+            return _commands[name];
         }
 
         public EntityCommands CreateCommands(string name)
@@ -63,15 +52,12 @@ namespace EcsLte
                 throw new ArgumentNullException(nameof(name));
             Context.AssertContext();
 
-            lock (_lockObj)
-            {
-                AssertAlreadyHaveCommands(name);
+            AssertAlreadyHaveCommands(name);
 
-                var commandQueue = new EntityCommands(Context, name);
-                _commands.Add(name, commandQueue);
+            var commands = new EntityCommands(Context, name);
+            _commands.Add(name, commands);
 
-                return commandQueue;
-            }
+            return commands;
         }
 
         public void RemoveCommands(EntityCommands commands)
@@ -79,24 +65,18 @@ namespace EcsLte
             Context.AssertContext();
             EntityCommands.AssertEntityCommands(commands, Context);
 
-            lock (_lockObj)
-            {
-                AssertNotExistCommands(commands.Name);
+            AssertNotExistCommands(commands.Name);
 
-                commands.InternalDestroy();
-                _commands.Remove(commands.Name);
-            }
+            commands.InternalDestroy();
+            _commands.Remove(commands.Name);
         }
 
         internal void InternalDestroy()
         {
-            lock (_lockObj)
-            {
-                foreach (var commands in _commands.Values)
-                    commands.InternalDestroy();
+            foreach (var commands in _commands.Values)
+                commands.InternalDestroy();
 
-                _commands.Clear();
-            }
+            _commands.Clear();
         }
 
         private void AssertNotExistCommands(string name)

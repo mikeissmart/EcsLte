@@ -11,7 +11,7 @@ namespace EcsLte
         private int _entitiesCount;
         private int _entitiesLength;
         private int _nextId;
-        private Entity* _reusableEntities;
+        private Entity[] _reusableEntities;
         private int _reusableEntitiesCount;
         private Entity[] _cachedInternalEntities;
         private EntityData* _entityDatas;
@@ -24,7 +24,7 @@ namespace EcsLte
             //_entitiesCount
             _entitiesLength = 1;
             _nextId = 1;
-            _reusableEntities = MemoryHelper.Alloc<Entity>(1);
+            _reusableEntities = new Entity[1];
             //_reusableEntitiesCount
             _cachedInternalEntities = new Entity[0];
             _entityDatas = MemoryHelper.Alloc<EntityData>(1);
@@ -42,7 +42,6 @@ namespace EcsLte
             _entitiesCount = 0;
             _entitiesLength = 0;
             _nextId = 1;
-            MemoryHelper.Free(_reusableEntities);
             _reusableEntities = null;
             _reusableEntitiesCount = 0;
             _cachedInternalEntities = null;
@@ -82,7 +81,7 @@ namespace EcsLte
             if (unusedCount < 1)
             {
                 var newLength = Helper.NextPow2(_entitiesLength + 1);
-                _reusableEntities = MemoryHelper.ReallocCopy(_reusableEntities, _entitiesLength, newLength);
+                Array.Resize(ref _reusableEntities, newLength);
                 _entityDatas = MemoryHelper.ReallocCopy(_entityDatas, _entitiesLength, newLength);
 
                 _entitiesLength = newLength;
@@ -118,7 +117,7 @@ namespace EcsLte
             if (unusedCount < count)
             {
                 var newLength = Helper.NextPow2(_entitiesLength + count);
-                _reusableEntities = MemoryHelper.ReallocCopy(_reusableEntities, _entitiesLength, newLength);
+                Array.Resize(ref _reusableEntities, newLength);
                 _entityDatas = MemoryHelper.ReallocCopy(_entityDatas, _entitiesLength, newLength);
 
                 _entitiesLength = newLength;

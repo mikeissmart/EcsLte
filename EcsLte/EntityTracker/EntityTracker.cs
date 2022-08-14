@@ -62,10 +62,10 @@ namespace EcsLte
         internal EntityTracker(EcsContext context, string name)
         {
             _archeTypeDatas = new Dictionary<ArcheTypeData, HashSet<Entity>>();
-            TrackingConfigs = new Dictionary<ComponentConfig, TrackingState>();
 
             Context = context;
             Name = name;
+            TrackingConfigs = new Dictionary<ComponentConfig, TrackingState>();
         }
 
         public TrackingState GetTrackingState<TComponent>()
@@ -297,6 +297,12 @@ namespace EcsLte
                 _archeTypeDatas.Remove(archeTypeData);
                 _isCachedArcheTypeDataDirty = true;
             }
+        }
+
+        internal void UntrackedAllEntities()
+        {
+            _archeTypeDatas.Clear();
+            _isCachedArcheTypeDataDirty = true;
         }
 
         internal void InternalDestroy()

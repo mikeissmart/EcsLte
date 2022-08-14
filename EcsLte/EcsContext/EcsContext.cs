@@ -9,7 +9,7 @@ namespace EcsLte
     {
         public string Name { get; private set; }
         public bool IsDestroyed { get; private set; }
-        //public EntityCommandsManager Commands { get; private set; }
+        public EntityCommandsManager Commands { get; private set; }
         public ArcheTypeManager ArcheTypes { get; private set; }
         public EntityManager Entities { get; private set; }
         public EntityFilterManager Filters { get; private set; }
@@ -22,7 +22,7 @@ namespace EcsLte
         internal EcsContext(string name)
         {
             Name = name;
-            //Commands = new EntityCommandsManager(this);
+            Commands = new EntityCommandsManager(this);
             Entities = new EntityManager(this);
             Filters = new EntityFilterManager(this);
             //Systems = new SystemsManager(this);
@@ -36,7 +36,7 @@ namespace EcsLte
 
         internal void InternalDestroy()
         {
-            //Commands.InternalDestroy();
+            Commands.InternalDestroy();
             Entities.InternalDestroy();
             Filters.InternalDestroy();
             //Systems.InternalDestroy();

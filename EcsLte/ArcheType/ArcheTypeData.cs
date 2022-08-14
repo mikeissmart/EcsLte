@@ -393,6 +393,10 @@ namespace EcsLte
             where TComponent : IManagedComponent
             => ((ComponentPool<TComponent>)_managedPools[configOffset.ConfigIndex]).GetComponent(entityIndex);
 
+        internal ref TComponent GetManagedComponentRef<TComponent>(int entityIndex, ComponentConfigOffset configOffset)
+            where TComponent : IManagedComponent
+            => ref ((ComponentPool<TComponent>)_managedPools[configOffset.ConfigIndex]).GetComponentRef(entityIndex);
+
         internal void GetManagedComponents<TComponent>(ref TComponent[] components, int startingIndex, ComponentConfig config)
             where TComponent : IManagedComponent
         {

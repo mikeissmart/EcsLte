@@ -86,5 +86,15 @@ namespace EcsLte
                     InternalDestroyTracker(query.Tracker, filteredArcheTypeDatas[i]);
             }
         }
+
+        public void DestroyAllEntities()
+        {
+            Context.AssertContext();
+            Context.AssertStructualChangeAvailable();
+
+            _reusableEntitiesCount += Context.ArcheTypes.GetAndClearAllEntities(ref _reusableEntities, _reusableEntitiesCount);
+            MemoryHelper.Clear(_entityDatas, _entitiesCount);
+            Context.Tracking.AllEntitiesDestroyed();
+        }
     }
 }

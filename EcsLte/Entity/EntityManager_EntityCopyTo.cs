@@ -304,5 +304,47 @@ namespace EcsLte
 
             return 0;
         }
+
+        public Entity[] CopyAllEntitiesTo(EntityManager srcEntityManager)
+        {
+            var entities = new Entity[0];
+            CopyAllEntitiesTo(srcEntityManager,
+                ref entities, 0);
+
+            return entities;
+        }
+
+        public int CopyAllEntitiesTo(EntityManager srcEntityManager,
+            ref Entity[] destEntities)
+        {
+            return CopyAllEntitiesTo(srcEntityManager,
+                ref destEntities, 0);
+        }
+
+        public int CopyAllEntitiesTo(EntityManager srcEntityManager,
+            ref Entity[] destEntities, int destStartingIndex)
+        {
+            if (srcEntityManager == null)
+                throw new ArgumentNullException(nameof(srcEntityManager));
+            if (this == srcEntityManager)
+                throw new EntityCopyToSameContextException();
+
+            Context.AssertContext();
+            Context.AssertStructualChangeAvailable();
+            srcEntityManager.Context.AssertContext();
+            Helper.AssertEntities(destEntities, destStartingIndex);
+
+            var entityIndex = destStartingIndex;
+            foreach (var archeTypeDatas in srcEntityManager.Context.ArcheTypes.ArcheTypeDatas)
+            {
+                for (var i = 1; i < archeTypeDatas.Count; i++)
+                {
+                    entityIndex += InternalCopyToArcheTypeData(archeTypeDatas[i],
+                        ref destEntities, entityIndex);
+                }
+            }
+
+            return entityIndex - destStartingIndex;
+        }
     }
 }

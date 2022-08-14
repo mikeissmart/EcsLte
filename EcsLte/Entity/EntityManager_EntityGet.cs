@@ -153,5 +153,8 @@ namespace EcsLte
 
             return new EntityArcheType(Context, archeTypeData);
         }
+
+        internal EntityData GetEntityData(Entity entity)
+            => _entityDatas[entity.Id];
     }
 }

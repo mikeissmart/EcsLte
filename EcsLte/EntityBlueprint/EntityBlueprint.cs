@@ -32,6 +32,11 @@ namespace EcsLte
             };
         }
 
+        internal EntityBlueprint(EntityBlueprint blueprint)
+        {
+            _data = blueprint._data;
+        }
+
         public bool HasComponent<TComponent>()
             where TComponent : unmanaged, IGeneralComponent
         {

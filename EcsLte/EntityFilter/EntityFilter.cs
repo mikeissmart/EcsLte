@@ -28,21 +28,22 @@ namespace EcsLte
             get => _data.ArcheTypeDataVersion;
             set => _data.ArcheTypeDataVersion = value;
         }
+        internal ComponentConfig[] AllOfConfigs { get => _data.AllOfConfigs; }
+        internal ComponentConfig[] AnyOfConfigs { get => _data.AnyOfConfigs; }
+        internal ComponentConfig[] NoneOfConfigs { get => _data.NoneOfConfigs; }
 
         internal EntityFilter(EcsContext context)
         {
-            _data = new Data
+            _data = new Data(context);
+        }
+
+        internal EntityFilter(EntityFilter filter)
+        {
+            _data = new Data(filter._data)
             {
-                ArcheTypeDatas = new ArcheTypeData[0],
-                HashCode = 0,
-                LockObj = new object(),
-                Context = context,
-                AllOfConfigs = new ComponentConfig[0],
-                AnyOfConfigs = new ComponentConfig[0],
-                NoneOfConfigs = new ComponentConfig[0],
-                SharedDataIndexes = new SharedDataIndex[0],
-                FilterByComponents = new ISharedComponent[0],
-                FilterComponentDatas = new ISharedComponentData[0]
+                ArcheTypeDatas = filter._data.ArcheTypeDatas,
+                ArcheTypeDataVersion = filter._data.ArcheTypeDataVersion,
+                HashCode = filter._data.HashCode,
             };
         }
 
@@ -99,6 +100,39 @@ namespace EcsLte
             return false;
         }
 
+        internal bool HasWhereAllOf(ComponentConfig config)
+        {
+            for (var i = 0; i < _data.AllOfConfigs.Length; i++)
+            {
+                if (_data.AllOfConfigs[i] == config)
+                    return true;
+            }
+
+            return false;
+        }
+
+        internal bool HasWhereAnyOf(ComponentConfig config)
+        {
+            for (var i = 0; i < _data.AllOfConfigs.Length; i++)
+            {
+                if (_data.AllOfConfigs[i] == config)
+                    return true;
+            }
+
+            return false;
+        }
+
+        internal bool HasWhereNoneOf(ComponentConfig config)
+        {
+            for (var i = 0; i < _data.NoneOfConfigs.Length; i++)
+            {
+                if (_data.NoneOfConfigs[i] == config)
+                    return true;
+            }
+
+            return false;
+        }
+
         #endregion
 
         #region WhereOf
@@ -115,19 +149,9 @@ namespace EcsLte
                 AssertHasWhereAnyOf(config);
                 AssertHasWhereNoneOf(config);
 
-                _data = new Data
+                _data = new Data(_data)
                 {
-                    ArcheTypeDatas = new ArcheTypeData[0],
-                    //ArcheTypeDataVersion
-                    HashCode = 0,
-                    LockObj = new object(),
-                    Context = _data.Context,
-                    AllOfConfigs = Helper.CopyInsertSort(_data.AllOfConfigs, config),
-                    AnyOfConfigs = _data.AnyOfConfigs,
-                    NoneOfConfigs = _data.NoneOfConfigs,
-                    SharedDataIndexes = _data.SharedDataIndexes,
-                    FilterByComponents = _data.FilterByComponents,
-                    FilterComponentDatas = _data.FilterComponentDatas
+                    AllOfConfigs = Helper.CopyInsertSort(_data.AllOfConfigs, config)
                 };
             }
 
@@ -151,25 +175,53 @@ namespace EcsLte
 
             if (configs.Count != _data.AllOfConfigs.Length)
             {
-                _data = new Data
+                _data = new Data(_data)
                 {
-                    ArcheTypeDatas = new ArcheTypeData[0],
-                    //ArcheTypeDataVersion
-                    HashCode = 0,
-                    LockObj = new object(),
-                    Context = _data.Context,
-                    AllOfConfigs = new ComponentConfig[configs.Count],
-                    AnyOfConfigs = _data.AnyOfConfigs,
-                    NoneOfConfigs = _data.NoneOfConfigs,
-                    SharedDataIndexes = _data.SharedDataIndexes,
-                    FilterByComponents = _data.FilterByComponents,
-                    FilterComponentDatas = _data.FilterComponentDatas
+                    AllOfConfigs = new ComponentConfig[configs.Count]
                 };
                 configs.CopyTo(_data.AllOfConfigs);
                 Array.Sort(_data.AllOfConfigs);
             }
 
             return this;
+        }
+
+        internal void WhereAllOf(ComponentConfig config)
+        {
+            _data = new Data(_data)
+            {
+                AllOfConfigs = Helper.CopyInsertSort(_data.AllOfConfigs, config)
+            };
+        }
+
+        internal void RemoveAnyOf(ComponentConfig config)
+        {
+            var anyOfIndex = -1;
+            for (var i = 0; i < _data.AnyOfConfigs.Length; i++)
+            {
+                if (_data.AnyOfConfigs[i] == config)
+                {
+                    anyOfIndex = i;
+                    break;
+                }
+            }
+
+            if (anyOfIndex == -1)
+                return;
+
+            var data = new Data(_data);
+            if (data.AnyOfConfigs.Length == 1)
+                data.AnyOfConfigs = new ComponentConfig[0];
+            else
+            {
+                data.AnyOfConfigs = new ComponentConfig[data.AnyOfConfigs.Length - 1];
+                if (anyOfIndex > 0)
+                    Array.Copy(_data.AnyOfConfigs, 0, data.AnyOfConfigs, 0, anyOfIndex);
+                if (anyOfIndex != _data.AnyOfConfigs.Length - 1)
+                    Array.Copy(_data.AnyOfConfigs, anyOfIndex + 1, data.AnyOfConfigs, anyOfIndex, (_data.AnyOfConfigs.Length - 1) - anyOfIndex);
+            }
+
+            _data = data;
         }
 
         public EntityFilter WhereAnyOf<TComponent>()
@@ -184,19 +236,9 @@ namespace EcsLte
                 AssertHasWhereAllOf(config);
                 AssertHasWhereNoneOf(config);
 
-                _data = new Data
+                _data = new Data(_data)
                 {
-                    ArcheTypeDatas = new ArcheTypeData[0],
-                    //ArcheTypeDataVersion
-                    HashCode = 0,
-                    LockObj = new object(),
-                    Context = _data.Context,
-                    AllOfConfigs = _data.AllOfConfigs,
-                    AnyOfConfigs = Helper.CopyInsertSort(_data.AnyOfConfigs, config),
-                    NoneOfConfigs = _data.NoneOfConfigs,
-                    SharedDataIndexes = _data.SharedDataIndexes,
-                    FilterByComponents = _data.FilterByComponents,
-                    FilterComponentDatas = _data.FilterComponentDatas
+                    AnyOfConfigs = Helper.CopyInsertSort(_data.AnyOfConfigs, config)
                 };
             }
 
@@ -220,19 +262,9 @@ namespace EcsLte
 
             if (configs.Count != _data.AnyOfConfigs.Length)
             {
-                _data = new Data
+                _data = new Data(_data)
                 {
-                    ArcheTypeDatas = new ArcheTypeData[0],
-                    //ArcheTypeDataVersion
-                    HashCode = 0,
-                    LockObj = new object(),
-                    Context = _data.Context,
-                    AllOfConfigs = _data.AllOfConfigs,
-                    AnyOfConfigs = new ComponentConfig[configs.Count],
-                    NoneOfConfigs = _data.NoneOfConfigs,
-                    SharedDataIndexes = _data.SharedDataIndexes,
-                    FilterByComponents = _data.FilterByComponents,
-                    FilterComponentDatas = _data.FilterComponentDatas
+                    AnyOfConfigs = new ComponentConfig[configs.Count]
                 };
                 configs.CopyTo(_data.AnyOfConfigs);
                 Array.Sort(_data.AnyOfConfigs);
@@ -253,19 +285,9 @@ namespace EcsLte
                 AssertHasWhereAllOf(config);
                 AssertHasWhereAnyOf(config);
 
-                _data = new Data
+                _data = new Data(_data)
                 {
-                    ArcheTypeDatas = new ArcheTypeData[0],
-                    //ArcheTypeDataVersion
-                    HashCode = 0,
-                    LockObj = new object(),
-                    Context = _data.Context,
-                    AllOfConfigs = _data.AllOfConfigs,
-                    AnyOfConfigs = _data.AnyOfConfigs,
-                    NoneOfConfigs = Helper.CopyInsertSort(_data.NoneOfConfigs, config),
-                    SharedDataIndexes = _data.SharedDataIndexes,
-                    FilterByComponents = _data.FilterByComponents,
-                    FilterComponentDatas = _data.FilterComponentDatas
+                    NoneOfConfigs = Helper.CopyInsertSort(_data.NoneOfConfigs, config)
                 };
             }
 
@@ -289,19 +311,9 @@ namespace EcsLte
 
             if (configs.Count != _data.NoneOfConfigs.Length)
             {
-                _data = new Data
+                _data = new Data(_data)
                 {
-                    ArcheTypeDatas = new ArcheTypeData[0],
-                    //ArcheTypeDataVersion
-                    HashCode = 0,
-                    LockObj = new object(),
-                    Context = _data.Context,
-                    AllOfConfigs = _data.AllOfConfigs,
-                    AnyOfConfigs = _data.AnyOfConfigs,
-                    NoneOfConfigs = new ComponentConfig[configs.Count],
-                    SharedDataIndexes = _data.SharedDataIndexes,
-                    FilterByComponents = _data.FilterByComponents,
-                    FilterComponentDatas = _data.FilterComponentDatas
+                    NoneOfConfigs = new ComponentConfig[configs.Count]
                 };
                 configs.CopyTo(_data.NoneOfConfigs);
                 Array.Sort(_data.NoneOfConfigs);
@@ -358,20 +370,7 @@ namespace EcsLte
             AssertHasWhereAnyOf(componentData.Config);
             AssertHasWhereNoneOf(componentData.Config);
 
-            var data = new Data
-            {
-                ArcheTypeDatas = new ArcheTypeData[0],
-                //ArcheTypeDataVersion
-                HashCode = 0,
-                LockObj = new object(),
-                Context = _data.Context,
-                //AllOfConfigs
-                AnyOfConfigs = _data.AnyOfConfigs,
-                NoneOfConfigs = _data.NoneOfConfigs,
-                //SharedDataIndexes
-                //FilterComponents
-                //FilterComponentDatas
-            };
+            var data = new Data(_data);
 
             if (HasFilterBy<TComponent>())
             {
@@ -450,19 +449,7 @@ namespace EcsLte
             }
             filterDatas.Sort();
 
-            var data = new Data
-            {
-                ArcheTypeDatas = new ArcheTypeData[0],
-                //ArcheTypeDataVersion
-                HashCode = 0,
-                LockObj = new object(),
-                Context = _data.Context,
-                //AllOfConfigs
-                AnyOfConfigs = _data.AnyOfConfigs,
-                NoneOfConfigs = _data.NoneOfConfigs,
-                //FilterComponents
-                //FilterComponentDatas
-            };
+            var data = new Data(_data);
 
             data.AllOfConfigs = new ComponentConfig[configs.Count];
             configs.CopyTo(data.AllOfConfigs);
@@ -576,7 +563,7 @@ namespace EcsLte
         {
             for (var i = 0; i < _data.AnyOfConfigs.Length; i++)
             {
-                if (archeType.HasConfig(_data.AllOfConfigs[i]))
+                if (archeType.HasConfig(_data.AnyOfConfigs[i]))
                     return true;
             }
 
@@ -587,12 +574,13 @@ namespace EcsLte
         {
             for (var i = 0; i < _data.NoneOfConfigs.Length; i++)
             {
-                if (archeType.HasConfig(_data.AllOfConfigs[i]))
+                if (archeType.HasConfig(_data.NoneOfConfigs[i]))
                     return false;
             }
 
             return true;
         }
+
 
         private unsafe bool IsFilteredFilterBy(ArcheType archeType)
         {
@@ -703,6 +691,36 @@ namespace EcsLte
 
                     return _noneOfTypes;
                 }
+            }
+
+            public Data(EcsContext context)
+            {
+                ArcheTypeDatas = new ArcheTypeData[0];
+                //ArcheTypeDataVersion
+                //HashCode
+                LockObj = new object();
+                Context = context;
+                AllOfConfigs = new ComponentConfig[0];
+                AnyOfConfigs = new ComponentConfig[0];
+                NoneOfConfigs = new ComponentConfig[0];
+                SharedDataIndexes = new SharedDataIndex[0];
+                FilterByComponents = new ISharedComponent[0];
+                FilterComponentDatas = new ISharedComponentData[0];
+            }
+
+            public Data(Data data)
+            {
+                ArcheTypeDatas = new ArcheTypeData[0];
+                //ArcheTypeDataVersion
+                //HashCode
+                LockObj = new object();
+                Context = data.Context;
+                AllOfConfigs = data.AllOfConfigs;
+                AnyOfConfigs = data.AnyOfConfigs;
+                NoneOfConfigs = data.NoneOfConfigs;
+                SharedDataIndexes = data.SharedDataIndexes;
+                FilterByComponents = data.FilterByComponents;
+                FilterComponentDatas = data.FilterComponentDatas;
             }
         }
     }

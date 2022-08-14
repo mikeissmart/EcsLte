@@ -23,8 +23,8 @@ namespace EcsLte.BenchmarkTest
                 .WithOrderer(new DefaultOrderer(SummaryOrderPolicy.Method, MethodOrderPolicy.Alphabetical));
             ;
 #if DEBUG
-            BenchmarkRunner.Run(typeof(Program).Assembly, config);
-            //BenchmarkRunner.Run<EcsContextTests.EcsContext_CreateEntity>(config);
+            //BenchmarkRunner.Run(typeof(Program).Assembly, config);
+            BenchmarkRunner.Run<EcsContextTests.EntityQueryForEachTests>(config);
             Console.WriteLine("done");
             Console.ReadLine();
 #else

@@ -5,37 +5,19 @@ using System.Text;
 
 namespace EcsLte
 {
-    public class EntityQuery
+    public partial class EntityQuery
     {
-        /*
-        var query = Context.Queries
-            .SetFilter(new EntityFilter())
-            .SetTracking(Context.Tracking.CreateTracker("Name"))
-            .SetCommands(Context.Commands.CreateCommands("Name"))
-            .ForEach(
-                (int index, Entity entity, ref/in component1 - 8) =>
-                {
-                    bool applyChanges = false;
-                    return applyChanges; // Only when there is at least 1 ref
-                })
-            .Run(isParallel);
-        query.ClearFilter();
-        query.Tracker.StopTracking();
-        query.ForEach(
-            (int index, Entity entity) =>
-            {
-                // Something
-            });
-        query.Run(isParallel);
-         */
-        public EcsContext Context { get; private set; }
-        public EntityCommands Commands { get; private set; }
-        public EntityFilter Filter { get; private set; }
-        public EntityTracker Tracker { get; private set; }
+        private static readonly int _threadCount = (int)(Environment.ProcessorCount * 0.75);
+        private Data _data;
+
+        public EcsContext Context { get => _data.Context; }
+        public EntityCommands Commands { get => _data.Commands; }
+        public EntityFilter Filter { get => _data.Filter; }
+        public EntityTracker Tracker { get => _data.Tracker; }
 
         internal EntityQuery(EcsContext context)
         {
-            Context = context;
+            _data = new Data(context);
         }
 
         public EntityQuery SetCommands(EntityCommands commands)
@@ -43,7 +25,10 @@ namespace EcsLte
             Context.AssertContext();
             EntityCommands.AssertEntityCommands(commands, Context);
 
-            Commands = commands;
+            _data = new Data(_data)
+            {
+                Commands = commands
+            };
 
             return this;
         }
@@ -52,7 +37,10 @@ namespace EcsLte
         {
             Context.AssertContext();
 
-            Commands = null;
+            _data = new Data(_data)
+            {
+                Commands = null
+            };
 
             return this;
         }
@@ -62,7 +50,10 @@ namespace EcsLte
             Context.AssertContext();
             EntityFilter.AssertEntityFilter(filter, Context);
 
-            Filter = filter;
+            _data = new Data(_data)
+            {
+                Filter = filter
+            };
 
             return this;
         }
@@ -71,7 +62,10 @@ namespace EcsLte
         {
             Context.AssertContext();
 
-            Filter = null;
+            _data = new Data(_data)
+            {
+                Filter = null
+            };
 
             return this;
         }
@@ -81,7 +75,10 @@ namespace EcsLte
             Context.AssertContext();
             EntityTracker.AssertEntityTracker(tracker, Context);
 
-            Tracker = tracker;
+            _data = new Data(_data)
+            {
+                Tracker = tracker
+            };
 
             return this;
         }
@@ -90,10 +87,19 @@ namespace EcsLte
         {
             Context.AssertContext();
 
-            Tracker = null;
+            _data = new Data(_data)
+            {
+                Tracker = null
+            };
 
             return this;
         }
+
+        public void Run()
+            => InternalRun(false);
+
+        public void RunParallel()
+            => InternalRun(true);
 
         #region Assert
 
@@ -108,5 +114,48 @@ namespace EcsLte
         }
 
         #endregion
+
+        private delegate void ForEachRunAction(ForEachOptions options);
+
+        private class Data
+        {
+            public EcsContext Context;
+            public EntityCommands Commands;
+            public EntityFilter Filter;
+            public EntityTracker Tracker;
+            public ComponentConfig[] ReadConfigs;
+            public ComponentConfig[] WriteConfigs;
+            public ForEachRunAction Action;
+            public ForEachRunAction CommandAction;
+            public Entity[] Entities;
+            public List<IEntityQueryCommand>[] CachedCommands;
+
+            public Data(EcsContext context)
+            {
+                Context = context;
+
+                ReadConfigs = new ComponentConfig[0];
+                WriteConfigs = new ComponentConfig[0];
+                Entities = new Entity[0];
+                CachedCommands = new List<IEntityQueryCommand>[_threadCount];
+
+                for (var i = 0; i < _threadCount; i++)
+                    CachedCommands[i] = new List<IEntityQueryCommand>();
+            }
+
+            public Data(Data data)
+            {
+                Context = data.Context;
+                Commands = data.Commands;
+                Filter = data.Filter;
+                Tracker = data.Tracker;
+                ReadConfigs = data.ReadConfigs;
+                WriteConfigs = data.WriteConfigs;
+                Action = data.Action;
+                CommandAction = data.CommandAction;
+                Entities = data.Entities;
+                CachedCommands = data.CachedCommands;
+            }
+        }
     }
 }

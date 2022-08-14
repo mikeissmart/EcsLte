@@ -70,6 +70,8 @@
     <Compile Include="EntityManagerTests\EntityManagerTests_EntityDuplicate.cs" />
     <Compile Include="EntityManagerTests\EntityManagerTests_EntityGet.cs" />
     <Compile Include="EntityManagerTests\EntityManagerTests_EntityHas.cs" />
+    <Compile Include="EntityQueryTests\EntityQueryTests.cs" />
+    <Compile Include="EntityQueryTests\EntityQueryTests_ForEach.cs" />
     <Compile Include="EntityTrackerTests\EntityTrackerManagerTests.cs" />
     <Compile Include="EntityTrackerTests\EntityTrackerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
