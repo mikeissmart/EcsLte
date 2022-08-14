@@ -3,7 +3,6 @@ using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace EcsLte
 {
@@ -166,10 +165,7 @@ namespace EcsLte
             return this;
         }
 
-        internal bool HasArcheTypeData(ArcheTypeData archeTypeData)
-        {
-            return _archeTypeDatas.ContainsKey(archeTypeData);
-        }
+        internal bool HasArcheTypeData(ArcheTypeData archeTypeData) => _archeTypeDatas.ContainsKey(archeTypeData);
 
         internal int GetArcheTypeDataEntityCount(ArcheTypeData archeTypeData)
         {

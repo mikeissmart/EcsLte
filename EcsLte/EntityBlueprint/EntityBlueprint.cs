@@ -2,7 +2,6 @@
 using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte
 {
@@ -10,50 +9,35 @@ namespace EcsLte
     {
         private Data _data;
 
-        public IGeneralComponent[] Components { get => _data.Components; }
-        public IManagedComponent[] ManagedComponents { get => _data.ManagedComponents; }
-        public ISharedComponent[] SharedComponents { get => _data.SharedComponents; }
-        internal IGeneralComponentData[] GeneralComponentDatas { get => _data.GeneralComponentDatas; }
-        internal IManagedComponentData[] ManagedComponentDatas { get => _data.ManagedComponentDatas; }
-        internal ISharedComponentData[] SharedComponentDatas { get => _data.SharedComponentDatas; }
+        public IGeneralComponent[] Components => _data.Components;
+        public IManagedComponent[] ManagedComponents => _data.ManagedComponents;
+        public ISharedComponent[] SharedComponents => _data.SharedComponents;
+        internal IGeneralComponentData[] GeneralComponentDatas => _data.GeneralComponentDatas;
+        internal IManagedComponentData[] ManagedComponentDatas => _data.ManagedComponentDatas;
+        internal ISharedComponentData[] SharedComponentDatas => _data.SharedComponentDatas;
 
-        public EntityBlueprint()
+        public EntityBlueprint() => _data = new Data
         {
-            _data = new Data
-            {
-                ContextArcheTypes = new Dictionary<EcsContext, EntityArcheType>(),
-                HashCode = 0,
-                Components = new IGeneralComponent[0],
-                ManagedComponents = new IManagedComponent[0],
-                SharedComponents = new ISharedComponent[0],
-                GeneralComponentDatas = new IGeneralComponentData[0],
-                ManagedComponentDatas = new IManagedComponentData[0],
-                SharedComponentDatas = new ISharedComponentData[0],
-            };
-        }
+            ContextArcheTypes = new Dictionary<EcsContext, EntityArcheType>(),
+            HashCode = 0,
+            Components = new IGeneralComponent[0],
+            ManagedComponents = new IManagedComponent[0],
+            SharedComponents = new ISharedComponent[0],
+            GeneralComponentDatas = new IGeneralComponentData[0],
+            ManagedComponentDatas = new IManagedComponentData[0],
+            SharedComponentDatas = new ISharedComponentData[0],
+        };
 
-        internal EntityBlueprint(EntityBlueprint blueprint)
-        {
-            _data = blueprint._data;
-        }
+        internal EntityBlueprint(EntityBlueprint blueprint) => _data = blueprint._data;
 
         public bool HasComponent<TComponent>()
-            where TComponent : unmanaged, IGeneralComponent
-        {
-            return IndexOfComponent(ComponentConfig<TComponent>.Config) != -1;
-        }
+            where TComponent : unmanaged, IGeneralComponent => IndexOfComponent(ComponentConfig<TComponent>.Config) != -1;
 
         public bool HasManagedComponent<TComponent>()
-            where TComponent : IManagedComponent
-        {
-            return IndexOfManagedComponent(ComponentConfig<TComponent>.Config) != -1;
-        }
+            where TComponent : IManagedComponent => IndexOfManagedComponent(ComponentConfig<TComponent>.Config) != -1;
 
         public bool HasSharedComponent<TComponent>()
-            where TComponent : unmanaged, ISharedComponent
-        {
-            return IndexOfSharedComponent(ComponentConfig<TComponent>.Config) != -1;
-        }
+            where TComponent : unmanaged, ISharedComponent => IndexOfSharedComponent(ComponentConfig<TComponent>.Config) != -1;
 
         public TComponent GetComponent<TComponent>()
             where TComponent : unmanaged, IGeneralComponent

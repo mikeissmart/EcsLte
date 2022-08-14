@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace EcsLte
+﻿namespace EcsLte
 {
     public class EntityQueryManager
     {
         public EcsContext Context { get; private set; }
 
-        internal EntityQueryManager(EcsContext context)
-        {
-            Context = context;
-        }
+        internal EntityQueryManager(EcsContext context) => Context = context;
 
         public EntityQuery SetCommands(EntityCommands commands)
             => new EntityQuery(Context)

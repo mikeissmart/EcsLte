@@ -1,5 +1,4 @@
-﻿using EcsLte.Exceptions;
-using System;
+﻿using System;
 
 namespace EcsLte
 {
@@ -23,14 +22,11 @@ namespace EcsLte
         public static bool operator !=(ComponentConfig lhs, ComponentConfig rhs)
             => !(lhs == rhs);
 
-        public static bool operator ==(ComponentConfig lhs, ComponentConfig rhs)
-        {
-            return lhs.ComponentIndex == rhs.ComponentIndex &&
+        public static bool operator ==(ComponentConfig lhs, ComponentConfig rhs) => lhs.ComponentIndex == rhs.ComponentIndex &&
                 lhs.UnmanagedSizeInBytes == rhs.UnmanagedSizeInBytes &&
                 lhs.IsGeneral == rhs.IsGeneral &&
                 lhs.IsManaged == rhs.IsManaged &&
                 lhs.IsShared == rhs.IsShared;
-        }
 
         public bool Equals(ComponentConfig other)
             => this == other;

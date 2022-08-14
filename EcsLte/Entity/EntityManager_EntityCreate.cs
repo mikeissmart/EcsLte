@@ -1,7 +1,4 @@
 ﻿using EcsLte.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte
 {
@@ -66,10 +63,7 @@ namespace EcsLte
             return entities;
         }
 
-        public void CreateEntities(ref Entity[] entities, int count)
-        {
-            CreateEntities(ref entities, 0, count);
-        }
+        public void CreateEntities(ref Entity[] entities, int count) => CreateEntities(ref entities, 0, count);
 
         public void CreateEntities(ref Entity[] entities, int startingIndex, int count)
         {
@@ -120,10 +114,7 @@ namespace EcsLte
             return entities;
         }
 
-        public void CreateEntities(EntityBlueprint blueprint, ref Entity[] entities, int count)
-        {
-            CreateEntities(blueprint, ref entities, 0, count);
-        }
+        public void CreateEntities(EntityBlueprint blueprint, ref Entity[] entities, int count) => CreateEntities(blueprint, ref entities, 0, count);
 
         public void CreateEntities(EntityBlueprint blueprint, ref Entity[] entities, int startingIndex, int count)
         {

@@ -2,7 +2,6 @@
 using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte
 {
@@ -10,14 +9,14 @@ namespace EcsLte
     {
         private Data _data;
 
-        public EcsContext Context { get => _data.Context; }
-        public Type[] AllOfTypes { get => _data.AllOfTypes; }
-        public Type[] AnyOfTypes { get => _data.AnyOfTypes; }
-        public Type[] NoneOfTypes { get => _data.NoneOfTypes; }
-        public ISharedComponent[] FilterByComponents { get => _data.FilterByComponents; }
-        internal SharedDataIndex[] SharedDataIndexes { get => _data.SharedDataIndexes; }
-        internal ISharedComponentData[] FilterComponentDatas { get => _data.FilterComponentDatas; }
-        internal int ConfigCount { get => _data.AllOfConfigs.Length + _data.AnyOfConfigs.Length + _data.NoneOfConfigs.Length; }
+        public EcsContext Context => _data.Context;
+        public Type[] AllOfTypes => _data.AllOfTypes;
+        public Type[] AnyOfTypes => _data.AnyOfTypes;
+        public Type[] NoneOfTypes => _data.NoneOfTypes;
+        public ISharedComponent[] FilterByComponents => _data.FilterByComponents;
+        internal SharedDataIndex[] SharedDataIndexes => _data.SharedDataIndexes;
+        internal ISharedComponentData[] FilterComponentDatas => _data.FilterComponentDatas;
+        internal int ConfigCount => _data.AllOfConfigs.Length + _data.AnyOfConfigs.Length + _data.NoneOfConfigs.Length;
         internal ArcheTypeData[] ArcheTypeDatas
         {
             get => _data.ArcheTypeDatas;
@@ -28,24 +27,18 @@ namespace EcsLte
             get => _data.ArcheTypeDataVersion;
             set => _data.ArcheTypeDataVersion = value;
         }
-        internal ComponentConfig[] AllOfConfigs { get => _data.AllOfConfigs; }
-        internal ComponentConfig[] AnyOfConfigs { get => _data.AnyOfConfigs; }
-        internal ComponentConfig[] NoneOfConfigs { get => _data.NoneOfConfigs; }
+        internal ComponentConfig[] AllOfConfigs => _data.AllOfConfigs;
+        internal ComponentConfig[] AnyOfConfigs => _data.AnyOfConfigs;
+        internal ComponentConfig[] NoneOfConfigs => _data.NoneOfConfigs;
 
-        internal EntityFilter(EcsContext context)
-        {
-            _data = new Data(context);
-        }
+        internal EntityFilter(EcsContext context) => _data = new Data(context);
 
-        internal EntityFilter(EntityFilter filter)
+        internal EntityFilter(EntityFilter filter) => _data = new Data(filter._data)
         {
-            _data = new Data(filter._data)
-            {
-                ArcheTypeDatas = filter._data.ArcheTypeDatas,
-                ArcheTypeDataVersion = filter._data.ArcheTypeDataVersion,
-                HashCode = filter._data.HashCode,
-            };
-        }
+            ArcheTypeDatas = filter._data.ArcheTypeDatas,
+            ArcheTypeDataVersion = filter._data.ArcheTypeDataVersion,
+            HashCode = filter._data.HashCode,
+        };
 
         #region WhereOfHas
 
@@ -186,13 +179,10 @@ namespace EcsLte
             return this;
         }
 
-        internal void WhereAllOf(ComponentConfig config)
+        internal void WhereAllOf(ComponentConfig config) => _data = new Data(_data)
         {
-            _data = new Data(_data)
-            {
-                AllOfConfigs = Helper.CopyInsertSort(_data.AllOfConfigs, config)
-            };
-        }
+            AllOfConfigs = Helper.CopyInsertSort(_data.AllOfConfigs, config)
+        };
 
         internal void RemoveAnyOf(ComponentConfig config)
         {
@@ -449,9 +439,10 @@ namespace EcsLte
             }
             filterDatas.Sort();
 
-            var data = new Data(_data);
-
-            data.AllOfConfigs = new ComponentConfig[configs.Count];
+            var data = new Data(_data)
+            {
+                AllOfConfigs = new ComponentConfig[configs.Count]
+            };
             configs.CopyTo(data.AllOfConfigs);
 
             data.FilterComponentDatas = filterDatas.ToArray();

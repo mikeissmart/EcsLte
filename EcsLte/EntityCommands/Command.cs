@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EcsLte
+﻿namespace EcsLte
 {
     internal interface IEntityCommand
     {
@@ -20,7 +16,7 @@ namespace EcsLte
             where TComponent : unmanaged, IGeneralComponent
     {
         private Entity _entity;
-        private TComponent _component;
+        private readonly TComponent _component;
 
         internal EntityCommand_AddComponent(Entity entity, TComponent component)
         {
@@ -36,7 +32,7 @@ namespace EcsLte
             where TComponent : IManagedComponent
     {
         private Entity _entity;
-        private TComponent _component;
+        private readonly TComponent _component;
 
         internal EntityCommand_AddManagedComponent(Entity entity, TComponent component)
         {
@@ -52,7 +48,7 @@ namespace EcsLte
             where TComponent : unmanaged, ISharedComponent
     {
         private Entity _entity;
-        private TComponent _component;
+        private readonly TComponent _component;
 
         internal EntityCommand_AddSharedComponent(Entity entity, TComponent component)
         {
@@ -980,7 +976,7 @@ namespace EcsLte
             where TComponent : unmanaged, IGeneralComponent
     {
         private Entity _entity;
-        private TComponent _component;
+        private readonly TComponent _component;
 
         internal EntityCommand_UpdateComponent(Entity entity, TComponent component)
         {
@@ -996,7 +992,7 @@ namespace EcsLte
             where TComponent : IManagedComponent
     {
         private Entity _entity;
-        private TComponent _component;
+        private readonly TComponent _component;
 
         internal EntityCommand_UpdateManagedComponent(Entity entity, TComponent component)
         {
@@ -1012,7 +1008,7 @@ namespace EcsLte
             where TComponent : unmanaged, ISharedComponent
     {
         private Entity _entity;
-        private TComponent _component;
+        private readonly TComponent _component;
 
         internal EntityCommand_UpdateSharedComponent(Entity entity, TComponent component)
         {
@@ -1030,7 +1026,7 @@ namespace EcsLte
 
     internal class EntityCommand_CopyEntityTo : IEntityCommand
     {
-        private EntityManager _srcEntityManager;
+        private readonly EntityManager _srcEntityManager;
         private Entity _srcEntity;
 
         internal EntityCommand_CopyEntityTo(EntityManager srcEntityManager, Entity srcEntity)
@@ -1045,8 +1041,8 @@ namespace EcsLte
 
     internal class EntityCommand_CopyEntitiesTo : IEntityCommand
     {
-        private EntityManager _srcEntityManager;
-        private Entity[] _srcEntities;
+        private readonly EntityManager _srcEntityManager;
+        private readonly Entity[] _srcEntities;
 
         internal EntityCommand_CopyEntitiesTo(EntityManager srcEntityManager, Entity[] srcEntities)
         {
@@ -1061,7 +1057,7 @@ namespace EcsLte
 
     internal class EntityCommand_CopyEntitiesTo_EntityArcheType : IEntityCommand
     {
-        private EntityArcheType _srcArcheType;
+        private readonly EntityArcheType _srcArcheType;
 
         internal EntityCommand_CopyEntitiesTo_EntityArcheType(EntityArcheType srcArcheType) => _srcArcheType = srcArcheType;
 
@@ -1075,7 +1071,7 @@ namespace EcsLte
 
     internal class EntityCommand_CreateEntities : IEntityCommand
     {
-        private int _count;
+        private readonly int _count;
 
         internal EntityCommand_CreateEntities(int count) => _count = count;
 
@@ -1085,8 +1081,8 @@ namespace EcsLte
 
     internal class EntityCommand_CreateEntities_EntityArcheType : IEntityCommand
     {
-        private EntityArcheType _archeType;
-        private int _count;
+        private readonly EntityArcheType _archeType;
+        private readonly int _count;
 
         internal EntityCommand_CreateEntities_EntityArcheType(EntityArcheType archeType, int count)
         {
@@ -1100,8 +1096,8 @@ namespace EcsLte
 
     internal class EntityCommand_CreateEntities_EntityBlueprint : IEntityCommand
     {
-        private EntityBlueprint _blueprint;
-        private int _count;
+        private readonly EntityBlueprint _blueprint;
+        private readonly int _count;
 
         internal EntityCommand_CreateEntities_EntityBlueprint(EntityBlueprint blueprint, int count)
         {
@@ -1129,7 +1125,7 @@ namespace EcsLte
 
     internal class EntityCommand_DestroyEntities : IEntityCommand
     {
-        private Entity[] _entities;
+        private readonly Entity[] _entities;
 
         internal EntityCommand_DestroyEntities(Entity[] entities) => _entities = entities;
 
@@ -1153,7 +1149,7 @@ namespace EcsLte
 
     internal class EntityCommand_DuplicateEntities : IEntityCommand
     {
-        private Entity[] _entities;
+        private readonly Entity[] _entities;
 
         internal EntityCommand_DuplicateEntities(Entity[] entities) => _entities = entities;
 

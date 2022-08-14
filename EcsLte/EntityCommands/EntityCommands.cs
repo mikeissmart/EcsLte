@@ -1,13 +1,12 @@
 ﻿using EcsLte.Exceptions;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte
 {
     public class EntityCommands
     {
-        private List<IEntityCommand> _commands;
+        private readonly List<IEntityCommand> _commands;
         private Entity[] _cachedEntities;
         private readonly object _lockObj;
 
@@ -583,16 +582,10 @@ namespace EcsLte
         }
 
         public void CopyEntitiesTo(EntityManager srcEntityManager,
-            in Entity[] srcEntities)
-        {
-            CopyEntitiesTo(srcEntityManager, srcEntities, 0, srcEntities?.Length ?? 0);
-        }
+            in Entity[] srcEntities) => CopyEntitiesTo(srcEntityManager, srcEntities, 0, srcEntities?.Length ?? 0);
 
         public void CopyEntitiesTo(EntityManager srcEntityManager,
-            in Entity[] srcEntities, int srcStartingIndex)
-        {
-            CopyEntitiesTo(srcEntityManager, srcEntities, srcStartingIndex, (srcEntities?.Length ?? 0) - srcStartingIndex);
-        }
+            in Entity[] srcEntities, int srcStartingIndex) => CopyEntitiesTo(srcEntityManager, srcEntities, srcStartingIndex, (srcEntities?.Length ?? 0) - srcStartingIndex);
 
         public void CopyEntitiesTo(EntityManager srcEntityManager,
             in Entity[] srcEntities, int srcStartingIndex, int srcCount)
@@ -697,15 +690,9 @@ namespace EcsLte
             }
         }
 
-        public void DestroyEntities(in Entity[] entities)
-        {
-            DestroyEntities(entities, 0, entities?.Length ?? 0);
-        }
+        public void DestroyEntities(in Entity[] entities) => DestroyEntities(entities, 0, entities?.Length ?? 0);
 
-        public void DestroyEntities(in Entity[] entities, int startingIndex)
-        {
-            DestroyEntities(entities, startingIndex, (entities?.Length ?? 0) - startingIndex);
-        }
+        public void DestroyEntities(in Entity[] entities, int startingIndex) => DestroyEntities(entities, startingIndex, (entities?.Length ?? 0) - startingIndex);
 
         public void DestroyEntities(in Entity[] entities, int startingIndex, int count)
         {
@@ -734,15 +721,9 @@ namespace EcsLte
             }
         }
 
-        public void DuplicateEntities(in Entity[] srcEntities)
-        {
-            DuplicateEntities(srcEntities, 0, srcEntities?.Length ?? 0);
-        }
+        public void DuplicateEntities(in Entity[] srcEntities) => DuplicateEntities(srcEntities, 0, srcEntities?.Length ?? 0);
 
-        public void DuplicateEntities(in Entity[] srcEntities, int startingIndex)
-        {
-            DuplicateEntities(srcEntities, startingIndex, (srcEntities?.Length ?? 0) - startingIndex);
-        }
+        public void DuplicateEntities(in Entity[] srcEntities, int startingIndex) => DuplicateEntities(srcEntities, startingIndex, (srcEntities?.Length ?? 0) - startingIndex);
 
         public void DuplicateEntities(in Entity[] srcEntities, int startingIndex, int count)
         {
@@ -784,10 +765,7 @@ namespace EcsLte
             }
         }
 
-        internal void InternalDestroy()
-        {
-            IsDestroyed = true;
-        }
+        internal void InternalDestroy() => IsDestroyed = true;
 
         #region Assert
 

@@ -1,7 +1,5 @@
 ﻿using EcsLte.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte
 {
@@ -23,19 +21,16 @@ namespace EcsLte
     {
         private ComponentConfig _config;
 
-        public ComponentConfig Config { get => _config; }
+        public ComponentConfig Config => _config;
 
-        public ComponentGeneralAdapter()
-        {
-            _config = ComponentConfig<TComponent>.Config;
-        }
+        public ComponentGeneralAdapter() => _config = ComponentConfig<TComponent>.Config;
 
         public unsafe TComponent2 GetComponent<TComponent2>(int entityIndex, ArcheTypeData archeTypeData)
             where TComponent2 : IComponent
         {
-           InteropTools.PtrToStructure<TComponent2>(
-               (IntPtr)archeTypeData.GetComponentPtr(entityIndex, _config),
-               out var component);
+            InteropTools.PtrToStructure<TComponent2>(
+                (IntPtr)archeTypeData.GetComponentPtr(entityIndex, _config),
+                out var component);
 
             return component;
         }
@@ -52,10 +47,7 @@ namespace EcsLte
 
         public unsafe void SetComponent<TComponent2>(int entityIndex, TComponent2 component, ArcheTypeData archeTypeData)
             where TComponent2 : IComponent
-        {
-            InteropTools.StructureToPtr(ref component,
-                (IntPtr)archeTypeData.GetComponentPtr(entityIndex, _config));
-        }
+                => InteropTools.StructureToPtr(ref component, (IntPtr)archeTypeData.GetComponentPtr(entityIndex, _config));
 
         public void AddConfig<TComponent2>(ref ArcheType cachedArcheType, TComponent2 component, SharedComponentDictionaries sharedDics)
             where TComponent2 : IComponent
@@ -70,12 +62,9 @@ namespace EcsLte
     {
         private ComponentConfig _config;
 
-        public ComponentConfig Config { get => _config; }
+        public ComponentConfig Config => _config;
 
-        public ComponentManagedAdapter()
-        {
-            _config = ComponentConfig<TComponent>.Config;
-        }
+        public ComponentManagedAdapter() => _config = ComponentConfig<TComponent>.Config;
 
         public TComponent2 GetComponent<TComponent2>(int entityIndex, ArcheTypeData archeTypeData)
             where TComponent2 : IComponent
@@ -83,11 +72,8 @@ namespace EcsLte
                 .GetComponent(entityIndex);
 
         public void SetComponent<TComponent2>(int entityIndex, TComponent2 component, ArcheTypeData archeTypeData)
-            where TComponent2 : IComponent
-        {
-            archeTypeData.GetManagedComponentPool(_config)
+            where TComponent2 : IComponent => archeTypeData.GetManagedComponentPool(_config)
                 .SetComponent(entityIndex, component);
-        }
 
         public void AddConfig<TComponent2>(ref ArcheType cachedArcheType, TComponent2 component, SharedComponentDictionaries sharedDics)
             where TComponent2 : IComponent
@@ -102,12 +88,9 @@ namespace EcsLte
     {
         private ComponentConfig _config;
 
-        public ComponentConfig Config { get => _config; }
+        public ComponentConfig Config => _config;
 
-        public ComponentSharedAdapter()
-        {
-            _config = ComponentConfig<TComponent>.Config;
-        }
+        public ComponentSharedAdapter() => _config = ComponentConfig<TComponent>.Config;
 
         public unsafe TComponent2 GetComponent<TComponent2>(int entityIndex, ArcheTypeData archeTypeData)
             where TComponent2 : IComponent

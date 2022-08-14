@@ -38,10 +38,7 @@ namespace EcsLte
     {
         public ComponentConfig Config { get; private set; }
 
-        public ComponentData(ComponentConfig config)
-        {
-            Config = config;
-        }
+        public ComponentData(ComponentConfig config) => Config = config;
 
         public int CompareTo(IComponentData other)
             => Config.CompareTo(other.Config);
@@ -55,14 +52,11 @@ namespace EcsLte
     {
         private readonly TComponent _component;
 
-        public TComponent Component { get => _component; }
-        IGeneralComponent IGeneralComponentData.Component { get => _component; }
+        public TComponent Component => _component;
+        IGeneralComponent IGeneralComponentData.Component => _component;
 
         internal GeneralComponentData(TComponent component)
-            : base(ComponentConfig<TComponent>.Config)
-        {
-            _component = component;
-        }
+            : base(ComponentConfig<TComponent>.Config) => _component = component;
 
         public unsafe void SetComponentData(ArcheTypeData archeTypeData, int index)
             => archeTypeData.SetComponent(index, Config, _component);
@@ -76,14 +70,11 @@ namespace EcsLte
     {
         private readonly TComponent _component;
 
-        public TComponent Component { get => _component; }
-        IManagedComponent IManagedComponentData.Component { get => _component; }
+        public TComponent Component => _component;
+        IManagedComponent IManagedComponentData.Component => _component;
 
         internal ManagedComponentData(TComponent component)
-            : base(ComponentConfig<TComponent>.Config)
-        {
-            _component = component;
-        }
+            : base(ComponentConfig<TComponent>.Config) => _component = component;
 
         public void SetComponentData(ArcheTypeData archeTypeData, int entityIndex)
             => archeTypeData.SetManagedComponent(entityIndex, Config, _component);
@@ -98,14 +89,11 @@ namespace EcsLte
         private readonly TComponent _component;
         private int _hashCode;
 
-        public TComponent Component { get => _component; }
-        ISharedComponent ISharedComponentData.Component { get => _component; }
+        public TComponent Component => _component;
+        ISharedComponent ISharedComponentData.Component => _component;
 
         internal SharedComponentData(TComponent component)
-            : base(ComponentConfig<TComponent>.Config)
-        {
-            _component = component;
-        }
+            : base(ComponentConfig<TComponent>.Config) => _component = component;
 
         public bool ComponentEquals<TComponentEqual>(TComponentEqual component)
             where TComponentEqual : unmanaged, ISharedComponent

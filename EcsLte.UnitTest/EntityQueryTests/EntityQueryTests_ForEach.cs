@@ -1,5 +1,4 @@
-﻿using EcsLte.Exceptions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 
 namespace EcsLte.UnitTest.EntityQueryTests
@@ -1688,11 +1687,8 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
         }
 
-        private void AssertReadComponent(Entity entity, ITestComponent component)
-        {
-            Assert.IsTrue(component.Prop == entity.Id,
+        private void AssertReadComponent(Entity entity, ITestComponent component) => Assert.IsTrue(component.Prop == entity.Id,
                 $"Entity: {entity}");
-        }
 
         private void AssertTracked(EntityTracker tracker, Entity[] entities)
         {

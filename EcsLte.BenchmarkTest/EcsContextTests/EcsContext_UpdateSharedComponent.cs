@@ -44,7 +44,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         }
 
         [IterationSetup]
-        public void IterationSetup() => _entities = _context.Entities.CreateEntities(_blueprint,  _entities.Length);
+        public void IterationSetup() => _entities = _context.Entities.CreateEntities(_blueprint, _entities.Length);
 
         [IterationCleanup]
         public void IterationCleanup() => _context.Entities.DestroyEntities(_entities);
@@ -77,7 +77,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             _query1 = _context.Queries
                 .SetFilter(_context.Filters
                     .WhereAllOf(_archeType1));
-            _query2= _context.Queries
+            _query2 = _context.Queries
                 .SetFilter(_context.Filters
                     .WhereAllOf(_archeType2));
             _query3 = _context.Queries

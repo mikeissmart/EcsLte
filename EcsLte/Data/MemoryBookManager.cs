@@ -1,8 +1,4 @@
-﻿using EcsLte.Utilities;
-using System;
-using System.Collections.Generic;
-
-namespace EcsLte.Data
+﻿namespace EcsLte.Data
 {
     /*public unsafe class MemoryBookManager
     {

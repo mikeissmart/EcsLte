@@ -1,7 +1,6 @@
 ﻿using EcsLte.Exceptions;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte
 {
@@ -10,15 +9,12 @@ namespace EcsLte
         private static readonly int _threadCount = (int)(Environment.ProcessorCount * 0.75);
         private Data _data;
 
-        public EcsContext Context { get => _data.Context; }
-        public EntityCommands Commands { get => _data.Commands; }
-        public EntityFilter Filter { get => _data.Filter; }
-        public EntityTracker Tracker { get => _data.Tracker; }
+        public EcsContext Context => _data.Context;
+        public EntityCommands Commands => _data.Commands;
+        public EntityFilter Filter => _data.Filter;
+        public EntityTracker Tracker => _data.Tracker;
 
-        internal EntityQuery(EcsContext context)
-        {
-            _data = new Data(context);
-        }
+        internal EntityQuery(EcsContext context) => _data = new Data(context);
 
         public EntityQuery SetCommands(EntityCommands commands)
         {

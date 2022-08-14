@@ -2,7 +2,6 @@
 using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte
 {
@@ -315,11 +314,8 @@ namespace EcsLte
         }
 
         public int CopyAllEntitiesTo(EntityManager srcEntityManager,
-            ref Entity[] destEntities)
-        {
-            return CopyAllEntitiesTo(srcEntityManager,
+            ref Entity[] destEntities) => CopyAllEntitiesTo(srcEntityManager,
                 ref destEntities, 0);
-        }
 
         public int CopyAllEntitiesTo(EntityManager srcEntityManager,
             ref Entity[] destEntities, int destStartingIndex)

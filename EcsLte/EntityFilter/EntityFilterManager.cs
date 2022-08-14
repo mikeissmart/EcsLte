@@ -1,19 +1,10 @@
-﻿using EcsLte.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace EcsLte
+﻿namespace EcsLte
 {
     public class EntityFilterManager
     {
         public EcsContext Context { get; private set; }
 
-        internal EntityFilterManager(EcsContext context)
-        {
-            Context = context;
-        }
+        internal EntityFilterManager(EcsContext context) => Context = context;
 
         public EntityFilter WhereAllOf<TComponent>()
             where TComponent : IComponent

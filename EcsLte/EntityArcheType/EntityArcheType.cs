@@ -1,8 +1,6 @@
 ﻿using EcsLte.Exceptions;
 using EcsLte.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte
 {
@@ -10,37 +8,34 @@ namespace EcsLte
     {
         private Data _data;
 
-        public EcsContext Context { get => _data.Context; }
-        public Type[] ComponentTypes { get => _data.ComponentTypes; }
-        public Type[] ManagedComponentTypes { get => _data.ManagedComponentTypes; }
-        public Type[] SharedComponentTypes { get => _data.SharedComponentTypes; }
-        public ISharedComponent[] SharedComponents { get => _data.SharedComponents; }
-        internal SharedDataIndex[] SharedDataIndexes { get => _data.SharedDataIndexes; }
-        internal ISharedComponentData[] SharedComponentDatas { get => _data.SharedComponentDatas; }
-        internal ComponentConfig[] AllConfigs { get => _data.AllConfigs; }
+        public EcsContext Context => _data.Context;
+        public Type[] ComponentTypes => _data.ComponentTypes;
+        public Type[] ManagedComponentTypes => _data.ManagedComponentTypes;
+        public Type[] SharedComponentTypes => _data.SharedComponentTypes;
+        public ISharedComponent[] SharedComponents => _data.SharedComponents;
+        internal SharedDataIndex[] SharedDataIndexes => _data.SharedDataIndexes;
+        internal ISharedComponentData[] SharedComponentDatas => _data.SharedComponentDatas;
+        internal ComponentConfig[] AllConfigs => _data.AllConfigs;
         internal ArcheTypeData ArcheTypeData
         {
             get => _data.ArcheTypeData;
             set => _data.ArcheTypeData = value;
         }
 
-        internal EntityArcheType(EcsContext context)
+        internal EntityArcheType(EcsContext context) => _data = new Data
         {
-            _data = new Data
-            {
-                //ArcheTypeData
-                HashCode = 0,
-                LockObj = new object(),
-                Context = context,
-                AllConfigs = new ComponentConfig[0],
-                Configs = new ComponentConfig[0],
-                ManagedConfigs = new ComponentConfig[0],
-                SharedConfigs = new ComponentConfig[0],
-                SharedDataIndexes = new SharedDataIndex[0],
-                SharedComponents = new ISharedComponent[0],
-                SharedComponentDatas = new ISharedComponentData[0]
-            };
-        }
+            //ArcheTypeData
+            HashCode = 0,
+            LockObj = new object(),
+            Context = context,
+            AllConfigs = new ComponentConfig[0],
+            Configs = new ComponentConfig[0],
+            ManagedConfigs = new ComponentConfig[0],
+            SharedConfigs = new ComponentConfig[0],
+            SharedDataIndexes = new SharedDataIndex[0],
+            SharedComponents = new ISharedComponent[0],
+            SharedComponentDatas = new ISharedComponentData[0]
+        };
 
         internal EntityArcheType(EcsContext context, EntityBlueprint blueprint)
         {
@@ -50,7 +45,7 @@ namespace EcsLte
                 HashCode = 0,
                 LockObj = new object(),
                 Context = context,
-                AllConfigs = new ComponentConfig[blueprint.Components.Length + 
+                AllConfigs = new ComponentConfig[blueprint.Components.Length +
                     blueprint.ManagedComponents.Length +
                     blueprint.SharedComponents.Length],
                 Configs = new ComponentConfig[blueprint.GeneralComponentDatas.Length],
@@ -126,10 +121,7 @@ namespace EcsLte
                 _data.SharedComponents[i] = archeTypeData.SharedComponentDatas[i].Component;
         }
 
-        internal EntityArcheType(EntityArcheType archeType)
-        {
-            _data = archeType._data;
-        }
+        internal EntityArcheType(EntityArcheType archeType) => _data = archeType._data;
 
         public bool HasComponent<TComponent>()
             where TComponent : unmanaged, IGeneralComponent
@@ -305,27 +297,24 @@ namespace EcsLte
 
         #region Private
 
-        private void AppendConfig(ComponentConfig config)
+        private void AppendConfig(ComponentConfig config) => _data = new Data
         {
-            _data = new Data
-            {
-                //ArcheTypeData
-                HashCode = 0,
-                LockObj = new object(),
-                Context = _data.Context,
-                AllConfigs = Helper.CopyInsertSort(_data.AllConfigs, config),
-                Configs = config.IsGeneral
+            //ArcheTypeData
+            HashCode = 0,
+            LockObj = new object(),
+            Context = _data.Context,
+            AllConfigs = Helper.CopyInsertSort(_data.AllConfigs, config),
+            Configs = config.IsGeneral
                     ? Helper.CopyInsertSort(_data.Configs, config)
                     : _data.Configs,
-                ManagedConfigs = config.IsManaged
+            ManagedConfigs = config.IsManaged
                     ? Helper.CopyInsertSort(_data.ManagedConfigs, config)
                     : _data.ManagedConfigs,
-                SharedConfigs = _data.SharedConfigs,
-                SharedDataIndexes = _data.SharedDataIndexes,
-                SharedComponents = _data.SharedComponents,
-                SharedComponentDatas = _data.SharedComponentDatas
-            };
-        }
+            SharedConfigs = _data.SharedConfigs,
+            SharedDataIndexes = _data.SharedDataIndexes,
+            SharedComponents = _data.SharedComponents,
+            SharedComponentDatas = _data.SharedComponentDatas
+        };
 
         private void AppendSharedConfig(ComponentConfig config, bool hasComponent, ISharedComponentData sharedComponentData)
         {

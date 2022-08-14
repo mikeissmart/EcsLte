@@ -1,7 +1,5 @@
 ﻿using EcsLte.Utilities;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte
 {
@@ -13,17 +11,15 @@ namespace EcsLte
         internal int SharedDataIndexesLength;
 
         internal static ArcheType Alloc(int configsLength, int sharedDataIndexesLength)
-        {
-            return new ArcheType
+            => new ArcheType
             {
                 Configs = MemoryHelper.Alloc<ComponentConfig>(configsLength),
                 SharedDataIndexes = sharedDataIndexesLength > 0
-                    ? MemoryHelper.Alloc<SharedDataIndex>(sharedDataIndexesLength)
-                    : null,
+                        ? MemoryHelper.Alloc<SharedDataIndex>(sharedDataIndexesLength)
+                        : null,
                 ConfigsLength = configsLength,
                 SharedDataIndexesLength = sharedDataIndexesLength
             };
-        }
 
         internal static ArcheType AllocClone(ArcheType src)
         {

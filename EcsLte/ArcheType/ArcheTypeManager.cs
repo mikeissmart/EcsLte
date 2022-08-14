@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace EcsLte
 {
@@ -16,7 +15,7 @@ namespace EcsLte
 
         public EcsContext Context { get; private set; }
 
-        internal List<List<ArcheTypeData>> ArcheTypeDatas { get => _archeTypeIndexes; }
+        internal List<List<ArcheTypeData>> ArcheTypeDatas => _archeTypeIndexes;
 
         internal ArcheTypeManager(EcsContext context)
         {
@@ -177,15 +176,9 @@ namespace EcsLte
             return entityIndex - startingIndex;
         }
 
-        internal ArcheTypeData GetArcheTypeData(ArcheType cachedArcheType)
-        {
-            return InternalGetArcheTypeData(cachedArcheType);
-        }
+        internal ArcheTypeData GetArcheTypeData(ArcheType cachedArcheType) => InternalGetArcheTypeData(cachedArcheType);
 
-        internal ArcheTypeData GetArcheTypeData(ArcheTypeIndex archeIndex)
-        {
-            return _archeTypeIndexes[archeIndex.ConfigLength][archeIndex.Index];
-        }
+        internal ArcheTypeData GetArcheTypeData(ArcheTypeIndex archeIndex) => _archeTypeIndexes[archeIndex.ConfigLength][archeIndex.Index];
 
         internal ArcheTypeData GetArcheTypeData(EntityArcheType archeType)
         {

@@ -1,10 +1,7 @@
-﻿using EcsLte.Data;
-using EcsLte.Utilities;
+﻿using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace EcsLte
 {
@@ -318,10 +315,7 @@ namespace EcsLte
             EntityCount--;
         }
 
-        internal void RemoveAllEntities()
-        {
-            EntityCount = 0;
-        }
+        internal void RemoveAllEntities() => EntityCount = 0;
 
         internal void GetAllEntityComponents(int entityIndex, ref IComponent[] components, int startingIndex)
         {
@@ -513,13 +507,10 @@ namespace EcsLte
             public byte* Ptr(int index)
                 => Buffer + (ComponentSize * index);
 
-            public void CopySameArray(int srcIndex, int destIndex, int count)
-            {
-                MemoryHelper.Copy(
+            public void CopySameArray(int srcIndex, int destIndex, int count) => MemoryHelper.Copy(
                     Buffer + (ComponentSize * srcIndex),
                     Buffer + (ComponentSize * destIndex),
                     ComponentSize * count);
-            }
 
             public void CopyFrom(byte* srcBuffer, int srcIndex, int destIndex, int count)
             {
@@ -532,22 +523,13 @@ namespace EcsLte
                     ComponentSize * count);
             }
 
-            public void Clear(int index)
-            {
-                MemoryHelper.Clear(Buffer + (ComponentSize * index), ComponentSize);
-            }
+            public void Clear(int index) => MemoryHelper.Clear(Buffer + (ComponentSize * index), ComponentSize);
 
-            public void ClearRange(int index, int count)
-            {
-                MemoryHelper.Clear(
+            public void ClearRange(int index, int count) => MemoryHelper.Clear(
                     Buffer + (ComponentSize * index),
                     ComponentSize * count);
-            }
 
-            public void ClearAll(int count)
-            {
-                MemoryHelper.Clear(Buffer, ComponentSize * count);
-            }
+            public void ClearAll(int count) => MemoryHelper.Clear(Buffer, ComponentSize * count);
         }
     }
 }

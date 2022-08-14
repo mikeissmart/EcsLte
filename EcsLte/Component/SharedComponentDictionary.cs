@@ -1,7 +1,6 @@
 ﻿using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace EcsLte
 {
@@ -103,7 +102,7 @@ namespace EcsLte
 
     internal class SharedComponentDictionaries
     {
-        private ISharedComponentDictionary[] _dics;
+        private readonly ISharedComponentDictionary[] _dics;
 
         internal SharedComponentDictionaries()
         {

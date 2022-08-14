@@ -9,7 +9,7 @@ namespace EcsLte
 {
     internal static class ComponentConfigs
     {
-        private static ComponentConfigInit _instance = new ComponentConfigInit();
+        private static readonly ComponentConfigInit _instance = new ComponentConfigInit();
         private static Dictionary<Type, ComponentConfig> _componentConfigTypes;
 
         internal static ComponentConfig[] AllComponentConfigs { get; private set; }
@@ -27,10 +27,10 @@ namespace EcsLte
         internal static int[] AllManagedIndexes { get; private set; }
         internal static int[] AllSharedIndexes { get; private set; }
 
-        internal static int AllComponentCount { get => AllComponentConfigs.Length; }
-        internal static int AllGeneralCount { get => AllGeneralConfigs.Length; }
-        internal static int AllManagedCount { get => AllManagedConfigs.Length; }
-        internal static int AllSharedCount { get => AllSharedConfigs.Length; }
+        internal static int AllComponentCount => AllComponentConfigs.Length;
+        internal static int AllGeneralCount => AllGeneralConfigs.Length;
+        internal static int AllManagedCount => AllManagedConfigs.Length;
+        internal static int AllSharedCount => AllSharedConfigs.Length;
 
         internal static IComponentAdapter[] AllComponentAdapters { get; private set; }
         internal static IComponentAdapter[] AllGeneralAdapters { get; private set; }
@@ -273,10 +273,7 @@ namespace EcsLte
 
         private class ComponentConfigInit
         {
-            internal ComponentConfigInit()
-            {
-                ComponentConfigs.Initialize();
-            }
+            internal ComponentConfigInit() => ComponentConfigs.Initialize();
         }
     }
 }

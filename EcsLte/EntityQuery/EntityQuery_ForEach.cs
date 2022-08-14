@@ -2,8 +2,6 @@
 using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace EcsLte
@@ -2302,7 +2300,7 @@ namespace EcsLte
                     adapters[i] = (IEntityQueryAdapter)Activator.CreateInstance(
                         typeof(EntityQueryManagedAdapter<>).MakeGenericType(config.ComponentType));
                 }
-                else if(config.IsShared)
+                else if (config.IsShared)
                 {
                     adapters[i] = (IEntityQueryAdapter)Activator.CreateInstance(
                         typeof(EntityQuerySharedAdapter<>).MakeGenericType(config.ComponentType));
@@ -2351,7 +2349,7 @@ namespace EcsLte
 
         private class ForEachOptions
         {
-            private EcsContext _context;
+            private readonly EcsContext _context;
             private ArcheTypeData _prevArcheTypeData = null;
             private ArcheTypeIndex _prevArcheTypeIndex;
             private int _trackStartingIndex;
@@ -2359,7 +2357,7 @@ namespace EcsLte
             internal int Index { get; set; }
             internal Entity CurrentEntity { get; set; }
             internal int EntityIndex { get; set; }
-            internal ArcheTypeIndex ArcheTypeIndex { get => _prevArcheTypeIndex; }
+            internal ArcheTypeIndex ArcheTypeIndex => _prevArcheTypeIndex;
             internal IEntityQueryAdapter[] Adapters { get; set; }
             internal BatchOptions BatchOptions { get; private set; }
 

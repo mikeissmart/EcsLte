@@ -270,7 +270,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 },
                 (inSrc, x, destStartingIndex) =>
                 {
-                     _destContext.Entities.CopyEntitiesTo(Context.Entities, inSrc, ref x, destStartingIndex);
+                    _destContext.Entities.CopyEntitiesTo(Context.Entities, inSrc, ref x, destStartingIndex);
                 },
                 (inSrc, startingIndex, x, destStartingIndex) =>
                 {
@@ -397,8 +397,6 @@ namespace EcsLte.UnitTest.EntityManagerTests
                         _destContext.Entities.CopyEntitiesTo(x, ref emptyEntities, 0);
                     }
                 });
-
-            EntityManager nullEntities = null;
             Assert.ThrowsException<EntityCopyToSameContextException>(() =>
                     Context.Entities.CopyEntitiesTo(filter));
             Assert.ThrowsException<EntityCopyToSameContextException>(() =>

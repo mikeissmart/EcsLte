@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EcsLte
+﻿namespace EcsLte
 {
     internal interface IEntityQueryAdapter
     {
@@ -36,7 +32,7 @@ namespace EcsLte
             ConfigOffset = archeTypeData.GetConfigOffset(ComponentConfig<TComponent>.Config);
         }
 
-        public unsafe override ref TComponent GetRef(int entityIndex) =>
+        public override unsafe ref TComponent GetRef(int entityIndex) =>
             ref *(TComponent*)ArcheTypeData.GetComponentPtr(entityIndex, ConfigOffset);
     }
 
@@ -74,7 +70,7 @@ namespace EcsLte
             _originalComponent = archeTypeData.GetSharedComponent<TComponent>(ConfigOffset);
         }
 
-        public unsafe override ref TComponent GetRef(int entityIndex)
+        public override unsafe ref TComponent GetRef(int entityIndex)
         {
             _component = _originalComponent;
             return ref _component;

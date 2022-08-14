@@ -468,9 +468,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 });
         }
 
-        private void Assert_DuplicateEntities_Query_ContextDestroyed(EntityQuery query)
-        {
-            AssertGetRef_ContextDestroyed<Entity>(
+        private void Assert_DuplicateEntities_Query_ContextDestroyed(EntityQuery query) => AssertGetRef_ContextDestroyed<Entity>(
                 () =>
                 {
                     Context.Entities.DuplicateEntities(query);
@@ -483,7 +481,6 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 {
                     Context.Entities.DuplicateEntities(query, ref x, startingIndex);
                 });
-        }
 
         private TestResult AssertEntities(Entity[] orgEntities, int startingIndex,
             Entity[] dupEntities, int destStartingIndex, int destCount)
