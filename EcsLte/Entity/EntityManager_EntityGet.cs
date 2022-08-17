@@ -18,7 +18,7 @@ namespace EcsLte
         public int GetEntities(ref Entity[] entities, int startingIndex)
         {
             Context.AssertContext();
-            Helper.AssertEntities(entities, startingIndex);
+            Helper.AssertArray(entities, startingIndex);
 
             Context.ArcheTypes.GetAllEntities(ref entities, startingIndex);
 
@@ -44,7 +44,7 @@ namespace EcsLte
             var archeTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
             if (archeTypeData.EntityCount > 0)
             {
-                Helper.AssertAndResizeEntities(ref entities, startingIndex, archeTypeData.EntityCount);
+                Helper.AssertAndResizeArray(ref entities, startingIndex, archeTypeData.EntityCount);
                 archeTypeData.GetEntities(ref entities, startingIndex);
             }
 
@@ -66,7 +66,7 @@ namespace EcsLte
         {
             Context.AssertContext();
             EntityFilter.AssertEntityFilter(filter, Context);
-            Helper.AssertEntities(entities, startingIndex);
+            Helper.AssertArray(entities, startingIndex);
 
             var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
             var entityIndex = startingIndex;
@@ -75,7 +75,7 @@ namespace EcsLte
                 var archeTypeData = filteredArcheTypeDatas[i];
                 if (archeTypeData.EntityCount > 0)
                 {
-                    Helper.ResizeRefEntities(ref entities, entityIndex, archeTypeData.EntityCount);
+                    Helper.ResizeRefArray(ref entities, entityIndex, archeTypeData.EntityCount);
                     archeTypeData.GetEntities(ref entities, entityIndex);
                     entityIndex += archeTypeData.EntityCount;
                 }
@@ -99,7 +99,7 @@ namespace EcsLte
         {
             Context.AssertContext();
             EntityTracker.AssertEntityTracker(tracker, Context);
-            Helper.AssertEntities(entities, startingIndex);
+            Helper.AssertArray(entities, startingIndex);
 
             return tracker.GetAllEntities(ref entities, startingIndex);
         }
@@ -126,7 +126,7 @@ namespace EcsLte
                 return GetEntities(query.Tracker, ref entities, startingIndex);
             else if (query.Filter != null && query.Tracker != null)
             {
-                Helper.AssertEntities(entities, startingIndex);
+                Helper.AssertArray(entities, startingIndex);
 
                 var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(query.Filter);
                 var entityIndex = startingIndex;

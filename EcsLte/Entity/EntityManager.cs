@@ -169,7 +169,7 @@ namespace EcsLte
             if (archeTypeData.EntityCount > 0)
             {
                 var count = archeTypeData.EntityCount;
-                Helper.ResizeRefEntities(ref _cachedInternalEntities, 0, count);
+                Helper.ResizeRefArray(ref _cachedInternalEntities, 0, count);
                 archeTypeData.GetEntities(ref _cachedInternalEntities, 0);
                 for (var i = 0; i < count; i++)
                 {
@@ -205,7 +205,7 @@ namespace EcsLte
                 var copyArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
                 var prevEntityCount = copyArcheTypeData.EntityCount;
 
-                Helper.ResizeRefEntities(ref destEntities, destStartingIndex, srcArcheTypeData.EntityCount);
+                Helper.ResizeRefArray(ref destEntities, destStartingIndex, srcArcheTypeData.EntityCount);
                 CheckAndAllocEntities(copyArcheTypeData, false,
                     ref destEntities, destStartingIndex, srcArcheTypeData.EntityCount);
 
@@ -237,7 +237,7 @@ namespace EcsLte
                 }
 
                 var preEntityCount = archeTypeDatas.Item2.EntityCount;
-                Helper.ResizeRefEntities(ref destEntities, destStartingIndex, trackedEntityCount);
+                Helper.ResizeRefArray(ref destEntities, destStartingIndex, trackedEntityCount);
                 CheckAndAllocEntities(archeTypeDatas.Item2, false,
                     ref destEntities, destStartingIndex, trackedEntityCount);
 
@@ -261,7 +261,7 @@ namespace EcsLte
                 return 0;
 
             var preEntityCount = archeTypeData.EntityCount;
-            Helper.ResizeRefEntities(ref destEntities, destStartingIndex, preEntityCount);
+            Helper.ResizeRefArray(ref destEntities, destStartingIndex, preEntityCount);
             CheckAndAllocEntities(archeTypeData, false,
                 ref destEntities, destStartingIndex, archeTypeData.EntityCount);
 
@@ -281,7 +281,7 @@ namespace EcsLte
             if (trackedEntityCount > 0)
             {
                 var preEntityCount = archeTypeData.EntityCount;
-                Helper.ResizeRefEntities(ref destEntities, destStartingIndex, trackedEntityCount);
+                Helper.ResizeRefArray(ref destEntities, destStartingIndex, trackedEntityCount);
                 CheckAndAllocEntities(archeTypeData, false,
                     ref destEntities, destStartingIndex, trackedEntityCount);
 
@@ -344,7 +344,7 @@ namespace EcsLte
             else
                 ArcheType.AddConfig(ref _cachedArcheType, config, sharedDataIndex.Value);
 
-            Helper.ResizeRefEntities(ref _cachedInternalEntities, 0, prevArcheTypeData.EntityCount);
+            Helper.ResizeRefArray(ref _cachedInternalEntities, 0, prevArcheTypeData.EntityCount);
             prevArcheTypeData.GetEntities(ref _cachedInternalEntities, 0);
             var prevEntityCount = prevArcheTypeData.EntityCount;
 
@@ -421,7 +421,7 @@ namespace EcsLte
                     ref _cachedInternalEntities, 0);
                 if (trackedEntityCount > 0)
                 {
-                    Helper.ResizeRefComponents(ref destComponents, destStartingIndex, trackedEntityCount);
+                    Helper.ResizeRefArray(ref destComponents, destStartingIndex, trackedEntityCount);
 
                     var configOffset = archeTypeData.GetConfigOffset(config);
                     for (var i = 0; i < trackedEntityCount; i++, destStartingIndex++)
@@ -448,7 +448,7 @@ namespace EcsLte
                     ref _cachedInternalEntities, 0);
                 if (trackedEntityCount > 0)
                 {
-                    Helper.ResizeRefComponents(ref destComponents, destStartingIndex, trackedEntityCount);
+                    Helper.ResizeRefArray(ref destComponents, destStartingIndex, trackedEntityCount);
 
                     var configOffset = archeTypeData.GetConfigOffset(config);
                     for (var i = 0; i < trackedEntityCount; i++, destStartingIndex++)
@@ -486,7 +486,7 @@ namespace EcsLte
             ArcheTypeData prevArcheTypeData, ComponentConfig config, SharedDataIndex sharedDataIndex)
         {
             var prevEntityCount = prevArcheTypeData.EntityCount;
-            Helper.ResizeRefEntities(ref _cachedInternalEntities, 0, prevEntityCount);
+            Helper.ResizeRefArray(ref _cachedInternalEntities, 0, prevEntityCount);
             prevArcheTypeData.GetEntities(ref _cachedInternalEntities, 0);
 
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
@@ -563,7 +563,7 @@ namespace EcsLte
             else
                 ArcheType.RemoveConfigAndSharedDataIndex(ref _cachedArcheType, config);
 
-            Helper.ResizeRefEntities(ref _cachedInternalEntities, 0, prevArcheTypeData.EntityCount);
+            Helper.ResizeRefArray(ref _cachedInternalEntities, 0, prevArcheTypeData.EntityCount);
             prevArcheTypeData.GetEntities(ref _cachedInternalEntities, 0);
             var prevEntityCount = prevArcheTypeData.EntityCount;
 

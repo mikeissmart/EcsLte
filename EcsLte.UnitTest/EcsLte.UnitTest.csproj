@@ -76,6 +76,7 @@
     <Compile Include="EntityTrackerTests\EntityTrackerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Systems.cs" />
+    <Compile Include="SystemTests\SystemManagerTests.cs" />
     <Compile Include="TestResult.cs" />
     <Compile Include="UnitTestConsts.cs" />
   </ItemGroup>

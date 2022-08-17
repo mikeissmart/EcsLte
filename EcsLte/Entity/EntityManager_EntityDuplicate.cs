@@ -94,8 +94,8 @@ namespace EcsLte
         {
             Context.AssertContext();
             Context.AssertStructualChangeAvailable();
-            Helper.AssertEntities(srcEntities, srcStartingIndex, srcCount);
-            Helper.AssertAndResizeEntities(ref destEntities, destStartingIndex, srcCount);
+            Helper.AssertArray(srcEntities, srcStartingIndex, srcCount);
+            Helper.AssertAndResizeArray(ref destEntities, destStartingIndex, srcCount);
 
             for (var i = 0; i < srcCount; i++, srcStartingIndex++, destStartingIndex++)
             {
@@ -130,7 +130,7 @@ namespace EcsLte
             Context.AssertContext();
             Context.AssertStructualChangeAvailable();
             EntityArcheType.AssertEntityArcheType(archeType, Context);
-            Helper.AssertEntities(destEntities, destStartingIndex);
+            Helper.AssertArray(destEntities, destStartingIndex);
 
             return InternalDuplicateArcheTypeData(Context.ArcheTypes.GetArcheTypeData(archeType),
                 ref destEntities, destStartingIndex);
@@ -154,7 +154,7 @@ namespace EcsLte
             Context.AssertContext();
             Context.AssertStructualChangeAvailable();
             EntityFilter.AssertEntityFilter(filter, Context);
-            Helper.AssertEntities(destEntities, destStartingIndex);
+            Helper.AssertArray(destEntities, destStartingIndex);
 
             var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
             var entityIndex = destStartingIndex;
@@ -185,7 +185,7 @@ namespace EcsLte
             Context.AssertContext();
             Context.AssertStructualChangeAvailable();
             EntityTracker.AssertEntityTracker(tracker, Context);
-            Helper.AssertEntities(destEntities, destStartingIndex);
+            Helper.AssertArray(destEntities, destStartingIndex);
 
             var trackedArcheTypeDatas = tracker.CachedArcheTypeDatas;
             var entityIndex = destStartingIndex;
@@ -216,7 +216,7 @@ namespace EcsLte
             Context.AssertContext();
             Context.AssertStructualChangeAvailable();
             EntityQuery.AssertEntityQuery(query, Context);
-            Helper.AssertEntities(destEntities, destStartingIndex);
+            Helper.AssertArray(destEntities, destStartingIndex);
 
             if (query.Filter != null && query.Tracker == null)
                 return DuplicateEntities(query.Filter, ref destEntities, destStartingIndex);

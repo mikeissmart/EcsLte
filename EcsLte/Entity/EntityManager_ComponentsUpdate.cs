@@ -524,7 +524,7 @@ namespace EcsLte
             archeTypeData.SetComponents(0, archeTypeData.EntityCount,
                 config, component);
 
-            Helper.ResizeRefEntities(ref _cachedInternalEntities, 0, archeTypeData.EntityCount);
+            Helper.ResizeRefArray(ref _cachedInternalEntities, 0, archeTypeData.EntityCount);
             archeTypeData.GetEntities(ref _cachedInternalEntities, 0);
 
             Context.Tracking.TrackUpdates(_cachedInternalEntities, 0, archeTypeData.EntityCount,
@@ -547,7 +547,7 @@ namespace EcsLte
                     archeTypeData.SetComponents(0, archeTypeData.EntityCount,
                         config, component);
 
-                    Helper.ResizeRefEntities(ref _cachedInternalEntities, 0, archeTypeData.EntityCount);
+                    Helper.ResizeRefArray(ref _cachedInternalEntities, 0, archeTypeData.EntityCount);
                     archeTypeData.GetEntities(ref _cachedInternalEntities, 0);
 
                     Context.Tracking.TrackUpdates(_cachedInternalEntities, 0, archeTypeData.EntityCount,
@@ -627,7 +627,7 @@ namespace EcsLte
             archeTypeData.SetManagedComponents(0, archeTypeData.EntityCount,
                 config, component);
 
-            Helper.ResizeRefEntities(ref _cachedInternalEntities, 0, archeTypeData.EntityCount);
+            Helper.ResizeRefArray(ref _cachedInternalEntities, 0, archeTypeData.EntityCount);
             archeTypeData.GetEntities(ref _cachedInternalEntities, 0);
 
             Context.Tracking.TrackUpdates(_cachedInternalEntities, 0, archeTypeData.EntityCount,
@@ -650,7 +650,7 @@ namespace EcsLte
                     archeTypeData.SetManagedComponents(0, archeTypeData.EntityCount,
                         config, component);
 
-                    Helper.ResizeRefEntities(ref _cachedInternalEntities, 0, archeTypeData.EntityCount);
+                    Helper.ResizeRefArray(ref _cachedInternalEntities, 0, archeTypeData.EntityCount);
                     archeTypeData.GetEntities(ref _cachedInternalEntities, 0);
 
                     Context.Tracking.TrackUpdates(_cachedInternalEntities, 0, archeTypeData.EntityCount,

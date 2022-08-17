@@ -133,8 +133,8 @@ namespace EcsLte
             Context.AssertContext();
             Context.AssertStructualChangeAvailable();
             srcEntityManager.Context.AssertContext();
-            Helper.AssertEntities(srcEntities, srcStartingIndex, srcCount);
-            Helper.AssertAndResizeEntities(ref destEntities, destStartingIndex, srcCount);
+            Helper.AssertArray(srcEntities, srcStartingIndex, srcCount);
+            Helper.AssertAndResizeArray(ref destEntities, destStartingIndex, srcCount);
 
             var cachedArcheTypes = new Dictionary<ArcheTypeIndex, (ArcheTypeData, ArcheTypeData)>();
             for (var i = 0; i < srcCount; i++, srcStartingIndex++, destStartingIndex++)
@@ -183,7 +183,7 @@ namespace EcsLte
             srcArcheType.Context.AssertContext();
             if (Context == srcArcheType.Context)
                 throw new EntityCopyToSameContextException();
-            Helper.AssertEntities(destEntities, destStartingIndex);
+            Helper.AssertArray(destEntities, destStartingIndex);
 
             return InternalCopyToArcheTypeData(srcArcheType.Context.ArcheTypes.GetArcheTypeData(srcArcheType),
                     ref destEntities, destStartingIndex);
@@ -210,7 +210,7 @@ namespace EcsLte
             srcFilter.Context.AssertContext();
             if (Context == srcFilter.Context)
                 throw new EntityCopyToSameContextException();
-            Helper.AssertEntities(destEntities, destStartingIndex);
+            Helper.AssertArray(destEntities, destStartingIndex);
 
             var filteredArcheTypeDatas = srcFilter.Context.ArcheTypes.GetArcheTypeDatas(srcFilter);
             var entityIndex = destStartingIndex;
@@ -244,7 +244,7 @@ namespace EcsLte
             srcTracker.Context.AssertContext();
             if (Context == srcTracker.Context)
                 throw new EntityCopyToSameContextException();
-            Helper.AssertEntities(destEntities, destStartingIndex);
+            Helper.AssertArray(destEntities, destStartingIndex);
 
             var cachedArcheTypeDatas = new Dictionary<ArcheTypeIndex, (ArcheTypeData, ArcheTypeData)>();
             var trackedArcheTypeDatas = srcTracker.CachedArcheTypeDatas;
@@ -280,7 +280,7 @@ namespace EcsLte
             srcQuery.Context.AssertContext();
             if (Context == srcQuery.Context)
                 throw new EntityCopyToSameContextException();
-            Helper.AssertEntities(destEntities, destStartingIndex);
+            Helper.AssertArray(destEntities, destStartingIndex);
 
             if (srcQuery.Filter != null && srcQuery.Tracker == null)
                 return CopyEntitiesTo(srcQuery.Filter, ref destEntities, destStartingIndex);
@@ -328,7 +328,7 @@ namespace EcsLte
             Context.AssertContext();
             Context.AssertStructualChangeAvailable();
             srcEntityManager.Context.AssertContext();
-            Helper.AssertEntities(destEntities, destStartingIndex);
+            Helper.AssertArray(destEntities, destStartingIndex);
 
             var entityIndex = destStartingIndex;
             foreach (var archeTypeDatas in srcEntityManager.Context.ArcheTypes.ArcheTypeDatas)

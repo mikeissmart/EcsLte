@@ -69,7 +69,7 @@ namespace EcsLte
         {
             Context.AssertContext();
             Context.AssertStructualChangeAvailable();
-            Helper.AssertAndResizeEntities(ref entities, startingIndex, count);
+            Helper.AssertAndResizeArray(ref entities, startingIndex, count);
 
             if (count > 0)
             {
@@ -97,7 +97,7 @@ namespace EcsLte
             Context.AssertContext();
             Context.AssertStructualChangeAvailable();
             EntityArcheType.AssertEntityArcheType(archeType, Context);
-            Helper.AssertAndResizeEntities(ref entities, startingIndex, count);
+            Helper.AssertAndResizeArray(ref entities, startingIndex, count);
 
             if (count > 0)
             {
@@ -121,7 +121,7 @@ namespace EcsLte
             Context.AssertContext();
             Context.AssertStructualChangeAvailable();
             EntityBlueprint.AssertEntityBlueprint(blueprint);
-            Helper.AssertAndResizeEntities(ref entities, startingIndex, count);
+            Helper.AssertAndResizeArray(ref entities, startingIndex, count);
 
             if (count > 0)
             {

@@ -23,7 +23,7 @@ namespace EcsLte
             AssertNotExistEntity(entity,
                 out var entityData, out var archeTypeData);
 
-            Helper.AssertAndResizeComponents(ref destComponents,
+            Helper.AssertAndResizeArray(ref destComponents,
                 destStartingIndex, archeTypeData.ArcheType.ConfigsLength);
 
             archeTypeData.GetAllEntityComponents(entityData.EntityIndex,

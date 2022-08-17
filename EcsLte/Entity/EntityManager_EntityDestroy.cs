@@ -23,7 +23,7 @@ namespace EcsLte
         {
             Context.AssertContext();
             Context.AssertStructualChangeAvailable();
-            Helper.AssertEntities(entities, startingIndex, count);
+            Helper.AssertArray(entities, startingIndex, count);
 
             for (var i = 0; i < count; i++, startingIndex++)
             {

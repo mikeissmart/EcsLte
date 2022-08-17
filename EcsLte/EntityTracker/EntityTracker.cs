@@ -180,7 +180,7 @@ namespace EcsLte
             var entityIndex = startingIndex;
             foreach (var hashedEntities in _archeTypeDatas.Values)
             {
-                Helper.ResizeRefEntities(ref entities, entityIndex, hashedEntities.Count);
+                Helper.ResizeRefArray(ref entities, entityIndex, hashedEntities.Count);
                 hashedEntities.CopyTo(entities, entityIndex);
                 entityIndex += hashedEntities.Count;
             }
@@ -193,7 +193,7 @@ namespace EcsLte
             if (!_archeTypeDatas.TryGetValue(archeTypeData, out var hashedEntities))
                 return 0;
 
-            Helper.ResizeRefEntities(ref entities, startingIndex, hashedEntities.Count);
+            Helper.ResizeRefArray(ref entities, startingIndex, hashedEntities.Count);
             hashedEntities.CopyTo(entities, startingIndex);
 
             return hashedEntities.Count;

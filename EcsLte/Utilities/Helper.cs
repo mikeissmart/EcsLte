@@ -46,124 +46,44 @@ namespace EcsLte.Utilities
             return destination;
         }
 
-        internal static void ResizeRefEntities(ref Entity[] entities, int startingIndex, int count)
+        internal static void ResizeRefArray<T>(ref T[] array, int startingIndex, int count)
         {
-            if (startingIndex + count > entities.Length)
-                Array.Resize(ref entities, startingIndex + count);
-        }
-
-        internal static void ResizeRefComponents<TComponent>(ref TComponent[] components, int startingIndex, int count)
-            where TComponent : IComponent
-        {
-            if (startingIndex + count > components.Length)
-                Array.Resize(ref components, startingIndex + count);
-        }
-
-        internal static void ResizeRefArcheTypes(ref EntityArcheType[] archeTypes, int startingIndex, int count)
-        {
-            if (startingIndex + count > archeTypes.Length)
-                Array.Resize(ref archeTypes, startingIndex + count);
+            if (startingIndex + count > array.Length)
+                Array.Resize(ref array, startingIndex + count);
         }
 
         #region Assert
 
-        internal static void AssertEntities(in Entity[] entities, int startingIndex)
+        internal static void AssertArray<T>(in T[] array, int startingIndex)
         {
-            if (entities == null)
-                throw new ArgumentNullException(nameof(entities));
-            if (startingIndex < 0 || startingIndex > entities.Length)
+            if (array == null)
+                throw new ArgumentNullException();
+            if (startingIndex < 0 || startingIndex > array.Length)
                 throw new ArgumentOutOfRangeException(nameof(startingIndex));
         }
 
-        internal static void AssertEntities(in Entity[] entities, int startingIndex, int count)
+        internal static void AssertArray<T>(in T[] array, int startingIndex, int count)
         {
-            if (entities == null)
-                throw new ArgumentNullException(nameof(entities));
-            if (startingIndex < 0 || startingIndex > entities.Length)
+            if (array == null)
+                throw new ArgumentNullException();
+            if (startingIndex < 0 || startingIndex > array.Length)
                 throw new ArgumentOutOfRangeException(nameof(startingIndex));
             if (count < 0)
                 throw new ArgumentOutOfRangeException(nameof(count));
-            if (startingIndex + count < 0 || startingIndex + count >= entities.Length + 1)
+            if (startingIndex + count < 0 || startingIndex + count >= array.Length + 1)
                 throw new ArgumentOutOfRangeException();
         }
 
-        internal static void AssertAndResizeEntities(ref Entity[] entities, int startingIndex, int count)
+        internal static void AssertAndResizeArray<T>(ref T[] array, int startingIndex, int count)
         {
-            if (entities == null)
-                throw new ArgumentNullException(nameof(entities));
-            if (startingIndex < 0 || startingIndex > entities.Length)
+            if (array == null)
+                throw new ArgumentNullException();
+            if (startingIndex < 0 || startingIndex > array.Length)
                 throw new ArgumentOutOfRangeException(nameof(startingIndex));
             if (count < 0)
                 throw new ArgumentOutOfRangeException(nameof(count));
 
-            ResizeRefEntities(ref entities, startingIndex, count);
-        }
-
-        internal static void AssertComponents<TComponent>(in TComponent[] components, int startingIndex)
-            where TComponent : IComponent
-        {
-            if (components == null)
-                throw new ArgumentNullException(nameof(components));
-            if (startingIndex < 0 || startingIndex > components.Length)
-                throw new ArgumentOutOfRangeException(nameof(startingIndex));
-        }
-
-        internal static void AssertComponents<TComponent>(in TComponent[] components, int startingIndex, int count)
-            where TComponent : IComponent
-        {
-            if (components == null)
-                throw new ArgumentNullException(nameof(components));
-            if (startingIndex < 0 || startingIndex > components.Length)
-                throw new ArgumentOutOfRangeException(nameof(startingIndex));
-            if (count < 0)
-                throw new ArgumentOutOfRangeException(nameof(count));
-            if (startingIndex + count < 0 || startingIndex + count >= components.Length + 1)
-                throw new ArgumentOutOfRangeException();
-        }
-
-        internal static void AssertAndResizeComponents<TComponent>(ref TComponent[] components, int startingIndex, int count)
-            where TComponent : IComponent
-        {
-            if (components == null)
-                throw new ArgumentNullException(nameof(components));
-            if (startingIndex < 0 || startingIndex > components.Length)
-                throw new ArgumentOutOfRangeException(nameof(startingIndex));
-            if (count < 0)
-                throw new ArgumentOutOfRangeException(nameof(count));
-
-            ResizeRefComponents(ref components, startingIndex, count);
-        }
-
-        internal static void AssertArcheTypes(in EntityArcheType[] archeTypes, int startingIndex)
-        {
-            if (archeTypes == null)
-                throw new ArgumentNullException(nameof(archeTypes));
-            if (startingIndex < 0 || startingIndex > archeTypes.Length)
-                throw new ArgumentOutOfRangeException(nameof(startingIndex));
-        }
-
-        internal static void AssertArcheTypes(in EntityArcheType[] archeTypes, int startingIndex, int count)
-        {
-            if (archeTypes == null)
-                throw new ArgumentNullException(nameof(archeTypes));
-            if (startingIndex < 0 || startingIndex > archeTypes.Length)
-                throw new ArgumentOutOfRangeException(nameof(startingIndex));
-            if (count < 0)
-                throw new ArgumentOutOfRangeException(nameof(count));
-            if (startingIndex + count < 0 || startingIndex + count >= archeTypes.Length + 1)
-                throw new ArgumentOutOfRangeException();
-        }
-
-        internal static void AssertAndResizeArcheTypes(ref EntityArcheType[] archeTypes, int startingIndex, int count)
-        {
-            if (archeTypes == null)
-                throw new ArgumentNullException(nameof(archeTypes));
-            if (startingIndex < 0 || startingIndex > archeTypes.Length)
-                throw new ArgumentOutOfRangeException(nameof(startingIndex));
-            if (count < 0)
-                throw new ArgumentOutOfRangeException(nameof(count));
-
-            ResizeRefArcheTypes(ref archeTypes, startingIndex, count);
+            ResizeRefArray(ref array, startingIndex, count);
         }
 
         internal static void AssertDuplicateConfigs(params ComponentConfig[] configs)
