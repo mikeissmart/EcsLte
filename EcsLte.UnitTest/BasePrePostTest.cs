@@ -535,16 +535,18 @@ namespace EcsLte.UnitTest
                 "Ref StartingIndex Context Destroyed");
         }
 
-        protected void AssertArcheType_Invalid_Null(
+        protected void AssertArcheType_DiffContext_Null(
             params Action<EntityArcheType>[] assertActions)
         {
-            var invalid = new EntityArcheType();
+            var diffArcheType = EcsContexts.CreateContext(DateTime.Now.Ticks.ToString())
+                .ArcheTypes
+                .AddComponentType<TestComponent1>();
             EntityArcheType nullable = null;
 
             foreach (var action in assertActions)
             {
-                Assert.ThrowsException<ComponentsNoneException>(() => action(invalid),
-                    "Invalid");
+                Assert.ThrowsException<EcsContextNotSameException>(() => action(diffArcheType),
+                    "Context not same");
 
                 Assert.ThrowsException<ArgumentNullException>(() => action(nullable),
                     "Null");
@@ -577,7 +579,7 @@ namespace EcsLte.UnitTest
 
                 if (diffContext != null)
                 {
-                    Assert.ThrowsException<EcsContextDifferentException>(() => action(diffContext),
+                    Assert.ThrowsException<EcsContextNotSameException>(() => action(diffContext),
                         "Different Context");
                 }
 
@@ -587,10 +589,14 @@ namespace EcsLte.UnitTest
         }
 
         protected void AssertQuery_DiffContext_DestroyedTracker_Null(
-            EntityQuery diffContext,
             EntityQuery destroyedTracker,
             params Action<EntityQuery>[] assertActions)
         {
+            var diffContext = EcsContexts.CreateContext(DateTime.Now.Ticks.ToString());
+            var diffQuery = diffContext.Queries
+                .SetFilter(diffContext.Filters
+                    .WhereAllOf<TestComponent1>())
+                .SetTracker(diffContext.Tracking.CreateTracker(diffContext.Name));
             EntityQuery nullable = null;
 
             foreach (var action in assertActions)
@@ -600,7 +606,7 @@ namespace EcsLte.UnitTest
 
                 if (diffContext != null)
                 {
-                    Assert.ThrowsException<EcsContextDifferentException>(() => action(diffContext),
+                    Assert.ThrowsException<EcsContextNotSameException>(() => action(diffQuery),
                         "Different Context");
                 }
 

@@ -1,6 +1,6 @@
 ﻿namespace EcsLte.Data
 {
-    internal unsafe struct MemoryBook
+    /*internal unsafe struct MemoryBook
     {
         internal int Index;
         internal int PageCount;
@@ -10,5 +10,5 @@
         {
             Buffer = Buffer + (pageIndex * MemoryPage.PageBufferSizeInBytes)
         };
-    }
+    }*/
 }

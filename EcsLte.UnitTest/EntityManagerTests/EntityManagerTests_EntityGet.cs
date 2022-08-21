@@ -10,9 +10,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
         public void GetEntities()
         {
             var entities = Context.Entities.CreateEntities(
-                new EntityArcheType()
+                Context.ArcheTypes
                     .AddComponentType<TestComponent1>(),
-                EntityState.Active, UnitTestConsts.SmallCount);
+                UnitTestConsts.SmallCount);
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
                 () => Context.Entities.GetEntities(),
@@ -49,13 +49,13 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void GetEntities_ArcheType()
         {
-            var archeType = new EntityArcheType()
+            var archeType = Context.ArcheTypes
                     .AddComponentType<TestComponent1>();
 
             var entities = Context.Entities.CreateEntities(
-                new EntityArcheType()
+                Context.ArcheTypes
                     .AddComponentType<TestComponent1>(),
-                EntityState.Active, UnitTestConsts.SmallCount);
+                UnitTestConsts.SmallCount);
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
                 () => Context.Entities.GetEntities(archeType),
@@ -83,7 +83,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 });
 
             var emptyEntities = new Entity[0];
-            AssertArcheType_Invalid_Null(
+            AssertArcheType_DiffContext_Null(
                 new Action<EntityArcheType>[]
                 {
                     x => Context.Entities.GetEntities(x),
@@ -101,13 +101,13 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void GetEntities_Filter()
         {
-            var filter = new EntityFilter()
+            var filter = Context.Filters
                     .WhereAllOf<TestComponent1>();
 
             var entities = Context.Entities.CreateEntities(
-                new EntityArcheType()
+                Context.ArcheTypes
                     .AddComponentType<TestComponent1>(),
-                EntityState.Active, UnitTestConsts.SmallCount);
+                UnitTestConsts.SmallCount);
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
                 () => Context.Entities.GetEntities(filter),
@@ -153,14 +153,14 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void GetEntities_Tracker()
         {
-            var tracker = Context.Tracking.CreateTracker("Tracker");
-            tracker.SetComponentState<TestComponent1>(EntityTrackerState.Added);
-            tracker.StartTracking();
+            var tracker = Context.Tracking.CreateTracker("Tracker1")
+                .SetTrackingState<TestComponent1>(TrackingState.Added)
+                .StartTracking();
 
             var entities = Context.Entities.CreateEntities(
-                new EntityArcheType()
+                Context.ArcheTypes
                     .AddComponentType<TestComponent1>(),
-                EntityState.Active, UnitTestConsts.SmallCount);
+                UnitTestConsts.SmallCount);
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
                 () => Context.Entities.GetEntities(tracker),
@@ -212,55 +212,30 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void GetEntities_Query()
         {
-            var filter = new EntityFilter()
+            var filter = Context.Filters
                 .WhereAllOf<TestComponent1>();
 
-            var queryFilter = new EntityQuery(Context, filter);
-
-            var queryFilterTracker = new EntityQuery(Context.Tracking.CreateTracker("Tracker1"),
-                filter);
-            queryFilterTracker.Tracker.SetComponentState<TestComponent1>(EntityTrackerState.Added);
-            queryFilterTracker.Tracker.StartTracking();
+            var query = Context.Queries
+                .SetFilter(filter)
+                .SetTracker(Context.Tracking.CreateTracker("Tracker1")
+                    .SetTrackingState<TestComponent1>(TrackingState.Added)
+                    .StartTracking());
 
             var entities = Context.Entities.CreateEntities(
-                new EntityArcheType()
+                Context.ArcheTypes
                     .AddComponentType<TestComponent1>(),
-                EntityState.Active, UnitTestConsts.SmallCount);
+                UnitTestConsts.SmallCount);
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
-                () => Context.Entities.GetEntities(queryFilter),
+                () => Context.Entities.GetEntities(query),
                 x =>
                 {
-                    var count = Context.Entities.GetEntities(queryFilter, ref x);
+                    var count = Context.Entities.GetEntities(query, ref x);
                     return (x, count);
                 },
                 (x, startingIndex) =>
                 {
-                    var count = Context.Entities.GetEntities(queryFilter, ref x, startingIndex);
-                    return (x, count);
-                },
-                (x, startingIndex, count) =>
-                {
-                    var result = new TestResult();
-                    if (x.Length != startingIndex + count)
-                    {
-                        result.Success = false;
-                        result.Error = $"Ref Length: {entities.Length}, StartingIndex: {startingIndex}, Count: {count}";
-                    }
-                    else
-                        result = AssertEntities(entities, x, startingIndex, count);
-                    return result;
-                });
-            AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
-                () => Context.Entities.GetEntities(queryFilterTracker),
-                x =>
-                {
-                    var count = Context.Entities.GetEntities(queryFilterTracker, ref x);
-                    return (x, count);
-                },
-                (x, startingIndex) =>
-                {
-                    var count = Context.Entities.GetEntities(queryFilterTracker, ref x, startingIndex);
+                    var count = Context.Entities.GetEntities(query, ref x, startingIndex);
                     return (x, count);
                 },
                 (x, startingIndex, count) =>
@@ -276,11 +251,10 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     return result;
                 });
 
-            Context.Tracking.RemoveTracker(queryFilterTracker.Tracker);
             var refEntities = new Entity[0];
+            Context.Tracking.RemoveTracker(query.Tracker);
             AssertQuery_DiffContext_DestroyedTracker_Null(
-                new EntityQuery(EcsContexts.CreateContext("DiffContext"), filter),
-                queryFilterTracker,
+                query,
                 new Action<EntityQuery>[]
                 {
                     x => Context.Entities.GetEntities(x),
@@ -290,9 +264,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             EcsContexts.DestroyContext(Context);
             AssertGetRef_ContextDestroyed<Entity>(
-                () => Context.Entities.GetEntities(queryFilter),
-                x => Context.Entities.GetEntities(queryFilter, ref x),
-                (x, startingIndex) => Context.Entities.GetEntities(queryFilter, ref x, startingIndex));
+                () => Context.Entities.GetEntities(query),
+                x => Context.Entities.GetEntities(query, ref x),
+                (x, startingIndex) => Context.Entities.GetEntities(query, ref x, startingIndex));
         }
 
         private TestResult AssertEntities(Entity[] orginalEntities,

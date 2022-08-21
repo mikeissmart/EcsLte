@@ -1,4 +1,4 @@
-﻿using EcsLte.BenchmarkTest.EntityQueryTests;
+﻿using EcsLte.BenchmarkTest.EcsContextTests;
 using System;
 
 namespace EcsLte.BenchmarkTest
@@ -13,6 +13,10 @@ namespace EcsLte.BenchmarkTest
         public static TestSharedComponent2 SharedComponent2 = new TestSharedComponent2 { Prop = 6 };
         public static TestSharedComponent3 SharedComponent3 = new TestSharedComponent3 { Prop = 7 };
         public static TestSharedComponent4 SharedComponent4 = new TestSharedComponent4 { Prop = 8 };
+        public static TestManagedComponent1 ManagedComponent1 = new TestManagedComponent1 { Prop = 10 };
+        public static TestManagedComponent2 ManagedComponent2 = new TestManagedComponent2 { Prop = 11 };
+        public static TestManagedComponent3 ManagedComponent3 = new TestManagedComponent3 { Prop = 12 };
+        public static TestManagedComponent4 ManagedComponent4 = new TestManagedComponent4 { Prop = 13 };
 
         public static EntityBlueprint CreateBlueprint(ComponentArrangement compArr)
         {
@@ -25,6 +29,14 @@ namespace EcsLte.BenchmarkTest
                         .SetComponent(Component2)
                         .SetComponent(Component3)
                         .SetComponent(Component4);
+                    break;
+
+                case ComponentArrangement.Managed_x4:
+                    blueprint = blueprint
+                        .SetManagedComponent(ManagedComponent1)
+                        .SetManagedComponent(ManagedComponent2)
+                        .SetManagedComponent(ManagedComponent3)
+                        .SetManagedComponent(ManagedComponent4);
                     break;
 
                 case ComponentArrangement.Shared_x4:
@@ -42,18 +54,18 @@ namespace EcsLte.BenchmarkTest
             return blueprint;
         }
 
-        public static EntityBlueprint CreateBlueprint(EntityQuery_ForEach.ReadWriteType rwType)
+        public static EntityBlueprint CreateBlueprint(ReadWriteType rwType)
         {
             var blueprint = new EntityBlueprint();
             switch (rwType)
             {
-                case EntityQuery_ForEach.ReadWriteType.R0W0:
+                case ReadWriteType.R0W0:
                     blueprint = blueprint
                         .SetComponent(Component1);
                     break;
 
-                case EntityQuery_ForEach.ReadWriteType.R0W4_Normal_x4:
-                case EntityQuery_ForEach.ReadWriteType.R4W0_Normal_x4:
+                case ReadWriteType.R0W4_Normal_x4:
+                case ReadWriteType.R4W0_Normal_x4:
                     blueprint = blueprint
                         .SetComponent(Component1)
                         .SetComponent(Component2)
@@ -61,8 +73,17 @@ namespace EcsLte.BenchmarkTest
                         .SetComponent(Component4);
                     break;
 
-                case EntityQuery_ForEach.ReadWriteType.R0W4_Shared_x4:
-                case EntityQuery_ForEach.ReadWriteType.R4W0_Shared_x4:
+                case ReadWriteType.R0W4_Managed_x4:
+                case ReadWriteType.R4W0_Managed_x4:
+                    blueprint = blueprint
+                        .SetManagedComponent(ManagedComponent1)
+                        .SetManagedComponent(ManagedComponent2)
+                        .SetManagedComponent(ManagedComponent3)
+                        .SetManagedComponent(ManagedComponent4);
+                    break;
+
+                case ReadWriteType.R0W4_Shared_x4:
+                case ReadWriteType.R4W0_Shared_x4:
                     blueprint = blueprint
                         .SetSharedComponent(SharedComponent1)
                         .SetSharedComponent(SharedComponent2)

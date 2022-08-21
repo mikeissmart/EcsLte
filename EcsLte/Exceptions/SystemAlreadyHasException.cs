@@ -2,9 +2,9 @@
 
 namespace EcsLte.Exceptions
 {
-    public class SystemAlreadyHasException : EcsLteException
+    public class SystemAlreadyHaveException : EcsLteException
     {
-        public SystemAlreadyHasException(Type systemType)
+        public SystemAlreadyHaveException(Type systemType)
             : base($"Already has system '{systemType.Name}'.")
         {
         }

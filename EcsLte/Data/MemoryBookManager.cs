@@ -1,102 +1,76 @@
-﻿using EcsLte.Utilities;
-using System;
-using System.Collections.Generic;
-
-namespace EcsLte.Data
+﻿namespace EcsLte.Data
 {
-    public unsafe class MemoryBookManager
+    /*public unsafe class MemoryBookManager
     {
         private static readonly int _minPageCount = 10;
 
+        // TODO change managed classes to unmanaged arrays
         private readonly List<MemoryBook> _books;
         private readonly Queue<MemoryPage> _unusedPages;
-        private readonly object _lockObj;
 
         internal MemoryBookManager()
         {
             _books = new List<MemoryBook>();
             _unusedPages = new Queue<MemoryPage>();
-            _lockObj = new object();
         }
 
         internal MemoryPage CheckoutPage()
         {
-            lock (_lockObj)
-            {
-                AllocatePages(1);
+            AllocatePages(1);
 
-                return _unusedPages.Dequeue();
-            }
+            return _unusedPages.Dequeue();
         }
 
-        internal void CheckoutPages1(MemoryPage* pages, int startingIndex, int count)
+        internal void CheckoutPages(MemoryPage* pages, int startingIndex, int count)
         {
-            lock (_lockObj)
-            {
-                AllocatePages(count);
+            AllocatePages(count);
 
-                for (var i = 0; i < count; i++)
-                    pages[i + startingIndex] = _unusedPages.Dequeue();
-            }
+            for (var i = 0; i < count; i++)
+                pages[i + startingIndex] = _unusedPages.Dequeue();
         }
 
-        internal void CheckoutPages1(ref MemoryPage[] pages, int startingIndex, int count)
+        internal void CheckoutPages(ref MemoryPage[] pages, int startingIndex, int count)
         {
-            lock (_lockObj)
-            {
-                AllocatePages(count);
+            AllocatePages(count);
 
-                for (var i = 0; i < count; i++)
-                    pages[i + startingIndex] = _unusedPages.Dequeue();
-            }
+            for (var i = 0; i < count; i++)
+                pages[i + startingIndex] = _unusedPages.Dequeue();
         }
 
-        internal void ReturnPage1(MemoryPage page)
+        internal void ReturnPage(MemoryPage page)
         {
-            lock (_lockObj)
-            {
-                _unusedPages.Enqueue(page);
-            }
+            _unusedPages.Enqueue(page);
         }
 
-        internal void ReturnPages1(MemoryPage* pages, int startingIndex, int count)
+        internal void ReturnPages(MemoryPage* pages, int startingIndex, int count)
         {
-            lock (_lockObj)
-            {
-                for (var i = 0; i < count; i++)
-                    _unusedPages.Enqueue(pages[i + startingIndex]);
-            }
+            for (var i = 0; i < count; i++)
+                _unusedPages.Enqueue(pages[i + startingIndex]);
         }
 
-        internal void ReturnPages1(MemoryPage[] pages, int startingIndex, int count)
+        internal void ReturnPages(MemoryPage[] pages, int startingIndex, int count)
         {
-            lock (_lockObj)
-            {
-                for (var i = 0; i < count; i++)
-                    _unusedPages.Enqueue(pages[i + startingIndex]);
-            }
+            for (var i = 0; i < count; i++)
+                _unusedPages.Enqueue(pages[i + startingIndex]);
         }
 
         internal void AllocatePages(int count)
         {
-            lock (_lockObj)
+            count -= _unusedPages.Count;
+            if (count < 1)
+                return;
+
+            count = Math.Max(count, _minPageCount);
+            var book = new MemoryBook
             {
-                count -= _unusedPages.Count;
-                if (count < 1)
-                    return;
+                Index = _books.Count,
+                PageCount = count,
+                Buffer = MemoryHelper.Alloc<byte>(MemoryPage.PageBufferSizeInBytes * count)
+            };
+            _books.Add(book);
 
-                count = Math.Max(count, _minPageCount);
-                var book = new MemoryBook
-                {
-                    Index = _books.Count,
-                    PageCount = count,
-                    Buffer = MemoryHelper.Alloc<byte>(MemoryPage.PageBufferSizeInBytes * count)
-                };
-                _books.Add(book);
-
-                for (var i = 0; i < count; i++)
-                    _unusedPages.Enqueue(book.GetPage(i));
-            }
+            for (var i = 0; i < count; i++)
+                _unusedPages.Enqueue(book.GetPage(i));
         }
 
         internal void InternalDestroy()
@@ -106,5 +80,5 @@ namespace EcsLte.Data
             _books.Clear();
             _unusedPages.Clear();
         }
-    }
+    }*/
 }

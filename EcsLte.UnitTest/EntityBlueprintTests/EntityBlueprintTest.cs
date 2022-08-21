@@ -27,13 +27,13 @@ namespace EcsLte.UnitTest.EntityBlueprintTests
         }
 
         [TestMethod]
-        public void HasUniqueComponent()
+        public void HasManagedComponent()
         {
             var blueprint = new EntityBlueprint()
-                .SetUniqueComponent(new TestUniqueComponent1());
+                .SetManagedComponent(new TestManagedComponent1());
 
-            Assert.IsTrue(blueprint.HasUniqueComponent<TestUniqueComponent1>());
-            Assert.IsFalse(blueprint.HasUniqueComponent<TestUniqueComponent2>());
+            Assert.IsTrue(blueprint.HasManagedComponent<TestManagedComponent1>());
+            Assert.IsFalse(blueprint.HasManagedComponent<TestManagedComponent2>());
         }
 
         [TestMethod]
@@ -44,7 +44,7 @@ namespace EcsLte.UnitTest.EntityBlueprintTests
 
             Assert.IsTrue(blueprint.GetComponent<TestComponent1>().Prop == 1);
 
-            Assert.ThrowsException<EntityBlueprintNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 new EntityBlueprint().GetComponent<TestComponent2>());
         }
 
@@ -56,7 +56,7 @@ namespace EcsLte.UnitTest.EntityBlueprintTests
 
             Assert.IsTrue(blueprint.Components.Length == 1);
             Assert.IsTrue(blueprint.SharedComponents.Length == 0);
-            Assert.IsTrue(blueprint.UniqueComponents.Length == 0);
+            Assert.IsTrue(blueprint.ManagedComponents.Length == 0);
             Assert.IsTrue(blueprint.Components[0].GetType() == typeof(TestComponent1));
         }
 
@@ -68,7 +68,7 @@ namespace EcsLte.UnitTest.EntityBlueprintTests
 
             Assert.IsTrue(blueprint.GetSharedComponent<TestSharedComponent1>().Prop == 1);
 
-            Assert.ThrowsException<EntityBlueprintNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 new EntityBlueprint().GetComponent<TestComponent2>());
         }
 
@@ -80,55 +80,55 @@ namespace EcsLte.UnitTest.EntityBlueprintTests
 
             Assert.IsTrue(blueprint.Components.Length == 0);
             Assert.IsTrue(blueprint.SharedComponents.Length == 1);
-            Assert.IsTrue(blueprint.UniqueComponents.Length == 0);
+            Assert.IsTrue(blueprint.ManagedComponents.Length == 0);
             Assert.IsTrue(blueprint.SharedComponents[0].GetType() == typeof(TestSharedComponent1));
         }
 
         [TestMethod]
-        public void GetUniqueComponent()
+        public void GetManagedComponent()
         {
             var blueprint = new EntityBlueprint()
-                .SetUniqueComponent(new TestUniqueComponent1 { Prop = 1 });
+                .SetManagedComponent(new TestManagedComponent1 { Prop = 1 });
 
-            Assert.IsTrue(blueprint.GetUniqueComponent<TestUniqueComponent1>().Prop == 1);
+            Assert.IsTrue(blueprint.GetManagedComponent<TestManagedComponent1>().Prop == 1);
 
-            Assert.ThrowsException<EntityBlueprintNotHaveComponentException>(() =>
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
                 new EntityBlueprint().GetComponent<TestComponent2>());
         }
 
         [TestMethod]
-        public void AddUniqueComponent()
+        public void AddManagedComponent()
         {
             var blueprint = new EntityBlueprint()
-                .SetUniqueComponent(new TestUniqueComponent1 { Prop = 1 });
+                .SetManagedComponent(new TestManagedComponent1 { Prop = 1 });
 
             Assert.IsTrue(blueprint.Components.Length == 0);
             Assert.IsTrue(blueprint.SharedComponents.Length == 0);
-            Assert.IsTrue(blueprint.UniqueComponents.Length == 1);
-            Assert.IsTrue(blueprint.UniqueComponents[0].GetType() == typeof(TestUniqueComponent1));
+            Assert.IsTrue(blueprint.ManagedComponents.Length == 1);
+            Assert.IsTrue(blueprint.ManagedComponents[0].GetType() == typeof(TestManagedComponent1));
         }
 
         [TestMethod]
         public void GetEntityArcheType()
         {
             var sharedComponent = new TestSharedComponent1 { Prop = 1 };
-            var entityArcheType = new EntityArcheType()
+            var entityArcheType = Context.ArcheTypes
                 .AddComponentType<TestComponent1>()
                 .AddSharedComponent(sharedComponent)
-                .AddUniqueComponentType<TestUniqueComponent1>();
+                .AddManagedComponentType<TestManagedComponent1>();
             var blueprint = new EntityBlueprint()
                 .SetComponent(new TestComponent1())
                 .SetSharedComponent(new TestSharedComponent1 { Prop = 1 })
-                .SetUniqueComponent(new TestUniqueComponent1());
+                .SetManagedComponent(new TestManagedComponent1());
 
-            var blueprintArcheType = blueprint.GetArcheType();
+            var blueprintArcheType = blueprint.GetArcheType(Context);
 
             Assert.IsTrue(blueprintArcheType != null);
             Assert.IsTrue(entityArcheType == blueprintArcheType);
 
             blueprintArcheType.AddComponentType<TestComponent2>();
 
-            var blueprintArcheType2 = blueprint.GetArcheType();
+            var blueprintArcheType2 = blueprint.GetArcheType(Context);
             Assert.IsTrue(blueprintArcheType != blueprintArcheType2);
         }
     }

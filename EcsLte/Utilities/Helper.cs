@@ -1,6 +1,5 @@
 ﻿using EcsLte.Exceptions;
 using System;
-using System.Collections.Generic;
 
 namespace EcsLte.Utilities
 {
@@ -47,15 +46,44 @@ namespace EcsLte.Utilities
             return destination;
         }
 
-        internal static bool HasArcheTypeData(in ArcheTypeData[] archeTypeDatas, ArcheTypeIndex archeTypeIndex)
+        internal static void ResizeRefArray<T>(ref T[] array, int startingIndex, int count)
         {
-            for (var i = 0; i < archeTypeDatas.Length; i++)
-            {
-                if (archeTypeDatas[i].ArcheTypeIndex == archeTypeIndex)
-                    return true;
-            }
+            if (startingIndex + count > array.Length)
+                Array.Resize(ref array, startingIndex + count);
+        }
 
-            return false;
+        #region Assert
+
+        internal static void AssertArray<T>(in T[] array, int startingIndex)
+        {
+            if (array == null)
+                throw new ArgumentNullException();
+            if (startingIndex < 0 || startingIndex > array.Length)
+                throw new ArgumentOutOfRangeException(nameof(startingIndex));
+        }
+
+        internal static void AssertArray<T>(in T[] array, int startingIndex, int count)
+        {
+            if (array == null)
+                throw new ArgumentNullException();
+            if (startingIndex < 0 || startingIndex > array.Length)
+                throw new ArgumentOutOfRangeException(nameof(startingIndex));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            if (startingIndex + count < 0 || startingIndex + count >= array.Length + 1)
+                throw new ArgumentOutOfRangeException();
+        }
+
+        internal static void AssertAndResizeArray<T>(ref T[] array, int startingIndex, int count)
+        {
+            if (array == null)
+                throw new ArgumentNullException();
+            if (startingIndex < 0 || startingIndex > array.Length)
+                throw new ArgumentOutOfRangeException(nameof(startingIndex));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+
+            ResizeRefArray(ref array, startingIndex, count);
         }
 
         internal static void AssertDuplicateConfigs(params ComponentConfig[] configs)
@@ -70,48 +98,6 @@ namespace EcsLte.Utilities
             }
         }
 
-        internal static IComponentData[] CopyAddOrReplaceSort(in IComponentData[] src, IComponentData addReplace)
-        {
-            IComponentData[] dest;
-            for (var i = 0; i < src.Length; i++)
-            {
-                if (src[i].Config == addReplace.Config)
-                {
-                    dest = new IComponentData[src.Length];
-                    Array.Copy(src, dest, src.Length);
-
-                    dest[i] = addReplace;
-                    return dest;
-                }
-            }
-
-            return CopyInsertSort(src, addReplace);
-        }
-
-        internal static IComponentData[] CopyAddOrReplaceSorts(in IComponentData[] src, IComponentData[] addReplaces)
-        {
-            var dest = new List<IComponentData>(src);
-            for (var i = 0; i < addReplaces.Length; i++)
-            {
-                var addReplace = addReplaces[i];
-                var replaced = false;
-                for (var j = 0; j < dest.Count; j++)
-                {
-                    if (dest[j].Config == addReplace.Config)
-                    {
-                        dest[j] = addReplace;
-                        break;
-                    }
-                }
-
-                if (!replaced)
-                    dest.Add(addReplace);
-            }
-
-            if (dest.Count != src.Length)
-                dest.Sort();
-
-            return dest.ToArray();
-        }
+        #endregion
     }
 }

@@ -11,17 +11,15 @@ namespace EcsLte.UnitTest.EntityManagerTests
         public void DestroyEntity()
         {
             var entity = Context.Entities.CreateEntity(
-                new EntityArcheType()
+                Context.ArcheTypes
                     .AddComponentType<TestComponent1>()
                     .AddSharedComponent(new TestSharedComponent1 { Prop = 2 })
-                    .AddUniqueComponentType<TestUniqueComponent1>(),
-                EntityState.Active);
+                    .AddManagedComponentType<TestManagedComponent1>());
 
             Context.Entities.DestroyEntity(entity);
 
             Assert.IsTrue(Context.Entities.EntityCount() == 0);
             Assert.IsFalse(Context.Entities.HasEntity(entity));
-            Assert.IsFalse(Context.Entities.HasUniqueComponent<TestUniqueComponent1>());
 
             Assert.ThrowsException<EntityNotExistException>(() =>
                 Context.Entities.DestroyEntity(Entity.Null));
@@ -36,9 +34,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
         {
             AssertGetIn_Valid_Invalid_StartingIndex_Null_OutOfRange(
                 () => Context.Entities.CreateEntities(
-                    new EntityArcheType()
+                    Context.ArcheTypes
                         .AddComponentType<TestComponent1>(),
-                    EntityState.Active, UnitTestConsts.SmallCount),
+                    UnitTestConsts.SmallCount),
                 () => new[] { Entity.Null, Entity.Null, Entity.Null, Entity.Null },
                 x =>
                 {
@@ -87,20 +85,20 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void DestroyEntities_ArcheType()
         {
-            var archeType = new EntityArcheType()
+            var archeType = Context.ArcheTypes
                 .AddComponentType<TestComponent1>()
                 .AddSharedComponent(new TestSharedComponent1 { Prop = 2 });
 
             var entities = Context.Entities.CreateEntities(
                 archeType,
-                EntityState.Active, UnitTestConsts.SmallCount);
+                UnitTestConsts.SmallCount);
 
             Context.Entities.DestroyEntities(archeType);
             var result = AssertEntities(entities, 0, entities.Length);
             Assert.IsTrue(Context.Entities.EntityCount() == 0);
             Assert.IsTrue(result.Success, $"Valid: {result.Error}");
 
-            AssertArcheType_Invalid_Null(
+            AssertArcheType_DiffContext_Null(
                new Action<EntityArcheType>[]
                {
                    x => Context.Entities.DestroyEntities(x)
@@ -114,13 +112,13 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void DestroyEntities_Filter()
         {
-            var filter = new EntityFilter()
+            var filter = Context.Filters
                     .WhereAllOf<TestComponent1>();
 
             var entities = Context.Entities.CreateEntities(
-                new EntityArcheType()
+                Context.ArcheTypes
                     .AddComponentType<TestComponent1>(),
-                EntityState.Active, UnitTestConsts.SmallCount);
+                UnitTestConsts.SmallCount);
 
             Context.Entities.DestroyEntities(filter);
             var result = AssertEntities(entities, 0, entities.Length);
@@ -141,14 +139,14 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void DestroyEntities_Tracker()
         {
-            var tracker = Context.Tracking.CreateTracker("Tracker");
-            tracker.SetComponentState<TestComponent1>(EntityTrackerState.Added);
-            tracker.StartTracking();
+            var tracker = Context.Tracking.CreateTracker("Tracker1")
+                .SetTrackingState<TestComponent1>(TrackingState.Added)
+                .StartTracking();
 
             var entities = Context.Entities.CreateEntities(
-                new EntityArcheType()
+                Context.ArcheTypes
                     .AddComponentType<TestComponent1>(),
-                EntityState.Active, UnitTestConsts.SmallCount);
+                UnitTestConsts.SmallCount);
 
             Context.Entities.DestroyEntities(tracker);
             var result = AssertEntities(entities, 0, entities.Length);
@@ -175,41 +173,28 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void DestroyEntities_Query()
         {
-            var filter = new EntityFilter()
+            var filter = Context.Filters
                 .WhereAllOf<TestComponent1>();
 
-            var queryFilter = new EntityQuery(Context, filter);
+            var query = Context.Queries
+                .SetFilter(filter)
+                .SetTracker(Context.Tracking.CreateTracker("Tracker1")
+                    .SetTrackingState<TestComponent1>(TrackingState.Added)
+                    .StartTracking());
 
             var entities = Context.Entities.CreateEntities(
-                new EntityArcheType()
+                Context.ArcheTypes
                     .AddComponentType<TestComponent1>(),
-                EntityState.Active, UnitTestConsts.SmallCount);
+                UnitTestConsts.SmallCount);
 
-            Context.Entities.DestroyEntities(queryFilter);
+            Context.Entities.DestroyEntities(query);
             var result = AssertEntities(entities, 0, entities.Length);
             Assert.IsTrue(Context.Entities.EntityCount() == 0);
             Assert.IsTrue(result.Success, $"Valid: {result.Error}");
 
-            var queryFilterTracker = new EntityQuery(
-                Context.Tracking.CreateTracker("Tracker"),
-                filter);
-            queryFilterTracker.Tracker.SetComponentState<TestComponent1>(EntityTrackerState.Added);
-            queryFilterTracker.Tracker.StartTracking();
-
-            entities = Context.Entities.CreateEntities(
-                new EntityArcheType()
-                    .AddComponentType<TestComponent1>(),
-                EntityState.Active, UnitTestConsts.SmallCount);
-
-            Context.Entities.DestroyEntities(queryFilterTracker);
-            result = AssertEntities(entities, 0, entities.Length);
-            Assert.IsTrue(Context.Entities.EntityCount() == 0);
-            Assert.IsTrue(result.Success, $"Valid: {result.Error}");
-
-            Context.Tracking.RemoveTracker(queryFilterTracker.Tracker);
+            Context.Tracking.RemoveTracker(query.Tracker);
             AssertQuery_DiffContext_DestroyedTracker_Null(
-                new EntityQuery(EcsContexts.CreateContext("DiffContext"), filter),
-                queryFilterTracker,
+                query,
                 new Action<EntityQuery>[]
                 {
                     x => Context.Entities.DestroyEntities(x)
@@ -217,7 +202,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             EcsContexts.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.Entities.DestroyEntities(queryFilter));
+                Context.Entities.DestroyEntities(query));
         }
 
         private TestResult AssertEntities(Entity[] entities, int startingIndex, int count)

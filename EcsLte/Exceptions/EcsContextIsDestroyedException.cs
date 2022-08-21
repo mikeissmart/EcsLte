@@ -3,7 +3,7 @@
     public class EcsContextIsDestroyedException : EcsLteException
     {
         public EcsContextIsDestroyedException(EcsContext context)
-            : base($"EcsContext '{context.Name}' is already destroyed.")
+            : base($"EcsContext '{context.Name}' is destroyed.")
         {
         }
     }

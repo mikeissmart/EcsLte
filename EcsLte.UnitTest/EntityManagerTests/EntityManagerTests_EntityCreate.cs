@@ -9,54 +9,57 @@ namespace EcsLte.UnitTest.EntityManagerTests
     public class EntityManagerTests_EntityCreate : BasePrePostTest
     {
         [TestMethod]
+        public void CreateEntity()
+        {
+            var entity = Context.Entities.CreateEntity();
+            Assert.IsTrue(entity.Id == 1);
+            Assert.IsTrue(entity.Version == 1);
+            Assert.IsTrue(Context.Entities.HasEntity(entity));
+            Assert.IsTrue(Context.Entities.GetAllComponents(entity).Length == 0);
+
+            EcsContexts.DestroyContext(Context);
+            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
+                Context.Entities.CreateEntity());
+        }
+
+        [TestMethod]
         public void CreateEntity_ArcheType()
         {
-            var uniqueEntity = Context.Entities.CreateEntity(
-                new EntityArcheType()
-                    .AddComponentType<TestComponent1>()
-                    .AddSharedComponent(new TestSharedComponent1 { Prop = 2 })
-                    .AddUniqueComponentType<TestUniqueComponent1>(),
-                EntityState.Active);
-
-            Assert.IsTrue(Context.Entities.HasUniqueComponent<TestUniqueComponent1>(uniqueEntity));
-            Assert.IsTrue(Context.Entities.HasUniqueComponent<TestUniqueComponent1>());
-
-            Assert.ThrowsException<EntityUniqueComponentExistsException>(() =>
-                Context.Entities.CreateEntity(
-                    new EntityArcheType()
-                        .AddUniqueComponentType<TestUniqueComponent1>(),
-                    EntityState.Active));
-
-            var archeType = new EntityArcheType()
+            var archeType = Context.ArcheTypes
                 .AddComponentType<TestComponent1>()
                 .AddSharedComponent(new TestSharedComponent1 { Prop = 2 });
 
-            AssertArcheType_Invalid_Null(
+            var entity = Context.Entities.CreateEntity(archeType);
+            Assert.IsTrue(entity.Id == 1);
+            Assert.IsTrue(entity.Version == 1);
+            Assert.IsTrue(Context.Entities.HasEntity(entity));
+            Assert.IsTrue(Context.Entities.HasComponent<TestComponent1>(entity));
+            Assert.IsTrue(Context.Entities.HasSharedComponent<TestSharedComponent1>(entity));
+
+            AssertArcheType_DiffContext_Null(
                new Action<EntityArcheType>[]
                {
-                   x => Context.Entities.CreateEntity(x, EntityState.Active)
+                   x => Context.Entities.CreateEntity(x)
                });
 
             EcsContexts.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.Entities.CreateEntity(archeType, EntityState.Active));
+                Context.Entities.CreateEntity(archeType));
         }
 
         [TestMethod]
         public void CreateEntity_ArcheType_Reuse()
         {
             var destroyEntity = Context.Entities.CreateEntity(
-                new EntityArcheType()
+                Context.ArcheTypes
                     .AddComponentType<TestComponent1>()
-                    .AddSharedComponent(new TestSharedComponent1 { Prop = 2 }),
-                EntityState.Active);
+                    .AddSharedComponent(new TestSharedComponent1 { Prop = 2 }));
             Context.Entities.DestroyEntity(destroyEntity);
 
             var entity = Context.Entities.CreateEntity(
-                new EntityArcheType()
+                Context.ArcheTypes
                     .AddComponentType<TestComponent1>()
-                    .AddSharedComponent(new TestSharedComponent1 { Prop = 2 }),
-                EntityState.Active);
+                    .AddSharedComponent(new TestSharedComponent1 { Prop = 2 }));
 
             Assert.IsTrue(entity.Version == 2);
             Assert.IsTrue(Context.Entities.HasEntity(entity));
@@ -65,22 +68,6 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void CreateEntity_Blueprint()
         {
-            var uniqueEntity = Context.Entities.CreateEntity(
-                new EntityBlueprint()
-                    .SetComponent(new TestComponent1 { Prop = 1 })
-                    .SetSharedComponent(new TestSharedComponent1 { Prop = 2 })
-                    .SetUniqueComponent(new TestUniqueComponent1 { Prop = 3 }),
-                EntityState.Active);
-
-            Assert.IsTrue(Context.Entities.GetUniqueComponent<TestUniqueComponent1>(uniqueEntity).Prop == 3);
-            Assert.IsTrue(Context.Entities.GetUniqueComponent<TestUniqueComponent1>().Prop == 3);
-
-            Assert.ThrowsException<EntityUniqueComponentExistsException>(() =>
-                Context.Entities.CreateEntity(
-                    new EntityBlueprint()
-                        .SetUniqueComponent(new TestUniqueComponent1 { Prop = 3 }),
-                    EntityState.Active));
-
             var valid = new EntityBlueprint()
                 .SetComponent(new TestComponent1 { Prop = 1 })
                 .SetSharedComponent(new TestSharedComponent1 { Prop = 2 });
@@ -89,7 +76,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 valid,
                 x =>
                 {
-                    var entity = Context.Entities.CreateEntity(x, EntityState.Active);
+                    var entity = Context.Entities.CreateEntity(x);
                     return AssertEntity(entity,
                         Context.Entities.EntityCount(),
                         new TestComponent1 { Prop = 1 },
@@ -98,7 +85,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             EcsContexts.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.Entities.CreateEntity(valid, EntityState.Active));
+                Context.Entities.CreateEntity(valid));
         }
 
         [TestMethod]
@@ -107,33 +94,45 @@ namespace EcsLte.UnitTest.EntityManagerTests
             var destroyEntity = Context.Entities.CreateEntity(
                 new EntityBlueprint()
                     .SetComponent(new TestComponent1 { Prop = 1 })
-                    .SetSharedComponent(new TestSharedComponent1 { Prop = 2 }),
-                EntityState.Active);
+                    .SetSharedComponent(new TestSharedComponent1 { Prop = 2 }));
             Context.Entities.DestroyEntity(destroyEntity);
 
             var entity = Context.Entities.CreateEntity(
                 new EntityBlueprint()
                     .SetComponent(new TestComponent1 { Prop = 1 })
-                    .SetSharedComponent(new TestSharedComponent1 { Prop = 2 }),
-                EntityState.Active);
+                    .SetSharedComponent(new TestSharedComponent1 { Prop = 2 }));
 
             Assert.IsTrue(entity.Version == 2);
             Assert.IsTrue(Context.Entities.HasEntity(entity));
         }
 
         [TestMethod]
+        public void CreateEntities()
+        {
+            var entities = Context.Entities.CreateEntities(UnitTestConsts.SmallCount);
+            Assert.IsTrue(entities.Length == UnitTestConsts.SmallCount);
+
+            for (var i = 0; i < entities.Length; i++)
+            {
+                var entity = entities[i];
+
+                Assert.IsTrue(entity.Id == i + 1);
+                Assert.IsTrue(entity.Version == 1);
+                Assert.IsTrue(Context.Entities.HasEntity(entity));
+                Assert.IsTrue(Context.Entities.GetAllComponents(entity).Length == 0);
+            }
+
+            EcsContexts.DestroyContext(Context);
+            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
+                Context.Entities.CreateEntities(UnitTestConsts.SmallCount));
+        }
+
+        [TestMethod]
         public void CreateEntities_ArcheType()
         {
-            var valid = new EntityArcheType()
+            var valid = Context.ArcheTypes
                 .AddComponentType<TestComponent1>()
                 .AddSharedComponent(new TestSharedComponent1 { Prop = 2 });
-
-            Assert.ThrowsException<EntityUniqueComponentExistsException>(() =>
-                Context.Entities.CreateEntities(
-                    new EntityArcheType()
-                        .AddUniqueComponentType<TestUniqueComponent1>(),
-                    EntityState.Active,
-                    2));
 
             var firstEntityId = 0;
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
@@ -143,7 +142,6 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
                     return Context.Entities.CreateEntities(
                         valid,
-                        EntityState.Active,
                         UnitTestConsts.SmallCount);
                 },
                 x =>
@@ -152,7 +150,6 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
                     Context.Entities.CreateEntities(
                         valid,
-                        EntityState.Active,
                         ref x,
                         UnitTestConsts.SmallCount);
                     return (x, UnitTestConsts.SmallCount);
@@ -163,7 +160,6 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
                     Context.Entities.CreateEntities(
                         valid,
-                        EntityState.Active,
                         ref x,
                         startingIndex,
                         UnitTestConsts.SmallCount);
@@ -179,21 +175,18 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 });
 
             var entitiesRef = new Entity[0];
-            AssertArcheType_Invalid_Null(
+            AssertArcheType_DiffContext_Null(
                 new Action<EntityArcheType>[]
                 {
                     x => Context.Entities.CreateEntities(
                         x,
-                        EntityState.Active,
                         UnitTestConsts.SmallCount),
                     x => Context.Entities.CreateEntities(
                         x,
-                        EntityState.Active,
                         ref entitiesRef,
                         UnitTestConsts.SmallCount),
                     x => Context.Entities.CreateEntities(
                         x,
-                        EntityState.Active,
                         ref entitiesRef,
                         2,
                         UnitTestConsts.SmallCount),
@@ -203,21 +196,17 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.CreateEntities(
                     valid,
-                    EntityState.Active,
                     UnitTestConsts.SmallCount));
             AssertGetRef_ContextDestroyed<Entity>(
                 () => Context.Entities.CreateEntities(
                     valid,
-                    EntityState.Active,
                     UnitTestConsts.SmallCount),
                 x => Context.Entities.CreateEntities(
                     valid,
-                    EntityState.Active,
                     ref x,
                     UnitTestConsts.SmallCount),
                 (x, startingIndex) => Context.Entities.CreateEntities(
                     valid,
-                    EntityState.Active,
                     ref x,
                     startingIndex,
                     UnitTestConsts.SmallCount));
@@ -230,20 +219,12 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 .SetComponent(new TestComponent1 { Prop = 1 })
                 .SetSharedComponent(new TestSharedComponent1 { Prop = 2 });
 
-            Assert.ThrowsException<EntityUniqueComponentExistsException>(() =>
-                Context.Entities.CreateEntities(
-                    new EntityBlueprint()
-                        .SetUniqueComponent(new TestUniqueComponent1 { Prop = 3 }),
-                    EntityState.Active,
-                    2));
-
             var firstEntityId = 0;
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
                 () =>
                 {
                     return Context.Entities.CreateEntities(
                         valid,
-                        EntityState.Active,
                         UnitTestConsts.SmallCount);
                 },
                 x =>
@@ -252,7 +233,6 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
                     Context.Entities.CreateEntities(
                         valid,
-                        EntityState.Active,
                         ref x,
                         UnitTestConsts.SmallCount);
                     return (x, UnitTestConsts.SmallCount);
@@ -263,7 +243,6 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
                     Context.Entities.CreateEntities(
                         valid,
-                        EntityState.Active,
                         ref x,
                         startingIndex,
                         UnitTestConsts.SmallCount);
@@ -284,16 +263,13 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 {
                     x => Context.Entities.CreateEntities(
                         x,
-                        EntityState.Active,
                         UnitTestConsts.SmallCount),
                     x => Context.Entities.CreateEntities(
                         x,
-                        EntityState.Active,
                         ref entitiesRef,
                         UnitTestConsts.SmallCount),
                     x => Context.Entities.CreateEntities(
                         x,
-                        EntityState.Active,
                         ref entitiesRef,
                         2,
                         UnitTestConsts.SmallCount),
@@ -303,21 +279,17 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.CreateEntities(
                     valid,
-                    EntityState.Active,
                     UnitTestConsts.SmallCount));
             AssertGetRef_ContextDestroyed<Entity>(
                 () => Context.Entities.CreateEntities(
                     valid,
-                    EntityState.Active,
                     UnitTestConsts.SmallCount),
                 x => Context.Entities.CreateEntities(
                     valid,
-                    EntityState.Active,
                     ref x,
                     UnitTestConsts.SmallCount),
                 (x, startingIndex) => Context.Entities.CreateEntities(
                     valid,
-                    EntityState.Active,
                     ref x,
                     startingIndex,
                     UnitTestConsts.SmallCount));
@@ -397,9 +369,6 @@ namespace EcsLte.UnitTest.EntityManagerTests
             result = assertAction(valid);
             Assert.IsTrue(result.Success, $"Valid: {result.Error}");
 
-            Assert.ThrowsException<ComponentsNoneException>(() => assertAction(invalid),
-                "Invalid");
-
             Assert.ThrowsException<ArgumentNullException>(() => assertAction(nullable),
                 "Null");
         }
@@ -412,9 +381,6 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             foreach (var action in assertActions)
             {
-                Assert.ThrowsException<ComponentsNoneException>(() => action(invalid),
-                    "Invalid");
-
                 Assert.ThrowsException<ArgumentNullException>(() => action(nullable),
                     "Null");
             }

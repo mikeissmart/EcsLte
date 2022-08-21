@@ -13,20 +13,21 @@ namespace EcsLte
         public int Id { get; internal set; }
         public int Version { get; internal set; }
 
-        public static bool operator !=(Entity lhs, Entity rhs) => !(lhs == rhs);
+        #region Equals
 
-        public static bool operator ==(Entity lhs, Entity rhs) => lhs.Id == rhs.Id && lhs.Version == rhs.Version;
+        public static bool operator !=(Entity lhs, Entity rhs)
+            => !(lhs == rhs);
 
-        public bool Equals(Entity other) => this == other;
+        public static bool operator ==(Entity lhs, Entity rhs)
+            => lhs.Id == rhs.Id && lhs.Version == rhs.Version;
 
-        public override bool Equals(object other) => other is Entity obj && this == obj;
+        public bool Equals(Entity other)
+            => this == other;
 
-        public override string ToString() => $"({Id}, {Version})";
+        public override bool Equals(object other)
+            => other is Entity obj && this == obj;
 
-        public override int GetHashCode() => HashCodeHelper.StartHashCode()
-                .AppendHashCode(Id)
-                .AppendHashCode(Version)
-                .HashCode;
+        #endregion
 
         public int CompareTo(Entity other)
         {
@@ -35,5 +36,13 @@ namespace EcsLte
                 compare = Id.CompareTo(Id);
             return compare;
         }
+
+        public override int GetHashCode()
+            => HashCodeHelper.StartHashCode()
+                .AppendHashCode(Id)
+                .AppendHashCode(Version)
+                .HashCode;
+
+        public override string ToString() => $"({Id}, {Version})";
     }
 }

@@ -10,9 +10,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
         public void HasComponent()
         {
             var entity = Context.Entities.CreateEntity(
-                new EntityArcheType()
-                    .AddComponentType<TestComponent1>(),
-                EntityState.Active);
+                Context.ArcheTypes
+                    .AddComponentType<TestComponent1>());
 
             Assert.IsTrue(Context.Entities.HasComponent<TestComponent1>(entity));
             Assert.IsFalse(Context.Entities.HasComponent<TestComponent2>(entity));
@@ -29,9 +28,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
         public void HasSharedComponent()
         {
             var entity = Context.Entities.CreateEntity(
-                new EntityArcheType()
-                    .AddSharedComponent(new TestSharedComponent1()),
-                EntityState.Active);
+                Context.ArcheTypes
+                    .AddSharedComponent(new TestSharedComponent1()));
 
             Assert.IsTrue(Context.Entities.HasSharedComponent<TestSharedComponent1>(entity));
             Assert.IsFalse(Context.Entities.HasSharedComponent<TestSharedComponent2>(entity));
@@ -45,24 +43,21 @@ namespace EcsLte.UnitTest.EntityManagerTests
         }
 
         [TestMethod]
-        public void HasUniqueComponent()
+        public void HasManagedComponent()
         {
             var entity = Context.Entities.CreateEntity(
-                new EntityArcheType()
-                    .AddUniqueComponentType<TestUniqueComponent1>(),
-                EntityState.Active);
+                Context.ArcheTypes
+                    .AddManagedComponentType<TestManagedComponent1>());
 
-            Assert.IsTrue(Context.Entities.HasUniqueComponent<TestUniqueComponent1>(entity));
-            Assert.IsTrue(Context.Entities.HasUniqueComponent<TestUniqueComponent1>());
-            Assert.IsFalse(Context.Entities.HasUniqueComponent<TestUniqueComponent2>(entity));
-            Assert.IsFalse(Context.Entities.HasUniqueComponent<TestUniqueComponent2>());
+            Assert.IsTrue(Context.Entities.HasManagedComponent<TestManagedComponent1>(entity));
+            Assert.IsFalse(Context.Entities.HasManagedComponent<TestManagedComponent2>(entity));
 
             Assert.ThrowsException<EntityNotExistException>(() =>
-                Context.Entities.HasUniqueComponent<TestUniqueComponent1>(Entity.Null));
+                Context.Entities.HasManagedComponent<TestManagedComponent1>(Entity.Null));
 
             EcsContexts.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.Entities.HasUniqueComponent<TestUniqueComponent1>(entity));
+                Context.Entities.HasManagedComponent<TestManagedComponent1>(entity));
         }
     }
 }

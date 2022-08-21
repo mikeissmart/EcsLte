@@ -49,7 +49,6 @@ namespace EcsLte.UnitTest.EntityTrackerTests
             Assert.IsTrue(tracker != null);
             Assert.IsTrue(tracker.Context == Context);
             Assert.IsTrue(tracker.Name == "Tracker");
-            Assert.IsTrue(tracker.IsTrackingEntityStateChange == false);
             Assert.IsTrue(tracker.IsTracking == false);
             Assert.IsTrue(tracker.IsDestroyed == false);
 
@@ -80,7 +79,7 @@ namespace EcsLte.UnitTest.EntityTrackerTests
 
             var tracker2 = EcsContexts.CreateContext("Context2")
                 .Tracking.CreateTracker("Tracker");
-            Assert.ThrowsException<EcsContextDifferentException>(() =>
+            Assert.ThrowsException<EcsContextNotSameException>(() =>
                 Context.Tracking.RemoveTracker(tracker2));
 
             tracker2 = Context.Tracking.CreateTracker("Tracker2");

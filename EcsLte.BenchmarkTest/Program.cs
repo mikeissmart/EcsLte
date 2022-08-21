@@ -24,13 +24,12 @@ namespace EcsLte.BenchmarkTest
             ;
 #if DEBUG
             //BenchmarkRunner.Run(typeof(Program).Assembly, config);
-            BenchmarkRunner.Run<EcsContextTests.EcsContext_CreateEntity>(config);
+            BenchmarkRunner.Run<EcsContextTests.EntityQueryForEachTests>(config);
             Console.WriteLine("done");
             Console.ReadLine();
 #else
             BenchmarkRunner.Run(typeof(Program).Assembly, config);
-            //BenchmarkRunner.Run<EntityQueryTests.EntityQuery_ForEach>(config);
-            //BenchmarkRunner.Run<EcsContextTests.EcsContext_UpdateComponent>(config);
+            //BenchmarkRunner.Run<EcsContextTests.EntityQueryForEachTests>(config);
             Console.WriteLine("done");
 #endif
         }

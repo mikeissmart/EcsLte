@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace EcsLte.Utilities
 {
     // https://stackoverflow.com/questions/24864233/marshal-structuretoptr-without-boxing
-    public static unsafe class InteropTools
+    internal static unsafe class InteropTools
     {
         private static readonly Type SafeBufferType = typeof(SafeBuffer);
 
