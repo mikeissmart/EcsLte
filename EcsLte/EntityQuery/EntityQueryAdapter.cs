@@ -9,6 +9,7 @@
         where TComponent : IComponent
     {
         ref TComponent GetRef(int entityIndex);
+        TComponent GetUpdatedComponent();
     }
 
     internal abstract class EntityQueryAdapter<TComponent> : IEntityQueryAdapter<TComponent>
@@ -19,6 +20,7 @@
 
         public abstract void ChangeArcheTypeData(ArcheTypeData archeTypeDatas);
         public abstract ref TComponent GetRef(int entityIndex);
+        public virtual TComponent GetUpdatedComponent() => throw new System.NotImplementedException();
     }
 
     #region GeneralComponent
@@ -70,11 +72,13 @@
             _originalComponent = archeTypeData.GetSharedComponent<TComponent>(ConfigOffset);
         }
 
-        public override unsafe ref TComponent GetRef(int entityIndex)
+        public override ref TComponent GetRef(int entityIndex)
         {
             _component = _originalComponent;
             return ref _component;
         }
+
+        public override TComponent GetUpdatedComponent() => _component;
     }
 
     #endregion

@@ -757,7 +757,7 @@ namespace EcsLte
             _commands.Clear();
         }
 
-        internal void AppendQueryCommands(List<IEntityQueryCommand> commands)
+        internal void AppendQueryCommands(List<IEntityCommand> commands)
         {
             lock (_lockObj)
             {

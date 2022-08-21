@@ -124,6 +124,16 @@ namespace EcsLte
                 tracker.TrackArcheTypeDataChange(entity, prevArcheTypeData, nextArcheTypeData);
         }
 
+        internal void TrackArcheTypeDataChanges(in Entity[] entities, int startingIndex, int count,
+            ArcheTypeData prevArcheTypeData, ArcheTypeData nextArcheTypeData)
+        {
+            foreach (var tracker in _trackers.Values)
+            {
+                tracker.TrackArcheTypeDataChanges(entities, startingIndex, count,
+                    prevArcheTypeData, nextArcheTypeData);
+            }
+        }
+
         internal void TrackAllArcheTypeDataChange(
             ArcheTypeData prevArcheTypeData, ArcheTypeData nextArcheTypeData)
         {
@@ -146,18 +156,14 @@ namespace EcsLte
 
         internal void TrackUpdate(Entity entity, ComponentConfig config, ArcheTypeData archeTypeData)
         {
-            foreach (var tracker in _updatedEvent[config.ComponentIndex])
-                tracker.Tracked(entity, archeTypeData);
+            lock (_lockObj)
+            {
+                foreach (var tracker in _updatedEvent[config.ComponentIndex])
+                    tracker.Tracked(entity, archeTypeData);
+            }
         }
 
         internal void TrackUpdates(in Entity[] entities, int startingIndex, int count,
-            ComponentConfig config, ArcheTypeData archeTypeData)
-        {
-            foreach (var tracker in _updatedEvent[config.ComponentIndex])
-                tracker.Tracked(entities, startingIndex, count, archeTypeData);
-        }
-
-        internal void TrackParallelUpdates(in Entity[] entities, int startingIndex, int count,
             ComponentConfig config, ArcheTypeData archeTypeData)
         {
             lock (_lockObj)

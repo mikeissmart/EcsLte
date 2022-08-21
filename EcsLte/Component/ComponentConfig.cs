@@ -51,47 +51,6 @@ namespace EcsLte
             else
                 throw new Exception();
         }
-
-        // TODO
-        /*#region Assert
-
-        internal static void AssertNotUseGeneralConfig(ComponentConfig config)
-        {
-            if (config.IsGeneral)
-                throw new ComponentConfigNotUseGeneralException();
-        }
-
-        internal static void AssertNotUseManagedConfig(ComponentConfig config)
-        {
-            if (config.IsManaged)
-                throw new ComponentConfigNotUseManagedException();
-        }
-
-        internal static void AssertNotUseSharedConfig(ComponentConfig config)
-        {
-            if (config.IsShared)
-                throw new ComponentConfigNotUseSharedException();
-        }
-
-        internal static void AssertRequiredGeneralConfig(ComponentConfig config)
-        {
-            if (!config.IsGeneral)
-                throw new ComponentConfigRquiredGeneralException();
-        }
-
-        internal static void AssertRequiredManagedConfig(ComponentConfig config)
-        {
-            if (!config.IsManaged)
-                throw new ComponentConfigRquiredManagedException();
-        }
-
-        internal static void AssertRequiredSharedConfig(ComponentConfig config)
-        {
-            if (!config.IsShared)
-                throw new ComponentConfigRquiredSharedException();
-        }
-
-        #endregion*/
     }
 
     internal class ComponentConfig<TComponent> where TComponent : IComponent

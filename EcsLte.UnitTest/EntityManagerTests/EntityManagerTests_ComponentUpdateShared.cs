@@ -39,7 +39,6 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void UpdateSharedComponent_ArcheType()
         {
-            // TODO Unsafe break
             var updateSharedTracker = Context.Tracking.CreateTracker("UpdateSharedTracker")
                 .SetTrackingState<TestSharedComponent1>(TrackingState.Updated)
                 .StartTracking();

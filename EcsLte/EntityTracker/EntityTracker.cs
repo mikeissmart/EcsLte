@@ -26,6 +26,7 @@ namespace EcsLte
     {
         private Dictionary<ArcheTypeData, HashSet<Entity>> _archeTypeDatas;
         private ArcheTypeData[] _cachedArcheTypeDatas;
+        private readonly Queue<HashSet<Entity>> _cachedEntities;
         private bool _isCachedArcheTypeDataDirty;
 
         public EcsContext Context { get; private set; }
@@ -61,6 +62,7 @@ namespace EcsLte
         internal EntityTracker(EcsContext context, string name)
         {
             _archeTypeDatas = new Dictionary<ArcheTypeData, HashSet<Entity>>();
+            _cachedEntities = new Queue<HashSet<Entity>>();
 
             Context = context;
             Name = name;
@@ -158,9 +160,7 @@ namespace EcsLte
             Context.AssertContext();
             AssertEntityTracker();
 
-            // TODO cache HashSets?
-            _archeTypeDatas.Clear();
-            _isCachedArcheTypeDataDirty = true;
+            UntrackedAllEntities();
 
             return this;
         }
@@ -211,13 +211,25 @@ namespace EcsLte
                 if (hashedEntities.Remove(entity))
                 {
                     if (hashedEntities.Count == 0)
-                        _archeTypeDatas.Remove(prevArcheTypeData);
+                        RemoveArcheType(prevArcheTypeData, hashedEntities);
 
-                    if (!_archeTypeDatas.TryGetValue(nextArcheTypeData, out hashedEntities))
-                        _archeTypeDatas.Add(nextArcheTypeData, new HashSet<Entity> { entity });
-                    else
-                        hashedEntities.Add(entity);
+                    AppendEntity(nextArcheTypeData, entity);
                 }
+            }
+        }
+
+        internal void TrackArcheTypeDataChanges(in Entity[] entities, int startingIndex, int count,
+            ArcheTypeData prevArcheTypeData, ArcheTypeData nextArcheTypeData)
+        {
+            if (_archeTypeDatas.TryGetValue(prevArcheTypeData, out var hashedEntities))
+            {
+                for (var i = 0; i < count; i++)
+                    hashedEntities.Remove(entities[i]);
+
+                if (hashedEntities.Count == 0)
+                    RemoveArcheType(prevArcheTypeData, hashedEntities);
+
+                AppendEntities(nextArcheTypeData, entities.Skip(startingIndex).Take(count));
             }
         }
 
@@ -228,75 +240,45 @@ namespace EcsLte
                 if (!_archeTypeDatas.TryGetValue(nextArcheTypeData, out var nextEntities))
                     _archeTypeDatas.Add(nextArcheTypeData, prevEntities);
                 else
+                {
                     nextEntities.UnionWith(prevEntities);
+                    prevEntities.Clear();
+                    _cachedEntities.Enqueue(prevEntities);
+                }
 
                 _archeTypeDatas.Remove(prevArcheTypeData);
             }
         }
 
-        internal void Tracked(Entity entity, ArcheTypeData archeTypeData)
-        {
-#if DEBUG
-            if (entity == Entity.Null)
-                throw new Exception();
-#endif
-            if (!_archeTypeDatas.ContainsKey(archeTypeData))
-            {
-                _archeTypeDatas.Add(archeTypeData, new HashSet<Entity> { entity });
-                _isCachedArcheTypeDataDirty = true;
-            }
-            else
-                _archeTypeDatas[archeTypeData].Add(entity);
-        }
+        internal void Tracked(Entity entity, ArcheTypeData archeTypeData) => AppendEntity(archeTypeData, entity);
 
-        internal void Tracked(in Entity[] entities, int startingIndex, int count, ArcheTypeData archeTypeData)
-        {
-            var spanEntities = entities
-                .Skip(startingIndex)
-                .Take(count);
-#if DEBUG
-            if (spanEntities.Any(x => x == Entity.Null))
-                throw new Exception();
-#endif
-            if (!_archeTypeDatas.TryGetValue(archeTypeData, out var hashEntities))
-            {
-                _archeTypeDatas.Add(archeTypeData, new HashSet<Entity>(spanEntities));
-                _isCachedArcheTypeDataDirty = true;
-            }
-            else
-                hashEntities.UnionWith(spanEntities);
-        }
+        internal void Tracked(in Entity[] entities, int startingIndex, int count, ArcheTypeData archeTypeData) => AppendEntities(archeTypeData, entities.Skip(startingIndex).Take(count));
 
         internal void Untracked(Entity entity, ArcheTypeData archeTypeData)
         {
-#if DEBUG
-            if (entity == Entity.Null)
-                throw new Exception();
-#endif
-            if (_archeTypeDatas.TryGetValue(archeTypeData, out var hashEntities))
+            if (_archeTypeDatas.TryGetValue(archeTypeData, out var hashedEntities))
             {
-                if (hashEntities.Remove(entity))
+                if (hashedEntities.Remove(entity))
                 {
-                    if (hashEntities.Count == 0)
-                    {
-                        _archeTypeDatas.Remove(archeTypeData);
-                        _isCachedArcheTypeDataDirty = true;
-                    }
+                    if (hashedEntities.Count == 0)
+                        RemoveArcheType(archeTypeData, hashedEntities);
                 }
             }
         }
 
         internal void UntrackedArcheTypeData(ArcheTypeData archeTypeData)
         {
-            if (_archeTypeDatas.ContainsKey(archeTypeData))
-            {
-                _archeTypeDatas.Remove(archeTypeData);
-                _isCachedArcheTypeDataDirty = true;
-            }
+            if (_archeTypeDatas.TryGetValue(archeTypeData, out var hashedEntities))
+                RemoveArcheType(archeTypeData, hashedEntities);
         }
 
         internal void UntrackedAllEntities()
         {
+            foreach (var hashedEntities in _archeTypeDatas.Values)
+            {
+                hashedEntities.Clear();
+                _cachedEntities.Enqueue(hashedEntities);
+            }
             _archeTypeDatas.Clear();
             _isCachedArcheTypeDataDirty = true;
         }
@@ -308,6 +290,54 @@ namespace EcsLte
             _cachedArcheTypeDatas = null;
             _isCachedArcheTypeDataDirty = true;
             IsDestroyed = true;
+        }
+
+        private void AppendEntity(ArcheTypeData archeTypeData, Entity entity)
+        {
+#if DEBUG
+            if (entity == Entity.Null)
+                throw new Exception();
+#endif
+            if (!_archeTypeDatas.TryGetValue(archeTypeData, out var hashedEntities))
+            {
+                hashedEntities = _cachedEntities.Count > 0
+                    ? _cachedEntities.Dequeue()
+                    : new HashSet<Entity>();
+                hashedEntities.Add(entity);
+
+                _archeTypeDatas.Add(archeTypeData, hashedEntities);
+                _isCachedArcheTypeDataDirty = true;
+            }
+            else
+                hashedEntities.Add(entity);
+        }
+
+        private void AppendEntities(ArcheTypeData archeTypeData, IEnumerable<Entity> entities)
+        {
+#if DEBUG
+            if (entities.Any(x => x == Entity.Null))
+                throw new Exception();
+#endif
+            if (!_archeTypeDatas.TryGetValue(archeTypeData, out var hashedEntities))
+            {
+                hashedEntities = _cachedEntities.Count > 0
+                    ? _cachedEntities.Dequeue()
+                    : new HashSet<Entity>();
+                hashedEntities.UnionWith(entities);
+
+                _archeTypeDatas.Add(archeTypeData, hashedEntities);
+                _isCachedArcheTypeDataDirty = true;
+            }
+            else
+                hashedEntities.UnionWith(entities);
+        }
+
+        private void RemoveArcheType(ArcheTypeData archeTypeData, HashSet<Entity> entities)
+        {
+            entities.Clear();
+            _cachedEntities.Enqueue(entities);
+            _archeTypeDatas.Remove(archeTypeData);
+            _isCachedArcheTypeDataDirty = true;
         }
 
         #region Assert

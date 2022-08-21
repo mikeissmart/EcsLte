@@ -1,4 +1,5 @@
 ﻿using EcsLte.Utilities;
+using System.Collections.Generic;
 
 namespace EcsLte
 {
@@ -1156,6 +1157,35 @@ namespace EcsLte
             Context.Tracking.TrackUpdate(entity, config6, archeTypeData);
             Context.Tracking.TrackUpdate(entity, config7, archeTypeData);
             Context.Tracking.TrackUpdate(entity, config8, archeTypeData);
+        }
+
+        internal void EntityQuery_TransferNextArtcheType(in Entity[] entities, int count,
+            ArcheTypeIndex archeTypeIndex, List<(IComponent, ComponentConfig)> components)
+        {
+            var prevArcheTypeData = Context.ArcheTypes.GetArcheTypeData(archeTypeIndex);
+            ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
+
+            var changeArcheType = false;
+            for (var i = 0; i < components.Count; i++)
+            {
+                var item = components[i];
+                changeArcheType |= ArcheType.ReplaceSharedDataIndex(ref _cachedArcheType,
+                    Context.SharedComponentDics.GetDic(item.Item2).GetSharedDataIndex(item.Item1));
+            }
+
+            if (changeArcheType)
+            {
+                var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
+
+                for (var i = 0; i < count; i++)
+                {
+                    ArcheTypeData.TransferEntity(entities[i], _entityDatas,
+                        prevArcheTypeData, nextArcheTypeData);
+                }
+
+                Context.Tracking.TrackArcheTypeDataChanges(entities, 0, entities.Length,
+                    prevArcheTypeData, nextArcheTypeData);
+            }
         }
     }
 }

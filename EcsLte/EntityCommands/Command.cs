@@ -5,11 +5,6 @@
         void Execute(EcsContext context, ref Entity[] cachedEntities);
     }
 
-    internal interface IEntityQueryCommand : IEntityCommand
-    {
-        void QueryExecute(EcsContext context);
-    }
-
     #region ComponentAdd
 
     internal class EntityCommand_AddComponent<TComponent> : IEntityCommand
@@ -480,7 +475,7 @@
 
     #region ComponentsUpdate
 
-    internal class EntityCommand_UpdateComponents<T1> : IEntityQueryCommand
+    internal class EntityCommand_UpdateComponents<T1> : IEntityCommand
         where T1 : IComponent
     {
         private readonly Entity _entity;
@@ -507,13 +502,9 @@
         public void Execute(EcsContext context, ref Entity[] cahcedEntities) =>
             context.Entities.UpdateComponents(_entity,
                 _component1);
-
-        public void QueryExecute(EcsContext context) =>
-            context.Entities.UpdateQueryComponents(_entity, _entityIndex, _archeTypeIndex,
-                _component1);
     }
 
-    internal class EntityCommand_UpdateComponents<T1, T2> : IEntityQueryCommand
+    internal class EntityCommand_UpdateComponents<T1, T2> : IEntityCommand
         where T1 : IComponent
         where T2 : IComponent
     {
@@ -547,14 +538,9 @@
             context.Entities.UpdateComponents(_entity,
                 _component1,
                 _component2);
-
-        public void QueryExecute(EcsContext context) =>
-            context.Entities.UpdateQueryComponents(_entity, _entityIndex, _archeTypeIndex,
-                _component1,
-                _component2);
     }
 
-    internal class EntityCommand_UpdateComponents<T1, T2, T3> : IEntityQueryCommand
+    internal class EntityCommand_UpdateComponents<T1, T2, T3> : IEntityCommand
         where T1 : IComponent
         where T2 : IComponent
         where T3 : IComponent
@@ -595,15 +581,9 @@
                 _component1,
                 _component2,
                 _component3);
-
-        public void QueryExecute(EcsContext context) =>
-            context.Entities.UpdateQueryComponents(_entity, _entityIndex, _archeTypeIndex,
-                _component1,
-                _component2,
-                _component3);
     }
 
-    internal class EntityCommand_UpdateComponents<T1, T2, T3, T4> : IEntityQueryCommand
+    internal class EntityCommand_UpdateComponents<T1, T2, T3, T4> : IEntityCommand
         where T1 : IComponent
         where T2 : IComponent
         where T3 : IComponent
@@ -651,16 +631,9 @@
                 _component2,
                 _component3,
                 _component4);
-
-        public void QueryExecute(EcsContext context) =>
-            context.Entities.UpdateQueryComponents(_entity, _entityIndex, _archeTypeIndex,
-                _component1,
-                _component2,
-                _component3,
-                _component4);
     }
 
-    internal class EntityCommand_UpdateComponents<T1, T2, T3, T4, T5> : IEntityQueryCommand
+    internal class EntityCommand_UpdateComponents<T1, T2, T3, T4, T5> : IEntityCommand
         where T1 : IComponent
         where T2 : IComponent
         where T3 : IComponent
@@ -715,17 +688,9 @@
                 _component3,
                 _component4,
                 _component5);
-
-        public void QueryExecute(EcsContext context) =>
-            context.Entities.UpdateQueryComponents(_entity, _entityIndex, _archeTypeIndex,
-                _component1,
-                _component2,
-                _component3,
-                _component4,
-                _component5);
     }
 
-    internal class EntityCommand_UpdateComponents<T1, T2, T3, T4, T5, T6> : IEntityQueryCommand
+    internal class EntityCommand_UpdateComponents<T1, T2, T3, T4, T5, T6> : IEntityCommand
         where T1 : IComponent
         where T2 : IComponent
         where T3 : IComponent
@@ -787,18 +752,9 @@
                 _component4,
                 _component5,
                 _component6);
-
-        public void QueryExecute(EcsContext context) =>
-            context.Entities.UpdateQueryComponents(_entity, _entityIndex, _archeTypeIndex,
-                _component1,
-                _component2,
-                _component3,
-                _component4,
-                _component5,
-                _component6);
     }
 
-    internal class EntityCommand_UpdateComponents<T1, T2, T3, T4, T5, T6, T7> : IEntityQueryCommand
+    internal class EntityCommand_UpdateComponents<T1, T2, T3, T4, T5, T6, T7> : IEntityCommand
         where T1 : IComponent
         where T2 : IComponent
         where T3 : IComponent
@@ -867,19 +823,9 @@
                 _component5,
                 _component6,
                 _component7);
-
-        public void QueryExecute(EcsContext context) =>
-            context.Entities.UpdateQueryComponents(_entity, _entityIndex, _archeTypeIndex,
-                _component1,
-                _component2,
-                _component3,
-                _component4,
-                _component5,
-                _component6,
-                _component7);
     }
 
-    internal class EntityCommand_UpdateComponents<T1, T2, T3, T4, T5, T6, T7, T8> : IEntityQueryCommand
+    internal class EntityCommand_UpdateComponents<T1, T2, T3, T4, T5, T6, T7, T8> : IEntityCommand
         where T1 : IComponent
         where T2 : IComponent
         where T3 : IComponent
@@ -947,17 +893,6 @@
 
         public void Execute(EcsContext context, ref Entity[] cahcedEntities) =>
             context.Entities.UpdateComponents(_entity,
-                _component1,
-                _component2,
-                _component3,
-                _component4,
-                _component5,
-                _component6,
-                _component7,
-                _component8);
-
-        public void QueryExecute(EcsContext context) =>
-            context.Entities.UpdateQueryComponents(_entity, _entityIndex, _archeTypeIndex,
                 _component1,
                 _component2,
                 _component3,

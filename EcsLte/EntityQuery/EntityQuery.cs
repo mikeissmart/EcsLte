@@ -124,7 +124,8 @@ namespace EcsLte
             public ForEachRunAction Action;
             public ForEachRunAction CommandAction;
             public Entity[] Entities;
-            public List<IEntityQueryCommand>[] CachedCommands;
+            public List<IEntityCommand>[] EntityCommandsCaches;
+            public EntityQueryArcheTypeCacheRoot[] EntityQueryCacheRoots;
 
             public Data(EcsContext context)
             {
@@ -133,10 +134,14 @@ namespace EcsLte
                 ReadConfigs = new ComponentConfig[0];
                 WriteConfigs = new ComponentConfig[0];
                 Entities = new Entity[0];
-                CachedCommands = new List<IEntityQueryCommand>[_threadCount];
+                EntityCommandsCaches = new List<IEntityCommand>[_threadCount];
+                EntityQueryCacheRoots = new EntityQueryArcheTypeCacheRoot[_threadCount];
 
                 for (var i = 0; i < _threadCount; i++)
-                    CachedCommands[i] = new List<IEntityQueryCommand>();
+                {
+                    EntityCommandsCaches[i] = new List<IEntityCommand>();
+                    EntityQueryCacheRoots[i] = new EntityQueryArcheTypeCacheRoot();
+                }
             }
 
             public Data(Data data)
@@ -150,7 +155,8 @@ namespace EcsLte
                 Action = data.Action;
                 CommandAction = data.CommandAction;
                 Entities = data.Entities;
-                CachedCommands = data.CachedCommands;
+                EntityCommandsCaches = data.EntityCommandsCaches;
+                EntityQueryCacheRoots = data.EntityQueryCacheRoots;
             }
         }
     }

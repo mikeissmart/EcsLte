@@ -262,6 +262,13 @@ namespace EcsLte
                 {
                     action(options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -270,7 +277,7 @@ namespace EcsLte
                     action(options.Index, options.CurrentEntity,
                         ref component1);
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1));
@@ -290,6 +297,13 @@ namespace EcsLte
                     action(options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -299,7 +313,7 @@ namespace EcsLte
                         ref component1,
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1));
@@ -324,6 +338,13 @@ namespace EcsLte
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -334,7 +355,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1));
@@ -362,6 +383,13 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -373,7 +401,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1));
@@ -404,6 +432,13 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -416,7 +451,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1));
@@ -450,6 +485,13 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -463,7 +505,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1));
@@ -500,6 +542,13 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -514,7 +563,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1));
@@ -554,6 +603,13 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T8>)options.Adapters[7]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -569,7 +625,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T8>)options.Adapters[7]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1));
@@ -602,6 +658,14 @@ namespace EcsLte
                     action(options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -612,7 +676,7 @@ namespace EcsLte
                         ref component1,
                         ref component2);
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -636,6 +700,14 @@ namespace EcsLte
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -647,7 +719,7 @@ namespace EcsLte
                         ref component2,
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -676,6 +748,14 @@ namespace EcsLte
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -688,7 +768,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -720,6 +800,14 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -733,7 +821,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -768,6 +856,14 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -782,7 +878,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -820,6 +916,14 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -835,7 +939,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -876,6 +980,14 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T8>)options.Adapters[7]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -892,7 +1004,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T8>)options.Adapters[7]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -928,6 +1040,15 @@ namespace EcsLte
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -940,7 +1061,7 @@ namespace EcsLte
                         ref component2,
                         ref component3);
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -968,6 +1089,15 @@ namespace EcsLte
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -981,7 +1111,7 @@ namespace EcsLte
                         ref component3,
                         in ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -1014,6 +1144,15 @@ namespace EcsLte
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -1028,7 +1167,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -1064,6 +1203,15 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -1079,7 +1227,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -1118,6 +1266,15 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -1134,7 +1291,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -1176,6 +1333,15 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T8>)options.Adapters[7]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -1193,7 +1359,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T8>)options.Adapters[7]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -1232,6 +1398,16 @@ namespace EcsLte
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2])
+                            .GetCache<T4>(options.Adapters[3], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -1246,7 +1422,7 @@ namespace EcsLte
                         ref component3,
                         ref component4);
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -1278,6 +1454,16 @@ namespace EcsLte
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2])
+                            .GetCache<T4>(options.Adapters[3], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -1293,7 +1479,7 @@ namespace EcsLte
                         ref component4,
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -1330,6 +1516,16 @@ namespace EcsLte
                         ref ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2])
+                            .GetCache<T4>(options.Adapters[3], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -1346,7 +1542,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -1386,6 +1582,16 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2])
+                            .GetCache<T4>(options.Adapters[3], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -1403,7 +1609,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -1446,6 +1652,16 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T8>)options.Adapters[7]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2])
+                            .GetCache<T4>(options.Adapters[3], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -1464,7 +1680,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T8>)options.Adapters[7]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -1506,6 +1722,17 @@ namespace EcsLte
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2])
+                            .GetCache<T4>(options.Adapters[3])
+                            .GetCache<T5>(options.Adapters[4], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -1522,7 +1749,7 @@ namespace EcsLte
                         ref component4,
                         ref component5);
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -1558,6 +1785,17 @@ namespace EcsLte
                         ref ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2])
+                            .GetCache<T4>(options.Adapters[3])
+                            .GetCache<T5>(options.Adapters[4], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -1575,7 +1813,7 @@ namespace EcsLte
                         ref component5,
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -1616,6 +1854,17 @@ namespace EcsLte
                         ref ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2])
+                            .GetCache<T4>(options.Adapters[3])
+                            .GetCache<T5>(options.Adapters[4], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -1634,7 +1883,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -1678,6 +1927,17 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T8>)options.Adapters[7]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2])
+                            .GetCache<T4>(options.Adapters[3])
+                            .GetCache<T5>(options.Adapters[4], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -1697,7 +1957,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T8>)options.Adapters[7]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -1742,6 +2002,18 @@ namespace EcsLte
                         ref ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2])
+                            .GetCache<T4>(options.Adapters[3])
+                            .GetCache<T5>(options.Adapters[4])
+                            .GetCache<T6>(options.Adapters[5], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -1760,7 +2032,7 @@ namespace EcsLte
                         ref component5,
                         ref component6);
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5, T6>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5, T6>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -1800,6 +2072,18 @@ namespace EcsLte
                         ref ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2])
+                            .GetCache<T4>(options.Adapters[3])
+                            .GetCache<T5>(options.Adapters[4])
+                            .GetCache<T6>(options.Adapters[5], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -1819,7 +2103,7 @@ namespace EcsLte
                         ref component6,
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5, T6>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5, T6>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -1864,6 +2148,18 @@ namespace EcsLte
                         ref ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T8>)options.Adapters[7]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2])
+                            .GetCache<T4>(options.Adapters[3])
+                            .GetCache<T5>(options.Adapters[4])
+                            .GetCache<T6>(options.Adapters[5], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -1884,7 +2180,7 @@ namespace EcsLte
                         in ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T8>)options.Adapters[7]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5, T6>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5, T6>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -1932,6 +2228,19 @@ namespace EcsLte
                         ref ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2])
+                            .GetCache<T4>(options.Adapters[3])
+                            .GetCache<T5>(options.Adapters[4])
+                            .GetCache<T6>(options.Adapters[5])
+                            .GetCache<T7>(options.Adapters[6], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -1952,7 +2261,7 @@ namespace EcsLte
                         ref component6,
                         ref component7);
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5, T6, T7>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5, T6, T7>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -1996,6 +2305,19 @@ namespace EcsLte
                         ref ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T8>)options.Adapters[7]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2])
+                            .GetCache<T4>(options.Adapters[3])
+                            .GetCache<T5>(options.Adapters[4])
+                            .GetCache<T6>(options.Adapters[5])
+                            .GetCache<T7>(options.Adapters[6], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -2017,7 +2339,7 @@ namespace EcsLte
                         ref component7,
                         in ((IEntityQueryAdapter<T8>)options.Adapters[7]).GetRef(options.EntityIndex));
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5, T6, T7>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5, T6, T7>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -2068,6 +2390,20 @@ namespace EcsLte
                         ref ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T8>)options.Adapters[7]).GetRef(options.EntityIndex));
+
+                    if (options.BatchOptions.UseEntityQueryCache)
+                    {
+                        options.Cache
+                            .GetCache<T1>(options.Adapters[0])
+                            .GetCache<T2>(options.Adapters[1])
+                            .GetCache<T3>(options.Adapters[2])
+                            .GetCache<T4>(options.Adapters[3])
+                            .GetCache<T5>(options.Adapters[4])
+                            .GetCache<T6>(options.Adapters[5])
+                            .GetCache<T7>(options.Adapters[6])
+                            .GetCache<T8>(options.Adapters[7], options.BatchOptions.CacheRoot)
+                            .Entities.Add(options.CurrentEntity);
+                    }
                 },
                 (options) =>
                 {
@@ -2090,7 +2426,7 @@ namespace EcsLte
                         ref component7,
                         ref component8);
 
-                    options.BatchOptions.CachedCommands.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5, T6, T7, T8>(options.CurrentEntity,
+                    options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1, T2, T3, T4, T5, T6, T7, T8>(options.CurrentEntity,
                         options.EntityIndex,
                         options.ArcheTypeIndex,
                         component1,
@@ -2135,7 +2471,7 @@ namespace EcsLte
             var runningData = _data;
             // Switch to temp filter that whereAllOf action configs
             var dataFilter = runningData.Filter;
-            var useQueryCommands = false;
+            var useEntityQueryCache = false;
             var useQueryCommandsCount = 0;
 
             runningData.Context.AssertContext();
@@ -2169,7 +2505,7 @@ namespace EcsLte
                     for (var i = 0; i < runningData.WriteConfigs.Length; i++)
                     {
                         var config = runningData.WriteConfigs[i];
-                        useQueryCommands |= config.IsShared;
+                        useEntityQueryCache |= config.IsShared;
                         if (runningData.Filter.HasWhereNoneOf(config))
                         {
                             // Cant have none of read/write component
@@ -2190,12 +2526,12 @@ namespace EcsLte
                         runningData.Filter.WhereAllOf(runningData.ReadConfigs[i]);
                     for (var i = 0; i < runningData.WriteConfigs.Length; i++)
                     {
-                        useQueryCommands |= runningData.WriteConfigs[i].IsShared;
+                        useEntityQueryCache |= runningData.WriteConfigs[i].IsShared;
                         runningData.Filter.WhereAllOf(runningData.WriteConfigs[i]);
                     }
                 }
 
-                useQueryCommands = useQueryCommands && runningData.Commands == null;
+                useEntityQueryCache = useEntityQueryCache && runningData.Commands == null;
 
                 Context.Entities.GetEntities(this, ref runningData.Entities);
 
@@ -2225,15 +2561,17 @@ namespace EcsLte
                                 WriteConfigs = runningData.WriteConfigs,
                                 Action = runningData.Action,
                                 CommandAction = runningData.CommandAction,
-                                CachedCommands = runningData.CachedCommands[i],
-                                UseQueryCommands = useQueryCommands
+                                CacheRoot = runningData.EntityQueryCacheRoots[i],
+                                UseEntityQueryCache = useEntityQueryCache
                             });
                         }
                         else
                             break;
                     }
 
-                    useQueryCommandsCount = batches.Count;
+                    useQueryCommandsCount = useEntityQueryCache
+                        ? batches.Count
+                        : 0;
                     var result = Parallel.ForEach(batches, new ParallelOptions { MaxDegreeOfParallelism = _threadCount },
                         batch =>
                         {
@@ -2243,7 +2581,9 @@ namespace EcsLte
                 }
                 else
                 {
-                    useQueryCommandsCount = 1;
+                    useQueryCommandsCount = useEntityQueryCache
+                        ? 1
+                        : 0;
                     new ForEachOptions(new BatchOptions
                     {
                         StartIndex = 0,
@@ -2256,21 +2596,30 @@ namespace EcsLte
                         WriteConfigs = runningData.WriteConfigs,
                         Action = runningData.Action,
                         CommandAction = runningData.CommandAction,
-                        CachedCommands = runningData.CachedCommands[0],
-                        UseQueryCommands = useQueryCommands
+                        EntityCommandsCache = runningData.EntityCommandsCaches[0],
+                        CacheRoot = runningData.EntityQueryCacheRoots[0],
+                        UseEntityQueryCache = useEntityQueryCache
                     }).InvokeForEachAction();
                 }
 
                 runningData.Context.StructChangeAvailable = true;
-                if (useQueryCommands)
+                if (useEntityQueryCache)
                 {
                     for (var i = 0; i < useQueryCommandsCount; i++)
                     {
-                        var commands = runningData.CachedCommands[i];
-                        for (var j = 0; j < commands.Count; j++)
-                            commands[j].QueryExecute(runningData.Context);
+                        var commands = runningData.EntityQueryCacheRoots[i];
+                        foreach (var cache in commands.SharedCaches)
+                        {
+                            cache.Entities.CopyTo(runningData.Entities);
+                            runningData.Context.Entities.EntityQuery_TransferNextArtcheType(runningData.Entities,
+                                cache.Entities.Count, cache.ArcheTypeIndex, cache.Components);
+
+                            cache.Entities.Clear();
+                            commands.EntitiesCache.Enqueue(cache.Entities);
+                        }
                         commands.Clear();
                     }
+                    useQueryCommandsCount = 0;
                 }
             }
             catch (Exception ex)
@@ -2281,6 +2630,16 @@ namespace EcsLte
             {
                 runningData.Filter = dataFilter;
                 runningData.Context.StructChangeAvailable = true;
+                for (var i = 0; i < useQueryCommandsCount; i++)
+                {
+                    var commands = runningData.EntityQueryCacheRoots[i];
+                    foreach (var cache in commands.SharedCaches)
+                    {
+                        cache.Entities.Clear();
+                        commands.EntitiesCache.Enqueue(cache.Entities);
+                    }
+                    commands.Clear();
+                }
             }
         }
 
@@ -2333,33 +2692,34 @@ namespace EcsLte
 
         private class BatchOptions
         {
-            public int StartIndex { get; set; }
-            public int EndIndex { get; set; }
-            public EcsContext Context { get; set; }
-            public EntityManager EntityManager { get; set; }
-            public Entity[] Entities { get; set; }
-            public EntityCommands Commands { get; set; }
-            public ComponentConfig[] ReadConfigs { get; set; }
-            public ComponentConfig[] WriteConfigs { get; set; }
-            public ForEachRunAction Action { get; set; }
-            public ForEachRunAction CommandAction { get; set; }
-            public List<IEntityQueryCommand> CachedCommands { get; set; }
-            public bool UseQueryCommands { get; set; }
+            internal int StartIndex { get; set; }
+            internal int EndIndex { get; set; }
+            internal EcsContext Context { get; set; }
+            internal EntityManager EntityManager { get; set; }
+            internal Entity[] Entities { get; set; }
+            internal EntityCommands Commands { get; set; }
+            internal ComponentConfig[] ReadConfigs { get; set; }
+            internal ComponentConfig[] WriteConfigs { get; set; }
+            internal ForEachRunAction Action { get; set; }
+            internal ForEachRunAction CommandAction { get; set; }
+            internal List<IEntityCommand> EntityCommandsCache { get; set; }
+            internal bool UseEntityQueryCache { get; set; }
+            internal EntityQueryArcheTypeCacheRoot CacheRoot { get; set; }
         }
 
         private class ForEachOptions
         {
             private readonly EcsContext _context;
             private ArcheTypeData _prevArcheTypeData = null;
-            private ArcheTypeIndex _prevArcheTypeIndex;
             private int _trackStartingIndex;
 
             internal int Index { get; set; }
             internal Entity CurrentEntity { get; set; }
             internal int EntityIndex { get; set; }
-            internal ArcheTypeIndex ArcheTypeIndex => _prevArcheTypeIndex;
+            internal ArcheTypeIndex ArcheTypeIndex { get; private set; }
             internal IEntityQueryAdapter[] Adapters { get; set; }
             internal BatchOptions BatchOptions { get; private set; }
+            internal EntityQuerySharedCache Cache { get; private set; }
 
             internal ForEachOptions(BatchOptions batchOptions)
             {
@@ -2374,7 +2734,7 @@ namespace EcsLte
             {
                 _trackStartingIndex = BatchOptions.StartIndex;
 
-                if (BatchOptions.Commands == null && !BatchOptions.UseQueryCommands)
+                if (BatchOptions.Commands == null)
                 {
                     for (Index = BatchOptions.StartIndex; Index < BatchOptions.EndIndex; Index++)
                     {
@@ -2401,23 +2761,20 @@ namespace EcsLte
                         BatchOptions.CommandAction.Invoke(this);
                     }
 
-                    if (!BatchOptions.UseQueryCommands)
-                    {
-                        BatchOptions.Commands.AppendQueryCommands(BatchOptions.CachedCommands);
-                        BatchOptions.CachedCommands.Clear();
-                    }
+                    BatchOptions.Commands.AppendQueryCommands(BatchOptions.EntityCommandsCache);
+                    BatchOptions.EntityCommandsCache.Clear();
                 }
             }
 
             private void UpdateEntityData(in Entity entity, in EntityData entityData)
             {
-                if (_prevArcheTypeIndex != entityData.ArcheTypeIndex)
+                if (ArcheTypeIndex != entityData.ArcheTypeIndex)
                 {
                     if (BatchOptions.Commands == null && _prevArcheTypeData != null)
                     {
                         for (var i = 0; i < BatchOptions.WriteConfigs.Length; i++)
                         {
-                            _context.Tracking.TrackParallelUpdates(BatchOptions.Entities,
+                            _context.Tracking.TrackUpdates(BatchOptions.Entities,
                                 _trackStartingIndex, Index, BatchOptions.WriteConfigs[i], _prevArcheTypeData);
                         }
                         _trackStartingIndex = Index;
@@ -2431,8 +2788,10 @@ namespace EcsLte
                         adapter.ChangeArcheTypeData(archeTypeData);
                     }
 
-                    _prevArcheTypeIndex = entityData.ArcheTypeIndex;
                     _prevArcheTypeData = archeTypeData;
+                    ArcheTypeIndex = entityData.ArcheTypeIndex;
+                    if (BatchOptions.UseEntityQueryCache)
+                        Cache = BatchOptions.CacheRoot.GetCache(ArcheTypeIndex);
                 }
 
                 CurrentEntity = entity;

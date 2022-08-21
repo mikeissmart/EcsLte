@@ -116,7 +116,6 @@ namespace EcsLte
 
                 if (IsBlittable(type))
                 {
-                    // TODO need to check how flag components play in unmanaged arrays
                     config.UnmanagedSizeInBytes = Math.Max(1, Marshal.SizeOf(type));
                     if (config.IsManaged)
                         errorBlittableManagedTypes.Add(type);
@@ -146,14 +145,6 @@ namespace EcsLte
                 throw new ComponentBlittableManagedException(errorBlittableManagedTypes);
             if (errorNonBlittableNotManagedTypes.Count > 0)
                 throw new ComponentNotBlittableNotManagedException(errorNonBlittableNotManagedTypes);
-
-            /*configTypes = configTypes
-                .OrderBy(x => x.Config.BlittableIndex)
-                .ThenBy(x => x.Config.GeneralIndex)
-                .ThenBy(x => x.Config.SharedIndex)
-                .ThenBy(x => x.Config.ManagedIndex)
-                .ThenBy(x => x.Type.Name)
-                .ToList();*/
 
             _componentConfigTypes = new Dictionary<Type, ComponentConfig>();
             var componentConfigIndexes = new List<ComponentConfig>();
