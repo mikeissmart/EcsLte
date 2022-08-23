@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EcsLte.Utilities;
+using System;
 
 namespace EcsLte
 {
@@ -33,7 +34,8 @@ namespace EcsLte
 
         public ref TComponent GetComponentRef(int index) => ref _components[index];
 
-        public void GetComponents(ref TComponent[] components, int startingIndex) => Array.Copy(_components, 0, components, startingIndex, _components.Length);
+        public void GetComponents(ref TComponent[] components, int startingIndex)
+            => Helper.ArrayCopy(_components, 0, components, startingIndex, _components.Length);
 
         void IComponentPool.SetComponent(int index, IComponent component)
             => SetComponent(index, (TComponent)component);
@@ -46,12 +48,14 @@ namespace EcsLte
                 _components[index] = component;
         }
 
-        public void CopySameArray(int srcIndex, int destIndex, int count) => Array.Copy(_components, srcIndex, _components, destIndex, count);
+        public void CopySameArray(int srcIndex, int destIndex, int count) =>
+            Helper.ArrayCopy(_components, srcIndex, _components, destIndex, count);
 
         void IComponentPool.CopyFrom(IComponentPool srcPool, int srcStartingIndex, int destStartingIndex, int count)
             => CopyFrom((ComponentPool<TComponent>)srcPool, srcStartingIndex, destStartingIndex, count);
 
-        public void CopyFrom(ComponentPool<TComponent> srcPool, int srcStartingIndex, int destStartingIndex, int count) => Array.Copy(srcPool._components, srcStartingIndex,
+        public void CopyFrom(ComponentPool<TComponent> srcPool, int srcStartingIndex, int destStartingIndex, int count)
+            => Helper.ArrayCopy(srcPool._components, srcStartingIndex,
                 _components, destStartingIndex,
                 count);
 

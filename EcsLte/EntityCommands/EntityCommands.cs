@@ -1,4 +1,5 @@
 ﻿using EcsLte.Exceptions;
+using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
 
@@ -593,7 +594,7 @@ namespace EcsLte
             AssertEntityCommands();
 
             var entities = new Entity[srcCount];
-            Array.Copy(srcEntities, srcStartingIndex, entities, 0, srcCount);
+            Helper.ArrayCopy(srcEntities, srcStartingIndex, entities, 0, srcCount);
 
             lock (_lockObj)
             {
@@ -699,7 +700,7 @@ namespace EcsLte
             AssertEntityCommands();
 
             var des = new Entity[count];
-            Array.Copy(entities, startingIndex, des, 0, count);
+            Helper.ArrayCopy(entities, startingIndex, des, 0, count);
 
             lock (_lockObj)
             {
@@ -730,7 +731,7 @@ namespace EcsLte
             AssertEntityCommands();
 
             var entities = new Entity[count];
-            Array.Copy(srcEntities, startingIndex, entities, 0, count);
+            Helper.ArrayCopy(srcEntities, startingIndex, entities, 0, count);
 
             lock (_lockObj)
             {

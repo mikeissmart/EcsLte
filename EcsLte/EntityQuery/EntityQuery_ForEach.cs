@@ -2533,19 +2533,19 @@ namespace EcsLte
 
                 useEntityQueryCache = useEntityQueryCache && runningData.Commands == null;
 
-                Context.Entities.GetEntities(this, ref runningData.Entities);
+                var entitiesCount = Context.Entities.GetEntities(this, ref runningData.Entities);
 
                 if (isParallel)
                 {
                     var batches = new List<BatchOptions>();
-                    var batchCount = runningData.Entities.Length / _threadCount +
-                        (runningData.Entities.Length % _threadCount != 0 ? 1 : 0);
+                    var batchCount = entitiesCount / _threadCount +
+                        (entitiesCount % _threadCount != 0 ? 1 : 0);
 
                     for (var i = 0; i < _threadCount; i++)
                     {
                         var batchStartIndex = i * batchCount;
-                        var batchEndIndex = batchStartIndex + batchCount > runningData.Entities.Length
-                            ? runningData.Entities.Length : batchStartIndex + batchCount;
+                        var batchEndIndex = batchStartIndex + batchCount > entitiesCount
+                            ? entitiesCount : batchStartIndex + batchCount;
 
                         if (batchStartIndex < batchEndIndex)
                         {
@@ -2587,7 +2587,7 @@ namespace EcsLte
                     new ForEachOptions(new BatchOptions
                     {
                         StartIndex = 0,
-                        EndIndex = runningData.Entities.Length,
+                        EndIndex = entitiesCount,
                         Context = runningData.Context,
                         EntityManager = runningData.Context.Entities,
                         Entities = runningData.Entities,

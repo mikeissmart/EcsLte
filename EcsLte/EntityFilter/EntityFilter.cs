@@ -206,9 +206,9 @@ namespace EcsLte
             {
                 data.AnyOfConfigs = new ComponentConfig[data.AnyOfConfigs.Length - 1];
                 if (anyOfIndex > 0)
-                    Array.Copy(_data.AnyOfConfigs, 0, data.AnyOfConfigs, 0, anyOfIndex);
+                    Helper.ArrayCopy(_data.AnyOfConfigs, 0, data.AnyOfConfigs, 0, anyOfIndex);
                 if (anyOfIndex != _data.AnyOfConfigs.Length - 1)
-                    Array.Copy(_data.AnyOfConfigs, anyOfIndex + 1, data.AnyOfConfigs, anyOfIndex, (_data.AnyOfConfigs.Length - 1) - anyOfIndex);
+                    Helper.ArrayCopy(_data.AnyOfConfigs, anyOfIndex + 1, data.AnyOfConfigs, anyOfIndex, (_data.AnyOfConfigs.Length - 1) - anyOfIndex);
             }
 
             _data = data;
@@ -365,16 +365,16 @@ namespace EcsLte
             if (HasFilterBy<TComponent>())
             {
                 data.AllOfConfigs = new ComponentConfig[_data.AllOfConfigs.Length];
-                Array.Copy(_data.AllOfConfigs, data.AllOfConfigs, data.AllOfConfigs.Length);
+                Helper.ArrayCopy(_data.AllOfConfigs, data.AllOfConfigs, data.AllOfConfigs.Length);
 
                 data.SharedDataIndexes = new SharedDataIndex[_data.SharedDataIndexes.Length];
-                Array.Copy(_data.SharedDataIndexes, data.SharedDataIndexes, data.SharedDataIndexes.Length);
+                Helper.ArrayCopy(_data.SharedDataIndexes, data.SharedDataIndexes, data.SharedDataIndexes.Length);
 
                 data.FilterByComponents = new ISharedComponent[_data.FilterByComponents.Length];
-                Array.Copy(_data.FilterByComponents, data.FilterByComponents, data.FilterByComponents.Length);
+                Helper.ArrayCopy(_data.FilterByComponents, data.FilterByComponents, data.FilterByComponents.Length);
 
                 data.FilterComponentDatas = new ISharedComponentData[_data.FilterComponentDatas.Length];
-                Array.Copy(_data.FilterComponentDatas, data.FilterComponentDatas, data.FilterComponentDatas.Length);
+                Helper.ArrayCopy(_data.FilterComponentDatas, data.FilterComponentDatas, data.FilterComponentDatas.Length);
 
                 for (var i = 0; i < data.FilterComponentDatas.Length; i++)
                 {

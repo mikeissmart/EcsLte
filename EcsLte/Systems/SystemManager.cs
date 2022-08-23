@@ -65,7 +65,7 @@ namespace EcsLte
             Context.AssertContext();
             Helper.AssertAndResizeArray(ref systems, startingIndex, _updateSystems.Count);
 
-            Array.Copy(_updateSystems.Select(x => x.System).ToArray(), 0, systems, startingIndex, _updateSystems.Count);
+            Helper.ArrayCopy(_updateSystems.Select(x => x.System).ToArray(), 0, systems, startingIndex, _updateSystems.Count);
 
             return _updateSystems.Count;
         }

@@ -28,14 +28,14 @@ namespace EcsLte.Utilities
 
                 // Copy before insert
                 if (index >= 0)
-                    Array.Copy(source, 0, destination, 0, index + 1);
+                    ArrayCopy(source, 0, destination, 0, index + 1);
 
                 // insert
                 destination[index + 1] = insert;
 
                 // Copy after insert
                 if (source.Length - 1 != index)
-                    Array.Copy(source, index + 1, destination, index + 2, source.Length - (index + 1));
+                    ArrayCopy(source, index + 1, destination, index + 2, source.Length - (index + 1));
             }
             else
             {
@@ -96,6 +96,16 @@ namespace EcsLte.Utilities
                         throw new ComponentDuplicateException(configs[i].ComponentType);
                 }
             }
+        }
+
+        internal static void ArrayCopy<T>(in T[] source, in T[] dest, int length)
+        {
+            Array.Copy(source, dest, length);
+        }
+
+        internal static void ArrayCopy<T>(in T[] source, int sourceIndex, in T[] dest, int destindex, int length)
+        {
+            Array.Copy(source, sourceIndex, dest, destindex, length);
         }
 
         #endregion

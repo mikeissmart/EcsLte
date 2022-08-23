@@ -102,8 +102,8 @@ namespace EcsLte
 
             if (index != -1)
             {
-                Array.Copy(_data.Components, data.Components, data.Components.Length);
-                Array.Copy(_data.GeneralComponentDatas, data.GeneralComponentDatas, data.GeneralComponentDatas.Length);
+                Helper.ArrayCopy(_data.Components, data.Components, data.Components.Length);
+                Helper.ArrayCopy(_data.GeneralComponentDatas, data.GeneralComponentDatas, data.GeneralComponentDatas.Length);
 
                 data.Components[index] = component;
                 data.GeneralComponentDatas[index] = componentData;
@@ -146,8 +146,8 @@ namespace EcsLte
 
             if (index != -1)
             {
-                Array.Copy(_data.ManagedComponents, data.ManagedComponents, data.ManagedComponents.Length);
-                Array.Copy(_data.ManagedComponentDatas, data.ManagedComponentDatas, data.ManagedComponentDatas.Length);
+                Helper.ArrayCopy(_data.ManagedComponents, data.ManagedComponents, data.ManagedComponents.Length);
+                Helper.ArrayCopy(_data.ManagedComponentDatas, data.ManagedComponentDatas, data.ManagedComponentDatas.Length);
 
                 data.ManagedComponents[index] = component;
                 data.ManagedComponentDatas[index] = componentData;
@@ -186,8 +186,8 @@ namespace EcsLte
 
             if (index != -1)
             {
-                Array.Copy(_data.SharedComponents, data.SharedComponents, data.SharedComponents.Length);
-                Array.Copy(_data.SharedComponentDatas, data.SharedComponentDatas, data.SharedComponentDatas.Length);
+                Helper.ArrayCopy(_data.SharedComponents, data.SharedComponents, data.SharedComponents.Length);
+                Helper.ArrayCopy(_data.SharedComponentDatas, data.SharedComponentDatas, data.SharedComponentDatas.Length);
 
                 data.SharedComponents[index] = component;
                 data.SharedComponentDatas[index] = componentData;

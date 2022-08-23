@@ -74,8 +74,8 @@ namespace EcsLte
                     .GetSharedComponentDataIndex(context.SharedComponentDics);
                 _data.AllConfigs[allConfigIndex] = blueprint.SharedComponentDatas[i].Config;
             }
-            Array.Copy(blueprint.SharedComponents, _data.SharedComponents, _data.SharedComponents.Length);
-            Array.Copy(blueprint.SharedComponentDatas, _data.SharedComponentDatas, _data.SharedComponentDatas.Length);
+            Helper.ArrayCopy(blueprint.SharedComponents, _data.SharedComponents, _data.SharedComponents.Length);
+            Helper.ArrayCopy(blueprint.SharedComponentDatas, _data.SharedComponentDatas, _data.SharedComponentDatas.Length);
         }
 
         internal unsafe EntityArcheType(EcsContext context, ArcheTypeData archeTypeData)
@@ -102,9 +102,12 @@ namespace EcsLte
                     configsPtr,
                     archeTypeData.ArcheType.ConfigsLength);
             }
-            Array.Copy(archeTypeData.GeneralConfigs, _data.Configs, archeTypeData.GeneralConfigs.Length);
-            Array.Copy(archeTypeData.ManagedConfigs, _data.Configs, archeTypeData.ManagedConfigs.Length);
-            Array.Copy(archeTypeData.SharedConfigs, _data.Configs, archeTypeData.SharedConfigs.Length);
+            for (var i = 0; i < archeTypeData.GeneralConfigs.Length; i++, i++)
+                _data.Configs[i] = archeTypeData.GeneralConfigs[i].Config;
+            for (var i = 0; i < archeTypeData.ManagedConfigs.Length; i++, i++)
+                _data.ManagedConfigs[i] = archeTypeData.ManagedConfigs[i].Config;
+            for (var i = 0; i < archeTypeData.SharedConfigs.Length; i++, i++)
+                _data.SharedConfigs[i] = archeTypeData.SharedConfigs[i].Config;
             if (_data.SharedDataIndexes.Length > 0)
             {
                 fixed (SharedDataIndex* sharedDataIndexPtr = &_data.SharedDataIndexes[0])
@@ -115,7 +118,7 @@ namespace EcsLte
                         archeTypeData.ArcheType.SharedDataIndexesLength);
                 }
             }
-            Array.Copy(archeTypeData.SharedComponentDatas, _data.SharedComponentDatas, archeTypeData.SharedComponentDatas.Length);
+            Helper.ArrayCopy(archeTypeData.SharedComponentDatas, _data.SharedComponentDatas, archeTypeData.SharedComponentDatas.Length);
 
             for (var i = 0; i < archeTypeData.SharedConfigs.Length; i++)
                 _data.SharedComponents[i] = archeTypeData.SharedComponentDatas[i].Component;
@@ -339,13 +342,13 @@ namespace EcsLte
                 data.SharedConfigs = _data.SharedConfigs;
 
                 data.SharedDataIndexes = new SharedDataIndex[_data.SharedDataIndexes.Length];
-                Array.Copy(_data.SharedDataIndexes, data.SharedDataIndexes, data.SharedDataIndexes.Length);
+                Helper.ArrayCopy(_data.SharedDataIndexes, data.SharedDataIndexes, data.SharedDataIndexes.Length);
 
                 data.SharedComponents = new ISharedComponent[_data.SharedComponents.Length];
-                Array.Copy(_data.SharedComponents, data.SharedComponents, data.SharedComponents.Length);
+                Helper.ArrayCopy(_data.SharedComponents, data.SharedComponents, data.SharedComponents.Length);
 
                 data.SharedComponentDatas = new ISharedComponentData[_data.SharedComponentDatas.Length];
-                Array.Copy(_data.SharedComponentDatas, data.SharedComponentDatas, data.SharedComponentDatas.Length);
+                Helper.ArrayCopy(_data.SharedComponentDatas, data.SharedComponentDatas, data.SharedComponentDatas.Length);
 
                 for (var i = 0; i < data.SharedComponentDatas.Length; i++)
                 {
