@@ -10,6 +10,7 @@ namespace EcsLte
         private static readonly SystemConfigInit _instance = new SystemConfigInit();
         private static Dictionary<int, SystemConfig> _systemConfigIndexes;
         private static Dictionary<Type, SystemConfig> _systemConfigTypes;
+        private static bool _isInitialized;
 
         internal static SystemConfig[] AllSystemConfigs { get; private set; }
         internal static SystemConfig[] AllAutoAddSystemConfigs { get; private set; }
@@ -28,8 +29,12 @@ namespace EcsLte
         internal static SystemConfig GetConfig(int componentIndex)
             => _systemConfigIndexes[componentIndex];
 
-        private static void Initialize()
+        internal static void Initialize()
         {
+            if (_isInitialized)
+                return;
+            _isInitialized = true;
+
             var systemBaseType = typeof(SystemBase);
             var beforeSystemAttr = typeof(BeforeSystemAttribute);
             var afterSystemAttr = typeof(AfterSystemAttribute);

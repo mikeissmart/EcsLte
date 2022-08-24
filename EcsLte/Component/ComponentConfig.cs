@@ -64,6 +64,7 @@ namespace EcsLte
             {
                 if (!_hasConfig)
                 {
+                    ComponentConfigs.Initialize();
                     _config = ComponentConfigs.GetConfig(typeof(TComponent));
                     _hasConfig = true;
                 }

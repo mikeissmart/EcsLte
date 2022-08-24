@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 
@@ -9,8 +10,11 @@ namespace EcsLte
 {
     internal static class ComponentConfigs
     {
-        private static readonly ComponentConfigInit _instance = new ComponentConfigInit();
         private static Dictionary<Type, ComponentConfig> _componentConfigTypes;
+        // https://codeutility.org/c-the-fastest-way-to-check-if-a-type-is-blittable-stack-overflow/
+        private static BindingFlags _blittableFlags =
+            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+        private static bool _isInitialized;
 
         internal static ComponentConfig[] AllComponentConfigs { get; private set; }
         internal static ComponentConfig[] AllGeneralConfigs { get; private set; }
@@ -37,10 +41,10 @@ namespace EcsLte
         internal static IComponentAdapter[] AllManagedAdapters { get; private set; }
         internal static IComponentAdapter[] AllSharedAdapters { get; private set; }
 
-        public static ComponentConfig GetConfig(Type componentType)
+        internal static ComponentConfig GetConfig(Type componentType)
             => _componentConfigTypes[componentType];
 
-        public static ComponentConfig GetConfig(int componentIndex)
+        internal static ComponentConfig GetConfig(int componentIndex)
             => AllComponentConfigs[componentIndex];
 
         internal static IComponentPool[] CreateComponentPools(ComponentConfigOffset[] manageConfigs)
@@ -57,8 +61,12 @@ namespace EcsLte
             return pools;
         }
 
-        private static void Initialize()
+        internal static void Initialize()
         {
+            if (_isInitialized)
+                return;
+            _isInitialized = true;
+
             var iComponentType = typeof(IComponent);
             var iGeneralComponentType = typeof(IGeneralComponent);
             var iManagedComponentType = typeof(IManagedComponent);
@@ -81,6 +89,7 @@ namespace EcsLte
             var errorManagedGeneralSharedTypes = new List<Type>();
             var errorBlittableManagedTypes = new List<Type>();
             var errorNonBlittableNotManagedTypes = new List<Type>();
+            var blittableCache = new Dictionary<Type, bool>();
 
             foreach (var type in componentTypes.OrderBy(x => x.FullName.ToString()))
             {
@@ -114,16 +123,15 @@ namespace EcsLte
                         errorManagedGeneralSharedTypes.Add(type);
                 }
 
-                if (IsBlittable(type))
+                if (IsBlittable(type, blittableCache))
                 {
                     config.UnmanagedSizeInBytes = Math.Max(1, Marshal.SizeOf(type));
                     if (config.IsManaged)
                         errorBlittableManagedTypes.Add(type);
                 }
-                else
+                else if (!config.IsManaged)
                 {
-                    if (!config.IsManaged)
-                        errorNonBlittableNotManagedTypes.Add(type);
+                    errorNonBlittableNotManagedTypes.Add(type);
                 }
 
                 configTypes.Add(new ConfigType
@@ -240,20 +248,127 @@ namespace EcsLte
                 .ToArray();
         }
 
-        private static bool IsBlittable(Type type)
+        private static bool IsBlittable(Type type, Dictionary<Type, bool> blittableCache)
         {
+            if (blittableCache.TryGetValue(type, out var result))
+                return result;
+
+            // According to the MSDN, one-dimensional arrays of blittable
+            // primitive types are blittable.
+            if (type.IsArray)
+            {
+                // NOTE: we need to check if elem.IsValueType because
+                // multi-dimensional (jagged) arrays are not blittable.
+                var elem = type.GetElementType();
+                return elem.IsValueType && IsBlittable(elem, blittableCache);
+            }
+
+            // These are the cases which the MSDN states explicitly
+            // as blittable.
+            if (type.IsEnum
+                || type == typeof(Byte)
+                || type == typeof(SByte)
+                || type == typeof(Int16)
+                || type == typeof(UInt16)
+                || type == typeof(Int32)
+                || type == typeof(UInt32)
+                || type == typeof(Int64)
+                || type == typeof(UInt64)
+                || type == typeof(IntPtr)
+                || type == typeof(UIntPtr)
+                || type == typeof(Single)
+                || type == typeof(Double))
+            {
+                blittableCache.Add(type, true);
+                return true;
+            }
+
+            // These are the cases which the MSDN states explicitly
+            // as not blittable.
+                if (type.IsAbstract
+                || type.IsAutoLayout
+                || type.IsGenericType
+                || type == typeof(Array)
+                || type == typeof(Boolean)
+                || type == typeof(Char)
+                //|| type == typeof(System.Class)
+                || type == typeof(Object)
+                //|| type == typeof(System.Mdarray)
+                || type == typeof(String)
+                || type == typeof(Array)
+                //|| type == typeof(System.Szarray)
+                || type == typeof(ValueType))
+            {
+                blittableCache.Add(type, false);
+                return false;
+            }
+
+            // If we've reached this point, we're dealing with a complex type
+            // which is potentially blittable.
             try
             {
-                GCHandle.Alloc(
-                    FormatterServices.GetUninitializedObject(type),
-                    GCHandleType.Pinned)
+                // Non-blittable types are supposed to throw an exception,
+                // but that doesn't happen on Mono.
+                GCHandle.Alloc(FormatterServices.GetUninitializedObject(type),GCHandleType.Pinned)
                     .Free();
+
+                // So we need to examine the instance properties and fields
+                // to check if the type contains any not blittable member.
+                foreach (var f in type.GetFields(_blittableFlags))
+                {
+                    if (!IsBlittableTypeInStruct(f.FieldType, blittableCache))
+                    {
+                        blittableCache.Add(type, false);
+                        return false;
+                    }
+                }
+
+                foreach (var p in type.GetProperties(_blittableFlags))
+                {
+                    if (p.CanWrite && !IsBlittableTypeInStruct(p.PropertyType, blittableCache))
+                    {
+                        blittableCache.Add(type, false);
+                        return false;
+                    }
+                }
+
+                blittableCache.Add(type, true);
                 return true;
             }
             catch
             {
+                blittableCache.Add(type, false);
                 return false;
             }
+        }
+
+        private static bool IsBlittableTypeInStruct(Type type, Dictionary<Type, bool> blittableCache)
+        {
+            if (type.IsArray)
+            {
+                // NOTE: we need to check if elem.IsValueType because
+                // multi-dimensional (jagged) arrays are not blittable.
+                var elem = type.GetElementType();
+                if (!elem.IsValueType || !IsBlittableTypeInStruct(elem, blittableCache))
+                {
+                    return false;
+                }
+                // According to the MSDN, a type that contains a variable array
+                // of blittable types is not itself blittable. In other words:
+                // the array of blittable types must have a fixed size.
+                var property = type.GetProperty("IsFixedSize", _blittableFlags);
+                if (property == null || !(bool)property.GetValue(type))
+                {
+                    return false;
+                }
+            }
+            else if (!type.IsValueType || !IsBlittable(type, blittableCache))
+            {
+                // A type can be blittable only if all its instance fields and
+                // properties are also blittable.
+                return false;
+            }
+            return true;
         }
 
         private class ConfigType

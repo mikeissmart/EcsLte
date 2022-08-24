@@ -10,8 +10,27 @@ namespace EcsLte
         private static readonly Dictionary<string, EcsContext> _contexts =
             new Dictionary<string, EcsContext>();
         private static readonly object _lockObj = new object();
+        private static EcsContext _default;
+        private static bool _defaultInit;
 
-        public static EcsContext Default { get; set; } = CreateContext("Default");
+        public static EcsContext Default
+        {
+            get
+            {
+                if (!_defaultInit)
+                {
+                    _default = CreateContext("Default");
+                    _defaultInit = true;
+                }
+
+                return _default;
+            }
+            set
+            {
+                _defaultInit = true;
+                _default = value;
+            }
+        }
 
         public static bool HasContext(string name)
         {
@@ -53,6 +72,9 @@ namespace EcsLte
             lock (_lockObj)
             {
                 AssertAlreadyHaveContext(name);
+
+                ComponentConfigs.Initialize();
+                SystemConfigs.Initialize();
 
                 var context = new EcsContext(name);
                 _contexts.Add(name, context);
