@@ -13,6 +13,7 @@ namespace EcsLte
         public EntityCommands Commands => _data.Commands;
         public EntityFilter Filter => _data.Filter;
         public EntityTracker Tracker => _data.Tracker;
+        public int ThreadCount => _threadCount;
 
         internal EntityQuery(EcsContext context) => _data = new Data(context);
 
@@ -123,6 +124,8 @@ namespace EcsLte
             public ComponentConfig[] WriteConfigs;
             public ForEachRunAction Action;
             public ForEachRunAction CommandAction;
+            public ForEachRunAction OtherAction;
+            public int OtherCount;
             public Entity[] Entities;
             public List<IEntityCommand>[] EntityCommandsCaches;
             public EntityQueryArcheTypeCacheRoot[] EntityQueryCacheRoots;
@@ -154,6 +157,8 @@ namespace EcsLte
                 WriteConfigs = data.WriteConfigs;
                 Action = data.Action;
                 CommandAction = data.CommandAction;
+                OtherAction = data.OtherAction;
+                OtherCount = data.OtherCount;
                 Entities = data.Entities;
                 EntityCommandsCaches = data.EntityCommandsCaches;
                 EntityQueryCacheRoots = data.EntityQueryCacheRoots;

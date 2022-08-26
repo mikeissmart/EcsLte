@@ -67,7 +67,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             {
                 case ReadWriteType.R0W0:
                     _query.ForEach(
-                        (int index, Entity entity) =>
+                        (int threadIndex, int index, Entity entity) =>
                         {
                         })
                         .Run();
@@ -77,7 +77,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
 
                 case ReadWriteType.R0W4_Normal_x4:
                     _query.ForEach(
-                        (int index, Entity entity, ref TestComponent1 component1, ref TestComponent2 component2, ref TestComponent3 component3, ref TestComponent4 component4) =>
+                        (int threadIndex, int index, Entity entity, ref TestComponent1 component1, ref TestComponent2 component2, ref TestComponent3 component3, ref TestComponent4 component4) =>
                         {
                             component1.Prop++;
                             component2.Prop++;
@@ -89,7 +89,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
 
                 case ReadWriteType.R4W0_Normal_x4:
                     _query.ForEach(
-                        (int index, Entity entity, in TestComponent1 component1, in TestComponent2 component2, in TestComponent3 component3, in TestComponent4 component4) =>
+                        (int threadIndex, int index, Entity entity, in TestComponent1 component1, in TestComponent2 component2, in TestComponent3 component3, in TestComponent4 component4) =>
                         {
                             var prop1 = component1.Prop + 1;
                             var prop2 = component2.Prop + 1;
@@ -105,7 +105,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
 
                 case ReadWriteType.R0W4_Managed_x4:
                     _query.ForEach(
-                        (int index, Entity entity, ref TestManagedComponent1 component1, ref TestManagedComponent2 component2, ref TestManagedComponent3 component3, ref TestManagedComponent4 component4) =>
+                        (int threadIndex, int index, Entity entity, ref TestManagedComponent1 component1, ref TestManagedComponent2 component2, ref TestManagedComponent3 component3, ref TestManagedComponent4 component4) =>
                         {
                             component1.Prop++;
                             component2.Prop++;
@@ -117,7 +117,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
 
                 case ReadWriteType.R4W0_Managed_x4:
                     _query.ForEach(
-                        (int index, Entity entity, in TestManagedComponent1 component1, in TestManagedComponent2 component2, in TestManagedComponent3 component3, in TestManagedComponent4 component4) =>
+                        (int threadIndex, int index, Entity entity, in TestManagedComponent1 component1, in TestManagedComponent2 component2, in TestManagedComponent3 component3, in TestManagedComponent4 component4) =>
                         {
                             var prop1 = component1.Prop + 1;
                             var prop2 = component2.Prop + 1;
@@ -133,7 +133,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
 
                 case ReadWriteType.R0W4_Shared_x4:
                     _query.ForEach(
-                        (int index, Entity entity, ref TestSharedComponent1 component1, ref TestSharedComponent2 component2, ref TestSharedComponent3 component3, ref TestSharedComponent4 component4) =>
+                        (int threadIndex, int index, Entity entity, ref TestSharedComponent1 component1, ref TestSharedComponent2 component2, ref TestSharedComponent3 component3, ref TestSharedComponent4 component4) =>
                         {
                             component1.Prop++;
                             component2.Prop++;
@@ -145,7 +145,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
 
                 case ReadWriteType.R4W0_Shared_x4:
                     _query.ForEach(
-                        (int index, Entity entity, in TestSharedComponent1 component1, in TestSharedComponent2 component2, in TestSharedComponent3 component3, in TestSharedComponent4 component4) =>
+                        (int threadIndex, int index, Entity entity, in TestSharedComponent1 component1, in TestSharedComponent2 component2, in TestSharedComponent3 component3, in TestSharedComponent4 component4) =>
                         {
                             var prop1 = component1.Prop + 1;
                             var prop2 = component2.Prop + 1;

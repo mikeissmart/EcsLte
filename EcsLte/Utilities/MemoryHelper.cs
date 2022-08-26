@@ -39,6 +39,9 @@ namespace EcsLte.Utilities
             => Buffer.MemoryCopy(sourcePtr, destinationPtr, count * TypeCache<T>.SizeInBytes, count * TypeCache<T>.SizeInBytes);
 
         internal static unsafe void Clear<T>(T* ptr, int count) where T : unmanaged
-            => Unsafe.InitBlock(ptr, 0, (uint)(count * TypeCache<T>.SizeInBytes));
+        {
+            for (var i = 0; i < count; i++)
+                *ptr = default;
+        }
     }
 }

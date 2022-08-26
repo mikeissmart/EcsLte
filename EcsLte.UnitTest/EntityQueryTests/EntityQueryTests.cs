@@ -107,7 +107,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             Assert.ThrowsException<EntityQueryHasNoForEachException>(() =>
                 query.Run());
 
-            query.ForEach((int index, Entity entity) => { });
+            query.ForEach((int threadIndex, int index, Entity entity) => { });
             query.Run();
         }
     }

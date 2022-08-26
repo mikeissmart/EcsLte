@@ -12,7 +12,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             PrepTest(out var query, out var tracker, out var entities, out var wasHit);
 
             query.ForEach(
-                (int index, Entity entity) =>
+                (int threadIndex, int index, Entity entity) =>
                 {
                     wasHit[index]++;
                 })
@@ -32,7 +32,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                 Context.Entities.UpdateComponent(entities[i], new TestComponent1 { Prop = entities[i].Id });
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 in TestComponent1 component1) =>
                 {
                     wasHit[index]++;
@@ -57,7 +57,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2) =>
                 {
@@ -84,7 +84,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestManagedComponent1 component3) =>
@@ -114,7 +114,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestManagedComponent1 component3,
@@ -147,7 +147,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestManagedComponent1 component3,
@@ -183,7 +183,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestManagedComponent1 component3,
@@ -222,7 +222,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestManagedComponent1 component3,
@@ -264,7 +264,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 in TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestManagedComponent1 component3,
@@ -299,7 +299,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             PrepTest(out var query, out var tracker, out var entities, out var wasHit);
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1) =>
                 {
                     wasHit[index]++;
@@ -324,7 +324,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2) =>
                 {
@@ -352,7 +352,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestManagedComponent1 component3) =>
@@ -383,7 +383,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestManagedComponent1 component3,
@@ -417,7 +417,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestManagedComponent1 component3,
@@ -454,7 +454,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestManagedComponent1 component3,
@@ -494,7 +494,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestManagedComponent1 component3,
@@ -537,7 +537,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 in TestComponent2 component2,
                 in TestManagedComponent1 component3,
@@ -574,7 +574,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             PrepTest(out var query, out var tracker, out var entities, out var wasHit);
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2) =>
                 {
@@ -602,7 +602,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 in TestManagedComponent1 component3) =>
@@ -633,7 +633,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 in TestManagedComponent1 component3,
@@ -667,7 +667,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 in TestManagedComponent1 component3,
@@ -704,7 +704,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 in TestManagedComponent1 component3,
@@ -744,7 +744,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 in TestManagedComponent1 component3,
@@ -787,7 +787,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 in TestManagedComponent1 component3,
@@ -825,7 +825,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             PrepTest(out var query, out var tracker, out var entities, out var wasHit);
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3) =>
@@ -856,7 +856,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,
@@ -890,7 +890,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,
@@ -927,7 +927,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,
@@ -967,7 +967,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,
@@ -1010,7 +1010,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,
@@ -1049,7 +1049,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             PrepTest(out var query, out var tracker, out var entities, out var wasHit);
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,
@@ -1083,7 +1083,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,
@@ -1120,7 +1120,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,
@@ -1160,7 +1160,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,
@@ -1203,7 +1203,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,
@@ -1243,7 +1243,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             PrepTest(out var query, out var tracker, out var entities, out var wasHit);
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,
@@ -1280,7 +1280,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,
@@ -1320,7 +1320,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,
@@ -1363,7 +1363,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,
@@ -1404,7 +1404,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             PrepTest(out var query, out var tracker, out var entities, out var wasHit);
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,
@@ -1444,7 +1444,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,
@@ -1487,7 +1487,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,
@@ -1529,7 +1529,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             PrepTest(out var query, out var tracker, out var entities, out var wasHit);
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,
@@ -1572,7 +1572,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             }
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,
@@ -1615,7 +1615,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             PrepTest(out var query, out var tracker, out var entities, out var wasHit);
 
             query.ForEach(
-                (int index, Entity entity,
+                (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
                 ref TestComponent2 component2,
                 ref TestManagedComponent1 component3,

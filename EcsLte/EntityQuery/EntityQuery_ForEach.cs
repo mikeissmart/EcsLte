@@ -8,11 +8,24 @@ namespace EcsLte
 {
     public partial class EntityQuery
     {
+        #region Other
+
+        public EntityQuery ForEach(int count, EntityQueryActions.Other action)
+            => ForEachOtherStore(count,
+                (options) =>
+                {
+                    action(options.BatchOptions.ThreadIndex, options.Index);
+                });
+
+        #endregion
+
+        #region Write 0
+
         public EntityQuery ForEach(EntityQueryActions.R0W0 action)
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity);
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity);
                 },
                 (options) =>
                 {
@@ -21,14 +34,12 @@ namespace EcsLte
                 new ComponentConfig[0],
                 new ComponentConfig[0]);
 
-        #region Write 0
-
         public EntityQuery ForEach<T1>(EntityQueryActions.R1W0<T1> action)
             where T1 : IComponent
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         in ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex));
                 },
                 (options) =>
@@ -47,7 +58,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         in ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex));
                 },
@@ -69,7 +80,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         in ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex));
@@ -94,7 +105,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         in ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -122,7 +133,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         in ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -153,7 +164,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         in ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -187,7 +198,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         in ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -224,7 +235,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         in ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -260,7 +271,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex));
 
                     if (options.BatchOptions.UseEntityQueryCache)
@@ -274,7 +285,7 @@ namespace EcsLte
                 {
                     var component1 = ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1);
 
                     options.BatchOptions.EntityCommandsCache.Add(new EntityCommand_UpdateComponents<T1>(options.CurrentEntity,
@@ -294,7 +305,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex));
 
@@ -309,7 +320,7 @@ namespace EcsLte
                 {
                     var component1 = ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex));
 
@@ -334,7 +345,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex));
@@ -350,7 +361,7 @@ namespace EcsLte
                 {
                     var component1 = ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex));
@@ -378,7 +389,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -395,7 +406,7 @@ namespace EcsLte
                 {
                     var component1 = ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -426,7 +437,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -444,7 +455,7 @@ namespace EcsLte
                 {
                     var component1 = ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -478,7 +489,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -497,7 +508,7 @@ namespace EcsLte
                 {
                     var component1 = ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -534,7 +545,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -554,7 +565,7 @@ namespace EcsLte
                 {
                     var component1 = ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -594,7 +605,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -615,7 +626,7 @@ namespace EcsLte
                 {
                     var component1 = ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         in ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -655,7 +666,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex));
 
@@ -672,7 +683,7 @@ namespace EcsLte
                     var component1 = ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex);
                     var component2 = ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2);
 
@@ -696,7 +707,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex));
@@ -714,7 +725,7 @@ namespace EcsLte
                     var component1 = ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex);
                     var component2 = ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex));
@@ -743,7 +754,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -762,7 +773,7 @@ namespace EcsLte
                     var component1 = ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex);
                     var component2 = ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -794,7 +805,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -814,7 +825,7 @@ namespace EcsLte
                     var component1 = ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex);
                     var component2 = ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -849,7 +860,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -870,7 +881,7 @@ namespace EcsLte
                     var component1 = ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex);
                     var component2 = ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -908,7 +919,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -930,7 +941,7 @@ namespace EcsLte
                     var component1 = ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex);
                     var component2 = ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -971,7 +982,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -994,7 +1005,7 @@ namespace EcsLte
                     var component1 = ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex);
                     var component2 = ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         in ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -1036,7 +1047,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex));
@@ -1056,7 +1067,7 @@ namespace EcsLte
                     var component2 = ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex);
                     var component3 = ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3);
@@ -1084,7 +1095,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -1105,7 +1116,7 @@ namespace EcsLte
                     var component2 = ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex);
                     var component3 = ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -1138,7 +1149,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -1160,7 +1171,7 @@ namespace EcsLte
                     var component2 = ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex);
                     var component3 = ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -1196,7 +1207,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -1219,7 +1230,7 @@ namespace EcsLte
                     var component2 = ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex);
                     var component3 = ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -1258,7 +1269,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -1282,7 +1293,7 @@ namespace EcsLte
                     var component2 = ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex);
                     var component3 = ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -1324,7 +1335,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -1349,7 +1360,7 @@ namespace EcsLte
                     var component2 = ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex);
                     var component3 = ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -1393,7 +1404,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -1416,7 +1427,7 @@ namespace EcsLte
                     var component3 = ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex);
                     var component4 = ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -1448,7 +1459,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -1472,7 +1483,7 @@ namespace EcsLte
                     var component3 = ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex);
                     var component4 = ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -1509,7 +1520,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -1534,7 +1545,7 @@ namespace EcsLte
                     var component3 = ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex);
                     var component4 = ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -1574,7 +1585,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -1600,7 +1611,7 @@ namespace EcsLte
                     var component3 = ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex);
                     var component4 = ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -1643,7 +1654,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -1670,7 +1681,7 @@ namespace EcsLte
                     var component3 = ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex);
                     var component4 = ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -1716,7 +1727,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -1742,7 +1753,7 @@ namespace EcsLte
                     var component4 = ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex);
                     var component5 = ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -1778,7 +1789,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -1805,7 +1816,7 @@ namespace EcsLte
                     var component4 = ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex);
                     var component5 = ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -1846,7 +1857,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -1874,7 +1885,7 @@ namespace EcsLte
                     var component4 = ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex);
                     var component5 = ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -1918,7 +1929,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -1947,7 +1958,7 @@ namespace EcsLte
                     var component4 = ((IEntityQueryAdapter<T4>)options.Adapters[3]).GetRef(options.EntityIndex);
                     var component5 = ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -1995,7 +2006,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -2024,7 +2035,7 @@ namespace EcsLte
                     var component5 = ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex);
                     var component6 = ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -2064,7 +2075,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -2094,7 +2105,7 @@ namespace EcsLte
                     var component5 = ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex);
                     var component6 = ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -2139,7 +2150,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -2170,7 +2181,7 @@ namespace EcsLte
                     var component5 = ((IEntityQueryAdapter<T5>)options.Adapters[4]).GetRef(options.EntityIndex);
                     var component6 = ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -2220,7 +2231,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -2252,7 +2263,7 @@ namespace EcsLte
                     var component6 = ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex);
                     var component7 = ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -2296,7 +2307,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -2329,7 +2340,7 @@ namespace EcsLte
                     var component6 = ((IEntityQueryAdapter<T6>)options.Adapters[5]).GetRef(options.EntityIndex);
                     var component7 = ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -2381,7 +2392,7 @@ namespace EcsLte
             => ForEachStore(
                 (options) =>
                 {
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref ((IEntityQueryAdapter<T1>)options.Adapters[0]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T2>)options.Adapters[1]).GetRef(options.EntityIndex),
                         ref ((IEntityQueryAdapter<T3>)options.Adapters[2]).GetRef(options.EntityIndex),
@@ -2416,7 +2427,7 @@ namespace EcsLte
                     var component7 = ((IEntityQueryAdapter<T7>)options.Adapters[6]).GetRef(options.EntityIndex);
                     var component8 = ((IEntityQueryAdapter<T8>)options.Adapters[7]).GetRef(options.EntityIndex);
 
-                    action(options.Index, options.CurrentEntity,
+                    action(options.BatchOptions.ThreadIndex, options.Index, options.CurrentEntity,
                         ref component1,
                         ref component2,
                         ref component3,
@@ -2453,6 +2464,21 @@ namespace EcsLte
 
         #endregion
 
+        private EntityQuery ForEachOtherStore(int count, ForEachRunAction action)
+        {
+            _data = new Data(_data)
+            {
+                ReadConfigs = new ComponentConfig[0],
+                WriteConfigs = new ComponentConfig[0],
+                Action = null,
+                CommandAction = null,
+                OtherAction = action,
+                OtherCount = count
+            };
+
+            return this;
+        }
+
         private EntityQuery ForEachStore(ForEachRunAction action, ForEachRunAction commandAction, ComponentConfig[] readConfigs, ComponentConfig[] writeConfigs)
         {
             _data = new Data(_data)
@@ -2461,6 +2487,8 @@ namespace EcsLte
                 WriteConfigs = writeConfigs,
                 Action = action,
                 CommandAction = commandAction,
+                OtherAction = null,
+                OtherCount = 0
             };
 
             return this;
@@ -2468,19 +2496,27 @@ namespace EcsLte
 
         private void InternalRun(bool isParallel)
         {
-            var runningData = _data;
+            _data.Context.AssertContext();
+            _data.Context.AssertStructualChangeAvailable();
+
+            _data.Context.StructChangeAvailable = false;
+
+            if (_data.Action != null)
+                EntityForEach(_data, isParallel);
+            else if (_data.OtherAction != null)
+                OtherForEach(_data, isParallel);
+            else
+                throw new EntityQueryHasNoForEachException();
+        }
+
+        private void EntityForEach(Data runningData, bool isParallel)
+        {
             // Switch to temp filter that whereAllOf action configs
             var dataFilter = runningData.Filter;
             var useEntityQueryCache = false;
             var useQueryCommandsCount = 0;
 
-            runningData.Context.AssertContext();
-            runningData.Context.AssertStructualChangeAvailable();
-            if (runningData.Action == null)
-                throw new EntityQueryHasNoForEachException();
             Helper.AssertDuplicateConfigs(runningData.ReadConfigs);
-
-            runningData.Context.StructChangeAvailable = false;
 
             try
             {
@@ -2553,6 +2589,7 @@ namespace EcsLte
                             {
                                 StartIndex = batchStartIndex,
                                 EndIndex = batchEndIndex,
+                                ThreadIndex = i,
                                 Context = runningData.Context,
                                 EntityManager = runningData.Context.Entities,
                                 Entities = runningData.Entities,
@@ -2588,6 +2625,7 @@ namespace EcsLte
                     {
                         StartIndex = 0,
                         EndIndex = entitiesCount,
+                        ThreadIndex = 1,
                         Context = runningData.Context,
                         EntityManager = runningData.Context.Entities,
                         Entities = runningData.Entities,
@@ -2643,6 +2681,65 @@ namespace EcsLte
             }
         }
 
+        private void OtherForEach(Data runningData, bool isParallel)
+        {
+            if (runningData.OtherCount <= 0)
+                throw new ArgumentOutOfRangeException("ForEachOther.Count", "Must be greater than 0.");
+
+            try
+            {
+                if (isParallel)
+                {
+                    var batches = new List<BatchOptions>();
+                    var batchCount = runningData.OtherCount / _threadCount +
+                        (runningData.OtherCount % _threadCount != 0 ? 1 : 0);
+
+                    for (var i = 0; i < _threadCount; i++)
+                    {
+                        var batchStartIndex = i * batchCount;
+                        var batchEndIndex = batchStartIndex + batchCount > runningData.OtherCount
+                            ? runningData.OtherCount : batchStartIndex + batchCount;
+
+                        if (batchStartIndex < batchEndIndex)
+                        {
+                            batches.Add(new BatchOptions
+                            {
+                                StartIndex = batchStartIndex,
+                                EndIndex = batchEndIndex,
+                                OtherAction = runningData.OtherAction
+                            });
+                        }
+                        else
+                            break;
+                    }
+
+                    var result = Parallel.ForEach(batches, new ParallelOptions { MaxDegreeOfParallelism = _threadCount },
+                        batch =>
+                        {
+                            new ForEachOptions(batch)
+                                .InvokeForEachOtherAction();
+                        });
+                }
+                else
+                {
+                    new ForEachOptions(new BatchOptions
+                    {
+                        StartIndex = 0,
+                        EndIndex = runningData.OtherCount,
+                        OtherAction = runningData.OtherAction
+                    }).InvokeForEachOtherAction();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                runningData.Context.StructChangeAvailable = true;
+            }
+        }
+
         private static IEntityQueryAdapter[] CreateAdapters(bool useCommands, ComponentConfig[] writeConfigs, ComponentConfig[] readConfigs)
         {
             var adapters = new IEntityQueryAdapter[writeConfigs.Length + readConfigs.Length];
@@ -2694,6 +2791,7 @@ namespace EcsLte
         {
             internal int StartIndex { get; set; }
             internal int EndIndex { get; set; }
+            internal int ThreadIndex { get; set; }
             internal EcsContext Context { get; set; }
             internal EntityManager EntityManager { get; set; }
             internal Entity[] Entities { get; set; }
@@ -2702,6 +2800,7 @@ namespace EcsLte
             internal ComponentConfig[] WriteConfigs { get; set; }
             internal ForEachRunAction Action { get; set; }
             internal ForEachRunAction CommandAction { get; set; }
+            internal ForEachRunAction OtherAction { get; set; }
             internal List<IEntityCommand> EntityCommandsCache { get; set; }
             internal bool UseEntityQueryCache { get; set; }
             internal EntityQueryArcheTypeCacheRoot CacheRoot { get; set; }
@@ -2764,6 +2863,12 @@ namespace EcsLte
                     BatchOptions.Commands.AppendQueryCommands(BatchOptions.EntityCommandsCache);
                     BatchOptions.EntityCommandsCache.Clear();
                 }
+            }
+
+            internal void InvokeForEachOtherAction()
+            {
+                for (Index = BatchOptions.StartIndex; Index < BatchOptions.EndIndex; Index++)
+                    BatchOptions.OtherAction.Invoke(this);
             }
 
             private void UpdateEntityData(in Entity entity, in EntityData entityData)
