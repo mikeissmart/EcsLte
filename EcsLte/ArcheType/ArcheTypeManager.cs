@@ -21,13 +21,16 @@ namespace EcsLte
         {
             _archeTypeIndexes = new List<List<ArcheTypeData>>();
             _cachedArcheType = ArcheType.Alloc(
-                ComponentConfigs.AllComponentCount,
-                ComponentConfigs.AllSharedCount);
+                ComponentConfigs.Instance.AllComponentCount,
+                ComponentConfigs.Instance.AllSharedCount);
             _rootPoint = new DataPoint();
             _lockCacheObj = new object();
 
             Context = context;
         }
+
+        public EntityArcheType CreateArcheType()
+            => new EntityArcheType(Context);
 
         public EntityArcheType AddComponentType<TComponent>()
             where TComponent : unmanaged, IGeneralComponent
@@ -292,7 +295,7 @@ namespace EcsLte
             internal DataPoint()
             {
                 ArcheTypeDatas = new Dictionary<ArcheType, ArcheTypeData>(ArcheTypeSharedDataIndexComparer.Comparer);
-                Children = new DataPoint[ComponentConfigs.AllComponentCount];
+                Children = new DataPoint[ComponentConfigs.Instance.AllComponentCount];
             }
 
             internal DataPoint GetChild(int componentIndex)

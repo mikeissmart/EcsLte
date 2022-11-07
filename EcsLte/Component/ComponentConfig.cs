@@ -2,20 +2,20 @@
 
 namespace EcsLte
 {
-    internal struct ComponentConfig : IEquatable<ComponentConfig>, IComparable<ComponentConfig>
+    public struct ComponentConfig : IEquatable<ComponentConfig>, IComparable<ComponentConfig>
     {
-        internal int ComponentIndex { get; set; }
-        internal int GeneralIndex { get; set; }
-        internal int ManagedIndex { get; set; }
-        internal int SharedIndex { get; set; }
-        internal int UnmanagedSizeInBytes { get; set; }
-        internal bool IsGeneral { get; set; }
-        internal bool IsManaged { get; set; }
-        internal bool IsShared { get; set; }
+        public int ComponentIndex { get; set; }
+        public int GeneralIndex { get; set; }
+        public int ManagedIndex { get; set; }
+        public int SharedIndex { get; set; }
+        public int UnmanagedSizeInBytes { get; set; }
+        public bool IsGeneral { get; set; }
+        public bool IsManaged { get; set; }
+        public bool IsShared { get; set; }
 
-        internal Type ComponentType => ComponentConfigs.AllComponentTypes[ComponentIndex];
+        public Type ComponentType => ComponentConfigs.Instance.AllComponentTypes[ComponentIndex];
 
-        internal IComponentAdapter Adapter => ComponentConfigs.AllComponentAdapters[ComponentIndex];
+        internal IComponentAdapter Adapter => ComponentConfigs.Instance.AllComponentAdapters[ComponentIndex];
 
         #region Equals
 
@@ -49,23 +49,22 @@ namespace EcsLte
             else if (IsShared)
                 return $"ComponentIndex {ComponentIndex}, SharedIndex {SharedIndex}";
             else
-                throw new Exception();
+                return $"ComponentIndex {ComponentIndex}";
         }
     }
 
-    internal class ComponentConfig<TComponent> where TComponent : IComponent
+    public class ComponentConfig<TComponent> where TComponent : IComponent
     {
         private static ComponentConfig _config;
         private static bool _hasConfig;
 
-        internal static ComponentConfig Config
+        public static ComponentConfig Config
         {
             get
             {
                 if (!_hasConfig)
                 {
-                    ComponentConfigs.Initialize();
-                    _config = ComponentConfigs.GetConfig(typeof(TComponent));
+                    _config = ComponentConfigs.Instance.GetConfig(typeof(TComponent));
                     _hasConfig = true;
                 }
 

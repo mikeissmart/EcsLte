@@ -30,7 +30,7 @@ namespace EcsLte
             var generalIndex = 0;
             var managedIndex = 0;
             var sharedIndex = 0;
-            _configOffsets = MemoryHelper.Alloc<ComponentConfigOffset>(ComponentConfigs.AllComponentCount);
+            _configOffsets = MemoryHelper.Alloc<ComponentConfigOffset>(ComponentConfigs.Instance.AllComponentCount);
             for (var i = 0; i < archeType.ConfigsLength; i++)
             {
                 var config = archeType.Configs[i];
@@ -80,7 +80,7 @@ namespace EcsLte
             }
 
             ManagedConfigs = managedConfigs.ToArray();
-            _managedPools = ComponentConfigs.CreateComponentPools(ManagedConfigs);
+            _managedPools = ComponentConfigs.Instance.CreateComponentPools(ManagedConfigs);
 
             SharedConfigs = sharedConfigs.ToArray();
             SharedComponentDatas = new ISharedComponentData[SharedConfigs.Length];
@@ -185,7 +185,6 @@ namespace EcsLte
             nextArcheTypeData.EntityCount += prevArcheTypeData.EntityCount;
             prevArcheTypeData.EntityCount = 0;
         }
-
 
         internal void CheckCapacity(int count)
         {

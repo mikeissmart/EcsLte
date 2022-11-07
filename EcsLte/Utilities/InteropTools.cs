@@ -7,7 +7,7 @@ namespace EcsLte.Utilities
     // https://stackoverflow.com/questions/24864233/marshal-structuretoptr-without-boxing
     internal static unsafe class InteropTools
     {
-        private static readonly Type SafeBufferType = typeof(SafeBuffer);
+        /*private static readonly Type SafeBufferType = typeof(SafeBuffer);
 
         public delegate void PtrToStructureNativeDelegate(byte* ptr, TypedReference structure, uint sizeofT);
 
@@ -47,6 +47,16 @@ namespace EcsLte.Utilities
 
         public static int SizeOf<T>() => SizeOf(typeof(T));
 
-        public static int SizeOf(Type t) => SizeOfHelper_f(t, true);
+        public static int SizeOf(Type t) => SizeOfHelper_f(t, true);*/
+
+        public static void StructureToPtr<T>(ref T structure, IntPtr ptr)
+        {
+            Marshal.StructureToPtr(structure, ptr, false);
+        }
+
+        public static void PtrToStructure<T>(IntPtr ptr, out T structure)
+        {
+            structure = Marshal.PtrToStructure<T>(ptr);
+        }
     }
 }

@@ -10,9 +10,9 @@ namespace EcsLte
         private Data _data;
 
         public EcsContext Context => _data.Context;
-        public Type[] AllOfTypes => _data.AllOfTypes;
-        public Type[] AnyOfTypes => _data.AnyOfTypes;
-        public Type[] NoneOfTypes => _data.NoneOfTypes;
+        public ComponentConfig[] AllOfConfigs => _data.AllOfConfigs;
+        public ComponentConfig[] AnyOfConfigs => _data.AnyOfConfigs;
+        public ComponentConfig[] NoneOfConfigs => _data.NoneOfConfigs;
         public ISharedComponent[] FilterByComponents => _data.FilterByComponents;
         internal SharedDataIndex[] SharedDataIndexes => _data.SharedDataIndexes;
         internal ISharedComponentData[] FilterComponentDatas => _data.FilterComponentDatas;
@@ -27,9 +27,6 @@ namespace EcsLte
             get => _data.ArcheTypeDataVersion;
             set => _data.ArcheTypeDataVersion = value;
         }
-        internal ComponentConfig[] AllOfConfigs => _data.AllOfConfigs;
-        internal ComponentConfig[] AnyOfConfigs => _data.AnyOfConfigs;
-        internal ComponentConfig[] NoneOfConfigs => _data.NoneOfConfigs;
 
         internal EntityFilter(EcsContext context) => _data = new Data(context);
 
@@ -44,16 +41,21 @@ namespace EcsLte
 
         public bool HasWhereOf<TComponent>()
             where TComponent : IComponent
-            => HasWhereAllOf<TComponent>() ||
-                HasWhereAnyOf<TComponent>() ||
-                HasWhereNoneOf<TComponent>();
+            => HasWhereOf(ComponentConfig<TComponent>.Config);
+
+        public bool HasWhereOf(ComponentConfig config)
+            => HasWhereAllOf(config) ||
+                HasWhereAnyOf(config) ||
+                HasWhereNoneOf(config);
 
         public bool HasWhereAllOf<TComponent>()
             where TComponent : IComponent
+            => HasWhereAllOf(ComponentConfig<TComponent>.Config);
+
+        public bool HasWhereAllOf(ComponentConfig config)
         {
             Context.AssertContext();
 
-            var config = ComponentConfig<TComponent>.Config;
             for (var i = 0; i < _data.AllOfConfigs.Length; i++)
             {
                 if (_data.AllOfConfigs[i] == config)
@@ -65,10 +67,12 @@ namespace EcsLte
 
         public bool HasWhereAnyOf<TComponent>()
             where TComponent : IComponent
+            => HasWhereAnyOf(ComponentConfig<TComponent>.Config);
+
+        public bool HasWhereAnyOf(ComponentConfig config)
         {
             Context.AssertContext();
 
-            var config = ComponentConfig<TComponent>.Config;
             for (var i = 0; i < _data.AnyOfConfigs.Length; i++)
             {
                 if (_data.AnyOfConfigs[i] == config)
@@ -80,43 +84,12 @@ namespace EcsLte
 
         public bool HasWhereNoneOf<TComponent>()
             where TComponent : IComponent
+            => HasWhereNoneOf(ComponentConfig<TComponent>.Config);
+
+        public bool HasWhereNoneOf(ComponentConfig config)
         {
             Context.AssertContext();
 
-            var config = ComponentConfig<TComponent>.Config;
-            for (var i = 0; i < _data.NoneOfConfigs.Length; i++)
-            {
-                if (_data.NoneOfConfigs[i] == config)
-                    return true;
-            }
-
-            return false;
-        }
-
-        internal bool HasWhereAllOf(ComponentConfig config)
-        {
-            for (var i = 0; i < _data.AllOfConfigs.Length; i++)
-            {
-                if (_data.AllOfConfigs[i] == config)
-                    return true;
-            }
-
-            return false;
-        }
-
-        internal bool HasWhereAnyOf(ComponentConfig config)
-        {
-            for (var i = 0; i < _data.AllOfConfigs.Length; i++)
-            {
-                if (_data.AllOfConfigs[i] == config)
-                    return true;
-            }
-
-            return false;
-        }
-
-        internal bool HasWhereNoneOf(ComponentConfig config)
-        {
             for (var i = 0; i < _data.NoneOfConfigs.Length; i++)
             {
                 if (_data.NoneOfConfigs[i] == config)
@@ -132,13 +105,14 @@ namespace EcsLte
 
         public EntityFilter WhereAllOf<TComponent>()
             where TComponent : IComponent
+            => WhereAllOf(ComponentConfig<TComponent>.Config);
+
+        public EntityFilter WhereAllOf(ComponentConfig config)
         {
             Context.AssertContext();
 
-            if (!HasWhereAllOf<TComponent>())
+            if (!HasWhereAllOf(config))
             {
-                var config = ComponentConfig<TComponent>.Config;
-
                 AssertHasWhereAnyOf(config);
                 AssertHasWhereNoneOf(config);
 
@@ -179,11 +153,6 @@ namespace EcsLte
             return this;
         }
 
-        internal void WhereAllOf(ComponentConfig config) => _data = new Data(_data)
-        {
-            AllOfConfigs = Helper.CopyInsertSort(_data.AllOfConfigs, config)
-        };
-
         internal void RemoveAnyOf(ComponentConfig config)
         {
             var anyOfIndex = -1;
@@ -216,13 +185,14 @@ namespace EcsLte
 
         public EntityFilter WhereAnyOf<TComponent>()
             where TComponent : IComponent
+            => WhereAnyOf(ComponentConfig<TComponent>.Config);
+
+        public EntityFilter WhereAnyOf(ComponentConfig config)
         {
             Context.AssertContext();
 
-            if (!HasWhereAnyOf<TComponent>())
+            if (!HasWhereAnyOf(config))
             {
-                var config = ComponentConfig<TComponent>.Config;
-
                 AssertHasWhereAllOf(config);
                 AssertHasWhereNoneOf(config);
 
@@ -265,13 +235,14 @@ namespace EcsLte
 
         public EntityFilter WhereNoneOf<TComponent>()
             where TComponent : IComponent
+            => WhereNoneOf(ComponentConfig<TComponent>.Config);
+
+        public EntityFilter WhereNoneOf(ComponentConfig config)
         {
             Context.AssertContext();
 
-            if (!HasWhereNoneOf<TComponent>())
+            if (!HasWhereNoneOf(config))
             {
-                var config = ComponentConfig<TComponent>.Config;
-
                 AssertHasWhereAllOf(config);
                 AssertHasWhereAnyOf(config);
 

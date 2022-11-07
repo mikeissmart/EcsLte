@@ -17,7 +17,7 @@ namespace EcsLte
     }
 
     internal class ComponentGeneralAdapter<TComponent> : IComponentAdapter
-        where TComponent : IGeneralComponent
+        where TComponent : unmanaged, IGeneralComponent
     {
         private ComponentConfig _config;
 
@@ -47,7 +47,7 @@ namespace EcsLte
 
         public unsafe void SetComponent<TComponent2>(int entityIndex, TComponent2 component, ArcheTypeData archeTypeData)
             where TComponent2 : IComponent
-                => InteropTools.StructureToPtr(ref component, (IntPtr)archeTypeData.GetComponentPtr(entityIndex, _config));
+            => InteropTools.StructureToPtr(ref component, (IntPtr)archeTypeData.GetComponentPtr(entityIndex, _config));
 
         public void AddConfig<TComponent2>(ref ArcheType cachedArcheType, TComponent2 component, SharedComponentDictionaries sharedDics)
             where TComponent2 : IComponent
@@ -72,7 +72,8 @@ namespace EcsLte
                 .GetComponent(entityIndex);
 
         public void SetComponent<TComponent2>(int entityIndex, TComponent2 component, ArcheTypeData archeTypeData)
-            where TComponent2 : IComponent => archeTypeData.GetManagedComponentPool(_config)
+            where TComponent2 : IComponent
+            => archeTypeData.GetManagedComponentPool(_config)
                 .SetComponent(entityIndex, component);
 
         public void AddConfig<TComponent2>(ref ArcheType cachedArcheType, TComponent2 component, SharedComponentDictionaries sharedDics)

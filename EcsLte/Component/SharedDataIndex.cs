@@ -39,6 +39,7 @@ namespace EcsLte
                 .AppendHashCode(DataIndex)
                 .HashCode;
 
-        public override string ToString() => $"{ComponentConfigs.AllSharedConfigs[SharedIndex]}, DataIndex: {DataIndex}";
+        public override string ToString()
+            => $"{ComponentConfigs.Instance.AllSharedConfigs[SharedIndex]}, DataIndex: {DataIndex}";
     }
 }

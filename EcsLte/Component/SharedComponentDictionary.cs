@@ -106,12 +106,12 @@ namespace EcsLte
 
         internal SharedComponentDictionaries()
         {
-            _dics = new ISharedComponentDictionary[ComponentConfigs.AllSharedCount];
+            _dics = new ISharedComponentDictionary[ComponentConfigs.Instance.AllSharedCount];
             var dicType = typeof(SharedComponentDictionary<>);
             for (var i = 0; i < _dics.Length; i++)
             {
                 _dics[i] = (ISharedComponentDictionary)Activator
-                    .CreateInstance(dicType.MakeGenericType(ComponentConfigs.AllSharedTypes[i]));
+                    .CreateInstance(dicType.MakeGenericType(ComponentConfigs.Instance.AllSharedTypes[i]));
             }
         }
 

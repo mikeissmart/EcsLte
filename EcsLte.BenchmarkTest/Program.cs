@@ -29,7 +29,7 @@ namespace EcsLte.BenchmarkTest
             Console.ReadLine();
 #else
             BenchmarkRunner.Run(typeof(Program).Assembly, config);
-            //BenchmarkRunner.Run<EcsContextTests.EntityQueryForEachTests>(config);
+            //BenchmarkRunner.Run<EcsContextTests.EcsContext_UpdateComponents>(config);
             Console.WriteLine("done");
 #endif
         }

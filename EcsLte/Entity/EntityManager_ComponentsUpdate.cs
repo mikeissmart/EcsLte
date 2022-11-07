@@ -5,11 +5,12 @@ namespace EcsLte
 {
     public unsafe partial class EntityManager
     {
-        internal void UpdateComponents<T1>(Entity entity,
+        public void UpdateComponents<T1>(Entity entity,
             T1 component1)
             where T1 : IComponent
         {
-            var config1 = ComponentConfig<T1>.Config;
+            var config1 = ComponentConfigs.Instance
+                .GetConfig(component1.GetType());
 
             Context.AssertContext();
             AssertNotExistEntity(entity,

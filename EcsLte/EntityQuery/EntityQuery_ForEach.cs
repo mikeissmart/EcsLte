@@ -2506,7 +2506,12 @@ namespace EcsLte
             else if (_data.OtherAction != null)
                 OtherForEach(_data, isParallel);
             else
+            {
+                _data.Context.StructChangeAvailable = true;
                 throw new EntityQueryHasNoForEachException();
+            }
+
+            _data.Context.StructChangeAvailable = true;
         }
 
         private void EntityForEach(Data runningData, bool isParallel)
@@ -2640,7 +2645,6 @@ namespace EcsLte
                     }).InvokeForEachAction();
                 }
 
-                runningData.Context.StructChangeAvailable = true;
                 if (useEntityQueryCache)
                 {
                     for (var i = 0; i < useQueryCommandsCount; i++)
@@ -2667,7 +2671,6 @@ namespace EcsLte
             finally
             {
                 runningData.Filter = dataFilter;
-                runningData.Context.StructChangeAvailable = true;
                 for (var i = 0; i < useQueryCommandsCount; i++)
                 {
                     var commands = runningData.EntityQueryCacheRoots[i];
@@ -2733,10 +2736,6 @@ namespace EcsLte
             catch (Exception ex)
             {
                 throw ex;
-            }
-            finally
-            {
-                runningData.Context.StructChangeAvailable = true;
             }
         }
 

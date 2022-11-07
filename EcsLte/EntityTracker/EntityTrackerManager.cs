@@ -217,8 +217,8 @@ namespace EcsLte
 
         private HashSet<EntityTracker>[] CreateComponentHashSet()
         {
-            var sets = new HashSet<EntityTracker>[ComponentConfigs.AllComponentCount];
-            for (var i = 0; i < ComponentConfigs.AllComponentCount; i++)
+            var sets = new HashSet<EntityTracker>[ComponentConfigs.Instance.AllComponentCount];
+            for (var i = 0; i < ComponentConfigs.Instance.AllComponentCount; i++)
                 sets[i] = new HashSet<EntityTracker>();
 
             return sets;

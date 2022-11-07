@@ -73,7 +73,6 @@ namespace EcsLte
             {
                 AssertAlreadyHaveContext(name);
 
-                ComponentConfigs.Initialize();
                 SystemConfigs.Initialize();
 
                 var context = new EcsContext(name);

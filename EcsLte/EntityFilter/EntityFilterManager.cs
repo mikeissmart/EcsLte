@@ -6,6 +6,9 @@
 
         internal EntityFilterManager(EcsContext context) => Context = context;
 
+        public EntityFilter CreateFilter()
+            => new EntityFilter(Context);
+
         public EntityFilter WhereAllOf<TComponent>()
             where TComponent : IComponent
             => new EntityFilter(Context)

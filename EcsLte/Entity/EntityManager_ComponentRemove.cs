@@ -2,6 +2,18 @@
 {
     public unsafe partial class EntityManager
     {
+        public void RemoveComponent(Entity entity, ComponentConfig config)
+        {
+            Context.AssertContext();
+            Context.AssertStructualChangeAvailable();
+            AssertNotExistEntity(entity,
+                out var _, out var prevArcheTypeData);
+
+            AssertNotHaveComponent(config, prevArcheTypeData);
+            InternalRemoveConfigTrackingTransferEntity(entity, prevArcheTypeData, config,
+                false);
+        }
+
         public void RemoveComponent<TComponent>(Entity entity)
             where TComponent : unmanaged, IGeneralComponent
         {

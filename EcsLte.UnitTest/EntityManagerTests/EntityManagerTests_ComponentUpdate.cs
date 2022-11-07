@@ -35,6 +35,60 @@ namespace EcsLte.UnitTest.EntityManagerTests
         }
 
         [TestMethod]
+        public void UpdateComponents_T1_Generic()
+        {
+            var entity = CreateTestEntity();
+            var components = Context.Entities.GetAllComponents(entity);
+
+            Context.Entities.UpdateComponents(entity, components[0]);
+        }
+
+        [TestMethod]
+        public void UpdateComponents_T1()
+        {
+            var trackers = new[]
+            {
+                Context.Tracking.CreateTracker("UpdateTracker1")
+            };
+            foreach (var tracker in trackers)
+                tracker.StartTracking();
+            trackers[0].SetTrackingState<TestComponent1>(TrackingState.Updated);
+
+            var entity = CreateTestEntity();
+
+            Context.Entities.UpdateComponents(entity,
+                new TestComponent1 { Prop = 1 });
+
+            Assert.IsTrue(Context.Entities.GetComponent<TestComponent1>(entity).Prop == 1);
+
+            for (var i = 0; i < trackers.Length; i++)
+            {
+                var tracker = trackers[i];
+                var trackedEntities = Context.Entities.GetEntities(tracker);
+                Assert.IsTrue(trackedEntities.Length == 1, i.ToString());
+                Assert.IsTrue(trackedEntities[0] == entity, i.ToString());
+            }
+
+            Assert.ThrowsException<ComponentDuplicateException>(() =>
+                Context.Entities.UpdateComponents(entity,
+                    new TestComponent1(),
+                    new TestComponent1()));
+
+            Assert.ThrowsException<ComponentNotHaveException>(() =>
+                Context.Entities.UpdateComponents(entity,
+                    new TestComponent4()));
+
+            Assert.ThrowsException<EntityNotExistException>(() =>
+                Context.Entities.UpdateComponents(Entity.Null,
+                    new TestComponent1()));
+
+            EcsContexts.DestroyContext(Context);
+            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
+                Context.Entities.UpdateComponents(entity,
+                    new TestComponent1()));
+        }
+
+        [TestMethod]
         public void UpdateComponents_T12()
         {
             var trackers = new[]

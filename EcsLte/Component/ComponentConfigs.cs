@@ -8,46 +8,59 @@ using System.Runtime.Serialization;
 
 namespace EcsLte
 {
-    internal static class ComponentConfigs
+    public class ComponentConfigs
     {
-        private static Dictionary<Type, ComponentConfig> _componentConfigTypes;
+        private static ComponentConfigs _instance;
+        private Dictionary<Type, ComponentConfig> _componentConfigTypes;
         // https://codeutility.org/c-the-fastest-way-to-check-if-a-type-is-blittable-stack-overflow/
-        private static BindingFlags _blittableFlags =
+        private BindingFlags _blittableFlags =
             BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-        private static bool _isInitialized;
 
-        internal static ComponentConfig[] AllComponentConfigs { get; private set; }
-        internal static ComponentConfig[] AllGeneralConfigs { get; private set; }
-        internal static ComponentConfig[] AllManagedConfigs { get; private set; }
-        internal static ComponentConfig[] AllSharedConfigs { get; private set; }
+        public static ComponentConfigs Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new ComponentConfigs();
+                    _instance.Initialize();
+                }
+                return _instance;
+            }
+        }
 
-        internal static Type[] AllComponentTypes { get; private set; }
-        internal static Type[] AllGeneralTypes { get; private set; }
-        internal static Type[] AllManagedTypes { get; private set; }
-        internal static Type[] AllSharedTypes { get; private set; }
+        public ComponentConfig[] AllComponentConfigs { get; private set; }
+        public ComponentConfig[] AllGeneralConfigs { get; private set; }
+        public ComponentConfig[] AllManagedConfigs { get; private set; }
+        public ComponentConfig[] AllSharedConfigs { get; private set; }
 
-        internal static int[] AllComponentIndexes { get; private set; }
-        internal static int[] AllGeneralIndexes { get; private set; }
-        internal static int[] AllManagedIndexes { get; private set; }
-        internal static int[] AllSharedIndexes { get; private set; }
+        public Type[] AllComponentTypes { get; private set; }
+        public Type[] AllGeneralTypes { get; private set; }
+        public Type[] AllManagedTypes { get; private set; }
+        public Type[] AllSharedTypes { get; private set; }
 
-        internal static int AllComponentCount => AllComponentConfigs.Length;
-        internal static int AllGeneralCount => AllGeneralConfigs.Length;
-        internal static int AllManagedCount => AllManagedConfigs.Length;
-        internal static int AllSharedCount => AllSharedConfigs.Length;
+        public int[] AllComponentIndexes { get; private set; }
+        public int[] AllGeneralIndexes { get; private set; }
+        public int[] AllManagedIndexes { get; private set; }
+        public int[] AllSharedIndexes { get; private set; }
 
-        internal static IComponentAdapter[] AllComponentAdapters { get; private set; }
-        internal static IComponentAdapter[] AllGeneralAdapters { get; private set; }
-        internal static IComponentAdapter[] AllManagedAdapters { get; private set; }
-        internal static IComponentAdapter[] AllSharedAdapters { get; private set; }
+        public int AllComponentCount => AllComponentConfigs.Length;
+        public int AllGeneralCount => AllGeneralConfigs.Length;
+        public int AllManagedCount => AllManagedConfigs.Length;
+        public int AllSharedCount => AllSharedConfigs.Length;
 
-        internal static ComponentConfig GetConfig(Type componentType)
+        internal IComponentAdapter[] AllComponentAdapters { get; private set; }
+        internal IComponentAdapter[] AllGeneralAdapters { get; private set; }
+        internal IComponentAdapter[] AllManagedAdapters { get; private set; }
+        internal IComponentAdapter[] AllSharedAdapters { get; private set; }
+
+        public ComponentConfig GetConfig(Type componentType)
             => _componentConfigTypes[componentType];
 
-        internal static ComponentConfig GetConfig(int componentIndex)
+        public ComponentConfig GetConfig(int componentIndex)
             => AllComponentConfigs[componentIndex];
 
-        internal static IComponentPool[] CreateComponentPools(ComponentConfigOffset[] manageConfigs)
+        internal IComponentPool[] CreateComponentPools(ComponentConfigOffset[] manageConfigs)
         {
             var pools = new IComponentPool[manageConfigs.Length];
             var poolType = typeof(ComponentPool<>);
@@ -61,12 +74,10 @@ namespace EcsLte
             return pools;
         }
 
-        internal static void Initialize()
-        {
-            if (_isInitialized)
-                return;
-            _isInitialized = true;
+        private ComponentConfigs() { }
 
+        private void Initialize()
+        {
             var iComponentType = typeof(IComponent);
             var iGeneralComponentType = typeof(IGeneralComponent);
             var iManagedComponentType = typeof(IManagedComponent);
@@ -248,7 +259,7 @@ namespace EcsLte
                 .ToArray();
         }
 
-        private static bool IsBlittable(Type type, Dictionary<Type, bool> blittableCache)
+        private bool IsBlittable(Type type, Dictionary<Type, bool> blittableCache)
         {
             if (blittableCache.TryGetValue(type, out var result))
                 return result;
@@ -342,7 +353,7 @@ namespace EcsLte
             }
         }
 
-        private static bool IsBlittableTypeInStruct(Type type, Dictionary<Type, bool> blittableCache)
+        private bool IsBlittableTypeInStruct(Type type, Dictionary<Type, bool> blittableCache)
         {
             if (type.IsArray)
             {
@@ -375,11 +386,6 @@ namespace EcsLte
         {
             internal ComponentConfig Config;
             internal Type Type;
-        }
-
-        private class ComponentConfigInit
-        {
-            internal ComponentConfigInit() => ComponentConfigs.Initialize();
         }
     }
 }

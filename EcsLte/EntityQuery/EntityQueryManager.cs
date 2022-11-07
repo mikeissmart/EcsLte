@@ -6,6 +6,9 @@
 
         internal EntityQueryManager(EcsContext context) => Context = context;
 
+        public EntityQuery CreateQuery()
+            => new EntityQuery(Context);
+
         public EntityQuery SetCommands(EntityCommands commands)
             => new EntityQuery(Context)
                 .SetCommands(commands);

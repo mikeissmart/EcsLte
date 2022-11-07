@@ -37,11 +37,11 @@ namespace EcsLte.Utilities
 
         internal static unsafe void Copy<T>(T* sourcePtr, T* destinationPtr, int count) where T : unmanaged
             => Buffer.MemoryCopy(sourcePtr, destinationPtr, count * TypeCache<T>.SizeInBytes, count * TypeCache<T>.SizeInBytes);
-
+        
         internal static unsafe void Clear<T>(T* ptr, int count) where T : unmanaged
         {
             for (var i = 0; i < count; i++)
-                *ptr = default;
+                ptr[i] = default;
         }
     }
 }

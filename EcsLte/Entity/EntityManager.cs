@@ -28,8 +28,8 @@ namespace EcsLte
             _cachedInternalEntities = new Entity[0];
             _entityDatas = MemoryHelper.Alloc<EntityData>(1);
             _cachedArcheType = ArcheType.Alloc(
-                ComponentConfigs.AllComponentCount,
-                ComponentConfigs.AllSharedCount);
+                ComponentConfigs.Instance.AllComponentCount,
+                ComponentConfigs.Instance.AllSharedCount);
 
             Context = context;
         }
