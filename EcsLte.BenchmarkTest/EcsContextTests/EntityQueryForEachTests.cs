@@ -16,9 +16,9 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         [GlobalSetup]
         public void GlobalSetup()
         {
-            if (EcsContexts.HasContext("Test"))
-                EcsContexts.DestroyContext(EcsContexts.GetContext("Test"));
-            _context = EcsContexts.CreateContext("Test");
+            if (EcsContexts.Instance.HasContext("Test"))
+                EcsContexts.Instance.DestroyContext(EcsContexts.Instance.GetContext("Test"));
+            _context = EcsContexts.Instance.CreateContext("Test");
             _query = _context.Queries
                 .SetTracker(_context.Tracking.CreateTracker("Tracker")
                     .SetTrackingState<TestComponent1>(TrackingState.Added)
@@ -41,7 +41,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         public void GlobalCleanup()
         {
             if (!_context.IsDestroyed)
-                EcsContexts.DestroyContext(_context);
+                EcsContexts.Instance.DestroyContext(_context);
         }
 
         [IterationSetup(Target = "ForEach")]

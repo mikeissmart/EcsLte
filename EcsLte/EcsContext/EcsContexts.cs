@@ -5,15 +5,27 @@ using System.Linq;
 
 namespace EcsLte
 {
-    public static class EcsContexts
+    public class EcsContexts
     {
-        private static readonly Dictionary<string, EcsContext> _contexts =
-            new Dictionary<string, EcsContext>();
-        private static readonly object _lockObj = new object();
-        private static EcsContext _default;
-        private static bool _defaultInit;
+        private static EcsContexts _instance;
 
-        public static EcsContext Default
+        public static EcsContexts Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new EcsContexts();
+                return _instance;
+            }
+        }
+
+        private readonly Dictionary<string, EcsContext> _contexts =
+            new Dictionary<string, EcsContext>();
+        private readonly object _lockObj = new object();
+        private EcsContext _default;
+        private bool _defaultInit;
+
+        public EcsContext Default
         {
             get
             {
@@ -32,7 +44,9 @@ namespace EcsLte
             }
         }
 
-        public static bool HasContext(string name)
+        private EcsContexts() { }
+
+        public bool HasContext(string name)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
@@ -43,7 +57,7 @@ namespace EcsLte
             }
         }
 
-        public static EcsContext[] GetAllContexts()
+        public EcsContext[] GetAllContexts()
         {
             lock (_lockObj)
             {
@@ -51,7 +65,7 @@ namespace EcsLte
             }
         }
 
-        public static EcsContext GetContext(string name)
+        public EcsContext GetContext(string name)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
@@ -64,7 +78,7 @@ namespace EcsLte
             }
         }
 
-        public static EcsContext CreateContext(string name)
+        public EcsContext CreateContext(string name)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
@@ -82,7 +96,7 @@ namespace EcsLte
             }
         }
 
-        public static void DestroyContext(EcsContext context)
+        public void DestroyContext(EcsContext context)
         {
             if (context == null)
                 throw new ArgumentNullException();
@@ -97,13 +111,13 @@ namespace EcsLte
             }
         }
 
-        private static void AssertNotExistContext(string name)
+        private void AssertNotExistContext(string name)
         {
             if (!_contexts.ContainsKey(name))
                 throw new EcsContextNotExistException(name);
         }
 
-        private static void AssertAlreadyHaveContext(string name)
+        private void AssertAlreadyHaveContext(string name)
         {
             if (_contexts.ContainsKey(name))
                 throw new EcsContextAlreadyExistException(name);

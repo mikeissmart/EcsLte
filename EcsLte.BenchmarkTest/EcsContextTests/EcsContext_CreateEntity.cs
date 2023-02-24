@@ -13,9 +13,9 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         [GlobalSetup]
         public void GlobalSetup()
         {
-            if (EcsContexts.HasContext("Test"))
-                EcsContexts.DestroyContext(EcsContexts.GetContext("Test"));
-            _context = EcsContexts.CreateContext("Test");
+            if (EcsContexts.Instance.HasContext("Test"))
+                EcsContexts.Instance.DestroyContext(EcsContexts.Instance.GetContext("Test"));
+            _context = EcsContexts.Instance.CreateContext("Test");
             _entities = new Entity[BenchmarkTestConsts.LargeCount];
         }
 
@@ -23,7 +23,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         public void GlobalCleanup()
         {
             if (!_context.IsDestroyed)
-                EcsContexts.DestroyContext(_context);
+                EcsContexts.Instance.DestroyContext(_context);
         }
 
         #region Create
@@ -35,7 +35,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         })]
         public void IterationSetup_Create()
         {
-            _context = EcsContexts.CreateContext("Test_Create");
+            _context = EcsContexts.Instance.CreateContext("Test_Create");
             _entities = new Entity[BenchmarkTestConsts.LargeCount];
         }
 
@@ -44,7 +44,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             nameof(CreateEntity),
             nameof(CreateEntities)
         })]
-        public void IterationCleanup_Create() => EcsContexts.DestroyContext(_context);
+        public void IterationCleanup_Create() => EcsContexts.Instance.DestroyContext(_context);
 
         [Benchmark]
         public void CreateEntity()
@@ -98,7 +98,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         })]
         public void IterationSetup_Destroy()
         {
-            _context = EcsContexts.CreateContext("Test_Create");
+            _context = EcsContexts.Instance.CreateContext("Test_Create");
             _entities = _context.Entities.CreateEntities(
                 EcsContextSetupCleanup.CreateBlueprint(CompArr),
                 _entities.Length);
@@ -109,7 +109,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             nameof(DestroyEntity),
             nameof(DestroyEntities)
         })]
-        public void IterationCleanup_Destroy() => EcsContexts.DestroyContext(_context);
+        public void IterationCleanup_Destroy() => EcsContexts.Instance.DestroyContext(_context);
 
         [Benchmark]
         public void DestroyEntity()

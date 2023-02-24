@@ -16,9 +16,9 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         [GlobalSetup]
         public void GlobalSetup()
         {
-            if (EcsContexts.HasContext("Test"))
-                EcsContexts.DestroyContext(EcsContexts.GetContext("Test"));
-            _context = EcsContexts.CreateContext("Test");
+            if (EcsContexts.Instance.HasContext("Test"))
+                EcsContexts.Instance.DestroyContext(EcsContexts.Instance.GetContext("Test"));
+            _context = EcsContexts.Instance.CreateContext("Test");
             _blueprint = EcsContextSetupCleanup.CreateBlueprint(ComponentArrangement.Normal_x4);
         }
 

@@ -17,7 +17,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.IsTrue(Context.Entities.HasEntity(entity));
             Assert.IsTrue(Context.Entities.GetAllComponents(entity).Length == 0);
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.CreateEntity());
         }
@@ -42,7 +42,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                    x => Context.Entities.CreateEntity(x)
                });
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.CreateEntity(archeType));
         }
@@ -83,7 +83,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                         new TestSharedComponent1 { Prop = 2 });
                 });
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.CreateEntity(valid));
         }
@@ -122,7 +122,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 Assert.IsTrue(Context.Entities.GetAllComponents(entity).Length == 0);
             }
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.CreateEntities(UnitTestConsts.SmallCount));
         }
@@ -192,7 +192,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                         UnitTestConsts.SmallCount),
                 });
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.CreateEntities(
                     valid,
@@ -275,7 +275,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                         UnitTestConsts.SmallCount),
                 });
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.CreateEntities(
                     valid,

@@ -12,7 +12,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void CopyEntityTo()
         {
-            _destContext = EcsContexts.CreateContext("DestContext");
+            _destContext = EcsContexts.Instance.CreateContext("DestContext");
 
             var blueprint = new EntityBlueprint()
                 .SetComponent(new TestComponent1 { Prop = 1 })
@@ -33,8 +33,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.IsTrue(_destContext.Entities.GetComponent<TestComponent1>(copyEntity).Prop == orgEntity.Id);
             Assert.IsTrue(_destContext.Entities.GetSharedComponent<TestSharedComponent1>(copyEntity).Prop == 2);
 
-            EcsContexts.DestroyContext(Context);
-            EcsContexts.DestroyContext(_destContext);
+            EcsContexts.Instance.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(_destContext);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.CopyEntityTo(_destContext.Entities, orgEntity));
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
@@ -44,21 +44,21 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void CopyEntitiesTo()
         {
-            _destContext = EcsContexts.CreateContext("DestContext");
+            _destContext = EcsContexts.Instance.CreateContext("DestContext");
 
             var entities = CreateTestEntities();
 
             Assert_CopyEntitiesTo(entities);
 
-            EcsContexts.DestroyContext(Context);
-            EcsContexts.DestroyContext(_destContext);
+            EcsContexts.Instance.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(_destContext);
             Assert_CopyEntitiesTo_ContextDestroyed();
         }
 
         [TestMethod]
         public void CopyEntitiesTo_ArcheType()
         {
-            _destContext = EcsContexts.CreateContext("DestContext");
+            _destContext = EcsContexts.Instance.CreateContext("DestContext");
 
             var archeType = Context.ArcheTypes
                 .AddComponentType<TestComponent1>()
@@ -68,15 +68,15 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             Assert_CopyEntitiesTo_ArcheType(archeType, entities);
 
-            EcsContexts.DestroyContext(Context);
-            EcsContexts.DestroyContext(_destContext);
+            EcsContexts.Instance.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(_destContext);
             Assert_CopyEntitiesTo_ArcheType_ContextDestroyed(archeType);
         }
 
         [TestMethod]
         public void CopyEntitiesTo_Filter()
         {
-            _destContext = EcsContexts.CreateContext("DestContext");
+            _destContext = EcsContexts.Instance.CreateContext("DestContext");
 
             var filter = Context.Filters
                 .WhereAllOf<TestComponent1>();
@@ -85,15 +85,15 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             Assert_CopyEntitiesTo_Filter(filter, entities);
 
-            EcsContexts.DestroyContext(Context);
-            EcsContexts.DestroyContext(_destContext);
+            EcsContexts.Instance.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(_destContext);
             Assert_CopyEntitiesTo_Filter_ContextDestroyed(filter);
         }
 
         [TestMethod]
         public void CopyEntitiesTo_Tracker()
         {
-            _destContext = EcsContexts.CreateContext("DestContext");
+            _destContext = EcsContexts.Instance.CreateContext("DestContext");
 
             var tracker = Context.Tracking.CreateTracker("Tracker")
                 .SetTrackingState<TestComponent1>(TrackingState.Added)
@@ -103,8 +103,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             Assert_CopyEntitiesTo_Tracker(tracker, entities);
 
-            EcsContexts.DestroyContext(Context);
-            EcsContexts.DestroyContext(_destContext);
+            EcsContexts.Instance.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(_destContext);
             var emptyEntities = new Entity[0];
             Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
                 _destContext.Entities.CopyEntitiesTo(tracker), "Context Destroyed");
@@ -118,7 +118,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void CopyEntitiesTo_Query()
         {
-            _destContext = EcsContexts.CreateContext("DestContext");
+            _destContext = EcsContexts.Instance.CreateContext("DestContext");
 
             var filter = Context.Filters
                 .WhereAllOf<TestComponent1>();
@@ -133,8 +133,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             Assert_CopyEntitiesTo_Query(queryFilterTracker, entities);
 
-            EcsContexts.DestroyContext(Context);
-            EcsContexts.DestroyContext(_destContext);
+            EcsContexts.Instance.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(_destContext);
             var emptyEntities = new Entity[0];
             Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
                 _destContext.Entities.CopyEntitiesTo(queryFilterTracker), "Context Destroyed");

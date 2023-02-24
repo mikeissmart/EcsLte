@@ -9,13 +9,13 @@ namespace EcsLte.UnitTest
         public EcsContext Context { get; set; }
 
         [TestInitialize]
-        public void PreTest() => Context = EcsContexts.CreateContext("UnitTest");
+        public void PreTest() => Context = EcsContexts.Instance.CreateContext("UnitTest");
 
         [TestCleanup]
         public void PostTest()
         {
-            foreach (var context in EcsContexts.GetAllContexts())
-                EcsContexts.DestroyContext(context);
+            foreach (var context in EcsContexts.Instance.GetAllContexts())
+                EcsContexts.Instance.DestroyContext(context);
             Context = null;
         }
 
@@ -42,7 +42,7 @@ namespace EcsLte.UnitTest
             Assert.ThrowsException<EntityDoesNotExistException>(() => assertAction(Entity.Null),
                 "Entity.Null");
 
-            EcsContexts.DestroyContext(destroyContext);
+            EcsContexts.Instance.DestroyContext(destroyContext);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() => assertAction(valid),
                 "Context Destroyed");
         }*/
@@ -85,7 +85,7 @@ namespace EcsLte.UnitTest
             Assert.IsTrue(result.Success, $"StartingIndex Count: {result.Error}");
 
             srcValid = getValid();
-            EcsContexts.DestroyContext(destroyContext);
+            EcsContexts.Instance.DestroyContext(destroyContext);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() => assertAction(srcValid),
                 "Valid Context Destroyed");
             Assert.ThrowsException<EcsContextIsDestroyedException>(() => assertStartingIndexAction(srcValid, 0),
@@ -142,7 +142,7 @@ namespace EcsLte.UnitTest
 
             srcValid = getValid();
             validRef = new TOut[0];
-            EcsContexts.DestroyContext(destroyContext);
+            EcsContexts.Instance.DestroyContext(destroyContext);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() => assertAction(srcValid),
                 "Valid Context Destroyed");
             Assert.ThrowsException<EcsContextIsDestroyedException>(() => assertRefAction(srcValid, validRef),
@@ -538,7 +538,7 @@ namespace EcsLte.UnitTest
         protected void AssertArcheType_DiffContext_Null(
             params Action<EntityArcheType>[] assertActions)
         {
-            var diffArcheType = EcsContexts.CreateContext(DateTime.Now.Ticks.ToString())
+            var diffArcheType = EcsContexts.Instance.CreateContext(DateTime.Now.Ticks.ToString())
                 .ArcheTypes
                 .AddComponentType<TestComponent1>();
             EntityArcheType nullable = null;
@@ -592,7 +592,7 @@ namespace EcsLte.UnitTest
             EntityQuery destroyedTracker,
             params Action<EntityQuery>[] assertActions)
         {
-            var diffContext = EcsContexts.CreateContext(DateTime.Now.Ticks.ToString());
+            var diffContext = EcsContexts.Instance.CreateContext(DateTime.Now.Ticks.ToString());
             var diffQuery = diffContext.Queries
                 .SetFilter(diffContext.Filters
                     .WhereAllOf<TestComponent1>())

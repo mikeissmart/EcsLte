@@ -18,12 +18,12 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         [GlobalSetup]
         public void GlobalSetup()
         {
-            if (EcsContexts.HasContext("Source"))
-                EcsContexts.DestroyContext(EcsContexts.GetContext("Source"));
-            _sourceContext = EcsContexts.CreateContext("Source");
-            if (EcsContexts.HasContext("Dest"))
-                EcsContexts.DestroyContext(EcsContexts.GetContext("Dest"));
-            _destContext = EcsContexts.CreateContext("Dest");
+            if (EcsContexts.Instance.HasContext("Source"))
+                EcsContexts.Instance.DestroyContext(EcsContexts.Instance.GetContext("Source"));
+            _sourceContext = EcsContexts.Instance.CreateContext("Source");
+            if (EcsContexts.Instance.HasContext("Dest"))
+                EcsContexts.Instance.DestroyContext(EcsContexts.Instance.GetContext("Dest"));
+            _destContext = EcsContexts.Instance.CreateContext("Dest");
             _destEntities = new Entity[BenchmarkTestConsts.LargeCount];
             _tracker = _sourceContext.Tracking.CreateTracker("Tracker")
                 .SetTrackingState<TestComponent1>(TrackingState.Added)
@@ -45,9 +45,9 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         public void GlobalCleanup()
         {
             if (!_sourceContext.IsDestroyed)
-                EcsContexts.DestroyContext(_sourceContext);
+                EcsContexts.Instance.DestroyContext(_sourceContext);
             if (!_destContext.IsDestroyed)
-                EcsContexts.DestroyContext(_destContext);
+                EcsContexts.Instance.DestroyContext(_destContext);
         }
 
         [IterationSetup()]

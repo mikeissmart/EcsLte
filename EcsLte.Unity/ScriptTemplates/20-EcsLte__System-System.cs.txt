@@ -1,0 +1,30 @@
+using EcsLte;
+using UnityEngine;
+
+public class #SCRIPTNAME# : SystemBase
+{
+    public override void Initialize()
+    {
+        #NOTRIM#
+    }
+
+    public override void Activated()
+    {
+        #NOTRIM#
+    }
+
+    public override void Deactivated()
+    {
+        #NOTRIM#
+    }
+
+    public override void Update()
+    {
+        #NOTRIM#
+    }
+
+    public override void Uninitialize()
+    {
+        #NOTRIM#
+    }
+}

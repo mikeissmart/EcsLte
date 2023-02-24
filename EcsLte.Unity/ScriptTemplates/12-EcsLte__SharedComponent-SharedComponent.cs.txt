@@ -1,0 +1,16 @@
+using EcsLte;
+using System;
+using UnityEngine;
+
+public struct #SCRIPTNAME# : ISharedComponent, IEquatable<#SCRIPTNAME#>
+{
+    public bool Equals(#SCRIPTNAME# other)
+	{
+		#NOTRIM#
+	}
+
+    public override int GetHashCode()
+	{
+		#NOTRIM#
+	}
+}

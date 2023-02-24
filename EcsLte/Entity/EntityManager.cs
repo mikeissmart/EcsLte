@@ -541,9 +541,9 @@ namespace EcsLte
         {
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
             if (removeShared)
-                ArcheType.RemoveConfig(ref _cachedArcheType, config);
-            else
                 ArcheType.RemoveConfigAndSharedDataIndex(ref _cachedArcheType, config);
+            else
+                ArcheType.RemoveConfig(ref _cachedArcheType, config);
 
             var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
             ArcheTypeData.TransferEntity(entity, _entityDatas,
@@ -559,9 +559,9 @@ namespace EcsLte
         {
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
             if (removeShared)
-                ArcheType.RemoveConfig(ref _cachedArcheType, config);
-            else
                 ArcheType.RemoveConfigAndSharedDataIndex(ref _cachedArcheType, config);
+            else
+                ArcheType.RemoveConfig(ref _cachedArcheType, config);
 
             Helper.ResizeRefArray(ref _cachedInternalEntities, 0, prevArcheTypeData.EntityCount);
             prevArcheTypeData.GetEntities(ref _cachedInternalEntities, 0);
@@ -587,9 +587,9 @@ namespace EcsLte
 
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
             if (removeShared)
-                ArcheType.RemoveConfig(ref _cachedArcheType, config);
-            else
                 ArcheType.RemoveConfigAndSharedDataIndex(ref _cachedArcheType, config);
+            else
+                ArcheType.RemoveConfig(ref _cachedArcheType, config);
 
             var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
 

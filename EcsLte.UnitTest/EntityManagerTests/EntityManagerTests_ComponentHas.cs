@@ -19,7 +19,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.ThrowsException<EntityNotExistException>(() =>
                 Context.Entities.HasComponent<TestComponent1>(Entity.Null));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.HasComponent<TestComponent1>(entity));
         }
@@ -37,7 +37,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.ThrowsException<EntityNotExistException>(() =>
                 Context.Entities.HasSharedComponent<TestSharedComponent1>(Entity.Null));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.HasSharedComponent<TestSharedComponent1>(entity));
         }
@@ -55,7 +55,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.ThrowsException<EntityNotExistException>(() =>
                 Context.Entities.HasManagedComponent<TestManagedComponent1>(Entity.Null));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.HasManagedComponent<TestManagedComponent1>(entity));
         }

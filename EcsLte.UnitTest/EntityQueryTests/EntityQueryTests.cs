@@ -20,7 +20,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             Assert.ThrowsException<EntityCommandsIsDestroyedException>(() =>
                 query.SetCommands(commands));
 
-            var diffCommands = EcsContexts.CreateContext("Diff").Commands
+            var diffCommands = EcsContexts.Instance.CreateContext("Diff").Commands
                 .CreateCommands("DiffTest");
             Assert.ThrowsException<EcsContextNotSameException>(() =>
                 query.SetCommands(diffCommands));
@@ -48,7 +48,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
 
             Assert.IsTrue(query.Filter == filter);
 
-            var diffFilters = EcsContexts.CreateContext("Diff").Filters
+            var diffFilters = EcsContexts.Instance.CreateContext("Diff").Filters
                 .WhereAllOf<TestComponent1>();
             Assert.ThrowsException<EcsContextNotSameException>(() =>
                 query.SetFilter(diffFilters));
@@ -80,7 +80,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
                 query.SetTracker(tracker));
 
-            var diffTracking = EcsContexts.CreateContext("Diff").Tracking
+            var diffTracking = EcsContexts.Instance.CreateContext("Diff").Tracking
                 .CreateTracker("DiffTest");
             Assert.ThrowsException<EcsContextNotSameException>(() =>
                 query.SetTracker(diffTracking));

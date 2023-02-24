@@ -29,9 +29,24 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.ThrowsException<EntityNotExistException>(() =>
                 Context.Entities.RemoveComponent<TestComponent1>(Entity.Null));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.RemoveComponent<TestComponent1>(entity));
+        }
+        [TestMethod]
+        public void RemoveComponent_Config()
+        {
+            var removeTracker = Context.Tracking.CreateTracker("RemoveTracker")
+                .SetTrackingState<TestComponent1>(TrackingState.Removed)
+                .StartTracking();
+
+            var entity = Context.Entities.CreateEntity(
+                new EntityBlueprint()
+                    .SetComponent(new TestComponent1 { Prop = 1 })
+                    .SetSharedComponent(new TestSharedComponent1 { Prop = 1 }));
+
+            Context.Entities.RemoveComponent(entity, ComponentConfig<TestComponent1>.Config);
+            Assert.IsFalse(Context.Entities.HasComponent<TestComponent1>(entity));
         }
 
         [TestMethod]
@@ -83,7 +98,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     TestComponent1,
                     TestComponent2>(Entity.Null));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.RemoveComponents<
                     TestComponent1,
@@ -152,7 +167,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     TestComponent2,
                     TestComponent3>(Entity.Null));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.RemoveComponents<
                     TestComponent1,
@@ -237,7 +252,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     TestComponent3,
                     TestSharedComponent1>(Entity.Null));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.RemoveComponents<
                     TestComponent1,
@@ -340,7 +355,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     TestSharedComponent1,
                     TestSharedComponent2>(Entity.Null));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.RemoveComponents<
                     TestComponent1,
@@ -463,7 +478,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     TestSharedComponent2,
                     TestSharedComponent3>(Entity.Null));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.RemoveComponents<
                     TestComponent1,
@@ -608,7 +623,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     TestSharedComponent3,
                     TestManagedComponent1>(Entity.Null));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.RemoveComponents<
                     TestComponent1,
@@ -776,7 +791,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     TestManagedComponent1,
                     TestManagedComponent2>(Entity.Null));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.RemoveComponents<
                     TestComponent1,

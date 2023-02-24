@@ -2,7 +2,7 @@
 
 namespace EcsLte
 {
-    internal class SystemConfig : IEquatable<SystemConfig>, IComparable<SystemConfig>
+    internal struct SystemConfig : IEquatable<SystemConfig>, IComparable<SystemConfig>
     {
         internal int SystemIndex { get; set; }
         internal bool IsAutoAdd { get; set; }

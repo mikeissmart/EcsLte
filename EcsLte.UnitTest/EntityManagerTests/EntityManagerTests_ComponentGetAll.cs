@@ -64,7 +64,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
                 Context.Entities.GetAllComponents(entity, ref components, 1));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.GetAllComponents(entity));
         }

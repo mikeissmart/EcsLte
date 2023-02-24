@@ -17,7 +17,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.IsTrue(Context.Entities.HasEntity(entity));
             Assert.IsFalse(Context.Entities.HasEntity(Entity.Null));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.HasEntity(entity));
         }
@@ -47,7 +47,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     x => Context.Entities.HasEntity(entities[0], x),
                 });
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.HasEntity(entities[0], archeType));
         }
@@ -77,7 +77,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     x => Context.Entities.HasEntity(entities[0], x),
                 });
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.HasEntity(entities[0], filter));
         }
@@ -105,7 +105,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             var destroyedTracker = Context.Tracking.CreateTracker("Destroyed");
             Context.Tracking.RemoveTracker(destroyedTracker);
             AssertTracker_Destroyed_Null(
-                EcsContexts.CreateContext("DiffContext")
+                EcsContexts.Instance.CreateContext("DiffContext")
                     .Tracking.CreateTracker("Tracker"),
                 destroyedTracker,
                 new Action<EntityTracker>[]
@@ -113,7 +113,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     x => Context.Entities.HasEntity(entities[0], x),
                 });
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.HasEntity(entities[0], tracker));
         }
@@ -151,7 +151,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     x => Context.Entities.HasEntity(entities[0], x),
                 });
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.EntityCount(query));
         }

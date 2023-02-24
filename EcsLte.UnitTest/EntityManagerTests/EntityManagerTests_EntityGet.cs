@@ -39,7 +39,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     return result;
                 });
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             AssertGetRef_ContextDestroyed<Entity>(
                 () => Context.Entities.GetEntities(),
                 x => Context.Entities.GetEntities(ref x),
@@ -91,7 +91,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     x => Context.Entities.GetEntities(x, ref emptyEntities, 0),
                 });
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             AssertGetRef_ContextDestroyed<Entity>(
                 () => Context.Entities.GetEntities(archeType),
                 x => Context.Entities.GetEntities(archeType, ref x),
@@ -143,7 +143,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     x => Context.Entities.GetEntities(x, ref emptyEntities, 0),
                 });
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             AssertGetRef_ContextDestroyed<Entity>(
                 () => Context.Entities.GetEntities(filter),
                 x => Context.Entities.GetEntities(filter, ref x),
@@ -187,7 +187,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     return result;
                 });
 
-            var diffContext = EcsContexts.CreateContext("DiffContext")
+            var diffContext = EcsContexts.Instance.CreateContext("DiffContext")
                 .Tracking.CreateTracker("Tracker");
             var destroyedTracker = Context.Tracking.CreateTracker("Destroyed");
             Context.Tracking.RemoveTracker(destroyedTracker);
@@ -202,7 +202,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     x => Context.Entities.GetEntities(x, ref refEntities, 0),
                 });
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             AssertGetRef_ContextDestroyed<Entity>(
                 () => Context.Entities.GetEntities(tracker),
                 x => Context.Entities.GetEntities(tracker, ref x),
@@ -262,7 +262,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     x => Context.Entities.GetEntities(x, ref refEntities, 0),
                 });
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             AssertGetRef_ContextDestroyed<Entity>(
                 () => Context.Entities.GetEntities(query),
                 x => Context.Entities.GetEntities(query, ref x),

@@ -1,0 +1,7 @@
+using EcsLte;
+using UnityEngine;
+
+public struct #SCRIPTNAME# : IGeneralComponent
+{
+    #NOTRIM#
+}

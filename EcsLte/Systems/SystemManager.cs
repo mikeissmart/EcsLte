@@ -2,7 +2,9 @@
 using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 
 namespace EcsLte
 {
@@ -41,11 +43,38 @@ namespace EcsLte
             Context = context;
         }
 
-        public bool HasSystem<TSystem>() where TSystem : SystemBase
+        public bool HasSystem(SystemBase system)
+        {
+            Context.AssertContext();
+            if (system == null)
+                throw new ArgumentNullException(nameof(system));
+
+            if (system.Context == null)
+                return false;
+            if (system.Context != Context)
+                return false;
+
+            return _allSystems[system.Config.SystemIndex] == system;
+        }
+
+        public bool HasSystem<TSystem>()
+            where TSystem : SystemBase
         {
             Context.AssertContext();
 
             var config = SystemConfig<TSystem>.Config;
+
+            return _allSystems[config.SystemIndex] != null;
+        }
+
+        public bool HasSystem(Type systemType)
+        {
+            Context.AssertContext();
+            if (systemType == null)
+                throw new ArgumentNullException(nameof(systemType));
+
+            var config = SystemConfigs.GetConfig(systemType);
+
             return _allSystems[config.SystemIndex] != null;
         }
 
@@ -78,6 +107,15 @@ namespace EcsLte
             return (TSystem)InternalAddSystem(SystemConfig<TSystem>.Config);
         }
 
+        public SystemBase AddOrGetSystem(Type systemType)
+        {
+            Context.AssertContext();
+
+            var config = SystemConfigs.GetConfig(systemType);
+
+            return InternalAddSystem(config);
+        }
+
         public void AutoAddSystems()
         {
             Context.AssertContext();
@@ -92,12 +130,31 @@ namespace EcsLte
             }
         }
 
+        public void RemoveSystem(SystemBase system)
+        {
+            Context.AssertContext();
+            AssertSystem(system);
+            AssertNotHaveSystem(system.Config);
+
+            InternalRemoveSystem(system.Config);
+        }
+
         public void RemoveSystem<TSystem>()
             where TSystem : SystemBase
         {
             Context.AssertContext();
 
             var config = SystemConfig<TSystem>.Config;
+            AssertNotHaveSystem(config);
+
+            InternalRemoveSystem(config);
+        }
+
+        public void RemoveSystem(Type systemType)
+        {
+            Context.AssertContext();
+
+            var config = SystemConfigs.GetConfig(systemType);
             AssertNotHaveSystem(config);
 
             InternalRemoveSystem(config);
@@ -127,6 +184,28 @@ namespace EcsLte
                 _activeSystems.Add(new SystemRunner(system, config));
         }
 
+        public void ActivateSystem(SystemBase system)
+        {
+            Context.AssertContext();
+            AssertSystem(system);
+            AssertNotHaveSystem(system.Config);
+
+            if (!system.IsActive)
+                _activeSystems.Add(new SystemRunner(system, system.Config));
+        }
+
+        public void ActivateSystem(Type systemType)
+        {
+            Context.AssertContext();
+
+            var config = SystemConfigs.GetConfig(systemType);
+            AssertNotHaveSystem(config);
+
+            var system = _allSystems[config.SystemIndex];
+            if (!system.IsActive)
+                _activeSystems.Add(new SystemRunner(system, system.Config));
+        }
+
         public void ActivateAllSystems()
         {
             Context.AssertContext();
@@ -141,9 +220,31 @@ namespace EcsLte
         public void DeactivateSystem<TSystem>()
             where TSystem : SystemBase
         {
+            var config = SystemConfig<TSystem>.Config;
+
+            Context.AssertContext();
+            AssertNotHaveSystem(config);
+
+            var system = _allSystems[config.SystemIndex];
+            if (system.IsActive)
+                _deactiveSystems.Add(new SystemRunner(system, config));
+        }
+
+        public void DeactivateSystem(SystemBase system)
+        {
+            Context.AssertContext();
+            AssertSystem(system);
+            AssertNotHaveSystem(system.Config);
+
+            if (system.IsActive)
+                _deactiveSystems.Add(new SystemRunner(system, system.Config));
+        }
+
+        public void DeactivateSystem(Type systemType)
+        {
             Context.AssertContext();
 
-            var config = SystemConfig<TSystem>.Config;
+            var config = SystemConfigs.GetConfig(systemType);
             AssertNotHaveSystem(config);
 
             var system = _allSystems[config.SystemIndex];
@@ -224,32 +325,63 @@ namespace EcsLte
             _deactiveSystems.Clear();
             _uninitializeSystems.Clear();
 
+            var stopwatch = new Stopwatch();
             for (var i = 0; i < initalizeCount; i++)
-                _runInitializeSystems[i].System.Initialize();
+            {
+                var system = _runInitializeSystems[i].System;
+                system.IsInitialized = true;
+                stopwatch.Start();
+                system.Initialize();
+                stopwatch.Stop();
+
+                system.InitializeMilliseconds = stopwatch.ElapsedMilliseconds;
+            }
 
             for (var i = 0; i < activeCount; i++)
             {
                 var system = _runActiveSystems[i].System;
                 system.IsActive = true;
+                stopwatch.Start();
                 system.Activated();
+                stopwatch.Stop();
+
+                system.ActivatedMilliseconds = stopwatch.ElapsedMilliseconds;
             }
 
             for (var i = 0; i < updateCount; i++)
             {
                 var runner = _runUpdateSystems[i];
                 if (runner.System.IsActive && !_runDeactiveSystems.Contains(runner))
+                {
+                    stopwatch.Start();
                     runner.System.Update();
+                    stopwatch.Stop();
+
+                    runner.System.UpdateMilliseconds = stopwatch.ElapsedMilliseconds;
+                }
             }
 
             for (var i = 0; i < deactiveCount; i++)
             {
                 var system = _runDeactiveSystems[i].System;
                 system.IsActive = false;
+                stopwatch.Start();
                 system.Deactivated();
+                stopwatch.Stop();
+
+                system.DeactivatedMilliseconds = stopwatch.ElapsedMilliseconds;
             }
 
             for (var i = 0; i < uninitializeCount; i++)
-                _runUninitializeSystems[i].System.Uninitialize();
+            {
+                var system = _runUninitializeSystems[i].System;
+                system.IsInitialized = false;
+                stopwatch.Start();
+                system.Uninitialize();
+                stopwatch.Stop();
+
+                system.UninitializeMilliseconds = stopwatch.ElapsedMilliseconds;
+            }
         }
 
         internal void InternalDestroy()
@@ -277,6 +409,7 @@ namespace EcsLte
             {
                 var system = (SystemBase)Activator.CreateInstance(config.SystemType);
                 system.Context = Context;
+                system.Config = config;
 
                 runner = new SystemRunner(system, config);
                 _activeSystems.Add(runner);
@@ -318,6 +451,16 @@ namespace EcsLte
                 throw new SystemAlreadyHaveException(SystemConfigs
                     .AllSystemTypes[config.SystemIndex]);
             }
+        }
+
+        internal void AssertSystem(SystemBase system)
+        {
+            if (system == null)
+                throw new ArgumentNullException(nameof(system));
+            if (system.Context == null)
+                throw new SystenNotHaveException(system.GetType());
+            if (system.Context != Context)
+                throw new EcsContextNotSameException(system.Context, Context);
         }
 
         #endregion

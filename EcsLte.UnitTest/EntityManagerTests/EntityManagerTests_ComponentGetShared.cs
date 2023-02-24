@@ -22,7 +22,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.ThrowsException<EntityNotExistException>(() =>
                 Context.Entities.GetSharedComponent<TestSharedComponent1>(Entity.Null));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.GetSharedComponent<TestSharedComponent1>(entity));
         }
@@ -47,7 +47,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     x => Context.Entities.GetSharedComponent<TestSharedComponent1>(x),
                 });
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.GetSharedComponent<TestSharedComponent1>(archeType));
         }
@@ -101,7 +101,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     x => Context.Entities.GetSharedComponents(x, ref emptyComponents, 0),
                 });
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             AssertGetRef_ContextDestroyed<TestSharedComponent1>(
                 () => Context.Entities.GetSharedComponents<TestSharedComponent1>(filter),
                 x => Context.Entities.GetSharedComponents(filter, ref x),
@@ -150,7 +150,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 });
 
             var emptyComponents = new TestSharedComponent1[0];
-            var diffContext = EcsContexts.CreateContext("DiffContext")
+            var diffContext = EcsContexts.Instance.CreateContext("DiffContext")
                 .Tracking.CreateTracker("Tracker");
             var destroyedTracker = Context.Tracking.CreateTracker("Destroyed");
             Context.Tracking.RemoveTracker(destroyedTracker);
@@ -164,7 +164,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     x => Context.Entities.GetSharedComponents(x, ref emptyComponents, 0),
                 });
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             AssertGetRef_ContextDestroyed<TestSharedComponent1>(
                 () => Context.Entities.GetSharedComponents<TestSharedComponent1>(tracker),
                 x => Context.Entities.GetSharedComponents(tracker, ref x),
@@ -226,7 +226,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     x => Context.Entities.GetSharedComponents(x, ref emptyComponents, 0),
                 });
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             AssertGetRef_ContextDestroyed<TestSharedComponent1>(
                 () => Context.Entities.GetSharedComponents<TestSharedComponent1>(query),
                 x => Context.Entities.GetSharedComponents(query, ref x),

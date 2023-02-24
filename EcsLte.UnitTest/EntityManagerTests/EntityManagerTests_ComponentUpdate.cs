@@ -29,7 +29,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.ThrowsException<EntityNotExistException>(() =>
                 Context.Entities.UpdateComponent(Entity.Null, new TestComponent1()));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.UpdateComponent(entity, new TestComponent1()));
         }
@@ -82,7 +82,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 Context.Entities.UpdateComponents(Entity.Null,
                     new TestComponent1()));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.UpdateComponents(entity,
                     new TestComponent1()));
@@ -137,7 +137,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     new TestComponent1(),
                     new TestComponent2()));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.UpdateComponents(entity,
                     new TestComponent1(),
@@ -206,7 +206,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     new TestComponent2(),
                     new TestComponent3()));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.UpdateComponents(entity,
                     new TestComponent1(),
@@ -291,7 +291,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     new TestComponent3(),
                     new TestSharedComponent1()));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.UpdateComponents(entity,
                     new TestComponent1(),
@@ -394,7 +394,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     new TestSharedComponent1(),
                     new TestSharedComponent2()));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.UpdateComponents(entity,
                     new TestComponent1(),
@@ -517,7 +517,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     new TestSharedComponent2(),
                     new TestSharedComponent3()));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.UpdateComponents(entity,
                     new TestComponent1(),
@@ -661,7 +661,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     new TestSharedComponent3(),
                     new TestManagedComponent1()));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.UpdateComponents(entity,
                     new TestComponent1(),
@@ -829,7 +829,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     new TestManagedComponent1(),
                     new TestManagedComponent2()));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.UpdateComponents(entity,
                     new TestComponent1(),

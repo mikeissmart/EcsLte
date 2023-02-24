@@ -18,7 +18,7 @@ namespace EcsLte.UnitTest.EntityTrackerTests
             Assert.ThrowsException<ArgumentNullException>(() =>
                 Context.Tracking.HasTracker(null));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Tracking.HasTracker("Tracking"));
         }
@@ -36,7 +36,7 @@ namespace EcsLte.UnitTest.EntityTrackerTests
             Assert.ThrowsException<ArgumentNullException>(() =>
                 Context.Tracking.GetTracker(null));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Tracking.GetTracker("Tracking"));
         }
@@ -58,7 +58,7 @@ namespace EcsLte.UnitTest.EntityTrackerTests
             Assert.ThrowsException<ArgumentNullException>(() =>
                 Context.Tracking.CreateTracker(null));
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Tracking.CreateTracker("Tracker"));
         }
@@ -77,14 +77,14 @@ namespace EcsLte.UnitTest.EntityTrackerTests
             Assert.ThrowsException<ArgumentNullException>(() =>
                 Context.Tracking.RemoveTracker(null));
 
-            var tracker2 = EcsContexts.CreateContext("Context2")
+            var tracker2 = EcsContexts.Instance.CreateContext("Context2")
                 .Tracking.CreateTracker("Tracker");
             Assert.ThrowsException<EcsContextNotSameException>(() =>
                 Context.Tracking.RemoveTracker(tracker2));
 
             tracker2 = Context.Tracking.CreateTracker("Tracker2");
 
-            EcsContexts.DestroyContext(Context);
+            EcsContexts.Instance.DestroyContext(Context);
 
             Assert.IsTrue(tracker2.IsDestroyed);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
