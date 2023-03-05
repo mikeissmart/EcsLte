@@ -67,11 +67,12 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert_DuplicateEntities_Filter_ContextDestroyed(filter);
         }
 
-        [TestMethod]
+        // todo not duplicateing by query and tracker since they are tracked by chunk changes
+        /*[TestMethod]
         public void DuplicateEntities_Tracker()
         {
             var tracker = Context.Tracking.CreateTracker("Tracker1")
-                .SetTrackingState<TestComponent1>(TrackingState.Added)
+                .SetTrackingComponent<TestComponent1>(true)
                 .StartTracking();
 
             var entities = CreateTestEntities();
@@ -91,7 +92,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             var query = Context.Queries
                 .SetFilter(filter)
                 .SetTracker(Context.Tracking.CreateTracker("Tracker1")
-                    .SetTrackingState<TestComponent1>(TrackingState.Added)
+                    .SetTrackingComponent<TestComponent1>(true)
                     .StartTracking());
 
             var entities = CreateTestEntities();
@@ -100,7 +101,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             EcsContexts.Instance.DestroyContext(Context);
             Assert_DuplicateEntities_Query_ContextDestroyed(query);
-        }
+        }*/
 
         private void Assert_DuplicateEntity(Entity orgEntity)
         {
@@ -111,11 +112,13 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             Assert.IsTrue(Context.Entities.GetComponent<TestComponent1>(dupEntity).Prop == orgEntity.Id);
             Assert.IsTrue(Context.Entities.GetSharedComponent<TestSharedComponent1>(dupEntity).Prop == 2);
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
         }
 
         private void Assert_DuplicateEntities(Entity[] orgEntities)
             => AssertGetInRef_Valid_Invalid_StartingIndex_Null_OutOfRange(
                 () => orgEntities,
+                () => Context.Entities.GlobalVersion,
                 () => new[] { Entity.Null, Entity.Null, Entity.Null, Entity.Null },
                 x => Context.Entities.DuplicateEntities(x),
                 (x, startingIndex) => Context.Entities.DuplicateEntities(x, startingIndex),
@@ -207,6 +210,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
         private void Assert_DuplicateEntities_ArcheType(EntityArcheType archeType, Entity[] orgEntities)
         {
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
+                true,
+                () => Context.Entities.GlobalVersion,
                 () =>
                 {
                     return Context.Entities.DuplicateEntities(archeType);
@@ -275,6 +280,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
         private void Assert_DuplicateEntities_Filter(EntityFilter filter, Entity[] orgEntities)
         {
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange<Entity>(
+                true,
+                () => Context.Entities.GlobalVersion,
                 () =>
                 {
                     return Context.Entities.DuplicateEntities(filter);
@@ -340,7 +347,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     Context.Entities.DuplicateEntities(filter, ref x, startingIndex);
                 });
 
-        private void Assert_DuplicateEntities_Tracker(EntityTracker tracker, Entity[] orgEntities)
+        // todo not duplicateing by query and tracker since they are tracked by chunk changes
+        /*private void Assert_DuplicateEntities_Tracker(EntityTracker tracker, Entity[] orgEntities)
         {
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange<Entity>(
                 () =>
@@ -480,7 +488,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 (x, startingIndex) =>
                 {
                     Context.Entities.DuplicateEntities(query, ref x, startingIndex);
-                });
+                });*/
 
         private TestResult AssertEntities(Entity[] orgEntities, int startingIndex,
             Entity[] dupEntities, int destStartingIndex, int destCount)

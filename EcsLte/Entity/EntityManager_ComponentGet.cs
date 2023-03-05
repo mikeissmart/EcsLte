@@ -13,7 +13,7 @@
 
             AssertNotHaveComponent(config, archeTypeData);
 
-            return archeTypeData.GetComponent<TComponent>(entityData.EntityIndex, config);
+            return archeTypeData.GetComponent<TComponent>(entityData, config);
         }
 
         public TComponent GetManagedComponent<TComponent>(Entity entity)
@@ -27,7 +27,7 @@
 
             AssertNotHaveComponent(config, archeTypeData);
 
-            return archeTypeData.GetManagedComponent<TComponent>(entityData.EntityIndex, config);
+            return archeTypeData.GetManagedComponent<TComponent>(entityData, config);
         }
 
         public TComponent GetSharedComponent<TComponent>(Entity entity)
@@ -35,7 +35,7 @@
         {
             Context.AssertContext();
             AssertNotExistEntity(entity,
-                out var entityData, out var archeTypeData);
+                out var _, out var archeTypeData);
 
             var config = ComponentConfig<TComponent>.Config;
 

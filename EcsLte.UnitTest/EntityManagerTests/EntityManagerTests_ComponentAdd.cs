@@ -10,13 +10,15 @@ namespace EcsLte.UnitTest.EntityManagerTests
         public void AddComponent()
         {
             var addTracker = Context.Tracking.CreateTracker("AddTracker")
-                .SetTrackingState<TestComponent1>(TrackingState.Added)
-                .StartTracking();
+                .SetTrackingComponent<TestComponent1>(true);
 
             var entity = Context.Entities.CreateEntity();
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 2);
 
             Context.Entities.AddComponent(entity, new TestComponent1 { Prop = 2 });
+
             Assert.IsTrue(Context.Entities.GetComponent<TestComponent1>(entity).Prop == 2);
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             Assert.IsTrue(Context.Entities.GetEntities(addTracker).Length == 1);
             Assert.IsTrue(Context.Entities.GetEntities(addTracker)[0] == entity);
@@ -26,6 +28,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             Assert.ThrowsException<EntityNotExistException>(() =>
                 Context.Entities.AddComponent(Entity.Null, new TestComponent1()));
+
+            // No change after error
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
@@ -40,12 +45,11 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 Context.Tracking.CreateTracker("AddTracker1"),
                 Context.Tracking.CreateTracker("AddTracker2")
             };
-            foreach (var tracker in trackers)
-                tracker.StartTracking();
-            trackers[0].SetTrackingState<TestComponent1>(TrackingState.Added);
-            trackers[1].SetTrackingState<TestComponent2>(TrackingState.Added);
+            trackers[0].SetTrackingComponent<TestComponent1>(true);
+            trackers[1].SetTrackingComponent<TestComponent2>(true);
 
             var entity = CreateTestEntity();
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 2);
 
             Context.Entities.AddComponents(entity,
                 new TestComponent1 { Prop = 1 },
@@ -53,6 +57,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             Assert.IsTrue(Context.Entities.GetComponent<TestComponent1>(entity).Prop == 1);
             Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entity).Prop == 2);
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             for (var i = 0; i < trackers.Length; i++)
             {
@@ -80,6 +85,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 Context.Entities.AddComponents(Entity.Null,
                     new TestComponent1(),
                     new TestComponent2()));
+
+            // No change after error
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
@@ -97,13 +105,12 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 Context.Tracking.CreateTracker("AddTracker2"),
                 Context.Tracking.CreateTracker("AddTracker3")
             };
-            foreach (var tracker in trackers)
-                tracker.StartTracking();
-            trackers[0].SetTrackingState<TestComponent1>(TrackingState.Added);
-            trackers[1].SetTrackingState<TestComponent2>(TrackingState.Added);
-            trackers[2].SetTrackingState<TestComponent3>(TrackingState.Added);
+            trackers[0].SetTrackingComponent<TestComponent1>(true);
+            trackers[1].SetTrackingComponent<TestComponent2>(true);
+            trackers[2].SetTrackingComponent<TestComponent3>(true);
 
             var entity = CreateTestEntity();
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 2);
 
             Context.Entities.AddComponents(entity,
                 new TestComponent1 { Prop = 1 },
@@ -113,6 +120,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.IsTrue(Context.Entities.GetComponent<TestComponent1>(entity).Prop == 1);
             Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entity).Prop == 2);
             Assert.IsTrue(Context.Entities.GetComponent<TestComponent3>(entity).Prop == 3);
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             for (var i = 0; i < trackers.Length; i++)
             {
@@ -149,6 +157,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     new TestComponent1(),
                     new TestComponent2(),
                     new TestComponent3()));
+
+            // No change after error
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
@@ -168,14 +179,13 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 Context.Tracking.CreateTracker("AddTracker3"),
                 Context.Tracking.CreateTracker("AddTracker4")
             };
-            foreach (var tracker in trackers)
-                tracker.StartTracking();
-            trackers[0].SetTrackingState<TestComponent1>(TrackingState.Added);
-            trackers[1].SetTrackingState<TestComponent2>(TrackingState.Added);
-            trackers[2].SetTrackingState<TestComponent3>(TrackingState.Added);
-            trackers[3].SetTrackingState<TestSharedComponent1>(TrackingState.Added);
+            trackers[0].SetTrackingComponent<TestComponent1>(true);
+            trackers[1].SetTrackingComponent<TestComponent2>(true);
+            trackers[2].SetTrackingComponent<TestComponent3>(true);
+            trackers[3].SetTrackingComponent<TestSharedComponent1>(true);
 
             var entity = CreateTestEntity();
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 2);
 
             Context.Entities.AddComponents(entity,
                 new TestComponent1 { Prop = 1 },
@@ -187,6 +197,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entity).Prop == 2);
             Assert.IsTrue(Context.Entities.GetComponent<TestComponent3>(entity).Prop == 3);
             Assert.IsTrue(Context.Entities.GetSharedComponent<TestSharedComponent1>(entity).Prop == 4);
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             for (var i = 0; i < trackers.Length; i++)
             {
@@ -234,6 +245,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     new TestComponent2(),
                     new TestComponent3(),
                     new TestSharedComponent1()));
+
+            // No change after error
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
@@ -255,15 +269,14 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 Context.Tracking.CreateTracker("AddTracker4"),
                 Context.Tracking.CreateTracker("AddTracker5")
             };
-            foreach (var tracker in trackers)
-                tracker.StartTracking();
-            trackers[0].SetTrackingState<TestComponent1>(TrackingState.Added);
-            trackers[1].SetTrackingState<TestComponent2>(TrackingState.Added);
-            trackers[2].SetTrackingState<TestComponent3>(TrackingState.Added);
-            trackers[3].SetTrackingState<TestSharedComponent1>(TrackingState.Added);
-            trackers[4].SetTrackingState<TestSharedComponent2>(TrackingState.Added);
+            trackers[0].SetTrackingComponent<TestComponent1>(true);
+            trackers[1].SetTrackingComponent<TestComponent2>(true);
+            trackers[2].SetTrackingComponent<TestComponent3>(true);
+            trackers[3].SetTrackingComponent<TestSharedComponent1>(true);
+            trackers[4].SetTrackingComponent<TestSharedComponent2>(true);
 
             var entity = CreateTestEntity();
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 2);
 
             Context.Entities.AddComponents(entity,
                 new TestComponent1 { Prop = 1 },
@@ -277,6 +290,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.IsTrue(Context.Entities.GetComponent<TestComponent3>(entity).Prop == 3);
             Assert.IsTrue(Context.Entities.GetSharedComponent<TestSharedComponent1>(entity).Prop == 4);
             Assert.IsTrue(Context.Entities.GetSharedComponent<TestSharedComponent2>(entity).Prop == 5);
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             for (var i = 0; i < trackers.Length; i++)
             {
@@ -337,6 +351,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     new TestComponent3(),
                     new TestSharedComponent1(),
                     new TestSharedComponent2()));
+
+            // No change after error
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
@@ -360,16 +377,15 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 Context.Tracking.CreateTracker("AddTracker5"),
                 Context.Tracking.CreateTracker("AddTracker6")
             };
-            foreach (var tracker in trackers)
-                tracker.StartTracking();
-            trackers[0].SetTrackingState<TestComponent1>(TrackingState.Added);
-            trackers[1].SetTrackingState<TestComponent2>(TrackingState.Added);
-            trackers[2].SetTrackingState<TestComponent3>(TrackingState.Added);
-            trackers[3].SetTrackingState<TestSharedComponent1>(TrackingState.Added);
-            trackers[4].SetTrackingState<TestSharedComponent2>(TrackingState.Added);
-            trackers[5].SetTrackingState<TestSharedComponent3>(TrackingState.Added);
+            trackers[0].SetTrackingComponent<TestComponent1>(true);
+            trackers[1].SetTrackingComponent<TestComponent2>(true);
+            trackers[2].SetTrackingComponent<TestComponent3>(true);
+            trackers[3].SetTrackingComponent<TestSharedComponent1>(true);
+            trackers[4].SetTrackingComponent<TestSharedComponent2>(true);
+            trackers[5].SetTrackingComponent<TestSharedComponent3>(true);
 
             var entity = CreateTestEntity();
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 2);
 
             Context.Entities.AddComponents(entity,
                 new TestComponent1 { Prop = 1 },
@@ -385,6 +401,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.IsTrue(Context.Entities.GetSharedComponent<TestSharedComponent1>(entity).Prop == 4);
             Assert.IsTrue(Context.Entities.GetSharedComponent<TestSharedComponent2>(entity).Prop == 5);
             Assert.IsTrue(Context.Entities.GetSharedComponent<TestSharedComponent3>(entity).Prop == 6);
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             for (var i = 0; i < trackers.Length; i++)
             {
@@ -460,6 +477,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     new TestSharedComponent1(),
                     new TestSharedComponent2(),
                     new TestSharedComponent3()));
+
+            // No change after error
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
@@ -485,17 +505,16 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 Context.Tracking.CreateTracker("AddTracker6"),
                 Context.Tracking.CreateTracker("AddTracker7")
             };
-            foreach (var tracker in trackers)
-                tracker.StartTracking();
-            trackers[0].SetTrackingState<TestComponent1>(TrackingState.Added);
-            trackers[1].SetTrackingState<TestComponent2>(TrackingState.Added);
-            trackers[2].SetTrackingState<TestComponent3>(TrackingState.Added);
-            trackers[3].SetTrackingState<TestSharedComponent1>(TrackingState.Added);
-            trackers[4].SetTrackingState<TestSharedComponent2>(TrackingState.Added);
-            trackers[5].SetTrackingState<TestSharedComponent3>(TrackingState.Added);
-            trackers[6].SetTrackingState<TestManagedComponent1>(TrackingState.Added);
+            trackers[0].SetTrackingComponent<TestComponent1>(true);
+            trackers[1].SetTrackingComponent<TestComponent2>(true);
+            trackers[2].SetTrackingComponent<TestComponent3>(true);
+            trackers[3].SetTrackingComponent<TestSharedComponent1>(true);
+            trackers[4].SetTrackingComponent<TestSharedComponent2>(true);
+            trackers[5].SetTrackingComponent<TestSharedComponent3>(true);
+            trackers[6].SetTrackingComponent<TestManagedComponent1>(true);
 
             var entity = CreateTestEntity();
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 2);
 
             Context.Entities.AddComponents(entity,
                 new TestComponent1 { Prop = 1 },
@@ -513,6 +532,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.IsTrue(Context.Entities.GetSharedComponent<TestSharedComponent2>(entity).Prop == 5);
             Assert.IsTrue(Context.Entities.GetSharedComponent<TestSharedComponent3>(entity).Prop == 6);
             Assert.IsTrue(Context.Entities.GetManagedComponent<TestManagedComponent1>(entity).Prop == 7);
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             for (var i = 0; i < trackers.Length; i++)
             {
@@ -604,6 +624,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     new TestSharedComponent2(),
                     new TestSharedComponent3(),
                     new TestManagedComponent1()));
+
+            // No change after error
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
@@ -631,18 +654,17 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 Context.Tracking.CreateTracker("AddTracker7"),
                 Context.Tracking.CreateTracker("AddTracker8")
             };
-            foreach (var tracker in trackers)
-                tracker.StartTracking();
-            trackers[0].SetTrackingState<TestComponent1>(TrackingState.Added);
-            trackers[1].SetTrackingState<TestComponent2>(TrackingState.Added);
-            trackers[2].SetTrackingState<TestComponent3>(TrackingState.Added);
-            trackers[3].SetTrackingState<TestSharedComponent1>(TrackingState.Added);
-            trackers[4].SetTrackingState<TestSharedComponent2>(TrackingState.Added);
-            trackers[5].SetTrackingState<TestSharedComponent3>(TrackingState.Added);
-            trackers[6].SetTrackingState<TestManagedComponent1>(TrackingState.Added);
-            trackers[7].SetTrackingState<TestManagedComponent2>(TrackingState.Added);
+            trackers[0].SetTrackingComponent<TestComponent1>(true);
+            trackers[1].SetTrackingComponent<TestComponent2>(true);
+            trackers[2].SetTrackingComponent<TestComponent3>(true);
+            trackers[3].SetTrackingComponent<TestSharedComponent1>(true);
+            trackers[4].SetTrackingComponent<TestSharedComponent2>(true);
+            trackers[5].SetTrackingComponent<TestSharedComponent3>(true);
+            trackers[6].SetTrackingComponent<TestManagedComponent1>(true);
+            trackers[7].SetTrackingComponent<TestManagedComponent2>(true);
 
             var entity = CreateTestEntity();
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 2);
 
             Context.Entities.AddComponents(entity,
                 new TestComponent1 { Prop = 1 },
@@ -662,6 +684,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.IsTrue(Context.Entities.GetSharedComponent<TestSharedComponent3>(entity).Prop == 6);
             Assert.IsTrue(Context.Entities.GetManagedComponent<TestManagedComponent1>(entity).Prop == 7);
             Assert.IsTrue(Context.Entities.GetManagedComponent<TestManagedComponent2>(entity).Prop == 8);
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             for (var i = 0; i < trackers.Length; i++)
             {
@@ -772,6 +795,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     new TestSharedComponent3(),
                     new TestManagedComponent1(),
                     new TestManagedComponent2()));
+
+            // No change after error
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>

@@ -1,4 +1,5 @@
 ﻿using EcsLte.Utilities;
+using System.Diagnostics;
 
 namespace EcsLte
 {
@@ -23,8 +24,8 @@ namespace EcsLte
             AssertNotHaveComponent(config1, archeTypeData);
             AssertNotHaveComponent(config2, archeTypeData);
 
-            component1 = config1.Adapter.GetComponent<T1>(entityData.EntityIndex, archeTypeData);
-            component2 = config2.Adapter.GetComponent<T2>(entityData.EntityIndex, archeTypeData);
+            component1 = config1.Adapter.GetComponent<T1>(entityData, archeTypeData);
+            component2 = config2.Adapter.GetComponent<T2>(entityData, archeTypeData);
         }
 
         public void GetComponents<T1, T2, T3>(Entity entity,
@@ -50,9 +51,9 @@ namespace EcsLte
             AssertNotHaveComponent(config2, archeTypeData);
             AssertNotHaveComponent(config3, archeTypeData);
 
-            component1 = config1.Adapter.GetComponent<T1>(entityData.EntityIndex, archeTypeData);
-            component2 = config2.Adapter.GetComponent<T2>(entityData.EntityIndex, archeTypeData);
-            component3 = config3.Adapter.GetComponent<T3>(entityData.EntityIndex, archeTypeData);
+            component1 = config1.Adapter.GetComponent<T1>(entityData, archeTypeData);
+            component2 = config2.Adapter.GetComponent<T2>(entityData, archeTypeData);
+            component3 = config3.Adapter.GetComponent<T3>(entityData, archeTypeData);
         }
 
         public void GetComponents<T1, T2, T3, T4>(Entity entity,
@@ -82,10 +83,10 @@ namespace EcsLte
             AssertNotHaveComponent(config3, archeTypeData);
             AssertNotHaveComponent(config4, archeTypeData);
 
-            component1 = config1.Adapter.GetComponent<T1>(entityData.EntityIndex, archeTypeData);
-            component2 = config2.Adapter.GetComponent<T2>(entityData.EntityIndex, archeTypeData);
-            component3 = config3.Adapter.GetComponent<T3>(entityData.EntityIndex, archeTypeData);
-            component4 = config4.Adapter.GetComponent<T4>(entityData.EntityIndex, archeTypeData);
+            component1 = config1.Adapter.GetComponent<T1>(entityData, archeTypeData);
+            component2 = config2.Adapter.GetComponent<T2>(entityData, archeTypeData);
+            component3 = config3.Adapter.GetComponent<T3>(entityData, archeTypeData);
+            component4 = config4.Adapter.GetComponent<T4>(entityData, archeTypeData);
         }
 
         public void GetComponents<T1, T2, T3, T4, T5>(Entity entity,
@@ -120,11 +121,11 @@ namespace EcsLte
             AssertNotHaveComponent(config4, archeTypeData);
             AssertNotHaveComponent(config5, archeTypeData);
 
-            component1 = config1.Adapter.GetComponent<T1>(entityData.EntityIndex, archeTypeData);
-            component2 = config2.Adapter.GetComponent<T2>(entityData.EntityIndex, archeTypeData);
-            component3 = config3.Adapter.GetComponent<T3>(entityData.EntityIndex, archeTypeData);
-            component4 = config4.Adapter.GetComponent<T4>(entityData.EntityIndex, archeTypeData);
-            component5 = config5.Adapter.GetComponent<T5>(entityData.EntityIndex, archeTypeData);
+            component1 = config1.Adapter.GetComponent<T1>(entityData, archeTypeData);
+            component2 = config2.Adapter.GetComponent<T2>(entityData, archeTypeData);
+            component3 = config3.Adapter.GetComponent<T3>(entityData, archeTypeData);
+            component4 = config4.Adapter.GetComponent<T4>(entityData, archeTypeData);
+            component5 = config5.Adapter.GetComponent<T5>(entityData, archeTypeData);
         }
 
         public void GetComponents<T1, T2, T3, T4, T5, T6>(Entity entity,
@@ -163,12 +164,12 @@ namespace EcsLte
             AssertNotHaveComponent(config5, archeTypeData);
             AssertNotHaveComponent(config6, archeTypeData);
 
-            component1 = config1.Adapter.GetComponent<T1>(entityData.EntityIndex, archeTypeData);
-            component2 = config2.Adapter.GetComponent<T2>(entityData.EntityIndex, archeTypeData);
-            component3 = config3.Adapter.GetComponent<T3>(entityData.EntityIndex, archeTypeData);
-            component4 = config4.Adapter.GetComponent<T4>(entityData.EntityIndex, archeTypeData);
-            component5 = config5.Adapter.GetComponent<T5>(entityData.EntityIndex, archeTypeData);
-            component6 = config6.Adapter.GetComponent<T6>(entityData.EntityIndex, archeTypeData);
+            component1 = config1.Adapter.GetComponent<T1>(entityData, archeTypeData);
+            component2 = config2.Adapter.GetComponent<T2>(entityData, archeTypeData);
+            component3 = config3.Adapter.GetComponent<T3>(entityData, archeTypeData);
+            component4 = config4.Adapter.GetComponent<T4>(entityData, archeTypeData);
+            component5 = config5.Adapter.GetComponent<T5>(entityData, archeTypeData);
+            component6 = config6.Adapter.GetComponent<T6>(entityData, archeTypeData);
         }
 
         public void GetComponents<T1, T2, T3, T4, T5, T6, T7>(Entity entity,
@@ -211,13 +212,13 @@ namespace EcsLte
             AssertNotHaveComponent(config6, archeTypeData);
             AssertNotHaveComponent(config7, archeTypeData);
 
-            component1 = config1.Adapter.GetComponent<T1>(entityData.EntityIndex, archeTypeData);
-            component2 = config2.Adapter.GetComponent<T2>(entityData.EntityIndex, archeTypeData);
-            component3 = config3.Adapter.GetComponent<T3>(entityData.EntityIndex, archeTypeData);
-            component4 = config4.Adapter.GetComponent<T4>(entityData.EntityIndex, archeTypeData);
-            component5 = config5.Adapter.GetComponent<T5>(entityData.EntityIndex, archeTypeData);
-            component6 = config6.Adapter.GetComponent<T6>(entityData.EntityIndex, archeTypeData);
-            component7 = config7.Adapter.GetComponent<T7>(entityData.EntityIndex, archeTypeData);
+            component1 = config1.Adapter.GetComponent<T1>(entityData, archeTypeData);
+            component2 = config2.Adapter.GetComponent<T2>(entityData, archeTypeData);
+            component3 = config3.Adapter.GetComponent<T3>(entityData, archeTypeData);
+            component4 = config4.Adapter.GetComponent<T4>(entityData, archeTypeData);
+            component5 = config5.Adapter.GetComponent<T5>(entityData, archeTypeData);
+            component6 = config6.Adapter.GetComponent<T6>(entityData, archeTypeData);
+            component7 = config7.Adapter.GetComponent<T7>(entityData, archeTypeData);
         }
 
         public void GetComponents<T1, T2, T3, T4, T5, T6, T7, T8>(Entity entity,
@@ -264,14 +265,14 @@ namespace EcsLte
             AssertNotHaveComponent(config7, archeTypeData);
             AssertNotHaveComponent(config8, archeTypeData);
 
-            component1 = config1.Adapter.GetComponent<T1>(entityData.EntityIndex, archeTypeData);
-            component2 = config2.Adapter.GetComponent<T2>(entityData.EntityIndex, archeTypeData);
-            component3 = config3.Adapter.GetComponent<T3>(entityData.EntityIndex, archeTypeData);
-            component4 = config4.Adapter.GetComponent<T4>(entityData.EntityIndex, archeTypeData);
-            component5 = config5.Adapter.GetComponent<T5>(entityData.EntityIndex, archeTypeData);
-            component6 = config6.Adapter.GetComponent<T6>(entityData.EntityIndex, archeTypeData);
-            component7 = config7.Adapter.GetComponent<T7>(entityData.EntityIndex, archeTypeData);
-            component8 = config8.Adapter.GetComponent<T8>(entityData.EntityIndex, archeTypeData);
+            component1 = config1.Adapter.GetComponent<T1>(entityData, archeTypeData);
+            component2 = config2.Adapter.GetComponent<T2>(entityData, archeTypeData);
+            component3 = config3.Adapter.GetComponent<T3>(entityData, archeTypeData);
+            component4 = config4.Adapter.GetComponent<T4>(entityData, archeTypeData);
+            component5 = config5.Adapter.GetComponent<T5>(entityData, archeTypeData);
+            component6 = config6.Adapter.GetComponent<T6>(entityData, archeTypeData);
+            component7 = config7.Adapter.GetComponent<T7>(entityData, archeTypeData);
+            component8 = config8.Adapter.GetComponent<T8>(entityData, archeTypeData);
         }
 
         public TComponent[] GetComponents<TComponent>(EntityArcheType archeType)
@@ -302,7 +303,7 @@ namespace EcsLte
 
             Helper.AssertAndResizeArray(ref destComponents, destStartingIndex, archeTypeData.EntityCount);
 
-            archeTypeData.GetComponents(ref destComponents, destStartingIndex, config);
+            archeTypeData.GetAllComponents(ref destComponents, destStartingIndex, config);
             return archeTypeData.EntityCount;
         }
 
@@ -338,7 +339,7 @@ namespace EcsLte
                     archeTypeData.HasConfig(config))
                 {
                     Helper.ResizeRefArray(ref destComponents, componentIndex, archeTypeData.EntityCount);
-                    archeTypeData.GetComponents(ref destComponents, destStartingIndex, config);
+                    archeTypeData.GetAllComponents(ref destComponents, destStartingIndex, config);
                     componentIndex += archeTypeData.EntityCount;
                 }
             }
@@ -368,11 +369,12 @@ namespace EcsLte
             EntityTracker.AssertEntityTracker(tracker, Context);
             Helper.AssertArray(destComponents, destStartingIndex);
 
-            var trackedArcheTypeDatas = tracker.CachedArcheTypeDatas;
+            var trackedArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(tracker.TrackingFilter());
+            var config = ComponentConfig<TComponent>.Config;
             var componentIndex = destStartingIndex;
             for (var i = 0; i < trackedArcheTypeDatas.Length; i++)
             {
-                componentIndex += InternalGetComponentsTracker(tracker, trackedArcheTypeDatas[i],
+                componentIndex += InternalGetComponentsTracker(config, tracker, trackedArcheTypeDatas[i],
                     ref destComponents, componentIndex);
             }
 
@@ -409,10 +411,11 @@ namespace EcsLte
                 Helper.AssertArray(destComponents, destStartingIndex);
 
                 var filteredArcheTypeDatas = query.Filter.ArcheTypeDatas;
+                var config = ComponentConfig<TComponent>.Config;
                 var componentIndex = destStartingIndex;
                 for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
                 {
-                    componentIndex += InternalGetComponentsTracker(query.Tracker, filteredArcheTypeDatas[i],
+                    componentIndex += InternalGetComponentsTracker(config, query.Tracker, filteredArcheTypeDatas[i],
                         ref destComponents, componentIndex);
                 }
 
@@ -450,7 +453,7 @@ namespace EcsLte
 
             Helper.AssertAndResizeArray(ref destComponents, destStartingIndex, archeTypeData.EntityCount);
 
-            archeTypeData.GetManagedComponents(ref destComponents, destStartingIndex, config);
+            archeTypeData.GetAllManagedComponents(ref destComponents, destStartingIndex, config);
             return archeTypeData.EntityCount;
         }
 
@@ -486,7 +489,7 @@ namespace EcsLte
                     archeTypeData.HasConfig(config))
                 {
                     Helper.ResizeRefArray(ref destComponents, componentIndex, archeTypeData.EntityCount);
-                    archeTypeData.GetManagedComponents(ref destComponents, destStartingIndex, config);
+                    archeTypeData.GetAllManagedComponents(ref destComponents, destStartingIndex, config);
                     componentIndex += archeTypeData.EntityCount;
                 }
             }
@@ -516,11 +519,12 @@ namespace EcsLte
             EntityTracker.AssertEntityTracker(tracker, Context);
             Helper.AssertArray(destComponents, destStartingIndex);
 
-            var trackedArcheTypeDatas = tracker.CachedArcheTypeDatas;
+            var trackedArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(tracker.TrackingFilter());
+            var config = ComponentConfig<TComponent>.Config;
             var componentIndex = destStartingIndex;
             for (var i = 0; i < trackedArcheTypeDatas.Length; i++)
             {
-                componentIndex += InternalGetManagedComponentsTracker(tracker, trackedArcheTypeDatas[i],
+                componentIndex += InternalGetManagedComponentsTracker(config, tracker, trackedArcheTypeDatas[i],
                     ref destComponents, componentIndex);
             }
 
@@ -557,10 +561,11 @@ namespace EcsLte
                 Helper.AssertArray(destComponents, destStartingIndex);
 
                 var filteredArcheTypeDatas = query.Filter.ArcheTypeDatas;
+                var config = ComponentConfig<TComponent>.Config;
                 var componentIndex = destStartingIndex;
                 for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
                 {
-                    componentIndex += InternalGetManagedComponentsTracker(query.Tracker, filteredArcheTypeDatas[i],
+                    componentIndex += InternalGetManagedComponentsTracker(config, query.Tracker, filteredArcheTypeDatas[i],
                         ref destComponents, componentIndex);
                 }
 
@@ -630,13 +635,14 @@ namespace EcsLte
             EntityTracker.AssertEntityTracker(tracker, Context);
             Helper.AssertArray(destComponents, destStartingIndex);
 
+            var trackedArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(tracker.TrackingFilter());
             var config = ComponentConfig<TComponent>.Config;
-            var archeTypeDatas = tracker.CachedArcheTypeDatas;
             var componentIndex = destStartingIndex;
-            for (var i = 0; i < archeTypeDatas.Length; i++)
+            for (var i = 0; i < trackedArcheTypeDatas.Length; i++)
             {
-                var archeTypeData = archeTypeDatas[i];
-                if (archeTypeData.HasConfig(config))
+                var archeTypeData = trackedArcheTypeDatas[i];
+                if (archeTypeData.HasConfig(config) &&
+                    tracker.GetArcheTypeDataChunks(archeTypeData, out _))
                 {
                     Helper.ResizeRefArray(ref destComponents, componentIndex, 1);
                     destComponents[componentIndex++] = archeTypeData.GetSharedComponent<TComponent>(config);
@@ -675,14 +681,14 @@ namespace EcsLte
             {
                 Helper.AssertArray(destComponents, destStartingIndex);
 
+                var filteredArcheTypeDatas = query.Filter.ArcheTypeDatas;
                 var config = ComponentConfig<TComponent>.Config;
-                var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(query.Filter);
                 var componentIndex = destStartingIndex;
                 for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
                 {
                     var archeTypeData = filteredArcheTypeDatas[i];
-                    if (query.Tracker.HasArcheTypeData(archeTypeData) &&
-                        archeTypeData.HasConfig(config))
+                    if (archeTypeData.HasConfig(config) &&
+                        query.Tracker.GetArcheTypeDataChunks(archeTypeData, out _))
                     {
                         Helper.ResizeRefArray(ref destComponents, componentIndex, 1);
                         destComponents[componentIndex++] = archeTypeData.GetSharedComponent<TComponent>(config);

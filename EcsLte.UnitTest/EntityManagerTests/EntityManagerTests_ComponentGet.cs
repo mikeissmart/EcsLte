@@ -623,6 +623,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
             var entities = CreateTestEntities();
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
+                false,
+                () => Context.Entities.GlobalVersion,
                 () => Context.Entities.GetComponents<TestComponent1>(archeType),
                 x =>
                 {
@@ -674,6 +676,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
             var entities = CreateTestEntities();
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
+                false,
+                () => Context.Entities.GlobalVersion,
                 () => Context.Entities.GetComponents<TestComponent1>(filter),
                 x =>
                 {
@@ -720,12 +724,13 @@ namespace EcsLte.UnitTest.EntityManagerTests
         public void GetComponent_Tracker()
         {
             var tracker = Context.Tracking.CreateTracker("Tracker")
-                .SetTrackingState<TestComponent1>(TrackingState.Added)
-                .StartTracking();
+                .SetTrackingComponent<TestComponent1>(true);
 
             var entities = CreateTestEntities();
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
+                false,
+                () => Context.Entities.GlobalVersion,
                 () => Context.Entities.GetComponents<TestComponent1>(tracker),
                 x =>
                 {
@@ -781,12 +786,13 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 .SetFilter(Context.Filters
                     .WhereAllOf<TestComponent1>())
                 .SetTracker(Context.Tracking.CreateTracker("Tracker1")
-                    .SetTrackingState<TestComponent1>(TrackingState.Added)
-                    .StartTracking());
+                    .SetTrackingComponent<TestComponent1>(true));
 
             var entities = CreateTestEntities();
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
+                false,
+                () => Context.Entities.GlobalVersion,
                 () => Context.Entities.GetComponents<TestComponent1>(query),
                 x =>
                 {

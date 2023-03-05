@@ -15,6 +15,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 UnitTestConsts.SmallCount);
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
+                false,
+                () => Context.Entities.GlobalVersion,
                 () => Context.Entities.GetEntities(),
                 x =>
                 {
@@ -58,6 +60,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 UnitTestConsts.SmallCount);
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
+                false,
+                () => Context.Entities.GlobalVersion,
                 () => Context.Entities.GetEntities(archeType),
                 x =>
                 {
@@ -110,6 +114,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 UnitTestConsts.SmallCount);
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
+                false,
+                () => Context.Entities.GlobalVersion,
                 () => Context.Entities.GetEntities(filter),
                 x =>
                 {
@@ -154,8 +160,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
         public void GetEntities_Tracker()
         {
             var tracker = Context.Tracking.CreateTracker("Tracker1")
-                .SetTrackingState<TestComponent1>(TrackingState.Added)
-                .StartTracking();
+                .SetTrackingComponent<TestComponent1>(true);
 
             var entities = Context.Entities.CreateEntities(
                 Context.ArcheTypes
@@ -163,6 +168,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 UnitTestConsts.SmallCount);
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
+                false,
+                () => Context.Entities.GlobalVersion,
                 () => Context.Entities.GetEntities(tracker),
                 x =>
                 {
@@ -218,8 +225,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             var query = Context.Queries
                 .SetFilter(filter)
                 .SetTracker(Context.Tracking.CreateTracker("Tracker1")
-                    .SetTrackingState<TestComponent1>(TrackingState.Added)
-                    .StartTracking());
+                    .SetTrackingComponent<TestComponent1>(true));
 
             var entities = Context.Entities.CreateEntities(
                 Context.ArcheTypes
@@ -227,6 +233,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 UnitTestConsts.SmallCount);
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
+                false,
+                () => Context.Entities.GlobalVersion,
                 () => Context.Entities.GetEntities(query),
                 x =>
                 {

@@ -8,6 +8,7 @@ namespace EcsLte
         {
             Context.AssertContext();
             Context.AssertStructualChangeAvailable();
+            ChangeVersion.IncVersion(ref _globalVersion);
 
             _cachedArcheType.ConfigsLength = 0;
             _cachedArcheType.SharedDataIndexesLength = 0;
@@ -23,6 +24,7 @@ namespace EcsLte
             Context.AssertContext();
             Context.AssertStructualChangeAvailable();
             EntityArcheType.AssertEntityArcheType(archeType, Context);
+            ChangeVersion.IncVersion(ref _globalVersion);
 
             CheckAndAllocEntity(Context.ArcheTypes.GetArcheTypeData(archeType), true,
                 out var entity, out var _);
@@ -35,21 +37,21 @@ namespace EcsLte
             Context.AssertContext();
             Context.AssertStructualChangeAvailable();
             EntityBlueprint.AssertEntityBlueprint(blueprint);
+            ChangeVersion.IncVersion(ref _globalVersion);
 
             var archeTypeData = Context.ArcheTypes.GetArcheTypeData(blueprint.GetArcheType(Context));
-            var entityIndex = archeTypeData.EntityCount;
             CheckAndAllocEntity(archeTypeData, false,
-                out var entity, out var _);
+                out var entity, out var entityData);
 
             for (var i = 0; i < blueprint.GeneralComponentDatas.Length; i++)
             {
                 blueprint.GeneralComponentDatas[i]
-                    .SetComponentData(archeTypeData, entityIndex);
+                    .SetComponentData(archeTypeData, GlobalVersion, entityData);
             }
             for (var i = 0; i < blueprint.ManagedComponents.Length; i++)
             {
                 blueprint.ManagedComponentDatas[i]
-                    .SetComponentData(archeTypeData, entityIndex);
+                    .SetComponentData(archeTypeData, GlobalVersion, entityData);
             }
 
             return entity;
@@ -73,6 +75,8 @@ namespace EcsLte
 
             if (count > 0)
             {
+                ChangeVersion.IncVersion(ref _globalVersion);
+
                 _cachedArcheType.ConfigsLength = 0;
                 _cachedArcheType.SharedDataIndexesLength = 0;
 
@@ -101,6 +105,8 @@ namespace EcsLte
 
             if (count > 0)
             {
+                ChangeVersion.IncVersion(ref _globalVersion);
+
                 CheckAndAllocEntities(Context.ArcheTypes.GetArcheTypeData(archeType), true,
                     ref entities, startingIndex, count);
             }
@@ -125,6 +131,8 @@ namespace EcsLte
 
             if (count > 0)
             {
+                ChangeVersion.IncVersion(ref _globalVersion);
+
                 var archeTypeData = Context.ArcheTypes.GetArcheTypeData(blueprint.GetArcheType(Context));
                 var prevEntityIndex = archeTypeData.EntityCount;
                 CheckAndAllocEntities(archeTypeData, false,
@@ -133,12 +141,12 @@ namespace EcsLte
                 for (var i = 0; i < blueprint.GeneralComponentDatas.Length; i++)
                 {
                     blueprint.GeneralComponentDatas[i]
-                        .SetComponentDatas(archeTypeData, prevEntityIndex, count);
+                        .SetComponentDatas(archeTypeData, GlobalVersion, prevEntityIndex, count);
                 }
                 for (var i = 0; i < blueprint.ManagedComponents.Length; i++)
                 {
                     blueprint.ManagedComponentDatas[i]
-                        .SetComponentDatas(archeTypeData, prevEntityIndex, count);
+                        .SetComponentDatas(archeTypeData, GlobalVersion, prevEntityIndex, count);
                 }
             }
         }

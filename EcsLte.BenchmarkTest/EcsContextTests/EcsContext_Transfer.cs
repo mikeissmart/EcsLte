@@ -26,19 +26,18 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             _destContext = EcsContexts.Instance.CreateContext("Dest");
             _destEntities = new Entity[BenchmarkTestConsts.LargeCount];
             _tracker = _sourceContext.Tracking.CreateTracker("Tracker")
-                .SetTrackingState<TestComponent1>(TrackingState.Added)
-                .SetTrackingState<TestComponent2>(TrackingState.Added)
-                .SetTrackingState<TestComponent3>(TrackingState.Added)
-                .SetTrackingState<TestComponent4>(TrackingState.Added)
-                .SetTrackingState<TestSharedComponent1>(TrackingState.Added)
-                .SetTrackingState<TestSharedComponent2>(TrackingState.Added)
-                .SetTrackingState<TestSharedComponent3>(TrackingState.Added)
-                .SetTrackingState<TestSharedComponent4>(TrackingState.Added)
-                .SetTrackingState<TestManagedComponent1>(TrackingState.Added)
-                .SetTrackingState<TestManagedComponent2>(TrackingState.Added)
-                .SetTrackingState<TestManagedComponent3>(TrackingState.Added)
-                .SetTrackingState<TestManagedComponent4>(TrackingState.Added)
-                .StartTracking();
+                .SetTrackingComponent<TestComponent1>(true)
+                .SetTrackingComponent<TestComponent2>(true)
+                .SetTrackingComponent<TestComponent3>(true)
+                .SetTrackingComponent<TestComponent4>(true)
+                .SetTrackingComponent<TestSharedComponent1>(true)
+                .SetTrackingComponent<TestSharedComponent2>(true)
+                .SetTrackingComponent<TestSharedComponent3>(true)
+                .SetTrackingComponent<TestSharedComponent4>(true)
+                .SetTrackingComponent<TestManagedComponent1>(true)
+                .SetTrackingComponent<TestManagedComponent2>(true)
+                .SetTrackingComponent<TestManagedComponent3>(true)
+                .SetTrackingComponent<TestManagedComponent4>(true);
         }
 
         [GlobalCleanup]
@@ -72,7 +71,6 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
                 _sourceEntities);
             _destContext.Entities.DestroyEntities(
                 _destEntities);
-            _tracker.ClearEntities();
         }
 
         [Benchmark]
@@ -90,8 +88,9 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         public void TransferEntityArcheType_NoDestroy() =>
             _destEntities = _destContext.Entities.CopyEntitiesTo(_archeType);
 
-        [Benchmark]
+        // todo not transfering entities by query or tracker, changes are tracked by chunks
+        /*[Benchmark]
         public void TransferEntityQuery_NoDestroy() =>
-            _destEntities = _destContext.Entities.CopyEntitiesTo(_query);
+            _destEntities = _destContext.Entities.CopyEntitiesTo(_query);*/
     }
 }

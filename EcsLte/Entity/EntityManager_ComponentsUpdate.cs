@@ -15,28 +15,26 @@ namespace EcsLte
             Context.AssertContext();
             AssertNotExistEntity(entity,
                 out var entityData, out var archeTypeData);
-
+            Context.AssertStructualChangeAvailable();
             AssertNotHaveComponent(config1, archeTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
 
             if (InternalArcheTypeSharedUpdate(config1, component1))
             {
-                Context.AssertStructualChangeAvailable();
                 var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(entity, _entityDatas,
-                    archeTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackArcheTypeDataChange(entity,
-                    archeTypeData, nextArcheTypeData);
+                ArcheTypeData.TransferEntity(GlobalVersion,
+                    entity,
+                    archeTypeData,
+                    nextArcheTypeData,
+                    _entityDatas);
 
                 archeTypeData = nextArcheTypeData;
                 entityData = _entityDatas[entity.Id];
             }
 
-            config1.Adapter.SetComponent(entityData.EntityIndex, component1, archeTypeData);
-
-            Context.Tracking.TrackUpdate(entity, config1, archeTypeData);
+            config1.Adapter.SetComponent(entityData, component1, archeTypeData);
         }
 
         public void UpdateComponents<T1, T2>(Entity entity,
@@ -54,35 +52,32 @@ namespace EcsLte
             Context.AssertContext();
             AssertNotExistEntity(entity,
                 out var entityData, out var archeTypeData);
-
+            Context.AssertStructualChangeAvailable();
             AssertNotHaveComponent(config1, archeTypeData);
             AssertNotHaveComponent(config2, archeTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-            var changeArcheType = false;
 
+            var changeArcheType = false;
             changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
             changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
 
             if (changeArcheType)
             {
-                Context.AssertStructualChangeAvailable();
                 var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(entity, _entityDatas,
-                    archeTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackArcheTypeDataChange(entity,
-                    archeTypeData, nextArcheTypeData);
+                ArcheTypeData.TransferEntity(GlobalVersion,
+                    entity,
+                    archeTypeData,
+                    nextArcheTypeData,
+                    _entityDatas);
 
                 archeTypeData = nextArcheTypeData;
                 entityData = _entityDatas[entity.Id];
             }
 
-            config1.Adapter.SetComponent(entityData.EntityIndex, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityData.EntityIndex, component2, archeTypeData);
-
-            Context.Tracking.TrackUpdate(entity, config1, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config2, archeTypeData);
+            config1.Adapter.SetComponent(entityData, component1, archeTypeData);
+            config2.Adapter.SetComponent(entityData, component2, archeTypeData);
         }
 
         public void UpdateComponents<T1, T2, T3>(Entity entity,
@@ -103,39 +98,35 @@ namespace EcsLte
             Context.AssertContext();
             AssertNotExistEntity(entity,
                 out var entityData, out var archeTypeData);
-
+            Context.AssertStructualChangeAvailable();
             AssertNotHaveComponent(config1, archeTypeData);
             AssertNotHaveComponent(config2, archeTypeData);
             AssertNotHaveComponent(config3, archeTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-            var changeArcheType = false;
 
+            var changeArcheType = false;
             changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
             changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
             changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
 
             if (changeArcheType)
             {
-                Context.AssertStructualChangeAvailable();
                 var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(entity, _entityDatas,
-                    archeTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackArcheTypeDataChange(entity,
-                    archeTypeData, nextArcheTypeData);
+                ArcheTypeData.TransferEntity(GlobalVersion,
+                    entity,
+                    archeTypeData,
+                    nextArcheTypeData,
+                    _entityDatas);
 
                 archeTypeData = nextArcheTypeData;
                 entityData = _entityDatas[entity.Id];
             }
 
-            config1.Adapter.SetComponent(entityData.EntityIndex, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityData.EntityIndex, component2, archeTypeData);
-            config3.Adapter.SetComponent(entityData.EntityIndex, component3, archeTypeData);
-
-            Context.Tracking.TrackUpdate(entity, config1, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config2, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config3, archeTypeData);
+            config1.Adapter.SetComponent(entityData, component1, archeTypeData);
+            config2.Adapter.SetComponent(entityData, component2, archeTypeData);
+            config3.Adapter.SetComponent(entityData, component3, archeTypeData);
         }
 
         public void UpdateComponents<T1, T2, T3, T4>(Entity entity,
@@ -159,15 +150,16 @@ namespace EcsLte
             Context.AssertContext();
             AssertNotExistEntity(entity,
                 out var entityData, out var archeTypeData);
-
+            Context.AssertStructualChangeAvailable();
             AssertNotHaveComponent(config1, archeTypeData);
             AssertNotHaveComponent(config2, archeTypeData);
             AssertNotHaveComponent(config3, archeTypeData);
             AssertNotHaveComponent(config4, archeTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-            var changeArcheType = false;
 
+            var changeArcheType = false;
             changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
             changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
             changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
@@ -175,27 +167,21 @@ namespace EcsLte
 
             if (changeArcheType)
             {
-                Context.AssertStructualChangeAvailable();
                 var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(entity, _entityDatas,
-                    archeTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackArcheTypeDataChange(entity,
-                    archeTypeData, nextArcheTypeData);
+                ArcheTypeData.TransferEntity(GlobalVersion,
+                    entity,
+                    archeTypeData,
+                    nextArcheTypeData,
+                    _entityDatas);
 
                 archeTypeData = nextArcheTypeData;
                 entityData = _entityDatas[entity.Id];
             }
 
-            config1.Adapter.SetComponent(entityData.EntityIndex, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityData.EntityIndex, component2, archeTypeData);
-            config3.Adapter.SetComponent(entityData.EntityIndex, component3, archeTypeData);
-            config4.Adapter.SetComponent(entityData.EntityIndex, component4, archeTypeData);
-
-            Context.Tracking.TrackUpdate(entity, config1, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config2, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config3, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config4, archeTypeData);
+            config1.Adapter.SetComponent(entityData, component1, archeTypeData);
+            config2.Adapter.SetComponent(entityData, component2, archeTypeData);
+            config3.Adapter.SetComponent(entityData, component3, archeTypeData);
+            config4.Adapter.SetComponent(entityData, component4, archeTypeData);
         }
 
         public void UpdateComponents<T1, T2, T3, T4, T5>(Entity entity,
@@ -223,16 +209,17 @@ namespace EcsLte
             Context.AssertContext();
             AssertNotExistEntity(entity,
                 out var entityData, out var archeTypeData);
-
+            Context.AssertStructualChangeAvailable();
             AssertNotHaveComponent(config1, archeTypeData);
             AssertNotHaveComponent(config2, archeTypeData);
             AssertNotHaveComponent(config3, archeTypeData);
             AssertNotHaveComponent(config4, archeTypeData);
             AssertNotHaveComponent(config5, archeTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-            var changeArcheType = false;
 
+            var changeArcheType = false;
             changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
             changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
             changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
@@ -241,29 +228,22 @@ namespace EcsLte
 
             if (changeArcheType)
             {
-                Context.AssertStructualChangeAvailable();
                 var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(entity, _entityDatas,
-                    archeTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackArcheTypeDataChange(entity,
-                    archeTypeData, nextArcheTypeData);
+                ArcheTypeData.TransferEntity(GlobalVersion,
+                    entity,
+                    archeTypeData,
+                    nextArcheTypeData,
+                    _entityDatas);
 
                 archeTypeData = nextArcheTypeData;
                 entityData = _entityDatas[entity.Id];
             }
 
-            config1.Adapter.SetComponent(entityData.EntityIndex, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityData.EntityIndex, component2, archeTypeData);
-            config3.Adapter.SetComponent(entityData.EntityIndex, component3, archeTypeData);
-            config4.Adapter.SetComponent(entityData.EntityIndex, component4, archeTypeData);
-            config5.Adapter.SetComponent(entityData.EntityIndex, component5, archeTypeData);
-
-            Context.Tracking.TrackUpdate(entity, config1, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config2, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config3, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config4, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config5, archeTypeData);
+            config1.Adapter.SetComponent(entityData, component1, archeTypeData);
+            config2.Adapter.SetComponent(entityData, component2, archeTypeData);
+            config3.Adapter.SetComponent(entityData, component3, archeTypeData);
+            config4.Adapter.SetComponent(entityData, component4, archeTypeData);
+            config5.Adapter.SetComponent(entityData, component5, archeTypeData);
         }
 
         public void UpdateComponents<T1, T2, T3, T4, T5, T6>(Entity entity,
@@ -294,7 +274,7 @@ namespace EcsLte
             Context.AssertContext();
             AssertNotExistEntity(entity,
                 out var entityData, out var archeTypeData);
-
+            Context.AssertStructualChangeAvailable();
             AssertNotHaveComponent(config1, archeTypeData);
             AssertNotHaveComponent(config2, archeTypeData);
             AssertNotHaveComponent(config3, archeTypeData);
@@ -302,9 +282,10 @@ namespace EcsLte
             AssertNotHaveComponent(config5, archeTypeData);
             AssertNotHaveComponent(config6, archeTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-            var changeArcheType = false;
 
+            var changeArcheType = false;
             changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
             changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
             changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
@@ -314,31 +295,23 @@ namespace EcsLte
 
             if (changeArcheType)
             {
-                Context.AssertStructualChangeAvailable();
                 var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(entity, _entityDatas,
-                    archeTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackArcheTypeDataChange(entity,
-                    archeTypeData, nextArcheTypeData);
+                ArcheTypeData.TransferEntity(GlobalVersion,
+                    entity,
+                    archeTypeData,
+                    nextArcheTypeData,
+                    _entityDatas);
 
                 archeTypeData = nextArcheTypeData;
                 entityData = _entityDatas[entity.Id];
             }
 
-            config1.Adapter.SetComponent(entityData.EntityIndex, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityData.EntityIndex, component2, archeTypeData);
-            config3.Adapter.SetComponent(entityData.EntityIndex, component3, archeTypeData);
-            config4.Adapter.SetComponent(entityData.EntityIndex, component4, archeTypeData);
-            config5.Adapter.SetComponent(entityData.EntityIndex, component5, archeTypeData);
-            config6.Adapter.SetComponent(entityData.EntityIndex, component6, archeTypeData);
-
-            Context.Tracking.TrackUpdate(entity, config1, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config2, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config3, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config4, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config5, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config6, archeTypeData);
+            config1.Adapter.SetComponent(entityData, component1, archeTypeData);
+            config2.Adapter.SetComponent(entityData, component2, archeTypeData);
+            config3.Adapter.SetComponent(entityData, component3, archeTypeData);
+            config4.Adapter.SetComponent(entityData, component4, archeTypeData);
+            config5.Adapter.SetComponent(entityData, component5, archeTypeData);
+            config6.Adapter.SetComponent(entityData, component6, archeTypeData);
         }
 
         public void UpdateComponents<T1, T2, T3, T4, T5, T6, T7>(Entity entity,
@@ -372,7 +345,7 @@ namespace EcsLte
             Context.AssertContext();
             AssertNotExistEntity(entity,
                 out var entityData, out var archeTypeData);
-
+            Context.AssertStructualChangeAvailable();
             AssertNotHaveComponent(config1, archeTypeData);
             AssertNotHaveComponent(config2, archeTypeData);
             AssertNotHaveComponent(config3, archeTypeData);
@@ -381,9 +354,10 @@ namespace EcsLte
             AssertNotHaveComponent(config6, archeTypeData);
             AssertNotHaveComponent(config7, archeTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-            var changeArcheType = false;
 
+            var changeArcheType = false;
             changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
             changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
             changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
@@ -394,33 +368,24 @@ namespace EcsLte
 
             if (changeArcheType)
             {
-                Context.AssertStructualChangeAvailable();
                 var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(entity, _entityDatas,
-                    archeTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackArcheTypeDataChange(entity,
-                    archeTypeData, nextArcheTypeData);
+                ArcheTypeData.TransferEntity(GlobalVersion,
+                    entity,
+                    archeTypeData,
+                    nextArcheTypeData,
+                    _entityDatas);
 
                 archeTypeData = nextArcheTypeData;
                 entityData = _entityDatas[entity.Id];
             }
 
-            config1.Adapter.SetComponent(entityData.EntityIndex, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityData.EntityIndex, component2, archeTypeData);
-            config3.Adapter.SetComponent(entityData.EntityIndex, component3, archeTypeData);
-            config4.Adapter.SetComponent(entityData.EntityIndex, component4, archeTypeData);
-            config5.Adapter.SetComponent(entityData.EntityIndex, component5, archeTypeData);
-            config6.Adapter.SetComponent(entityData.EntityIndex, component6, archeTypeData);
-            config7.Adapter.SetComponent(entityData.EntityIndex, component7, archeTypeData);
-
-            Context.Tracking.TrackUpdate(entity, config1, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config2, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config3, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config4, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config5, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config6, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config7, archeTypeData);
+            config1.Adapter.SetComponent(entityData, component1, archeTypeData);
+            config2.Adapter.SetComponent(entityData, component2, archeTypeData);
+            config3.Adapter.SetComponent(entityData, component3, archeTypeData);
+            config4.Adapter.SetComponent(entityData, component4, archeTypeData);
+            config5.Adapter.SetComponent(entityData, component5, archeTypeData);
+            config6.Adapter.SetComponent(entityData, component6, archeTypeData);
+            config7.Adapter.SetComponent(entityData, component7, archeTypeData);
         }
 
         public void UpdateComponents<T1, T2, T3, T4, T5, T6, T7, T8>(Entity entity,
@@ -457,7 +422,7 @@ namespace EcsLte
             Context.AssertContext();
             AssertNotExistEntity(entity,
                 out var entityData, out var archeTypeData);
-
+            Context.AssertStructualChangeAvailable();
             AssertNotHaveComponent(config1, archeTypeData);
             AssertNotHaveComponent(config2, archeTypeData);
             AssertNotHaveComponent(config3, archeTypeData);
@@ -467,9 +432,10 @@ namespace EcsLte
             AssertNotHaveComponent(config7, archeTypeData);
             AssertNotHaveComponent(config8, archeTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-            var changeArcheType = false;
 
+            var changeArcheType = false;
             changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
             changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
             changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
@@ -481,35 +447,25 @@ namespace EcsLte
 
             if (changeArcheType)
             {
-                Context.AssertStructualChangeAvailable();
                 var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(entity, _entityDatas,
-                    archeTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackArcheTypeDataChange(entity,
-                    archeTypeData, nextArcheTypeData);
+                ArcheTypeData.TransferEntity(GlobalVersion,
+                    entity,
+                    archeTypeData,
+                    nextArcheTypeData,
+                    _entityDatas);
 
                 archeTypeData = nextArcheTypeData;
                 entityData = _entityDatas[entity.Id];
             }
 
-            config1.Adapter.SetComponent(entityData.EntityIndex, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityData.EntityIndex, component2, archeTypeData);
-            config3.Adapter.SetComponent(entityData.EntityIndex, component3, archeTypeData);
-            config4.Adapter.SetComponent(entityData.EntityIndex, component4, archeTypeData);
-            config5.Adapter.SetComponent(entityData.EntityIndex, component5, archeTypeData);
-            config6.Adapter.SetComponent(entityData.EntityIndex, component6, archeTypeData);
-            config7.Adapter.SetComponent(entityData.EntityIndex, component7, archeTypeData);
-            config8.Adapter.SetComponent(entityData.EntityIndex, component8, archeTypeData);
-
-            Context.Tracking.TrackUpdate(entity, config1, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config2, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config3, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config4, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config5, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config6, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config7, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config8, archeTypeData);
+            config1.Adapter.SetComponent(entityData, component1, archeTypeData);
+            config2.Adapter.SetComponent(entityData, component2, archeTypeData);
+            config3.Adapter.SetComponent(entityData, component3, archeTypeData);
+            config4.Adapter.SetComponent(entityData, component4, archeTypeData);
+            config5.Adapter.SetComponent(entityData, component5, archeTypeData);
+            config6.Adapter.SetComponent(entityData, component6, archeTypeData);
+            config7.Adapter.SetComponent(entityData, component7, archeTypeData);
+            config8.Adapter.SetComponent(entityData, component8, archeTypeData);
         }
 
         public void UpdateComponents<TComponent>(EntityArcheType archeType, TComponent component)
@@ -520,17 +476,17 @@ namespace EcsLte
 
             var config = ComponentConfig<TComponent>.Config;
             var archeTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
-
             AssertNotHaveComponent(config, archeTypeData);
 
-            archeTypeData.SetComponents(0, archeTypeData.EntityCount,
-                config, component);
-
-            Helper.ResizeRefArray(ref _cachedInternalEntities, 0, archeTypeData.EntityCount);
-            archeTypeData.GetEntities(ref _cachedInternalEntities, 0);
-
-            Context.Tracking.TrackUpdates(_cachedInternalEntities, 0, archeTypeData.EntityCount,
-                config, archeTypeData);
+            if (archeTypeData.EntityCount > 0)
+            {
+                ChangeVersion.IncVersion(ref _globalVersion);
+                archeTypeData.SetAllComponents(GlobalVersion,
+                    0,
+                    archeTypeData.EntityCount,
+                    config,
+                    component);
+            }
         }
 
         public void UpdateComponents<TComponent>(EntityFilter filter, TComponent component)
@@ -539,78 +495,26 @@ namespace EcsLte
             Context.AssertContext();
             EntityFilter.AssertEntityFilter(filter, Context);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             var config = ComponentConfig<TComponent>.Config;
             var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
+            var incVersion = false;
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var archeTypeData = filteredArcheTypeDatas[i];
-                if (archeTypeData.HasConfig(config))
+                if (archeTypeData.HasConfig(config) && archeTypeData.EntityCount > 0)
                 {
-                    archeTypeData.SetComponents(0, archeTypeData.EntityCount,
-                        config, component);
-
-                    Helper.ResizeRefArray(ref _cachedInternalEntities, 0, archeTypeData.EntityCount);
-                    archeTypeData.GetEntities(ref _cachedInternalEntities, 0);
-
-                    Context.Tracking.TrackUpdates(_cachedInternalEntities, 0, archeTypeData.EntityCount,
-                        config, archeTypeData);
-                }
-            }
-        }
-
-        public void UpdateComponents<TComponent>(EntityTracker tracker, TComponent component)
-            where TComponent : unmanaged, IGeneralComponent
-        {
-            Context.AssertContext();
-            EntityTracker.AssertEntityTracker(tracker, Context);
-
-            var config = ComponentConfig<TComponent>.Config;
-            var archeTypeDatas = tracker.CachedArcheTypeDatas;
-            for (var i = 0; i < archeTypeDatas.Length; i++)
-            {
-                var archeTypeData = archeTypeDatas[i];
-                var trackedEntityCount = InternalUpdateTrackingTracker(tracker,
-                    archeTypeData, config);
-
-                var configOffset = archeTypeData.GetConfigOffset(config);
-                for (var j = 0; j < trackedEntityCount; j++)
-                {
-                    archeTypeData.SetComponent(
-                        _entityDatas[_cachedInternalEntities[j].Id].EntityIndex,
-                        configOffset,
-                        component);
-                }
-            }
-        }
-
-        public void UpdateComponents<TComponent>(EntityQuery query, TComponent component)
-            where TComponent : unmanaged, IGeneralComponent
-        {
-            Context.AssertContext();
-            EntityQuery.AssertEntityQuery(query, Context);
-
-            if (query.Filter != null && query.Tracker == null)
-                UpdateComponents(query.Filter, component);
-            else if (query.Filter == null && query.Tracker != null)
-                UpdateComponents(query.Tracker, component);
-            else if (query.Filter != null && query.Tracker != null)
-            {
-                var config = ComponentConfig<TComponent>.Config;
-                var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(query.Filter);
-                for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
-                {
-                    var archeTypeData = filteredArcheTypeDatas[i];
-                    var trackedEntityCount = InternalUpdateTrackingTracker(query.Tracker,
-                        archeTypeData, config);
-
-                    var configOffset = archeTypeData.GetConfigOffset(config);
-                    for (var j = 0; j < trackedEntityCount; j++)
+                    if (!incVersion)
                     {
-                        archeTypeData.SetComponent(
-                            _entityDatas[_cachedInternalEntities[j].Id].EntityIndex,
-                            configOffset,
-                            component);
+                        ChangeVersion.IncVersion(ref _globalVersion);
+                        incVersion = true;
                     }
+
+                    archeTypeData.SetAllComponents(GlobalVersion,
+                        0,
+                        archeTypeData.EntityCount,
+                        config,
+                        component);
                 }
             }
         }
@@ -623,17 +527,17 @@ namespace EcsLte
 
             var config = ComponentConfig<TComponent>.Config;
             var archeTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
-
             AssertNotHaveComponent(config, archeTypeData);
 
-            archeTypeData.SetManagedComponents(0, archeTypeData.EntityCount,
-                config, component);
-
-            Helper.ResizeRefArray(ref _cachedInternalEntities, 0, archeTypeData.EntityCount);
-            archeTypeData.GetEntities(ref _cachedInternalEntities, 0);
-
-            Context.Tracking.TrackUpdates(_cachedInternalEntities, 0, archeTypeData.EntityCount,
-                config, archeTypeData);
+            if (archeTypeData.EntityCount > 0)
+            {
+                ChangeVersion.IncVersion(ref _globalVersion);
+                archeTypeData.SetAllManagedComponents(GlobalVersion,
+                    0,
+                    archeTypeData.EntityCount,
+                    config,
+                    component);
+            }
         }
 
         public void UpdateManagedComponents<TComponent>(EntityFilter filter, TComponent component)
@@ -644,76 +548,23 @@ namespace EcsLte
 
             var config = ComponentConfig<TComponent>.Config;
             var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
+            var incVersion = false;
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var archeTypeData = filteredArcheTypeDatas[i];
-                if (archeTypeData.HasConfig(config))
+                if (archeTypeData.HasConfig(config) && archeTypeData.EntityCount > 0)
                 {
-                    archeTypeData.SetManagedComponents(0, archeTypeData.EntityCount,
-                        config, component);
-
-                    Helper.ResizeRefArray(ref _cachedInternalEntities, 0, archeTypeData.EntityCount);
-                    archeTypeData.GetEntities(ref _cachedInternalEntities, 0);
-
-                    Context.Tracking.TrackUpdates(_cachedInternalEntities, 0, archeTypeData.EntityCount,
-                        config, archeTypeData);
-                }
-            }
-        }
-
-        public void UpdateManagedComponents<TComponent>(EntityTracker tracker, TComponent component)
-            where TComponent : IManagedComponent
-        {
-            Context.AssertContext();
-            EntityTracker.AssertEntityTracker(tracker, Context);
-
-            var config = ComponentConfig<TComponent>.Config;
-            var archeTypeDatas = tracker.CachedArcheTypeDatas;
-            for (var i = 0; i < archeTypeDatas.Length; i++)
-            {
-                var archeTypeData = archeTypeDatas[i];
-                var trackedEntityCount = InternalUpdateTrackingTracker(tracker,
-                    archeTypeData, config);
-
-                var configOffset = archeTypeData.GetConfigOffset(config);
-                for (var j = 0; j < trackedEntityCount; j++)
-                {
-                    archeTypeData.SetManagedComponent(
-                        _entityDatas[_cachedInternalEntities[j].Id].EntityIndex,
-                        configOffset,
-                        component);
-                }
-            }
-        }
-
-        public void UpdateManagedComponents<TComponent>(EntityQuery query, TComponent component)
-            where TComponent : IManagedComponent
-        {
-            Context.AssertContext();
-            EntityQuery.AssertEntityQuery(query, Context);
-
-            if (query.Filter != null && query.Tracker == null)
-                UpdateManagedComponents(query.Filter, component);
-            else if (query.Filter == null && query.Tracker != null)
-                UpdateManagedComponents(query.Tracker, component);
-            else if (query.Filter != null && query.Tracker != null)
-            {
-                var config = ComponentConfig<TComponent>.Config;
-                var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(query.Filter);
-                for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
-                {
-                    var archeTypeData = filteredArcheTypeDatas[i];
-                    var trackedEntityCount = InternalUpdateTrackingTracker(query.Tracker,
-                        archeTypeData, config);
-
-                    var configOffset = archeTypeData.GetConfigOffset(config);
-                    for (var j = 0; j < trackedEntityCount; j++)
+                    if (!incVersion)
                     {
-                        archeTypeData.SetManagedComponent(
-                            _entityDatas[_cachedInternalEntities[j].Id].EntityIndex,
-                            configOffset,
-                            component);
+                        ChangeVersion.IncVersion(ref _globalVersion);
+                        incVersion = true;
                     }
+
+                    archeTypeData.SetAllManagedComponents(GlobalVersion,
+                        0,
+                        archeTypeData.EntityCount,
+                        config,
+                        component);
                 }
             }
         }
@@ -724,440 +575,25 @@ namespace EcsLte
             Context.AssertContext();
             EntityFilter.AssertEntityFilter(filter, Context);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             var config = ComponentConfig<TComponent>.Config;
             var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
+            var incVersion = false;
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var archeTypeData = filteredArcheTypeDatas[i];
-                if (archeTypeData.HasConfig(config))
+                if (archeTypeData.HasConfig(config) && archeTypeData.EntityCount > 0)
                 {
-                    InternalUpdateSharedTrackingTransferArcheTypeData(archeTypeData, config,
+                    if (!incVersion)
+                    {
+                        ChangeVersion.IncVersion(ref _globalVersion);
+                        incVersion = true;
+                    }
+
+                    InternalUpdateSharedTransferArcheTypeData(archeTypeData,
                         Context.SharedComponentDics.GetDic<TComponent>().GetSharedDataIndex(component));
                 }
             }
-        }
-
-        public void UpdateSharedComponents<TComponent>(EntityTracker tracker, TComponent component)
-            where TComponent : unmanaged, ISharedComponent
-        {
-            Context.AssertContext();
-            EntityTracker.AssertEntityTracker(tracker, Context);
-
-            var sharedDataIndex = Context.SharedComponentDics.GetDic<TComponent>()
-                .GetSharedDataIndex(component);
-            var config = ComponentConfig<TComponent>.Config;
-            var archeTypeDatas = tracker.CachedArcheTypeDatas;
-            for (var i = 0; i < archeTypeDatas.Length; i++)
-            {
-                InternalUpdateSharedTrackingTransferTracker(tracker,
-                    archeTypeDatas[i], config, sharedDataIndex);
-            }
-        }
-
-        public void UpdateSharedComponents<TComponent>(EntityQuery query, TComponent component)
-            where TComponent : unmanaged, ISharedComponent
-        {
-            Context.AssertContext();
-            EntityQuery.AssertEntityQuery(query, Context);
-
-            if (query.Filter != null && query.Tracker == null)
-                UpdateSharedComponents(query.Filter, component);
-            else if (query.Filter == null && query.Tracker != null)
-                UpdateSharedComponents(query.Tracker, component);
-            else if (query.Filter != null && query.Tracker != null)
-            {
-                var sharedDataIndex = Context.SharedComponentDics.GetDic<TComponent>()
-                    .GetSharedDataIndex(component);
-                var config = ComponentConfig<TComponent>.Config;
-                var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(query.Filter);
-                for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
-                {
-                    InternalUpdateSharedTrackingTransferTracker(query.Tracker,
-                        filteredArcheTypeDatas[i], config, sharedDataIndex);
-                }
-            }
-        }
-
-        internal void UpdateQueryComponents<T1>(Entity entity, int entityIndex, ArcheTypeIndex archeTypeIndex,
-            T1 component1)
-            where T1 : IComponent
-        {
-            var config1 = ComponentConfig<T1>.Config;
-
-            var archeTypeData = Context.ArcheTypes.GetArcheTypeData(archeTypeIndex);
-            ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-
-            if (InternalArcheTypeSharedUpdate(config1, component1))
-            {
-                var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(entity, _entityDatas,
-                    archeTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackArcheTypeDataChange(entity,
-                    archeTypeData, nextArcheTypeData);
-
-                archeTypeData = nextArcheTypeData;
-                entityIndex = _entityDatas[entity.Id].EntityIndex;
-            }
-
-            config1.Adapter.SetComponent(entityIndex, component1, archeTypeData);
-
-            Context.Tracking.TrackUpdate(entity, config1, archeTypeData);
-        }
-
-        internal void UpdateQueryComponents<T1, T2>(Entity entity, int entityIndex, ArcheTypeIndex archeTypeIndex,
-            T1 component1, T2 component2)
-            where T1 : IComponent
-            where T2 : IComponent
-        {
-            var config1 = ComponentConfig<T1>.Config;
-            var config2 = ComponentConfig<T2>.Config;
-
-            var archeTypeData = Context.ArcheTypes.GetArcheTypeData(archeTypeIndex);
-            ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-            var changeArcheType = false;
-
-            changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
-
-            if (changeArcheType)
-            {
-                var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(entity, _entityDatas,
-                    archeTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackArcheTypeDataChange(entity,
-                    archeTypeData, nextArcheTypeData);
-
-                archeTypeData = nextArcheTypeData;
-                entityIndex = _entityDatas[entity.Id].EntityIndex;
-            }
-
-            config1.Adapter.SetComponent(entityIndex, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityIndex, component2, archeTypeData);
-
-            Context.Tracking.TrackUpdate(entity, config1, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config2, archeTypeData);
-        }
-
-        internal void UpdateQueryComponents<T1, T2, T3>(Entity entity, int entityIndex, ArcheTypeIndex archeTypeIndex,
-            T1 component1, T2 component2, T3 component3)
-            where T1 : IComponent
-            where T2 : IComponent
-            where T3 : IComponent
-        {
-            var config1 = ComponentConfig<T1>.Config;
-            var config2 = ComponentConfig<T2>.Config;
-            var config3 = ComponentConfig<T3>.Config;
-
-            var archeTypeData = Context.ArcheTypes.GetArcheTypeData(archeTypeIndex);
-            ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-            var changeArcheType = false;
-
-            changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
-
-            if (changeArcheType)
-            {
-                var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(entity, _entityDatas,
-                    archeTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackArcheTypeDataChange(entity,
-                    archeTypeData, nextArcheTypeData);
-
-                archeTypeData = nextArcheTypeData;
-                entityIndex = _entityDatas[entity.Id].EntityIndex;
-            }
-
-            config1.Adapter.SetComponent(entityIndex, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityIndex, component2, archeTypeData);
-            config3.Adapter.SetComponent(entityIndex, component3, archeTypeData);
-
-            Context.Tracking.TrackUpdate(entity, config1, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config2, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config3, archeTypeData);
-        }
-
-        internal void UpdateQueryComponents<T1, T2, T3, T4>(Entity entity, int entityIndex, ArcheTypeIndex archeTypeIndex,
-            T1 component1, T2 component2, T3 component3, T4 component4)
-            where T1 : IComponent
-            where T2 : IComponent
-            where T3 : IComponent
-            where T4 : IComponent
-        {
-            var config1 = ComponentConfig<T1>.Config;
-            var config2 = ComponentConfig<T2>.Config;
-            var config3 = ComponentConfig<T3>.Config;
-            var config4 = ComponentConfig<T4>.Config;
-
-            var archeTypeData = Context.ArcheTypes.GetArcheTypeData(archeTypeIndex);
-            ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-            var changeArcheType = false;
-
-            changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config4, component4);
-
-            if (changeArcheType)
-            {
-                var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(entity, _entityDatas,
-                    archeTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackArcheTypeDataChange(entity,
-                    archeTypeData, nextArcheTypeData);
-
-                archeTypeData = nextArcheTypeData;
-                entityIndex = _entityDatas[entity.Id].EntityIndex;
-            }
-
-            config1.Adapter.SetComponent(entityIndex, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityIndex, component2, archeTypeData);
-            config3.Adapter.SetComponent(entityIndex, component3, archeTypeData);
-            config4.Adapter.SetComponent(entityIndex, component4, archeTypeData);
-
-            Context.Tracking.TrackUpdate(entity, config1, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config2, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config3, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config4, archeTypeData);
-        }
-
-        internal void UpdateQueryComponents<T1, T2, T3, T4, T5>(Entity entity, int entityIndex, ArcheTypeIndex archeTypeIndex,
-            T1 component1, T2 component2, T3 component3, T4 component4,
-            T5 component5)
-            where T1 : IComponent
-            where T2 : IComponent
-            where T3 : IComponent
-            where T4 : IComponent
-            where T5 : IComponent
-        {
-            var config1 = ComponentConfig<T1>.Config;
-            var config2 = ComponentConfig<T2>.Config;
-            var config3 = ComponentConfig<T3>.Config;
-            var config4 = ComponentConfig<T4>.Config;
-            var config5 = ComponentConfig<T5>.Config;
-
-            var archeTypeData = Context.ArcheTypes.GetArcheTypeData(archeTypeIndex);
-            ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-            var changeArcheType = false;
-
-            changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config4, component4);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config5, component5);
-
-            if (changeArcheType)
-            {
-                var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(entity, _entityDatas,
-                    archeTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackArcheTypeDataChange(entity,
-                    archeTypeData, nextArcheTypeData);
-
-                archeTypeData = nextArcheTypeData;
-                entityIndex = _entityDatas[entity.Id].EntityIndex;
-            }
-
-            config1.Adapter.SetComponent(entityIndex, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityIndex, component2, archeTypeData);
-            config3.Adapter.SetComponent(entityIndex, component3, archeTypeData);
-            config4.Adapter.SetComponent(entityIndex, component4, archeTypeData);
-            config5.Adapter.SetComponent(entityIndex, component5, archeTypeData);
-
-            Context.Tracking.TrackUpdate(entity, config1, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config2, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config3, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config4, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config5, archeTypeData);
-        }
-
-        internal void UpdateQueryComponents<T1, T2, T3, T4, T5, T6>(Entity entity, int entityIndex, ArcheTypeIndex archeTypeIndex,
-            T1 component1, T2 component2, T3 component3, T4 component4,
-            T5 component5, T6 component6)
-            where T1 : IComponent
-            where T2 : IComponent
-            where T3 : IComponent
-            where T4 : IComponent
-            where T5 : IComponent
-            where T6 : IComponent
-        {
-            var config1 = ComponentConfig<T1>.Config;
-            var config2 = ComponentConfig<T2>.Config;
-            var config3 = ComponentConfig<T3>.Config;
-            var config4 = ComponentConfig<T4>.Config;
-            var config5 = ComponentConfig<T5>.Config;
-            var config6 = ComponentConfig<T6>.Config;
-
-            var archeTypeData = Context.ArcheTypes.GetArcheTypeData(archeTypeIndex);
-            ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-            var changeArcheType = false;
-
-            changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config4, component4);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config5, component5);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config6, component6);
-
-            if (changeArcheType)
-            {
-                var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(entity, _entityDatas,
-                    archeTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackArcheTypeDataChange(entity,
-                    archeTypeData, nextArcheTypeData);
-
-                archeTypeData = nextArcheTypeData;
-                entityIndex = _entityDatas[entity.Id].EntityIndex;
-            }
-
-            config1.Adapter.SetComponent(entityIndex, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityIndex, component2, archeTypeData);
-            config3.Adapter.SetComponent(entityIndex, component3, archeTypeData);
-            config4.Adapter.SetComponent(entityIndex, component4, archeTypeData);
-            config5.Adapter.SetComponent(entityIndex, component5, archeTypeData);
-            config6.Adapter.SetComponent(entityIndex, component6, archeTypeData);
-
-            Context.Tracking.TrackUpdate(entity, config1, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config2, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config3, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config4, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config5, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config6, archeTypeData);
-        }
-
-        internal void UpdateQueryComponents<T1, T2, T3, T4, T5, T6, T7>(Entity entity, int entityIndex, ArcheTypeIndex archeTypeIndex,
-            T1 component1, T2 component2, T3 component3, T4 component4,
-            T5 component5, T6 component6, T7 component7)
-            where T1 : IComponent
-            where T2 : IComponent
-            where T3 : IComponent
-            where T4 : IComponent
-            where T5 : IComponent
-            where T6 : IComponent
-            where T7 : IComponent
-        {
-            var config1 = ComponentConfig<T1>.Config;
-            var config2 = ComponentConfig<T2>.Config;
-            var config3 = ComponentConfig<T3>.Config;
-            var config4 = ComponentConfig<T4>.Config;
-            var config5 = ComponentConfig<T5>.Config;
-            var config6 = ComponentConfig<T6>.Config;
-            var config7 = ComponentConfig<T7>.Config;
-
-            var archeTypeData = Context.ArcheTypes.GetArcheTypeData(archeTypeIndex);
-            ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-            var changeArcheType = false;
-
-            changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config4, component4);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config5, component5);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config6, component6);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config7, component7);
-
-            if (changeArcheType)
-            {
-                var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(entity, _entityDatas,
-                    archeTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackArcheTypeDataChange(entity,
-                    archeTypeData, nextArcheTypeData);
-
-                archeTypeData = nextArcheTypeData;
-                entityIndex = _entityDatas[entity.Id].EntityIndex;
-            }
-
-            config1.Adapter.SetComponent(entityIndex, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityIndex, component2, archeTypeData);
-            config3.Adapter.SetComponent(entityIndex, component3, archeTypeData);
-            config4.Adapter.SetComponent(entityIndex, component4, archeTypeData);
-            config5.Adapter.SetComponent(entityIndex, component5, archeTypeData);
-            config6.Adapter.SetComponent(entityIndex, component6, archeTypeData);
-            config7.Adapter.SetComponent(entityIndex, component7, archeTypeData);
-
-            Context.Tracking.TrackUpdate(entity, config1, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config2, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config3, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config4, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config5, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config6, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config7, archeTypeData);
-        }
-
-        internal void UpdateQueryComponents<T1, T2, T3, T4, T5, T6, T7, T8>(Entity entity, int entityIndex, ArcheTypeIndex archeTypeIndex,
-            T1 component1, T2 component2, T3 component3, T4 component4,
-            T5 component5, T6 component6, T7 component7, T8 component8)
-            where T1 : IComponent
-            where T2 : IComponent
-            where T3 : IComponent
-            where T4 : IComponent
-            where T5 : IComponent
-            where T6 : IComponent
-            where T7 : IComponent
-            where T8 : IComponent
-        {
-            var config1 = ComponentConfig<T1>.Config;
-            var config2 = ComponentConfig<T2>.Config;
-            var config3 = ComponentConfig<T3>.Config;
-            var config4 = ComponentConfig<T4>.Config;
-            var config5 = ComponentConfig<T5>.Config;
-            var config6 = ComponentConfig<T6>.Config;
-            var config7 = ComponentConfig<T7>.Config;
-            var config8 = ComponentConfig<T8>.Config;
-
-            var archeTypeData = Context.ArcheTypes.GetArcheTypeData(archeTypeIndex);
-            ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-            var changeArcheType = false;
-
-            changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config4, component4);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config5, component5);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config6, component6);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config7, component7);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config8, component8);
-
-            if (changeArcheType)
-            {
-                Context.AssertStructualChangeAvailable();
-                var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(entity, _entityDatas,
-                    archeTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackArcheTypeDataChange(entity,
-                    archeTypeData, nextArcheTypeData);
-
-                archeTypeData = nextArcheTypeData;
-                entityIndex = _entityDatas[entity.Id].EntityIndex;
-            }
-
-            config1.Adapter.SetComponent(entityIndex, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityIndex, component2, archeTypeData);
-            config3.Adapter.SetComponent(entityIndex, component3, archeTypeData);
-            config4.Adapter.SetComponent(entityIndex, component4, archeTypeData);
-            config5.Adapter.SetComponent(entityIndex, component5, archeTypeData);
-            config6.Adapter.SetComponent(entityIndex, component6, archeTypeData);
-            config7.Adapter.SetComponent(entityIndex, component7, archeTypeData);
-            config8.Adapter.SetComponent(entityIndex, component8, archeTypeData);
-
-            Context.Tracking.TrackUpdate(entity, config1, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config2, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config3, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config4, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config5, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config6, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config7, archeTypeData);
-            Context.Tracking.TrackUpdate(entity, config8, archeTypeData);
         }
 
         internal void EntityQuery_TransferNextArtcheType(in Entity[] entities, int count,
@@ -1180,12 +616,12 @@ namespace EcsLte
 
                 for (var i = 0; i < count; i++)
                 {
-                    ArcheTypeData.TransferEntity(entities[i], _entityDatas,
-                        prevArcheTypeData, nextArcheTypeData);
+                    ArcheTypeData.TransferEntity(GlobalVersion,
+                        entities[i],
+                        prevArcheTypeData,
+                        nextArcheTypeData,
+                        _entityDatas);
                 }
-
-                Context.Tracking.TrackArcheTypeDataChanges(entities, 0, entities.Length,
-                    prevArcheTypeData, nextArcheTypeData);
             }
         }
     }

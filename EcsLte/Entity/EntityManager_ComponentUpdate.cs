@@ -10,11 +10,10 @@
                 out var entityData, out var archeTypeData);
 
             var config = ComponentConfig<TComponent>.Config;
-
             AssertNotHaveComponent(config, archeTypeData);
-            archeTypeData.SetComponent(entityData.EntityIndex, config, component);
 
-            Context.Tracking.TrackUpdate(entity, config, archeTypeData);
+            ChangeVersion.IncVersion(ref _globalVersion);
+            archeTypeData.SetComponent(GlobalVersion, entityData, config, component);
         }
 
         public void UpdateManagedComponent<TComponent>(Entity entity, TComponent component)
@@ -25,11 +24,10 @@
                 out var entityData, out var archeTypeData);
 
             var config = ComponentConfig<TComponent>.Config;
-
             AssertNotHaveComponent(config, archeTypeData);
-            archeTypeData.SetManagedComponent(entityData.EntityIndex, config, component);
 
-            Context.Tracking.TrackUpdate(entity, config, archeTypeData);
+            ChangeVersion.IncVersion(ref _globalVersion);
+            archeTypeData.SetManagedComponent(GlobalVersion, entityData, config, component);
         }
 
         public void UpdateSharedComponent<TComponent>(Entity entity, TComponent component)
@@ -41,21 +39,20 @@
                 out var _, out var prevArcheTypeData);
 
             var config = ComponentConfig<TComponent>.Config;
-
             AssertNotHaveComponent(config, prevArcheTypeData);
+
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
             if (ArcheType.ReplaceSharedDataIndex(ref _cachedArcheType,
                 Context.SharedComponentDics.GetDic<TComponent>().GetSharedDataIndex(component)))
             {
                 var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(entity, _entityDatas,
-                    prevArcheTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackArcheTypeDataChange(entity,
-                    prevArcheTypeData, nextArcheTypeData);
+                ArcheTypeData.TransferEntity(GlobalVersion,
+                    entity,
+                    prevArcheTypeData,
+                    nextArcheTypeData,
+                    _entityDatas);
             }
-
-            Context.Tracking.TrackUpdate(entity, config, prevArcheTypeData);
         }
 
         public void UpdateSharedComponent<TComponent>(EntityArcheType archeType, TComponent component)
@@ -67,11 +64,14 @@
 
             var config = ComponentConfig<TComponent>.Config;
             var prevArcheTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
-
             AssertNotHaveComponent(config, prevArcheTypeData);
 
-            InternalUpdateSharedTrackingTransferArcheTypeData(prevArcheTypeData, config,
-                Context.SharedComponentDics.GetDic<TComponent>().GetSharedDataIndex(component));
+            if (prevArcheTypeData.EntityCount > 0)
+            {
+                ChangeVersion.IncVersion(ref _globalVersion);
+                InternalUpdateSharedTransferArcheTypeData(prevArcheTypeData,
+                    Context.SharedComponentDics.GetDic<TComponent>().GetSharedDataIndex(component));
+            }
         }
     }
 }

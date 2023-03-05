@@ -74,8 +74,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
         public void EntityCount_Tracker()
         {
             var tracker = Context.Tracking.CreateTracker("Tracker1")
-                .SetTrackingState<TestComponent1>(TrackingState.Added)
-                .StartTracking();
+                .SetTrackingComponent<TestComponent1>(true);
 
             var entities = Context.Entities.CreateEntities(
                 Context.ArcheTypes
@@ -109,8 +108,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             var query = Context.Queries
                 .SetFilter(filter)
                 .SetTracker(Context.Tracking.CreateTracker("Tracker1")
-                    .SetTrackingState<TestComponent1>(TrackingState.Added)
-                    .StartTracking());
+                    .SetTrackingComponent<TestComponent1>(true));
 
             var entities = Context.Entities.CreateEntities(
                 Context.ArcheTypes

@@ -47,6 +47,10 @@ namespace EcsLte
                 }
                 _values[index] = component;
             }
+            // TODO need to create test
+            // To check if updating shared component is set
+            //  event when index is added
+            //_values[index] = component;
 
             return new SharedDataIndex
             {

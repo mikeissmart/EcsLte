@@ -10,8 +10,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
         public void RemoveComponent()
         {
             var removeTracker = Context.Tracking.CreateTracker("RemoveTracker")
-                .SetTrackingState<TestComponent1>(TrackingState.Removed)
-                .StartTracking();
+                .SetTrackingComponent<TestComponent1>(true)
+                .SetTrackingEntities(true);
 
             var entity = Context.Entities.CreateEntity(
                 new EntityBlueprint()
@@ -19,9 +19,10 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             Context.Entities.RemoveComponent<TestComponent1>(entity);
             Assert.IsFalse(Context.Entities.HasComponent<TestComponent1>(entity));
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
-            Assert.IsTrue(Context.Entities.GetEntities(removeTracker).Length == 1);
-            Assert.IsTrue(Context.Entities.GetEntities(removeTracker)[0] == entity);
+            // Remove and destroy not trackable
+            Assert.IsTrue(Context.Entities.GetEntities(removeTracker).Length == 0);
 
             Assert.ThrowsException<ComponentNotHaveException>(() =>
                 Context.Entities.RemoveComponent<TestComponent2>(entity));
@@ -33,12 +34,12 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.RemoveComponent<TestComponent1>(entity));
         }
+
         [TestMethod]
         public void RemoveComponent_Config()
         {
             var removeTracker = Context.Tracking.CreateTracker("RemoveTracker")
-                .SetTrackingState<TestComponent1>(TrackingState.Removed)
-                .StartTracking();
+                .SetTrackingComponent<TestComponent1>(true);
 
             var entity = Context.Entities.CreateEntity(
                 new EntityBlueprint()
@@ -47,6 +48,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             Context.Entities.RemoveComponent(entity, ComponentConfig<TestComponent1>.Config);
             Assert.IsFalse(Context.Entities.HasComponent<TestComponent1>(entity));
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
         }
 
         [TestMethod]
@@ -57,10 +59,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 Context.Tracking.CreateTracker("RemoveTracker1"),
                 Context.Tracking.CreateTracker("RemoveTracker2")
             };
-            foreach (var tracker in trackers)
-                tracker.StartTracking();
-            trackers[0].SetTrackingState<TestComponent1>(TrackingState.Removed);
-            trackers[1].SetTrackingState<TestComponent2>(TrackingState.Removed);
+            trackers[0].SetTrackingComponent<TestComponent1>(true);
+            trackers[1].SetTrackingComponent<TestComponent2>(true);
 
             var entity = CreateTestEntity();
 
@@ -70,13 +70,14 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             Assert.IsFalse(Context.Entities.HasComponent<TestComponent1>(entity));
             Assert.IsFalse(Context.Entities.HasComponent<TestComponent2>(entity));
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             for (var i = 0; i < trackers.Length; i++)
             {
                 var tracker = trackers[i];
+                // Remove and destroy not trackable
                 var trackedEntities = Context.Entities.GetEntities(tracker);
-                Assert.IsTrue(trackedEntities.Length == 1, i.ToString());
-                Assert.IsTrue(trackedEntities[0] == entity, i.ToString());
+                Assert.IsTrue(trackedEntities.Length == 0, i.ToString());
             }
 
             Assert.ThrowsException<ComponentDuplicateException>(() =>
@@ -114,11 +115,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 Context.Tracking.CreateTracker("RemoveTracker2"),
                 Context.Tracking.CreateTracker("RemoveTracker3")
             };
-            foreach (var tracker in trackers)
-                tracker.StartTracking();
-            trackers[0].SetTrackingState<TestComponent1>(TrackingState.Removed);
-            trackers[1].SetTrackingState<TestComponent2>(TrackingState.Removed);
-            trackers[2].SetTrackingState<TestComponent3>(TrackingState.Removed);
+            trackers[0].SetTrackingComponent<TestComponent1>(true);
+            trackers[1].SetTrackingComponent<TestComponent2>(true);
+            trackers[2].SetTrackingComponent<TestComponent3>(true);
 
             var entity = CreateTestEntity();
 
@@ -130,13 +129,14 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.IsFalse(Context.Entities.HasComponent<TestComponent1>(entity));
             Assert.IsFalse(Context.Entities.HasComponent<TestComponent2>(entity));
             Assert.IsFalse(Context.Entities.HasComponent<TestComponent3>(entity));
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             for (var i = 0; i < trackers.Length; i++)
             {
                 var tracker = trackers[i];
+                // Remove and destroy not trackable
                 var trackedEntities = Context.Entities.GetEntities(tracker);
-                Assert.IsTrue(trackedEntities.Length == 1, i.ToString());
-                Assert.IsTrue(trackedEntities[0] == entity, i.ToString());
+                Assert.IsTrue(trackedEntities.Length == 0, i.ToString());
             }
 
             Assert.ThrowsException<ComponentDuplicateException>(() =>
@@ -185,12 +185,10 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 Context.Tracking.CreateTracker("RemoveTracker3"),
                 Context.Tracking.CreateTracker("RemoveTracker4")
             };
-            foreach (var tracker in trackers)
-                tracker.StartTracking();
-            trackers[0].SetTrackingState<TestComponent1>(TrackingState.Removed);
-            trackers[1].SetTrackingState<TestComponent2>(TrackingState.Removed);
-            trackers[2].SetTrackingState<TestComponent3>(TrackingState.Removed);
-            trackers[3].SetTrackingState<TestSharedComponent1>(TrackingState.Removed);
+            trackers[0].SetTrackingComponent<TestComponent1>(true);
+            trackers[1].SetTrackingComponent<TestComponent2>(true);
+            trackers[2].SetTrackingComponent<TestComponent3>(true);
+            trackers[3].SetTrackingComponent<TestSharedComponent1>(true);
 
             var entity = CreateTestEntity();
 
@@ -204,13 +202,14 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.IsFalse(Context.Entities.HasComponent<TestComponent2>(entity));
             Assert.IsFalse(Context.Entities.HasComponent<TestComponent3>(entity));
             Assert.IsFalse(Context.Entities.HasSharedComponent<TestSharedComponent1>(entity));
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             for (var i = 0; i < trackers.Length; i++)
             {
                 var tracker = trackers[i];
+                // Remove and destroy not trackable
                 var trackedEntities = Context.Entities.GetEntities(tracker);
-                Assert.IsTrue(trackedEntities.Length == 1, i.ToString());
-                Assert.IsTrue(trackedEntities[0] == entity, i.ToString());
+                Assert.IsTrue(trackedEntities.Length == 0, i.ToString());
             }
 
             Assert.ThrowsException<ComponentDuplicateException>(() =>
@@ -272,13 +271,11 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 Context.Tracking.CreateTracker("RemoveTracker4"),
                 Context.Tracking.CreateTracker("RemoveTracker5")
             };
-            foreach (var tracker in trackers)
-                tracker.StartTracking();
-            trackers[0].SetTrackingState<TestComponent1>(TrackingState.Removed);
-            trackers[1].SetTrackingState<TestComponent2>(TrackingState.Removed);
-            trackers[2].SetTrackingState<TestComponent3>(TrackingState.Removed);
-            trackers[3].SetTrackingState<TestSharedComponent1>(TrackingState.Removed);
-            trackers[4].SetTrackingState<TestSharedComponent2>(TrackingState.Removed);
+            trackers[0].SetTrackingComponent<TestComponent1>(true);
+            trackers[1].SetTrackingComponent<TestComponent2>(true);
+            trackers[2].SetTrackingComponent<TestComponent3>(true);
+            trackers[3].SetTrackingComponent<TestSharedComponent1>(true);
+            trackers[4].SetTrackingComponent<TestSharedComponent2>(true);
 
             var entity = CreateTestEntity();
 
@@ -294,13 +291,14 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.IsFalse(Context.Entities.HasComponent<TestComponent3>(entity));
             Assert.IsFalse(Context.Entities.HasSharedComponent<TestSharedComponent1>(entity));
             Assert.IsFalse(Context.Entities.HasSharedComponent<TestSharedComponent2>(entity));
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             for (var i = 0; i < trackers.Length; i++)
             {
                 var tracker = trackers[i];
+                // Remove and destroy not trackable
                 var trackedEntities = Context.Entities.GetEntities(tracker);
-                Assert.IsTrue(trackedEntities.Length == 1, i.ToString());
-                Assert.IsTrue(trackedEntities[0] == entity, i.ToString());
+                Assert.IsTrue(trackedEntities.Length == 0, i.ToString());
             }
 
             Assert.ThrowsException<ComponentDuplicateException>(() =>
@@ -377,14 +375,12 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 Context.Tracking.CreateTracker("RemoveTracker5"),
                 Context.Tracking.CreateTracker("RemoveTracker6")
             };
-            foreach (var tracker in trackers)
-                tracker.StartTracking();
-            trackers[0].SetTrackingState<TestComponent1>(TrackingState.Removed);
-            trackers[1].SetTrackingState<TestComponent2>(TrackingState.Removed);
-            trackers[2].SetTrackingState<TestComponent3>(TrackingState.Removed);
-            trackers[3].SetTrackingState<TestSharedComponent1>(TrackingState.Removed);
-            trackers[4].SetTrackingState<TestSharedComponent2>(TrackingState.Removed);
-            trackers[5].SetTrackingState<TestSharedComponent3>(TrackingState.Removed);
+            trackers[0].SetTrackingComponent<TestComponent1>(true);
+            trackers[1].SetTrackingComponent<TestComponent2>(true);
+            trackers[2].SetTrackingComponent<TestComponent3>(true);
+            trackers[3].SetTrackingComponent<TestSharedComponent1>(true);
+            trackers[4].SetTrackingComponent<TestSharedComponent2>(true);
+            trackers[5].SetTrackingComponent<TestSharedComponent3>(true);
 
             var entity = CreateTestEntity();
 
@@ -402,13 +398,14 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.IsFalse(Context.Entities.HasSharedComponent<TestSharedComponent1>(entity));
             Assert.IsFalse(Context.Entities.HasSharedComponent<TestSharedComponent2>(entity));
             Assert.IsFalse(Context.Entities.HasSharedComponent<TestSharedComponent3>(entity));
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             for (var i = 0; i < trackers.Length; i++)
             {
                 var tracker = trackers[i];
+                // Remove and destroy not trackable
                 var trackedEntities = Context.Entities.GetEntities(tracker);
-                Assert.IsTrue(trackedEntities.Length == 1, i.ToString());
-                Assert.IsTrue(trackedEntities[0] == entity, i.ToString());
+                Assert.IsTrue(trackedEntities.Length == 0, i.ToString());
             }
 
             Assert.ThrowsException<ComponentDuplicateException>(() =>
@@ -502,15 +499,13 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 Context.Tracking.CreateTracker("RemoveTracker6"),
                 Context.Tracking.CreateTracker("RemoveTracker7")
             };
-            foreach (var tracker in trackers)
-                tracker.StartTracking();
-            trackers[0].SetTrackingState<TestComponent1>(TrackingState.Removed);
-            trackers[1].SetTrackingState<TestComponent2>(TrackingState.Removed);
-            trackers[2].SetTrackingState<TestComponent3>(TrackingState.Removed);
-            trackers[3].SetTrackingState<TestSharedComponent1>(TrackingState.Removed);
-            trackers[4].SetTrackingState<TestSharedComponent2>(TrackingState.Removed);
-            trackers[5].SetTrackingState<TestSharedComponent3>(TrackingState.Removed);
-            trackers[6].SetTrackingState<TestManagedComponent1>(TrackingState.Removed);
+            trackers[0].SetTrackingComponent<TestComponent1>(true);
+            trackers[1].SetTrackingComponent<TestComponent2>(true);
+            trackers[2].SetTrackingComponent<TestComponent3>(true);
+            trackers[3].SetTrackingComponent<TestSharedComponent1>(true);
+            trackers[4].SetTrackingComponent<TestSharedComponent2>(true);
+            trackers[5].SetTrackingComponent<TestSharedComponent3>(true);
+            trackers[6].SetTrackingComponent<TestManagedComponent1>(true);
 
             var entity = CreateTestEntity();
 
@@ -530,13 +525,14 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.IsFalse(Context.Entities.HasSharedComponent<TestSharedComponent2>(entity));
             Assert.IsFalse(Context.Entities.HasSharedComponent<TestSharedComponent3>(entity));
             Assert.IsFalse(Context.Entities.HasManagedComponent<TestManagedComponent1>(entity));
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             for (var i = 0; i < trackers.Length; i++)
             {
                 var tracker = trackers[i];
+                // Remove and destroy not trackable
                 var trackedEntities = Context.Entities.GetEntities(tracker);
-                Assert.IsTrue(trackedEntities.Length == 1, i.ToString());
-                Assert.IsTrue(trackedEntities[0] == entity, i.ToString());
+                Assert.IsTrue(trackedEntities.Length == 0, i.ToString());
             }
 
             Assert.ThrowsException<ComponentDuplicateException>(() =>
@@ -649,16 +645,14 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 Context.Tracking.CreateTracker("RemoveTracker7"),
                 Context.Tracking.CreateTracker("RemoveTracker8")
             };
-            foreach (var tracker in trackers)
-                tracker.StartTracking();
-            trackers[0].SetTrackingState<TestComponent1>(TrackingState.Removed);
-            trackers[1].SetTrackingState<TestComponent2>(TrackingState.Removed);
-            trackers[2].SetTrackingState<TestComponent3>(TrackingState.Removed);
-            trackers[3].SetTrackingState<TestSharedComponent1>(TrackingState.Removed);
-            trackers[4].SetTrackingState<TestSharedComponent2>(TrackingState.Removed);
-            trackers[5].SetTrackingState<TestSharedComponent3>(TrackingState.Removed);
-            trackers[6].SetTrackingState<TestManagedComponent1>(TrackingState.Removed);
-            trackers[7].SetTrackingState<TestManagedComponent2>(TrackingState.Removed);
+            trackers[0].SetTrackingComponent<TestComponent1>(true);
+            trackers[1].SetTrackingComponent<TestComponent2>(true);
+            trackers[2].SetTrackingComponent<TestComponent3>(true);
+            trackers[3].SetTrackingComponent<TestSharedComponent1>(true);
+            trackers[4].SetTrackingComponent<TestSharedComponent2>(true);
+            trackers[5].SetTrackingComponent<TestSharedComponent3>(true);
+            trackers[6].SetTrackingComponent<TestManagedComponent1>(true);
+            trackers[7].SetTrackingComponent<TestManagedComponent2>(true);
 
             var entity = CreateTestEntity();
 
@@ -680,13 +674,14 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.IsFalse(Context.Entities.HasSharedComponent<TestSharedComponent3>(entity));
             Assert.IsFalse(Context.Entities.HasManagedComponent<TestManagedComponent1>(entity));
             Assert.IsFalse(Context.Entities.HasManagedComponent<TestManagedComponent2>(entity));
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             for (var i = 0; i < trackers.Length; i++)
             {
                 var tracker = trackers[i];
+                // Remove and destroy not trackable
                 var trackedEntities = Context.Entities.GetEntities(tracker);
-                Assert.IsTrue(trackedEntities.Length == 1, i.ToString());
-                Assert.IsTrue(trackedEntities[0] == entity, i.ToString());
+                Assert.IsTrue(trackedEntities.Length == 0, i.ToString());
             }
 
             Assert.ThrowsException<ComponentDuplicateException>(() =>

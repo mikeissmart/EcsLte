@@ -4,6 +4,35 @@ namespace EcsLte
 {
     public unsafe partial class EntityManager
     {
+        // TODO test if this or addGeneral/Managed/Shared is faster
+        public void AddComponents<T1>(Entity entity,
+            T1 component1)
+            where T1 : IComponent
+        {
+            var config1 = ComponentConfig<T1>.Config;
+
+            Context.AssertContext();
+            Context.AssertStructualChangeAvailable();
+            AssertNotExistEntity(entity,
+                out var _, out var prevArcheTypeData);
+
+            AssertAlreadyHasComponent(config1, prevArcheTypeData);
+
+            ChangeVersion.IncVersion(ref _globalVersion);
+            ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
+
+            config1.Adapter.AddConfig(ref _cachedArcheType, component1, Context.SharedComponentDics);
+
+            var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
+            ArcheTypeData.TransferEntity(GlobalVersion,
+                entity,
+                prevArcheTypeData, nextArcheTypeData,
+                _entityDatas);
+            var entityData = _entityDatas[entity.Id];
+
+            config1.Adapter.SetComponent(entityData, component1, nextArcheTypeData);
+        }
+
         public void AddComponents<T1, T2>(Entity entity,
             T1 component1, T2 component2)
             where T1 : IComponent
@@ -24,22 +53,21 @@ namespace EcsLte
             AssertAlreadyHasComponent(config1, prevArcheTypeData);
             AssertAlreadyHasComponent(config2, prevArcheTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
 
             config1.Adapter.AddConfig(ref _cachedArcheType, component1, Context.SharedComponentDics);
             config2.Adapter.AddConfig(ref _cachedArcheType, component2, Context.SharedComponentDics);
 
             var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-            ArcheTypeData.TransferEntity(entity, _entityDatas,
-                prevArcheTypeData, nextArcheTypeData);
+            ArcheTypeData.TransferEntity(GlobalVersion,
+                entity,
+                prevArcheTypeData, nextArcheTypeData,
+                _entityDatas);
             var entityData = _entityDatas[entity.Id];
 
-            config1.Adapter.SetComponent(entityData.EntityIndex, component1, nextArcheTypeData);
-            config2.Adapter.SetComponent(entityData.EntityIndex, component2, nextArcheTypeData);
-
-            Context.Tracking.TrackArcheTypeDataChange(entity, prevArcheTypeData, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config1, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config2, nextArcheTypeData);
+            config1.Adapter.SetComponent(entityData, component1, nextArcheTypeData);
+            config2.Adapter.SetComponent(entityData, component2, nextArcheTypeData);
         }
 
         public void AddComponents<T1, T2, T3>(Entity entity,
@@ -66,6 +94,7 @@ namespace EcsLte
             AssertAlreadyHasComponent(config2, prevArcheTypeData);
             AssertAlreadyHasComponent(config3, prevArcheTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
 
             config1.Adapter.AddConfig(ref _cachedArcheType, component1, Context.SharedComponentDics);
@@ -73,18 +102,15 @@ namespace EcsLte
             config3.Adapter.AddConfig(ref _cachedArcheType, component3, Context.SharedComponentDics);
 
             var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-            ArcheTypeData.TransferEntity(entity, _entityDatas,
-                prevArcheTypeData, nextArcheTypeData);
+            ArcheTypeData.TransferEntity(GlobalVersion,
+                entity,
+                prevArcheTypeData, nextArcheTypeData,
+                _entityDatas);
             var entityData = _entityDatas[entity.Id];
 
-            config1.Adapter.SetComponent(entityData.EntityIndex, component1, nextArcheTypeData);
-            config2.Adapter.SetComponent(entityData.EntityIndex, component2, nextArcheTypeData);
-            config3.Adapter.SetComponent(entityData.EntityIndex, component3, nextArcheTypeData);
-
-            Context.Tracking.TrackArcheTypeDataChange(entity, prevArcheTypeData, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config1, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config2, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config3, nextArcheTypeData);
+            config1.Adapter.SetComponent(entityData, component1, nextArcheTypeData);
+            config2.Adapter.SetComponent(entityData, component2, nextArcheTypeData);
+            config3.Adapter.SetComponent(entityData, component3, nextArcheTypeData);
         }
 
         public void AddComponents<T1, T2, T3, T4>(Entity entity,
@@ -115,6 +141,7 @@ namespace EcsLte
             AssertAlreadyHasComponent(config3, prevArcheTypeData);
             AssertAlreadyHasComponent(config4, prevArcheTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
 
             config1.Adapter.AddConfig(ref _cachedArcheType, component1, Context.SharedComponentDics);
@@ -123,20 +150,16 @@ namespace EcsLte
             config4.Adapter.AddConfig(ref _cachedArcheType, component4, Context.SharedComponentDics);
 
             var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-            ArcheTypeData.TransferEntity(entity, _entityDatas,
-                prevArcheTypeData, nextArcheTypeData);
+            ArcheTypeData.TransferEntity(GlobalVersion,
+                entity,
+                prevArcheTypeData, nextArcheTypeData,
+                _entityDatas);
             var entityData = _entityDatas[entity.Id];
 
-            config1.Adapter.SetComponent(entityData.EntityIndex, component1, nextArcheTypeData);
-            config2.Adapter.SetComponent(entityData.EntityIndex, component2, nextArcheTypeData);
-            config3.Adapter.SetComponent(entityData.EntityIndex, component3, nextArcheTypeData);
-            config4.Adapter.SetComponent(entityData.EntityIndex, component4, nextArcheTypeData);
-
-            Context.Tracking.TrackArcheTypeDataChange(entity, prevArcheTypeData, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config1, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config2, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config3, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config4, nextArcheTypeData);
+            config1.Adapter.SetComponent(entityData, component1, nextArcheTypeData);
+            config2.Adapter.SetComponent(entityData, component2, nextArcheTypeData);
+            config3.Adapter.SetComponent(entityData, component3, nextArcheTypeData);
+            config4.Adapter.SetComponent(entityData, component4, nextArcheTypeData);
         }
 
         public void AddComponents<T1, T2, T3, T4, T5>(Entity entity,
@@ -172,6 +195,7 @@ namespace EcsLte
             AssertAlreadyHasComponent(config4, prevArcheTypeData);
             AssertAlreadyHasComponent(config5, prevArcheTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
 
             config1.Adapter.AddConfig(ref _cachedArcheType, component1, Context.SharedComponentDics);
@@ -181,22 +205,17 @@ namespace EcsLte
             config5.Adapter.AddConfig(ref _cachedArcheType, component5, Context.SharedComponentDics);
 
             var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-            ArcheTypeData.TransferEntity(entity, _entityDatas,
-                prevArcheTypeData, nextArcheTypeData);
+            ArcheTypeData.TransferEntity(GlobalVersion,
+                entity,
+                prevArcheTypeData, nextArcheTypeData,
+                _entityDatas);
             var entityData = _entityDatas[entity.Id];
 
-            config1.Adapter.SetComponent(entityData.EntityIndex, component1, nextArcheTypeData);
-            config2.Adapter.SetComponent(entityData.EntityIndex, component2, nextArcheTypeData);
-            config3.Adapter.SetComponent(entityData.EntityIndex, component3, nextArcheTypeData);
-            config4.Adapter.SetComponent(entityData.EntityIndex, component4, nextArcheTypeData);
-            config5.Adapter.SetComponent(entityData.EntityIndex, component5, nextArcheTypeData);
-
-            Context.Tracking.TrackArcheTypeDataChange(entity, prevArcheTypeData, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config1, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config2, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config3, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config4, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config5, nextArcheTypeData);
+            config1.Adapter.SetComponent(entityData, component1, nextArcheTypeData);
+            config2.Adapter.SetComponent(entityData, component2, nextArcheTypeData);
+            config3.Adapter.SetComponent(entityData, component3, nextArcheTypeData);
+            config4.Adapter.SetComponent(entityData, component4, nextArcheTypeData);
+            config5.Adapter.SetComponent(entityData, component5, nextArcheTypeData);
         }
 
         public void AddComponents<T1, T2, T3, T4, T5, T6>(Entity entity,
@@ -236,6 +255,7 @@ namespace EcsLte
             AssertAlreadyHasComponent(config5, prevArcheTypeData);
             AssertAlreadyHasComponent(config6, prevArcheTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
 
             config1.Adapter.AddConfig(ref _cachedArcheType, component1, Context.SharedComponentDics);
@@ -246,24 +266,18 @@ namespace EcsLte
             config6.Adapter.AddConfig(ref _cachedArcheType, component6, Context.SharedComponentDics);
 
             var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-            ArcheTypeData.TransferEntity(entity, _entityDatas,
-                prevArcheTypeData, nextArcheTypeData);
+            ArcheTypeData.TransferEntity(GlobalVersion,
+                entity,
+                prevArcheTypeData, nextArcheTypeData,
+                _entityDatas);
             var entityData = _entityDatas[entity.Id];
 
-            config1.Adapter.SetComponent(entityData.EntityIndex, component1, nextArcheTypeData);
-            config2.Adapter.SetComponent(entityData.EntityIndex, component2, nextArcheTypeData);
-            config3.Adapter.SetComponent(entityData.EntityIndex, component3, nextArcheTypeData);
-            config4.Adapter.SetComponent(entityData.EntityIndex, component4, nextArcheTypeData);
-            config5.Adapter.SetComponent(entityData.EntityIndex, component5, nextArcheTypeData);
-            config6.Adapter.SetComponent(entityData.EntityIndex, component6, nextArcheTypeData);
-
-            Context.Tracking.TrackArcheTypeDataChange(entity, prevArcheTypeData, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config1, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config2, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config3, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config4, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config5, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config6, nextArcheTypeData);
+            config1.Adapter.SetComponent(entityData, component1, nextArcheTypeData);
+            config2.Adapter.SetComponent(entityData, component2, nextArcheTypeData);
+            config3.Adapter.SetComponent(entityData, component3, nextArcheTypeData);
+            config4.Adapter.SetComponent(entityData, component4, nextArcheTypeData);
+            config5.Adapter.SetComponent(entityData, component5, nextArcheTypeData);
+            config6.Adapter.SetComponent(entityData, component6, nextArcheTypeData);
         }
 
         public void AddComponents<T1, T2, T3, T4, T5, T6, T7>(Entity entity,
@@ -307,6 +321,7 @@ namespace EcsLte
             AssertAlreadyHasComponent(config6, prevArcheTypeData);
             AssertAlreadyHasComponent(config7, prevArcheTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
 
             config1.Adapter.AddConfig(ref _cachedArcheType, component1, Context.SharedComponentDics);
@@ -318,26 +333,19 @@ namespace EcsLte
             config7.Adapter.AddConfig(ref _cachedArcheType, component7, Context.SharedComponentDics);
 
             var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-            ArcheTypeData.TransferEntity(entity, _entityDatas,
-                prevArcheTypeData, nextArcheTypeData);
+            ArcheTypeData.TransferEntity(GlobalVersion,
+                entity,
+                prevArcheTypeData, nextArcheTypeData,
+                _entityDatas);
             var entityData = _entityDatas[entity.Id];
 
-            config1.Adapter.SetComponent(entityData.EntityIndex, component1, nextArcheTypeData);
-            config2.Adapter.SetComponent(entityData.EntityIndex, component2, nextArcheTypeData);
-            config3.Adapter.SetComponent(entityData.EntityIndex, component3, nextArcheTypeData);
-            config4.Adapter.SetComponent(entityData.EntityIndex, component4, nextArcheTypeData);
-            config5.Adapter.SetComponent(entityData.EntityIndex, component5, nextArcheTypeData);
-            config6.Adapter.SetComponent(entityData.EntityIndex, component6, nextArcheTypeData);
-            config7.Adapter.SetComponent(entityData.EntityIndex, component7, nextArcheTypeData);
-
-            Context.Tracking.TrackArcheTypeDataChange(entity, prevArcheTypeData, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config1, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config2, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config3, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config4, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config5, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config6, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config7, nextArcheTypeData);
+            config1.Adapter.SetComponent(entityData, component1, nextArcheTypeData);
+            config2.Adapter.SetComponent(entityData, component2, nextArcheTypeData);
+            config3.Adapter.SetComponent(entityData, component3, nextArcheTypeData);
+            config4.Adapter.SetComponent(entityData, component4, nextArcheTypeData);
+            config5.Adapter.SetComponent(entityData, component5, nextArcheTypeData);
+            config6.Adapter.SetComponent(entityData, component6, nextArcheTypeData);
+            config7.Adapter.SetComponent(entityData, component7, nextArcheTypeData);
         }
 
         public void AddComponents<T1, T2, T3, T4, T5, T6, T7, T8>(Entity entity,
@@ -385,6 +393,7 @@ namespace EcsLte
             AssertAlreadyHasComponent(config7, prevArcheTypeData);
             AssertAlreadyHasComponent(config8, prevArcheTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
 
             config1.Adapter.AddConfig(ref _cachedArcheType, component1, Context.SharedComponentDics);
@@ -397,28 +406,20 @@ namespace EcsLte
             config8.Adapter.AddConfig(ref _cachedArcheType, component8, Context.SharedComponentDics);
 
             var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-            ArcheTypeData.TransferEntity(entity, _entityDatas,
-                prevArcheTypeData, nextArcheTypeData);
+            ArcheTypeData.TransferEntity(GlobalVersion,
+                entity,
+                prevArcheTypeData, nextArcheTypeData,
+                _entityDatas);
             var entityData = _entityDatas[entity.Id];
 
-            config1.Adapter.SetComponent(entityData.EntityIndex, component1, nextArcheTypeData);
-            config2.Adapter.SetComponent(entityData.EntityIndex, component2, nextArcheTypeData);
-            config3.Adapter.SetComponent(entityData.EntityIndex, component3, nextArcheTypeData);
-            config4.Adapter.SetComponent(entityData.EntityIndex, component4, nextArcheTypeData);
-            config5.Adapter.SetComponent(entityData.EntityIndex, component5, nextArcheTypeData);
-            config6.Adapter.SetComponent(entityData.EntityIndex, component6, nextArcheTypeData);
-            config7.Adapter.SetComponent(entityData.EntityIndex, component7, nextArcheTypeData);
-            config8.Adapter.SetComponent(entityData.EntityIndex, component8, nextArcheTypeData);
-
-            Context.Tracking.TrackArcheTypeDataChange(entity, prevArcheTypeData, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config1, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config2, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config3, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config4, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config5, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config6, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config7, nextArcheTypeData);
-            Context.Tracking.TrackAdd(entity, config8, nextArcheTypeData);
+            config1.Adapter.SetComponent(entityData, component1, nextArcheTypeData);
+            config2.Adapter.SetComponent(entityData, component2, nextArcheTypeData);
+            config3.Adapter.SetComponent(entityData, component3, nextArcheTypeData);
+            config4.Adapter.SetComponent(entityData, component4, nextArcheTypeData);
+            config5.Adapter.SetComponent(entityData, component5, nextArcheTypeData);
+            config6.Adapter.SetComponent(entityData, component6, nextArcheTypeData);
+            config7.Adapter.SetComponent(entityData, component7, nextArcheTypeData);
+            config8.Adapter.SetComponent(entityData, component8, nextArcheTypeData);
         }
 
         public void AddComponents<TComponent>(EntityArcheType archeType, TComponent component)
@@ -430,14 +431,21 @@ namespace EcsLte
 
             var config = ComponentConfig<TComponent>.Config;
             var prevArcheTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
-
             AssertAlreadyHasComponent(config, prevArcheTypeData);
-            if (InternalAddConfigTrackingTransferArcheTypeData(prevArcheTypeData, config,
-                null,
-                out var nextArcheTypeData, out var preEntityCount))
+
+            if (prevArcheTypeData.EntityCount > 0)
             {
-                nextArcheTypeData.SetComponents(preEntityCount, nextArcheTypeData.EntityCount,
-                    config, component);
+                ChangeVersion.IncVersion(ref _globalVersion);
+                if (InternalAddConfigTransferArcheTypeData(prevArcheTypeData, config,
+                    null,
+                    out var nextArcheTypeData, out var preEntityCount))
+                {
+                    nextArcheTypeData.SetAllComponents(GlobalVersion,
+                        preEntityCount,
+                        nextArcheTypeData.EntityCount - preEntityCount,
+                        config,
+                        component);
+                }
             }
         }
 
@@ -450,23 +458,35 @@ namespace EcsLte
 
             var config = ComponentConfig<TComponent>.Config;
             var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
+            var incVersion = false;
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var prevArcheTypeData = filteredArcheTypeDatas[i];
-                if (!prevArcheTypeData.HasConfig(config))
+                if (!prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount > 0)
                 {
-                    AssertAlreadyHasComponent(config, prevArcheTypeData);
-                    InternalAddConfigTrackingTransferArcheTypeData(prevArcheTypeData, config,
+                    if (!incVersion)
+                    {
+                        ChangeVersion.IncVersion(ref _globalVersion);
+                        incVersion = true;
+                    }
+
+                    InternalAddConfigTransferArcheTypeData(prevArcheTypeData, config,
                         null,
                         out var nextArcheTypeData, out var preEntityCount);
 
-                    nextArcheTypeData.SetComponents(preEntityCount, nextArcheTypeData.EntityCount,
-                        config, component);
+                    nextArcheTypeData.SetAllComponents(GlobalVersion,
+                        preEntityCount,
+                        nextArcheTypeData.EntityCount - preEntityCount,
+                        config,
+                        component);
                 }
             }
         }
 
-        public void AddComponents<TComponent>(EntityTracker tracker, TComponent component)
+        // todo not gonna want to add/edit/remove components/entities by tracker
+        //  trackered is by chunk not by entity
+        //  unwanted entities are gonna be affected
+        /*public void AddComponents<TComponent>(EntityTracker tracker, TComponent component)
             where TComponent : unmanaged, IGeneralComponent
         {
             Context.AssertContext();
@@ -474,12 +494,28 @@ namespace EcsLte
             EntityTracker.AssertEntityTracker(tracker, Context);
 
             var config = ComponentConfig<TComponent>.Config;
-            var archeTypeDatas = tracker.CachedArcheTypeDatas;
+            var archeTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(tracker.TrackingFilter());
+            var incVersion = false;
             for (var i = 0; i < archeTypeDatas.Length; i++)
             {
                 var prevArcheTypeData = archeTypeDatas[i];
-                if (!prevArcheTypeData.HasConfig(config))
+                if (!prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount > 0)
                 {
+                    if (!incVersion)
+                    {
+                        ChangeVersion.IncVersion(ref _globalVersion);
+                        incVersion = true;
+                    }
+
+                    InternalAddConfig(prevArcheTypeData, config,
+                        null,
+                        out var nextArcheTypeData);
+
+                    if (tracker.GetArcheTypeDataChunks(prevArcheTypeData, out var chunks))
+                    {
+
+                    }
+
                     if (InternalAddConfigTrackingTransferTracker(tracker, prevArcheTypeData, config,
                         null,
                         out var nextArcheTypeData, out var preEntityCount))
@@ -489,9 +525,10 @@ namespace EcsLte
                     }
                 }
             }
-        }
+        }*/
 
-        public void AddComponents<TComponent>(EntityQuery query, TComponent component)
+        // todo figure out what to do with tracking/changeVersion
+        /*public void AddComponents<TComponent>(EntityQuery query, TComponent component)
             where TComponent : unmanaged, IGeneralComponent
         {
             Context.AssertContext();
@@ -521,7 +558,7 @@ namespace EcsLte
                     }
                 }
             }
-        }
+        }*/
 
         public void AddManagedComponents<TComponent>(EntityArcheType archeType, TComponent component)
             where TComponent : IManagedComponent
@@ -532,14 +569,21 @@ namespace EcsLte
 
             var config = ComponentConfig<TComponent>.Config;
             var prevArcheTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
-
             AssertAlreadyHasComponent(config, prevArcheTypeData);
-            if (InternalAddConfigTrackingTransferArcheTypeData(prevArcheTypeData, config,
-                null,
-                out var nextArcheTypeData, out var preEntityCount))
+
+            if (prevArcheTypeData.EntityCount > 0)
             {
-                nextArcheTypeData.SetManagedComponents(preEntityCount, nextArcheTypeData.EntityCount,
-                    config, component);
+                ChangeVersion.IncVersion(ref _globalVersion);
+                if (InternalAddConfigTransferArcheTypeData(prevArcheTypeData, config,
+                    null,
+                    out var nextArcheTypeData, out var preEntityCount))
+                {
+                    nextArcheTypeData.SetAllManagedComponents(GlobalVersion,
+                        preEntityCount,
+                        nextArcheTypeData.EntityCount - preEntityCount,
+                        config,
+                        component);
+                }
             }
         }
 
@@ -552,75 +596,27 @@ namespace EcsLte
 
             var config = ComponentConfig<TComponent>.Config;
             var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
+            var incVersion = false;
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var prevArcheTypeData = filteredArcheTypeDatas[i];
-                if (!prevArcheTypeData.HasConfig(config))
+                if (!prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount > 0)
                 {
-                    AssertAlreadyHasComponent(config, prevArcheTypeData);
-                    InternalAddConfigTrackingTransferArcheTypeData(prevArcheTypeData, config,
+                    if (!incVersion)
+                    {
+                        ChangeVersion.IncVersion(ref _globalVersion);
+                        incVersion = true;
+                    }
+
+                    InternalAddConfigTransferArcheTypeData(prevArcheTypeData, config,
                         null,
                         out var nextArcheTypeData, out var preEntityCount);
 
-                    nextArcheTypeData.SetManagedComponents(preEntityCount, nextArcheTypeData.EntityCount,
-                        config, component);
-                }
-            }
-        }
-
-        public void AddManagedComponents<TComponent>(EntityTracker tracker, TComponent component)
-            where TComponent : IManagedComponent
-        {
-            Context.AssertContext();
-            Context.AssertStructualChangeAvailable();
-            EntityTracker.AssertEntityTracker(tracker, Context);
-
-            var config = ComponentConfig<TComponent>.Config;
-            var archeTypeDatas = tracker.CachedArcheTypeDatas;
-            for (var i = 0; i < archeTypeDatas.Length; i++)
-            {
-                var prevArcheTypeData = archeTypeDatas[i];
-                if (!prevArcheTypeData.HasConfig(config))
-                {
-                    if (InternalAddConfigTrackingTransferTracker(tracker, prevArcheTypeData, config,
-                        null,
-                        out var nextArcheTypeData, out var preEntityCount))
-                    {
-                        nextArcheTypeData.SetManagedComponents(preEntityCount, nextArcheTypeData.EntityCount - preEntityCount,
-                            config, component);
-                    }
-                }
-            }
-        }
-
-        public void AddManagedComponents<TComponent>(EntityQuery query, TComponent component)
-            where TComponent : IManagedComponent
-        {
-            Context.AssertContext();
-            Context.AssertStructualChangeAvailable();
-            EntityQuery.AssertEntityQuery(query, Context);
-
-            if (query.Filter != null && query.Tracker == null)
-                AddManagedComponents(query.Filter, component);
-            else if (query.Filter == null && query.Tracker != null)
-                AddManagedComponents(query.Tracker, component);
-            else if (query.Filter != null && query.Tracker != null)
-            {
-                var config = ComponentConfig<TComponent>.Config;
-                var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(query.Filter);
-                for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
-                {
-                    var prevArcheTypeData = filteredArcheTypeDatas[i];
-                    if (!prevArcheTypeData.HasConfig(config))
-                    {
-                        if (InternalAddConfigTrackingTransferTracker(query.Tracker, prevArcheTypeData, config,
-                            null,
-                            out var nextArcheTypeData, out var preEntityCount))
-                        {
-                            nextArcheTypeData.SetManagedComponents(preEntityCount, nextArcheTypeData.EntityCount - preEntityCount,
-                                config, component);
-                        }
-                    }
+                    nextArcheTypeData.SetAllManagedComponents(GlobalVersion,
+                        preEntityCount,
+                        nextArcheTypeData.EntityCount - preEntityCount,
+                        config,
+                        component);
                 }
             }
         }
@@ -634,64 +630,21 @@ namespace EcsLte
 
             var config = ComponentConfig<TComponent>.Config;
             var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
+            var incVersion = false;
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var prevArcheTypeData = filteredArcheTypeDatas[i];
-                if (!prevArcheTypeData.HasConfig(config))
+                if (!prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount > 0)
                 {
-                    AssertAlreadyHasComponent(config, prevArcheTypeData);
-                    InternalAddConfigTrackingTransferArcheTypeData(prevArcheTypeData, config,
-                        null,
-                        out var _, out var _);
-                }
-            }
-        }
-
-        public void AddSharedComponents<TComponent>(EntityTracker tracker, TComponent component)
-            where TComponent : unmanaged, ISharedComponent
-        {
-            Context.AssertContext();
-            Context.AssertStructualChangeAvailable();
-            EntityTracker.AssertEntityTracker(tracker, Context);
-
-            var config = ComponentConfig<TComponent>.Config;
-            var archeTypeDatas = tracker.CachedArcheTypeDatas;
-            for (var i = 0; i < archeTypeDatas.Length; i++)
-            {
-                var prevArcheTypeData = archeTypeDatas[i];
-                if (!prevArcheTypeData.HasConfig(config))
-                {
-                    InternalAddConfigTrackingTransferTracker(tracker, prevArcheTypeData, config,
-                        null,
-                        out var _, out var _);
-                }
-            }
-        }
-
-        public void AddSharedComponents<TComponent>(EntityQuery query, TComponent component)
-            where TComponent : unmanaged, ISharedComponent
-        {
-            Context.AssertContext();
-            Context.AssertStructualChangeAvailable();
-            EntityQuery.AssertEntityQuery(query, Context);
-
-            if (query.Filter != null && query.Tracker == null)
-                AddSharedComponents(query.Filter, component);
-            else if (query.Filter == null && query.Tracker != null)
-                AddSharedComponents(query.Tracker, component);
-            else if (query.Filter != null && query.Tracker != null)
-            {
-                var config = ComponentConfig<TComponent>.Config;
-                var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(query.Filter);
-                for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
-                {
-                    var prevArcheTypeData = filteredArcheTypeDatas[i];
-                    if (!prevArcheTypeData.HasConfig(config))
+                    if (!incVersion)
                     {
-                        InternalAddConfigTrackingTransferTracker(query.Tracker, prevArcheTypeData, config,
-                            null,
-                            out var _, out var _);
+                        ChangeVersion.IncVersion(ref _globalVersion);
+                        incVersion = true;
                     }
+
+                    InternalAddConfigTransferArcheTypeData(prevArcheTypeData, config,
+                        Context.SharedComponentDics.GetDic<TComponent>().GetSharedDataIndex(component),
+                        out var _, out var _);
                 }
             }
         }

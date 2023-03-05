@@ -5,6 +5,7 @@
         public static readonly EntityData Null = new EntityData();
 
         internal ArcheTypeIndex ArcheTypeIndex;
+        internal int ChunkIndex;
         internal int EntityIndex;
     }
 }

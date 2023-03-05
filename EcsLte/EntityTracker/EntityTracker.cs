@@ -6,338 +6,368 @@ using System.Linq;
 
 namespace EcsLte
 {
-    public enum TrackingState
+    public enum EntityTrackerMode
     {
-        Not = 0,
-
-        Added = 1,
-        Updated = 2,
-        Removed = 4,
-
-        AddedOrUpdated = 3,
-        AddedOrRemoved = 5,
-
-        UpdatedOrRemoved = 6,
-
-        AddedOrUpdatedOrRemoved = 7
+        AnyChanges,
+        AllChanges
     }
 
     public class EntityTracker
     {
-        private Dictionary<ArcheTypeData, HashSet<Entity>> _archeTypeDatas;
-        private ArcheTypeData[] _cachedArcheTypeDatas;
-        private readonly Queue<HashSet<Entity>> _cachedEntities;
-        private bool _isCachedArcheTypeDataDirty;
+        private Dictionary<ArcheTypeIndex, CacheData> _archeTypeDatas;
+        private EntityFilter _filter;
+        private EntityTrackerMode? _filterMode;
+        private ChangeVersion _componentVersion;
+        private ChangeVersion _cacheVersion;
 
         public EcsContext Context { get; private set; }
         public string Name { get; private set; }
         public bool IsDestroyed { get; private set; }
-        public bool IsTracking { get; private set; }
-        internal Dictionary<ComponentConfig, TrackingState> TrackingConfigs { get; private set; }
-        internal int EntityCount
-        {
-            get
-            {
-                var entityCount = 0;
-                foreach (var entities in _archeTypeDatas.Values)
-                    entityCount += entities.Count;
-
-                return entityCount;
-            }
-        }
-        internal ArcheTypeData[] CachedArcheTypeDatas
-        {
-            get
-            {
-                if (_isCachedArcheTypeDataDirty)
-                {
-                    _cachedArcheTypeDatas = _archeTypeDatas.Keys.ToArray();
-                    _isCachedArcheTypeDataDirty = false;
-                }
-
-                return _cachedArcheTypeDatas;
-            }
-        }
+        public ChangeVersion TrackChangeVersion { get; private set; }
+        public EntityTrackerMode Mode { get; private set; }
+        public bool IsTrackingEntities { get; set; }
+        internal HashSet<ComponentConfig> TrackingGeneralConfigs { get; private set; }
+        internal HashSet<ComponentConfig> TrackingManagedConfigs { get; private set; }
+        internal HashSet<ComponentConfig> TrackingSharedConfigs { get; private set; }
 
         internal EntityTracker(EcsContext context, string name)
         {
-            _archeTypeDatas = new Dictionary<ArcheTypeData, HashSet<Entity>>();
-            _cachedEntities = new Queue<HashSet<Entity>>();
+            _archeTypeDatas = new Dictionary<ArcheTypeIndex, CacheData>();
+            _filter = context.Filters.CreateFilter();
 
             Context = context;
             Name = name;
-            TrackingConfigs = new Dictionary<ComponentConfig, TrackingState>();
+            TrackingGeneralConfigs = new HashSet<ComponentConfig>();
+            TrackingManagedConfigs = new HashSet<ComponentConfig>();
+            TrackingSharedConfigs = new HashSet<ComponentConfig>();
         }
 
-        public TrackingState GetTrackingState<TComponent>()
+        public bool IsTrackingComponent<TComponent>()
             where TComponent : IComponent
+            => IsTrackingComponent(ComponentConfig<TComponent>.Config);
+
+        public bool IsTrackingComponent(ComponentConfig config)
         {
             Context.AssertContext();
             AssertEntityTracker();
 
-            if (TrackingConfigs.TryGetValue(ComponentConfig<TComponent>.Config, out var state))
-                return state;
-
-            return TrackingState.Not;
+            if (config.IsGeneral)
+                return TrackingGeneralConfigs.Contains(config);
+            if (config.IsManaged)
+                return TrackingManagedConfigs.Contains(config);
+            //if (config.IsShared)
+            return TrackingSharedConfigs.Contains(config);
         }
 
-        public EntityTracker SetTrackingState<TComponent>(TrackingState state)
+        public EntityTracker SetTrackingComponent<TComponent>(bool tracking)
             where TComponent : IComponent
+            => SetTrackingComponent(ComponentConfig<TComponent>.Config, tracking);
+
+        public EntityTracker SetTrackingComponent(ComponentConfig config, bool tracking)
         {
             Context.AssertContext();
             AssertEntityTracker();
 
-            var config = ComponentConfig<TComponent>.Config;
-            if (!TrackingConfigs.ContainsKey(ComponentConfig<TComponent>.Config) &&
-                state != TrackingState.Not)
-                TrackingConfigs.Add(config, state);
-            else if (state == TrackingState.Not)
-                TrackingConfigs.Remove(config);
-            else
-                TrackingConfigs[config] = state;
-
-            if (IsTracking)
+            if (config.IsGeneral)
             {
-                Context.Tracking.TrackerStateChanged(
-                    this, config, state);
-            }
-
-            return this;
-        }
-
-        public EntityTracker ClearAllTrackingStates()
-        {
-            Context.AssertContext();
-            AssertEntityTracker();
-
-            if (IsTracking)
-            {
-                foreach (var config in TrackingConfigs.Keys)
+                if ((!tracking && TrackingGeneralConfigs.Remove(config)) ||
+                    (tracking && TrackingGeneralConfigs.Add(config)))
                 {
-                    Context.Tracking.TrackerStateChanged(
-                        this, config, TrackingState.Not);
+                    _componentVersion = Context.Entities.GlobalVersion;;
+                    _cacheVersion = Context.Entities.GlobalVersion;
+                }
+            }
+            else if (config.IsManaged)
+            {
+                if ((!tracking && TrackingManagedConfigs.Remove(config)) ||
+                    (tracking && TrackingManagedConfigs.Add(config)))
+                {
+                    _componentVersion = Context.Entities.GlobalVersion;;
+                    _cacheVersion = Context.Entities.GlobalVersion;
+                }
+            }
+            else
+            {
+                if ((!tracking && TrackingSharedConfigs.Remove(config)) ||
+                    (tracking && TrackingSharedConfigs.Add(config)))
+                {
+                    _componentVersion = Context.Entities.GlobalVersion;;
+                    _cacheVersion = Context.Entities.GlobalVersion;
                 }
             }
 
-            TrackingConfigs.Clear();
-
             return this;
-
         }
 
-        public EntityTracker StartTracking()
+        public EntityTracker SetAllTrackingComponents(bool tracking)
         {
             Context.AssertContext();
             AssertEntityTracker();
 
-            if (!IsTracking)
+            var clearCache = false;
+            for (var i = 0; i < ComponentConfigs.Instance.AllGeneralCount; i++)
             {
-                Context.Tracking.StartTracker(this);
+                var config = ComponentConfigs.Instance.AllGeneralConfigs[i];
+                if ((!tracking && TrackingGeneralConfigs.Remove(config)) ||
+                    (tracking && TrackingGeneralConfigs.Add(config)))
+                    clearCache = true;
+            }
+            for (var i = 0; i < ComponentConfigs.Instance.AllManagedCount; i++)
+            {
+                var config = ComponentConfigs.Instance.AllManagedConfigs[i];
+                if ((!tracking && TrackingManagedConfigs.Remove(config)) ||
+                    (tracking && TrackingManagedConfigs.Add(config)))
+                    clearCache = true;
+            }
+            for (var i = 0; i < ComponentConfigs.Instance.AllSharedCount; i++)
+            {
+                var config = ComponentConfigs.Instance.AllSharedConfigs[i];
+                if ((!tracking && TrackingSharedConfigs.Remove(config)) ||
+                    (tracking && TrackingSharedConfigs.Add(config)))
+                    clearCache = true;
+            }
 
-                IsTracking = true;
+            if (clearCache)
+            {
+                _componentVersion = Context.Entities.GlobalVersion;;
+                _cacheVersion = Context.Entities.GlobalVersion;
             }
 
             return this;
         }
 
-        public EntityTracker StopTracking()
+        public EntityTracker SetTrackingMode(EntityTrackerMode mode)
         {
             Context.AssertContext();
             AssertEntityTracker();
 
-            if (IsTracking)
+            if (Mode != mode)
             {
-                Context.Tracking.StopTracker(this);
-
-                IsTracking = false;
+                Mode = mode;
+                _cacheVersion = Context.Entities.GlobalVersion;
             }
 
             return this;
         }
 
-        public EntityTracker ClearEntities()
+        public EntityTracker SetTrackingEntities(bool tracking)
         {
             Context.AssertContext();
             AssertEntityTracker();
 
-            UntrackedAllEntities();
+            if (IsTrackingEntities != tracking)
+            {
+                IsTrackingEntities = tracking;
+                _cacheVersion = Context.Entities.GlobalVersion;
+            }
 
             return this;
         }
 
-        internal bool HasArcheTypeData(ArcheTypeData archeTypeData) => _archeTypeDatas.ContainsKey(archeTypeData);
-
-        internal int GetArcheTypeDataEntityCount(ArcheTypeData archeTypeData)
+        public EntityTracker SetChangeVersion(ChangeVersion changeVersion)
         {
-            if (!_archeTypeDatas.TryGetValue(archeTypeData, out var hashedEntities))
+            Context.AssertContext();
+            AssertEntityTracker();
+
+            if (TrackChangeVersion != changeVersion)
+            {
+                TrackChangeVersion = changeVersion;
+                _cacheVersion = Context.Entities.GlobalVersion;
+            }
+
+            return this;
+        }
+
+        internal EntityFilter TrackingFilter()
+        {
+            // TODO going to be too expensive, need to find way to reduce archeTypeData filtering?
+            if (_filterMode != Mode)
+            {
+                if (Mode == EntityTrackerMode.AllChanges)
+                    _filter.WhereAllOf(this);
+                else if (Mode == EntityTrackerMode.AnyChanges)
+                    _filter.WhereAnyOf(this);
+                _filterMode = Mode;
+            }
+
+            return _filter;
+        }
+
+        internal int GetArcheTypeDataEntities(ArcheTypeData archeTypeData, ref Entity[] entities, int startingIndex)
+        {
+            if (archeTypeData.EntityCount == 0)
                 return 0;
 
-            return hashedEntities.Count;
-        }
-
-        internal int GetAllEntities(ref Entity[] entities, int startingIndex)
-        {
+            var cacheData = GetCacheData(archeTypeData);
             var entityIndex = startingIndex;
-            foreach (var hashedEntities in _archeTypeDatas.Values)
+            for (var i = 0; i < cacheData.Chunks.Count; i++)
             {
-                Helper.ResizeRefArray(ref entities, entityIndex, hashedEntities.Count);
-                hashedEntities.CopyTo(entities, entityIndex);
-                entityIndex += hashedEntities.Count;
+                var chunk = cacheData.Chunks[i];
+                Helper.ResizeRefArray(ref entities, entityIndex, chunk.EntityCount);
+                entityIndex += chunk.GetEntities(ref entities, entityIndex);
             }
 
             return entityIndex - startingIndex;
         }
 
-        internal int GetArcheTypeDataEntities(ArcheTypeData archeTypeData, ref Entity[] entities, int startingIndex)
+        internal bool GetArcheTypeDataChunks(ArcheTypeData archeTypeData, out List<ArcheTypeDataChunk> chunks)
         {
-            if (!_archeTypeDatas.TryGetValue(archeTypeData, out var hashedEntities))
-                return 0;
-
-            Helper.ResizeRefArray(ref entities, startingIndex, hashedEntities.Count);
-            hashedEntities.CopyTo(entities, startingIndex);
-
-            return hashedEntities.Count;
-        }
-
-        internal void TrackArcheTypeDataChange(Entity entity,
-            ArcheTypeData prevArcheTypeData, ArcheTypeData nextArcheTypeData)
-        {
-#if DEBUG
-            if (entity == Entity.Null)
-                throw new Exception();
-#endif
-            if (_archeTypeDatas.TryGetValue(prevArcheTypeData, out var hashedEntities))
+            if (archeTypeData.EntityCount == 0)
             {
-                if (hashedEntities.Remove(entity))
-                {
-                    if (hashedEntities.Count == 0)
-                        RemoveArcheType(prevArcheTypeData, hashedEntities);
-
-                    AppendEntity(nextArcheTypeData, entity);
-                }
+                chunks = null;
+                return false;
             }
-        }
 
-        internal void TrackArcheTypeDataChanges(in Entity[] entities, int startingIndex, int count,
-            ArcheTypeData prevArcheTypeData, ArcheTypeData nextArcheTypeData)
-        {
-            if (_archeTypeDatas.TryGetValue(prevArcheTypeData, out var hashedEntities))
-            {
-                for (var i = 0; i < count; i++)
-                    hashedEntities.Remove(entities[i]);
-
-                if (hashedEntities.Count == 0)
-                    RemoveArcheType(prevArcheTypeData, hashedEntities);
-
-                AppendEntities(nextArcheTypeData, entities.Skip(startingIndex).Take(count));
-            }
-        }
-
-        internal void TrackAllArcheTypeDataChange(ArcheTypeData prevArcheTypeData, ArcheTypeData nextArcheTypeData)
-        {
-            if (_archeTypeDatas.TryGetValue(prevArcheTypeData, out var prevEntities))
-            {
-                if (!_archeTypeDatas.TryGetValue(nextArcheTypeData, out var nextEntities))
-                    _archeTypeDatas.Add(nextArcheTypeData, prevEntities);
-                else
-                {
-                    nextEntities.UnionWith(prevEntities);
-                    prevEntities.Clear();
-                    _cachedEntities.Enqueue(prevEntities);
-                }
-
-                _archeTypeDatas.Remove(prevArcheTypeData);
-            }
-        }
-
-        internal void Tracked(Entity entity, ArcheTypeData archeTypeData) => AppendEntity(archeTypeData, entity);
-
-        internal void Tracked(in Entity[] entities, int startingIndex, int count, ArcheTypeData archeTypeData) => AppendEntities(archeTypeData, entities.Skip(startingIndex).Take(count));
-
-        internal void Untracked(Entity entity, ArcheTypeData archeTypeData)
-        {
-            if (_archeTypeDatas.TryGetValue(archeTypeData, out var hashedEntities))
-            {
-                if (hashedEntities.Remove(entity))
-                {
-                    if (hashedEntities.Count == 0)
-                        RemoveArcheType(archeTypeData, hashedEntities);
-                }
-            }
-        }
-
-        internal void UntrackedArcheTypeData(ArcheTypeData archeTypeData)
-        {
-            if (_archeTypeDatas.TryGetValue(archeTypeData, out var hashedEntities))
-                RemoveArcheType(archeTypeData, hashedEntities);
-        }
-
-        internal void UntrackedAllEntities()
-        {
-            foreach (var hashedEntities in _archeTypeDatas.Values)
-            {
-                hashedEntities.Clear();
-                _cachedEntities.Enqueue(hashedEntities);
-            }
-            _archeTypeDatas.Clear();
-            _isCachedArcheTypeDataDirty = true;
+            chunks = GetCacheData(archeTypeData).Chunks;
+            return chunks.Count > 0;
         }
 
         internal void InternalDestroy()
         {
-            StopTracking();
-            _archeTypeDatas = null;
-            _cachedArcheTypeDatas = null;
-            _isCachedArcheTypeDataDirty = true;
+            _archeTypeDatas.Clear();
+            _componentVersion = Context.Entities.GlobalVersion;;
             IsDestroyed = true;
+            TrackingGeneralConfigs.Clear();
+            TrackingManagedConfigs.Clear();
+            TrackingSharedConfigs.Clear();
         }
 
-        private void AppendEntity(ArcheTypeData archeTypeData, Entity entity)
+        private CacheData GetCacheData(ArcheTypeData archeTypeData)
         {
-#if DEBUG
-            if (entity == Entity.Null)
-                throw new Exception();
-#endif
-            if (!_archeTypeDatas.TryGetValue(archeTypeData, out var hashedEntities))
+            if (!_archeTypeDatas.TryGetValue(archeTypeData.ArcheTypeIndex, out var cacheData))
             {
-                hashedEntities = _cachedEntities.Count > 0
-                    ? _cachedEntities.Dequeue()
-                    : new HashSet<Entity>();
-                hashedEntities.Add(entity);
-
-                _archeTypeDatas.Add(archeTypeData, hashedEntities);
-                _isCachedArcheTypeDataDirty = true;
+                cacheData = new CacheData();
+                _archeTypeDatas.Add(archeTypeData.ArcheTypeIndex, cacheData);
             }
-            else
-                hashedEntities.Add(entity);
-        }
 
-        private void AppendEntities(ArcheTypeData archeTypeData, IEnumerable<Entity> entities)
-        {
-#if DEBUG
-            if (entities.Any(x => x == Entity.Null))
-                throw new Exception();
-#endif
-            if (!_archeTypeDatas.TryGetValue(archeTypeData, out var hashedEntities))
+            if (ChangeVersion.DidChange(_componentVersion, cacheData.ComponentVersion))
             {
-                hashedEntities = _cachedEntities.Count > 0
-                    ? _cachedEntities.Dequeue()
-                    : new HashSet<Entity>();
-                hashedEntities.UnionWith(entities);
+                Helper.ResizeRefArray(ref cacheData.GeneralOffsets, 0, TrackingGeneralConfigs.Count);
+                cacheData.GeneralOffsetsCount = 0;
+                foreach (var config in TrackingGeneralConfigs)
+                {
+                    if (archeTypeData.HasConfigOffset(config, out var offset))
+                        cacheData.GeneralOffsets[cacheData.GeneralOffsetsCount++] = offset;
+                }
 
-                _archeTypeDatas.Add(archeTypeData, hashedEntities);
-                _isCachedArcheTypeDataDirty = true;
+                Helper.ResizeRefArray(ref cacheData.ManagedOffsets, 0, TrackingManagedConfigs.Count);
+                cacheData.ManagedOffsetsCount = 0;
+                foreach (var config in TrackingManagedConfigs)
+                {
+                    if (archeTypeData.HasConfigOffset(config, out var offset))
+                        cacheData.ManagedOffsets[cacheData.ManagedOffsetsCount++] = offset;
+                }
+
+                Helper.ResizeRefArray(ref cacheData.SharedOffsets, 0, TrackingSharedConfigs.Count);
+                cacheData.SharedOffsetsCount = 0;
+                foreach (var config in TrackingSharedConfigs)
+                {
+                    if (archeTypeData.HasConfigOffset(config, out var offset))
+                        cacheData.SharedOffsets[cacheData.SharedOffsetsCount++] = offset;
+                }
+                cacheData.ComponentVersion = _componentVersion;
             }
-            else
-                hashedEntities.UnionWith(entities);
+
+            if (ChangeVersion.DidChange(_cacheVersion, cacheData.CacheVersion))
+            {
+                cacheData.Chunks.Clear();
+                cacheData.CacheVersion = _cacheVersion;
+
+                if (Mode == EntityTrackerMode.AnyChanges)
+                    GetArcheTypeDataChunksAny(archeTypeData, cacheData);
+                else
+                    GetArcheTypeDataChunksAll(archeTypeData, cacheData);
+            }
+
+            return cacheData;
         }
 
-        private void RemoveArcheType(ArcheTypeData archeTypeData, HashSet<Entity> entities)
+        private void GetArcheTypeDataChunksAny(ArcheTypeData archeTypeData, CacheData cacheData)
         {
-            entities.Clear();
-            _cachedEntities.Enqueue(entities);
-            _archeTypeDatas.Remove(archeTypeData);
-            _isCachedArcheTypeDataDirty = true;
+            var addAllChunks = false;
+            for (var j = 0; j < cacheData.SharedOffsetsCount; j++)
+            {
+                if (ChangeVersion.DidChange(archeTypeData.SharedVersions[cacheData.SharedOffsets[j].ConfigIndex], TrackChangeVersion))
+                {
+                    addAllChunks = true;
+                    break;
+                }
+            }
+            if (addAllChunks)
+            {
+                for (var i = 0; i < archeTypeData.ChunksCount; i++)
+                    cacheData.Chunks.Add(archeTypeData.Chunks[i]);
+                return;
+            }
+
+            for (var i = 0; i < archeTypeData.ChunksCount; i++)
+            {
+                var addChunk = false;
+                var chunk = archeTypeData.Chunks[i];
+                for (var j = 0; j < cacheData.GeneralOffsetsCount; j++)
+                {
+                    if (ChangeVersion.DidChange(chunk.GeneralVersions[cacheData.GeneralOffsets[j].ConfigIndex], TrackChangeVersion))
+                    {
+                        addChunk = true;
+                        break;
+                    }
+                }
+                if (!addChunk)
+                {
+                    for (var j = 0; j < cacheData.ManagedOffsetsCount; j++)
+                    {
+                        if (ChangeVersion.DidChange(chunk.ManagedVersions[cacheData.ManagedOffsets[j].ConfigIndex], TrackChangeVersion))
+                        {
+                            addChunk = true;
+                            break;
+                        }
+                    }
+                }
+                if (addChunk)
+                    cacheData.Chunks.Add(chunk);
+            }
+        }
+
+        private void GetArcheTypeDataChunksAll(ArcheTypeData archeTypeData, CacheData cacheData)
+        {
+            var isSharedOk = true;
+            for (var j = 0; j < cacheData.SharedOffsetsCount; j++)
+            {
+                if (!ChangeVersion.DidChange(archeTypeData.SharedVersions[cacheData.SharedOffsets[j].ConfigIndex], TrackChangeVersion))
+                {
+                    isSharedOk = false;
+                    break;
+                }
+            }
+            if (!isSharedOk)
+                return;
+
+            for (var i = 0; i < archeTypeData.ChunksCount; i++)
+            {
+                var addChunk = true;
+                var chunk = archeTypeData.Chunks[i];
+                for (var j = 0; j < cacheData.GeneralOffsetsCount; j++)
+                {
+                    if (!ChangeVersion.DidChange(chunk.GeneralVersions[cacheData.GeneralOffsets[j].ConfigIndex], TrackChangeVersion))
+                    {
+                        addChunk = false;
+                        break;
+                    }
+                }
+                if (addChunk)
+                {
+                    for (var j = 0; j < cacheData.ManagedOffsetsCount; j++)
+                    {
+                        if (!ChangeVersion.DidChange(chunk.ManagedVersions[cacheData.ManagedOffsets[j].ConfigIndex], TrackChangeVersion))
+                        {
+                            addChunk = false;
+                            break;
+                        }
+                    }
+                }
+                if (addChunk)
+                    cacheData.Chunks.Add(chunk);
+            }
         }
 
         #region Assert
@@ -359,5 +389,18 @@ namespace EcsLte
         }
 
         #endregion
+
+        private class CacheData
+        {
+            public List<ArcheTypeDataChunk> Chunks = new List<ArcheTypeDataChunk>();
+            public ComponentConfigOffset[] GeneralOffsets = new ComponentConfigOffset[0];
+            public ComponentConfigOffset[] ManagedOffsets = new ComponentConfigOffset[0];
+            public ComponentConfigOffset[] SharedOffsets = new ComponentConfigOffset[0];
+            public int GeneralOffsetsCount;
+            public int ManagedOffsetsCount;
+            public int SharedOffsetsCount;
+            public ChangeVersion ComponentVersion;
+            public ChangeVersion CacheVersion;
+        }
     }
 }

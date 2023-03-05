@@ -7,9 +7,9 @@ namespace EcsLte
     {
         ComponentConfig Config { get; }
 
-        TComponent2 GetComponent<TComponent2>(int entityIndex, ArcheTypeData archeTypeData)
+        TComponent2 GetComponent<TComponent2>(EntityData entityData, ArcheTypeData archeTypeData)
             where TComponent2 : IComponent;
-        void SetComponent<TComponent2>(int entityIndex, TComponent2 component, ArcheTypeData archeTypeData)
+        void SetComponent<TComponent2>(EntityData entityData, TComponent2 component, ArcheTypeData archeTypeData)
             where TComponent2 : IComponent;
         void AddConfig<TComponent2>(ref ArcheType cachedArcheType, TComponent2 component, SharedComponentDictionaries sharedDics)
             where TComponent2 : IComponent;
@@ -25,29 +25,29 @@ namespace EcsLte
 
         public ComponentGeneralAdapter() => _config = ComponentConfig<TComponent>.Config;
 
-        public unsafe TComponent2 GetComponent<TComponent2>(int entityIndex, ArcheTypeData archeTypeData)
+        public unsafe TComponent2 GetComponent<TComponent2>(EntityData entityData, ArcheTypeData archeTypeData)
             where TComponent2 : IComponent
         {
             InteropTools.PtrToStructure<TComponent2>(
-                (IntPtr)archeTypeData.GetComponentPtr(entityIndex, _config),
+                (IntPtr)archeTypeData.GetComponentPtr(entityData, _config),
                 out var component);
 
             return component;
         }
 
-        public unsafe TComponent2 GetComponent<TComponent2>(ArcheTypeData archeTypeData, int entityIndex, ComponentConfigOffset configOffset)
+        public unsafe TComponent2 GetComponent<TComponent2>(ArcheTypeData archeTypeData, EntityData entityData, ComponentConfigOffset configOffset)
             where TComponent2 : IComponent
         {
             InteropTools.PtrToStructure<TComponent2>(
-                (IntPtr)archeTypeData.GetComponentPtr(entityIndex, configOffset),
+                (IntPtr)archeTypeData.GetComponentPtr(entityData, configOffset),
                 out var component);
 
             return component;
         }
 
-        public unsafe void SetComponent<TComponent2>(int entityIndex, TComponent2 component, ArcheTypeData archeTypeData)
+        public unsafe void SetComponent<TComponent2>(EntityData entityData, TComponent2 component, ArcheTypeData archeTypeData)
             where TComponent2 : IComponent
-            => InteropTools.StructureToPtr(ref component, (IntPtr)archeTypeData.GetComponentPtr(entityIndex, _config));
+            => InteropTools.StructureToPtr(ref component, (IntPtr)archeTypeData.GetComponentPtr(entityData, _config));
 
         public void AddConfig<TComponent2>(ref ArcheType cachedArcheType, TComponent2 component, SharedComponentDictionaries sharedDics)
             where TComponent2 : IComponent
@@ -66,15 +66,15 @@ namespace EcsLte
 
         public ComponentManagedAdapter() => _config = ComponentConfig<TComponent>.Config;
 
-        public TComponent2 GetComponent<TComponent2>(int entityIndex, ArcheTypeData archeTypeData)
+        public TComponent2 GetComponent<TComponent2>(EntityData entityData, ArcheTypeData archeTypeData)
             where TComponent2 : IComponent
             => (TComponent2)archeTypeData.GetManagedComponentPool(_config)
-                .GetComponent(entityIndex);
+                .GetComponent(entityData.ChunkIndex, entityData.EntityIndex);
 
-        public void SetComponent<TComponent2>(int entityIndex, TComponent2 component, ArcheTypeData archeTypeData)
+        public void SetComponent<TComponent2>(EntityData entityData, TComponent2 component, ArcheTypeData archeTypeData)
             where TComponent2 : IComponent
             => archeTypeData.GetManagedComponentPool(_config)
-                .SetComponent(entityIndex, component);
+                .SetComponent(entityData.ChunkIndex, entityData.EntityIndex, component);
 
         public void AddConfig<TComponent2>(ref ArcheType cachedArcheType, TComponent2 component, SharedComponentDictionaries sharedDics)
             where TComponent2 : IComponent
@@ -93,11 +93,11 @@ namespace EcsLte
 
         public ComponentSharedAdapter() => _config = ComponentConfig<TComponent>.Config;
 
-        public unsafe TComponent2 GetComponent<TComponent2>(int entityIndex, ArcheTypeData archeTypeData)
+        public unsafe TComponent2 GetComponent<TComponent2>(EntityData entityData, ArcheTypeData archeTypeData)
             where TComponent2 : IComponent
             => (TComponent2)archeTypeData.GetSharedComponentData(_config);
 
-        public void SetComponent<TComponent2>(int entityIndex, TComponent2 component, ArcheTypeData archeTypeData)
+        public void SetComponent<TComponent2>(EntityData entityData, TComponent2 component, ArcheTypeData archeTypeData)
             where TComponent2 : IComponent
         {
         }

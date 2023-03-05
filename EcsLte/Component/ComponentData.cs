@@ -12,8 +12,8 @@ namespace EcsLte
     {
         IGeneralComponent Component { get; }
 
-        unsafe void SetComponentData(ArcheTypeData archeTypeData, int entityIndex);
-        unsafe void SetComponentDatas(ArcheTypeData archeTypeData, int startingEntityIndex, int count);
+        unsafe void SetComponentData(ArcheTypeData archeTypeData, ChangeVersion changeVersion, EntityData entityData);
+        unsafe void SetComponentDatas(ArcheTypeData archeTypeData, ChangeVersion changeVersion, int startingEntityIndex, int count);
     }
 
     internal interface ISharedComponentData : IComponentData
@@ -30,8 +30,8 @@ namespace EcsLte
     {
         IManagedComponent Component { get; }
 
-        void SetComponentData(ArcheTypeData archeTypeData, int entityIndex);
-        void SetComponentDatas(ArcheTypeData archeTypeData, int startingEntityIndex, int count);
+        void SetComponentData(ArcheTypeData archeTypeData, ChangeVersion changeVersion, EntityData entityData);
+        void SetComponentDatas(ArcheTypeData archeTypeData, ChangeVersion changeVersion, int startingEntityIndex, int count);
     }
 
     internal abstract class ComponentData : IComponentData
@@ -58,11 +58,11 @@ namespace EcsLte
         internal GeneralComponentData(TComponent component)
             : base(ComponentConfig<TComponent>.Config) => _component = component;
 
-        public unsafe void SetComponentData(ArcheTypeData archeTypeData, int index)
-            => archeTypeData.SetComponent(index, Config, _component);
+        public unsafe void SetComponentData(ArcheTypeData archeTypeData, ChangeVersion changeVersion, EntityData entityData)
+            => archeTypeData.SetComponent(changeVersion, entityData, Config, _component);
 
-        public unsafe void SetComponentDatas(ArcheTypeData archeTypeData, int startingEntityIndex, int count)
-            => archeTypeData.SetComponents(startingEntityIndex, count, Config, _component);
+        public unsafe void SetComponentDatas(ArcheTypeData archeTypeData, ChangeVersion changeVersion, int startingEntityIndex, int count)
+            => archeTypeData.SetAllComponents(changeVersion, startingEntityIndex, count, Config, _component);
     }
 
     internal class ManagedComponentData<TComponent> : ComponentData, IManagedComponentData
@@ -76,11 +76,11 @@ namespace EcsLte
         internal ManagedComponentData(TComponent component)
             : base(ComponentConfig<TComponent>.Config) => _component = component;
 
-        public void SetComponentData(ArcheTypeData archeTypeData, int entityIndex)
-            => archeTypeData.SetManagedComponent(entityIndex, Config, _component);
+        public void SetComponentData(ArcheTypeData archeTypeData, ChangeVersion changeVersion, EntityData entityData)
+            => archeTypeData.SetManagedComponent(changeVersion, entityData, Config, _component);
 
-        public void SetComponentDatas(ArcheTypeData archeTypeData, int startingEntityIndex, int count)
-            => archeTypeData.SetManagedComponents(startingEntityIndex, count, Config, _component);
+        public void SetComponentDatas(ArcheTypeData archeTypeData, ChangeVersion changeVersion, int startingEntityIndex, int count)
+            => archeTypeData.SetAllManagedComponents(changeVersion, startingEntityIndex, count, Config, _component);
     }
 
     internal class SharedComponentData<TComponent> : ComponentData, ISharedComponentData

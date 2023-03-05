@@ -20,6 +20,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             Assert.IsTrue(Context.Entities.EntityCount() == 0);
             Assert.IsFalse(Context.Entities.HasEntity(entity));
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             Assert.ThrowsException<EntityNotExistException>(() =>
                 Context.Entities.DestroyEntity(Entity.Null));
@@ -37,6 +38,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     Context.ArcheTypes
                         .AddComponentType<TestComponent1>(),
                     UnitTestConsts.SmallCount),
+                () => Context.Entities.GlobalVersion,
                 () => new[] { Entity.Null, Entity.Null, Entity.Null, Entity.Null },
                 x =>
                 {
@@ -97,6 +99,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             var result = AssertEntities(entities, 0, entities.Length);
             Assert.IsTrue(Context.Entities.EntityCount() == 0);
             Assert.IsTrue(result.Success, $"Valid: {result.Error}");
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             AssertArcheType_DiffContext_Null(
                new Action<EntityArcheType>[]
@@ -124,6 +127,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             var result = AssertEntities(entities, 0, entities.Length);
             Assert.IsTrue(Context.Entities.EntityCount() == 0);
             Assert.IsTrue(result.Success, $"Valid: {result.Error}");
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             AssertFilter_Null(
                 new Action<EntityFilter>[]
@@ -136,12 +140,12 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 Context.Entities.DestroyEntities(filter));
         }
 
-        [TestMethod]
+        // todo not destroying entities by query or tracker, changes are tracked by chunks
+        /*[TestMethod]
         public void DestroyEntities_Tracker()
         {
             var tracker = Context.Tracking.CreateTracker("Tracker1")
-                .SetTrackingState<TestComponent1>(TrackingState.Added)
-                .StartTracking();
+                .SetTrackingComponent<TestComponent1>(true);
 
             var entities = Context.Entities.CreateEntities(
                 Context.ArcheTypes
@@ -179,7 +183,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             var query = Context.Queries
                 .SetFilter(filter)
                 .SetTracker(Context.Tracking.CreateTracker("Tracker1")
-                    .SetTrackingState<TestComponent1>(TrackingState.Added)
+                    .SetTrackingComponent<TestComponent1>(true)
                     .StartTracking());
 
             var entities = Context.Entities.CreateEntities(
@@ -203,7 +207,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.DestroyEntities(query));
-        }
+        }*/
 
         private TestResult AssertEntities(Entity[] entities, int startingIndex, int count)
         {

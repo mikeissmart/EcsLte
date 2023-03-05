@@ -23,15 +23,16 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             var copyEntity = _destContext.Entities.CopyEntityTo(Context.Entities, orgEntity);
 
+            Assert.IsTrue(_destContext.Entities.GlobalVersion.Version == 2);
+            Assert.IsTrue(_destContext.Entities.GetComponent<TestComponent1>(copyEntity).Prop == orgEntity.Id);
+            Assert.IsTrue(_destContext.Entities.GetSharedComponent<TestSharedComponent1>(copyEntity).Prop == 2);
+
             Assert.ThrowsException<EntityNotExistException>(() =>
                 _destContext.Entities.CopyEntityTo(Context.Entities, Entity.Null));
             Assert.ThrowsException<EntityCopyToSameContextException>(() =>
                 Context.Entities.CopyEntityTo(Context.Entities, orgEntity));
             Assert.ThrowsException<ArgumentNullException>(() =>
                 _destContext.Entities.CopyEntityTo(null, orgEntity));
-
-            Assert.IsTrue(_destContext.Entities.GetComponent<TestComponent1>(copyEntity).Prop == orgEntity.Id);
-            Assert.IsTrue(_destContext.Entities.GetSharedComponent<TestSharedComponent1>(copyEntity).Prop == 2);
 
             EcsContexts.Instance.DestroyContext(Context);
             EcsContexts.Instance.DestroyContext(_destContext);
@@ -90,13 +91,14 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert_CopyEntitiesTo_Filter_ContextDestroyed(filter);
         }
 
-        [TestMethod]
+        // todo not coping by query or tracker, changes are tracked by chunks
+        /*[TestMethod]
         public void CopyEntitiesTo_Tracker()
         {
             _destContext = EcsContexts.Instance.CreateContext("DestContext");
 
             var tracker = Context.Tracking.CreateTracker("Tracker")
-                .SetTrackingState<TestComponent1>(TrackingState.Added)
+                .SetTrackingComponent<TestComponent1>(true)
                 .StartTracking();
 
             var entities = CreateTestEntities();
@@ -126,7 +128,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             var queryFilterTracker = Context.Queries
                 .SetFilter(filter)
                 .SetTracker(Context.Tracking.CreateTracker("Tracker1")
-                    .SetTrackingState<TestComponent1>(TrackingState.Added)
+                    .SetTrackingComponent<TestComponent1>(true)
                     .StartTracking());
 
             var entities = CreateTestEntities();
@@ -143,12 +145,13 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
                 _destContext.Entities.CopyEntitiesTo(queryFilterTracker, ref emptyEntities, 0),
                 "Ref StartingIndex Context Destroyed");
-        }
+        }*/
 
         private void Assert_CopyEntitiesTo(Entity[] orgEntities)
         {
             AssertGetInRef_Valid_Invalid_StartingIndex_Null_OutOfRange(
                 () => orgEntities,
+                () => _destContext.Entities.GlobalVersion,
                 () => new[] { Entity.Null, Entity.Null, Entity.Null, Entity.Null },
                 x => _destContext.Entities.CopyEntitiesTo(Context.Entities, x),
                 (x, startingIndex) =>
@@ -284,6 +287,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
         private void Assert_CopyEntitiesTo_ArcheType(EntityArcheType archeType, Entity[] orgEntities)
         {
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
+                true,
+                () => _destContext.Entities.GlobalVersion,
                 () =>
                 {
                     return _destContext.Entities.CopyEntitiesTo(archeType);
@@ -349,6 +354,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
         private void Assert_CopyEntitiesTo_Filter(EntityFilter filter, Entity[] orgEntities)
         {
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
+                true,
+                () => _destContext.Entities.GlobalVersion,
                 () =>
                 {
                     return _destContext.Entities.CopyEntitiesTo(filter);
@@ -426,7 +433,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 });
         }
 
-        private void Assert_CopyEntitiesTo_Tracker(EntityTracker tracker, Entity[] orgEntities)
+        // todo not coping by query or tracker, changes are tracked by chunks
+        /*private void Assert_CopyEntitiesTo_Tracker(EntityTracker tracker, Entity[] orgEntities)
         {
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange<Entity>(
                 () =>
@@ -543,7 +551,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 _destContext.Entities.CopyEntitiesTo(destroyedTracker, ref emptyEntities), "Tracker Destroyed");
             Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
                 _destContext.Entities.CopyEntitiesTo(destroyedTracker, ref emptyEntities, 0), "Tracker Destroyed");
-        }
+        }*/
 
         private TestResult AssertEntities(Entity[] orgEntities, int startingIndex,
             Entity[] copyEntities, int destStartingIndex, int destCount)

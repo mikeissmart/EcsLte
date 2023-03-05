@@ -10,7 +10,8 @@
                 out var _, out var prevArcheTypeData);
 
             AssertNotHaveComponent(config, prevArcheTypeData);
-            InternalRemoveConfigTrackingTransferEntity(entity, prevArcheTypeData, config,
+            ChangeVersion.IncVersion(ref _globalVersion);
+            InternalRemoveConfigTransferEntity(entity, prevArcheTypeData, config,
                 false);
         }
 
@@ -25,7 +26,8 @@
             var config = ComponentConfig<TComponent>.Config;
 
             AssertNotHaveComponent(config, prevArcheTypeData);
-            InternalRemoveConfigTrackingTransferEntity(entity, prevArcheTypeData, config,
+            ChangeVersion.IncVersion(ref _globalVersion);
+            InternalRemoveConfigTransferEntity(entity, prevArcheTypeData, config,
                 false);
         }
 
@@ -40,7 +42,8 @@
             var config = ComponentConfig<TComponent>.Config;
 
             AssertNotHaveComponent(config, prevArcheTypeData);
-            InternalRemoveConfigTrackingTransferEntity(entity, prevArcheTypeData, config,
+            ChangeVersion.IncVersion(ref _globalVersion);
+            InternalRemoveConfigTransferEntity(entity, prevArcheTypeData, config,
                 false);
         }
 
@@ -55,7 +58,8 @@
             var config = ComponentConfig<TComponent>.Config;
 
             AssertNotHaveComponent(config, prevArcheTypeData);
-            InternalRemoveConfigTrackingTransferEntity(entity, prevArcheTypeData, config,
+            ChangeVersion.IncVersion(ref _globalVersion);
+            InternalRemoveConfigTransferEntity(entity, prevArcheTypeData, config,
                 false);
         }
 
@@ -70,7 +74,8 @@
             var prevArcheTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
 
             AssertAlreadyHasComponent(config, prevArcheTypeData);
-            InternalRemoveConfigTrackingTransferArcheTypeData(prevArcheTypeData, config,
+            ChangeVersion.IncVersion(ref _globalVersion);
+            InternalRemoveConfigTransferArcheTypeData(prevArcheTypeData, config,
                 true);
         }
     }

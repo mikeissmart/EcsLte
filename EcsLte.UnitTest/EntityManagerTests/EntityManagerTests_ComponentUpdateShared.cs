@@ -12,8 +12,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
         public void UpdateSharedComponent()
         {
             var updateSharedTracker = Context.Tracking.CreateTracker("UpdateSharedTracker")
-                .SetTrackingState<TestSharedComponent1>(TrackingState.Updated)
-                .StartTracking();
+                .SetTrackingComponent<TestSharedComponent1>(true);
 
             var entity = Context.Entities.CreateEntity(
                 new EntityBlueprint()
@@ -21,6 +20,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             Context.Entities.UpdateSharedComponent(entity, new TestSharedComponent1 { Prop = 1 });
             Assert.IsTrue(Context.Entities.GetSharedComponent<TestSharedComponent1>(entity).Prop == 1);
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             Assert.IsTrue(Context.Entities.GetEntities(updateSharedTracker).Length == 1);
             Assert.IsTrue(Context.Entities.GetEntities(updateSharedTracker)[0] == entity);
@@ -40,8 +40,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
         public void UpdateSharedComponent_ArcheType()
         {
             var updateSharedTracker = Context.Tracking.CreateTracker("UpdateSharedTracker")
-                .SetTrackingState<TestSharedComponent1>(TrackingState.Updated)
-                .StartTracking();
+                .SetTrackingComponent<TestSharedComponent1>(true);
 
             var archeType1 = Context.ArcheTypes
                     .AddSharedComponent(new TestSharedComponent1 { Prop = 0 });
@@ -55,6 +54,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Context.Entities.UpdateSharedComponent(archeType1, new TestSharedComponent1 { Prop = 1 });
             Assert.IsTrue(Context.Entities.EntityCount(archeType1) == 0);
             Assert.IsTrue(Context.Entities.EntityCount(archeType2) == UnitTestConsts.SmallCount);
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
 
             var trackedEntities = Context.Entities.GetEntities(updateSharedTracker);
             Assert.IsTrue(trackedEntities.Length == UnitTestConsts.SmallCount);
@@ -82,8 +82,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
         public void UpdateSharedComponents_Filter()
         {
             var updateSharedTracker = Context.Tracking.CreateTracker("UpdateSharedTracker")
-                .SetTrackingState<TestSharedComponent1>(TrackingState.Updated)
-                .StartTracking();
+                .SetTrackingComponent<TestSharedComponent1>(true);
 
             var anyFilter = Context.Filters
                     .WhereAllOf<TestSharedComponent1>();
@@ -111,6 +110,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 Assert.IsTrue(Context.Entities.EntityCount(filters[i]) == 0);
             }
             Assert.IsTrue(Context.Entities.EntityCount(updatedFilter) == UnitTestConsts.SmallCount * 5);
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 8);
 
             var trackedEntities = Context.Entities.GetEntities(updateSharedTracker);
             Assert.IsTrue(trackedEntities.Length == UnitTestConsts.SmallCount * 5);
@@ -130,112 +130,6 @@ namespace EcsLte.UnitTest.EntityManagerTests
             EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
                 Context.Entities.UpdateSharedComponents(anyFilter, new TestSharedComponent1()));
-        }
-
-        [TestMethod]
-        public void UpdateSharedComponents_Tracker()
-        {
-            var addedTracker = Context.Tracking.CreateTracker("AddedTracker")
-                .SetTrackingState<TestSharedComponent1>(TrackingState.Added)
-                .StartTracking();
-            var updatedTracker = Context.Tracking.CreateTracker("UpdatedTracker")
-                .SetTrackingState<TestSharedComponent1>(TrackingState.Updated)
-                .StartTracking();
-
-            Context.Entities.CreateEntities(
-                Context.ArcheTypes
-                    .AddSharedComponent(new TestSharedComponent1 { Prop = 0 }),
-                UnitTestConsts.SmallCount);
-
-            Context.Entities.UpdateSharedComponents(addedTracker, new TestSharedComponent1 { Prop = 10 });
-            var entities = Context.Entities.GetEntities(updatedTracker);
-            Assert.IsTrue(entities.Length == UnitTestConsts.SmallCount);
-            for (var i = 0; i < entities.Length; i++)
-            {
-                Assert.IsTrue(Context.Entities.GetSharedComponent<TestSharedComponent1>(entities[i]).Prop == 10,
-                    $"Entity: {entities[i]}");
-            }
-
-            var emptyComponents = new TestSharedComponent1[0];
-            var diffContext = EcsContexts.Instance.CreateContext("DiffContext")
-                .Tracking.CreateTracker("Tracker");
-            var destroyedTracker = Context.Tracking.CreateTracker("Destroyed");
-            Context.Tracking.RemoveTracker(destroyedTracker);
-            AssertTracker_Destroyed_Null(
-                diffContext,
-                destroyedTracker,
-                new Action<EntityTracker>[]
-                {
-                    x => Context.Entities.UpdateSharedComponents(x, new TestSharedComponent1()),
-                });
-
-            EcsContexts.Instance.DestroyContext(Context);
-            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.Entities.UpdateSharedComponents(updatedTracker, new TestSharedComponent1()));
-        }
-
-        [TestMethod]
-        public void UpdateSharedComponents_Query()
-        {
-            var updateSharedTracker = Context.Tracking.CreateTracker("UpdateSharedTracker")
-                .SetTrackingState<TestSharedComponent1>(TrackingState.Updated)
-                .StartTracking();
-
-            var query0FilterAddedTracker = Context.Queries
-                .SetTracker(Context.Tracking.CreateTracker("AddedTracker"))
-                .SetFilter(Context.Filters
-                    .FilterBy(new TestSharedComponent1 { Prop = 0 }));
-            query0FilterAddedTracker.Tracker.SetTrackingState<TestSharedComponent1>(TrackingState.Added);
-            query0FilterAddedTracker.Tracker.StartTracking();
-
-            var query1FilterTracker = Context.Queries
-                .SetFilter(Context.Filters
-                    .FilterBy(new TestSharedComponent1 { Prop = 1 }));
-
-            var filter10 = Context.Filters
-                .FilterBy(new TestSharedComponent1 { Prop = 10 });
-
-            var createdEntities = Context.Entities.CreateEntities(
-                Context.ArcheTypes
-                    .AddSharedComponent(new TestSharedComponent1 { Prop = 0 }),
-                UnitTestConsts.SmallCount);
-            Context.Entities.CreateEntities(
-                Context.ArcheTypes
-                    .AddSharedComponent(new TestSharedComponent1 { Prop = 1 }),
-                ref createdEntities,
-                createdEntities.Length,
-                UnitTestConsts.SmallCount);
-
-            Context.Entities.UpdateSharedComponents(query0FilterAddedTracker, new TestSharedComponent1 { Prop = 10 });
-            Context.Entities.UpdateSharedComponents(query1FilterTracker, new TestSharedComponent1 { Prop = 10 });
-            var filteredEntities = Context.Entities.GetEntities(filter10);
-            Assert.IsTrue(filteredEntities.Length == UnitTestConsts.SmallCount * 2);
-            for (var i = 0; i < filteredEntities.Length; i++)
-            {
-                Assert.IsTrue(Context.Entities.GetSharedComponent<TestSharedComponent1>(filteredEntities[i]).Prop == 10,
-                    $"Entity: {filteredEntities[i]}");
-            }
-
-            var trackedEntities = Context.Entities.GetEntities(updateSharedTracker);
-            Assert.IsTrue(trackedEntities.Length == UnitTestConsts.SmallCount * 2);
-            for (var i = 0; i < createdEntities.Length; i++)
-            {
-                Assert.IsTrue(trackedEntities.Any(x => x == createdEntities[i]),
-                    $"Tracked Entity: {createdEntities[i]}");
-            }
-
-            var emptyComponents = new TestSharedComponent1[0];
-            Context.Tracking.RemoveTracker(query0FilterAddedTracker.Tracker);
-            AssertQuery_DiffContext_DestroyedTracker_Null(
-                query0FilterAddedTracker,
-                new Action<EntityQuery>[]
-                {
-                    x => Context.Entities.UpdateSharedComponents(x, new TestSharedComponent1()),
-                });
-
-            EcsContexts.Instance.DestroyContext(Context);
-            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
-                Context.Entities.UpdateSharedComponents(query1FilterTracker, new TestSharedComponent1()));
         }
     }
 }

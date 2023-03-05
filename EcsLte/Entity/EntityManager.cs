@@ -1,7 +1,9 @@
 ﻿using EcsLte.Exceptions;
 using EcsLte.Utilities;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace EcsLte
 {
@@ -15,8 +17,11 @@ namespace EcsLte
         private Entity[] _cachedInternalEntities;
         private EntityData* _entityDatas;
         private ArcheType _cachedArcheType;
+        private ChangeVersion _globalVersion;
 
         public EcsContext Context { get; private set; }
+
+        public ChangeVersion GlobalVersion { get => _globalVersion; }
 
         internal EntityManager(EcsContext context)
         {
@@ -32,9 +37,71 @@ namespace EcsLte
                 ComponentConfigs.Instance.AllSharedCount);
 
             Context = context;
+            _globalVersion = new ChangeVersion { Version = 1 };
         }
 
-        #region Private
+        // todo might not need this code
+        /*internal int GetArcheTypeDataChunks(EntityQuery query, ref ArcheTypeDataChunk[] chunks)
+        {
+            if (query.Filter != null && query.Tracker == null)
+                return GetArcheTypeDataChunks(query.Filter, ref chunks);
+            else if (query.Filter == null && query.Tracker != null)
+                return GetArcheTypeDataChunks(query.Tracker, ref chunks);
+            else if (query.Filter != null && query.Tracker != null)
+            {
+                var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(query.Filter);
+                var chunkIndex = 0;
+                for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
+                {
+                    var archeTypeData = filteredArcheTypeDatas[i];
+                    query.Tracker.GetArcheTypeDataChunks(archeTypeData, out var archeTypeChunks);
+                    Helper.ResizeRefArray(ref chunks, chunkIndex, archeTypeChunks.Count);
+                    archeTypeChunks.CopyTo(0, chunks, chunkIndex, archeTypeChunks.Count);
+                }
+
+                // TODO Not sure if +1 is needed
+                return chunkIndex + 1;
+            }
+
+            return 0;
+        }
+
+        internal int GetArcheTypeDataChunks(EntityFilter filter, ref ArcheTypeDataChunk[] chunks)
+        {
+            var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
+            var chunkIndex = 0;
+            for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
+            {
+                var archeTypeData = filteredArcheTypeDatas[i];
+                if (archeTypeData.ChunksCount > 0)
+                {
+                    Helper.ResizeRefArray(ref chunks, chunkIndex, archeTypeData.ChunksCount);
+                    chunkIndex += archeTypeData.GetAllChunks(ref chunks, chunkIndex);
+                }
+            }
+
+            // TODO Not sure if +1 is needed
+            return chunkIndex + 1;
+        }
+
+        internal int GetArcheTypeDataChunks(EntityTracker tracker, ref ArcheTypeDataChunk[] chunks)
+        {
+            var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(tracker.TrackingFilter());
+            var chunkIndex = 0;
+            for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
+            {
+                var archeTypeData = filteredArcheTypeDatas[i];
+                tracker.GetArcheTypeDataChunks(archeTypeData, out var archeTypeChunks);
+
+                Helper.ResizeRefArray(ref chunks, chunkIndex, archeTypeChunks.Count);
+                archeTypeChunks.CopyTo(0, chunks, chunkIndex, archeTypeChunks.Count);
+
+                chunkIndex += archeTypeChunks.Count;
+            }
+
+            // TODO Not sure if +1 is needed
+            return chunkIndex + 1;
+        }*/
 
         internal void InternalDestroy()
         {
@@ -50,6 +117,8 @@ namespace EcsLte
             _cachedArcheType = new ArcheType();
         }
 
+        #region Private
+
         private bool InternalHasEntity(Entity entity, out EntityData entityData, out ArcheTypeData archeTypeData)
         {
             if (entity.Id > 0 && entity.Id < _entitiesLength)
@@ -58,7 +127,7 @@ namespace EcsLte
                 if (entityData.ArcheTypeIndex != ArcheTypeIndex.Null)
                 {
                     archeTypeData = Context.ArcheTypes.GetArcheTypeData(entityData.ArcheTypeIndex);
-                    return archeTypeData.GetEntity(entityData.EntityIndex) == entity;
+                    return archeTypeData.GetEntity(entityData) == entity;
                 }
                 else
                     archeTypeData = null;
@@ -101,11 +170,8 @@ namespace EcsLte
             }
             _entitiesCount++;
 
-            entityData = archeTypeData.AddEntity(entity, clearComponents);
+            entityData = archeTypeData.AddEntity(GlobalVersion, entity, clearComponents);
             _entityDatas[entity.Id] = entityData;
-
-            for (var i = 0; i < archeTypeData.ArcheType.ConfigsLength; i++)
-                Context.Tracking.TrackAdd(entity, archeTypeData.ArcheType.Configs[i], archeTypeData);
         }
 
         private void CheckAndAllocEntities(ArcheTypeData archeTypeData, bool clearComponents,
@@ -146,18 +212,13 @@ namespace EcsLte
             }
             _entitiesCount += count;
 
-            archeTypeData.AddEntities(entities, startingIndex, count,
+            archeTypeData.AddEntities(GlobalVersion, entities, startingIndex, count,
                 _entityDatas, clearComponents);
-
-            for (var i = 0; i < archeTypeData.ArcheType.ConfigsLength; i++)
-                Context.Tracking.TrackAdds(entities, startingIndex, count,
-                    archeTypeData.ArcheType.Configs[i], archeTypeData);
         }
 
         private void DeallocEntity(Entity entity, ArcheTypeData archeTypeData)
         {
             archeTypeData.RemoveEntity(entity, _entityDatas);
-            Context.Tracking.EntityDestroyed(entity, archeTypeData);
 
             _reusableEntities[_reusableEntitiesCount++] = entity;
             _entityDatas[entity.Id] = EntityData.Null;
@@ -170,7 +231,7 @@ namespace EcsLte
             {
                 var count = archeTypeData.EntityCount;
                 Helper.ResizeRefArray(ref _cachedInternalEntities, 0, count);
-                archeTypeData.GetEntities(ref _cachedInternalEntities, 0);
+                archeTypeData.GetAllEntities(ref _cachedInternalEntities, 0);
                 for (var i = 0; i < count; i++)
                 {
                     var entity = _cachedInternalEntities[i];
@@ -180,19 +241,6 @@ namespace EcsLte
                 _entitiesCount -= count;
 
                 archeTypeData.RemoveAllEntities();
-                Context.Tracking.ArcheTypeEntitiesDestroyed(archeTypeData);
-            }
-        }
-
-        private void InternalDestroyTracker(EntityTracker tracker, ArcheTypeData archeTypeData)
-        {
-            var trackedEntityCount = tracker.GetArcheTypeDataEntities(archeTypeData,
-                ref _cachedInternalEntities, 0);
-            for (var i = 0; i < trackedEntityCount; i++)
-            {
-                DeallocEntity(
-                    _cachedInternalEntities[i],
-                    archeTypeData);
             }
         }
 
@@ -209,7 +257,8 @@ namespace EcsLte
                 CheckAndAllocEntities(copyArcheTypeData, false,
                     ref destEntities, destStartingIndex, srcArcheTypeData.EntityCount);
 
-                copyArcheTypeData.CopyComponentsDifferentArcheTypeDataSameComponents(
+                copyArcheTypeData.CopyComponentsFromDifferentArcheTypeDataSameComponents(
+                    GlobalVersion,
                     srcArcheTypeData,
                     0,
                     prevEntityCount,
@@ -219,7 +268,8 @@ namespace EcsLte
             return srcArcheTypeData.EntityCount;
         }
 
-        private int InternalCopyToTracker(EntityTracker tracker, ArcheTypeData srcArcheTypeData,
+        // TODO redo in chunk code?
+        /*private int InternalCopyToTracker(EntityTracker tracker, ArcheTypeData srcArcheTypeData,
             Dictionary<ArcheTypeIndex, (ArcheTypeData, ArcheTypeData)> cachedArcheTypeDatas,
             ref Entity[] destEntities, int destStartingIndex)
         {
@@ -252,7 +302,7 @@ namespace EcsLte
             }
 
             return trackedEntityCount;
-        }
+        }*/
 
         private int InternalDuplicateArcheTypeData(ArcheTypeData archeTypeData,
             ref Entity[] destEntities, int destStartingIndex)
@@ -265,7 +315,8 @@ namespace EcsLte
             CheckAndAllocEntities(archeTypeData, false,
                 ref destEntities, destStartingIndex, archeTypeData.EntityCount);
 
-            archeTypeData.CopyComponentsSameArcheTypeData(
+            archeTypeData.CopyComponentsFromSameArcheTypeData(
+                GlobalVersion,
                 0,
                 preEntityCount,
                 preEntityCount);
@@ -273,7 +324,8 @@ namespace EcsLte
             return archeTypeData.EntityCount - preEntityCount;
         }
 
-        private int InternalDuplicateTracker(EntityTracker tracker, ArcheTypeData archeTypeData,
+        // TODO redo in chunk code?
+        /*private int InternalDuplicateTracker(EntityTracker tracker, ArcheTypeData archeTypeData,
             ref Entity[] destEntities, int destStartingIndex)
         {
             var trackedEntityCount = tracker.GetArcheTypeDataEntities(archeTypeData,
@@ -287,7 +339,9 @@ namespace EcsLte
 
                 for (var i = 0; i < trackedEntityCount; i++)
                 {
+                    // NOT TESTED
                     archeTypeData.CopyComponentsSameArcheTypeData(
+                        GlobalVersion,
                         _entityDatas[_cachedInternalEntities[i].Id].EntityIndex,
                         preEntityCount + i,
                         1);
@@ -295,7 +349,7 @@ namespace EcsLte
             }
 
             return trackedEntityCount;
-        }
+        }*/
 
         private void InternalCacheDiffContextArcheType(ArcheTypeData diffContextArcheTypeData)
         {
@@ -308,8 +362,7 @@ namespace EcsLte
             }
         }
 
-        private void InternalAddConfigTrackingTransferEntity(Entity entity,
-            ArcheTypeData prevArcheTypeData, ComponentConfig config, SharedDataIndex? sharedDataIndex,
+        private void InternalAddConfig(ArcheTypeData prevArcheTypeData, ComponentConfig config, SharedDataIndex? sharedDataIndex,
             out ArcheTypeData nextArcheTypeData)
         {
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
@@ -319,15 +372,21 @@ namespace EcsLte
                 ArcheType.AddConfig(ref _cachedArcheType, config, sharedDataIndex.Value);
 
             nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-            ArcheTypeData.TransferEntity(entity, _entityDatas,
-                prevArcheTypeData, nextArcheTypeData);
-
-            Context.Tracking.TrackAdd(entity, config, nextArcheTypeData);
-            Context.Tracking.TrackArcheTypeDataChange(entity,
-                prevArcheTypeData, nextArcheTypeData);
         }
 
-        private bool InternalAddConfigTrackingTransferArcheTypeData(
+        private void InternalAddConfigTransferEntity(Entity entity,
+            ArcheTypeData prevArcheTypeData, ComponentConfig config, SharedDataIndex? sharedDataIndex,
+            out ArcheTypeData nextArcheTypeData)
+        {
+            InternalAddConfig(prevArcheTypeData, config, sharedDataIndex, out nextArcheTypeData);
+            ArcheTypeData.TransferEntity(GlobalVersion,
+                entity,
+                prevArcheTypeData,
+                nextArcheTypeData,
+                _entityDatas);
+        }
+
+        private bool InternalAddConfigTransferArcheTypeData(
             ArcheTypeData prevArcheTypeData, ComponentConfig config, SharedDataIndex? sharedDataIndex,
             out ArcheTypeData nextArcheTypeData, out int preEntityCount)
         {
@@ -338,62 +397,15 @@ namespace EcsLte
                 return false;
             }
 
-            ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
-            if (sharedDataIndex == null)
-                ArcheType.AddConfig(ref _cachedArcheType, config);
-            else
-                ArcheType.AddConfig(ref _cachedArcheType, config, sharedDataIndex.Value);
-
             Helper.ResizeRefArray(ref _cachedInternalEntities, 0, prevArcheTypeData.EntityCount);
-            prevArcheTypeData.GetEntities(ref _cachedInternalEntities, 0);
-            var prevEntityCount = prevArcheTypeData.EntityCount;
+            prevArcheTypeData.GetAllEntities(ref _cachedInternalEntities, 0);
 
-            nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
+            InternalAddConfig(prevArcheTypeData, config, sharedDataIndex, out nextArcheTypeData);
             preEntityCount = nextArcheTypeData.EntityCount;
-            ArcheTypeData.TransferAllEntities(_entityDatas,
+            ArcheTypeData.TransferAllEntities(GlobalVersion,
                 prevArcheTypeData,
-                nextArcheTypeData);
-
-            Context.Tracking.TrackAdds(_cachedInternalEntities, 0, prevEntityCount,
-                config, nextArcheTypeData);
-            Context.Tracking.TrackAllArcheTypeDataChange(prevArcheTypeData, nextArcheTypeData);
-
-            return true;
-        }
-
-        private bool InternalAddConfigTrackingTransferTracker(EntityTracker tracker,
-            ArcheTypeData prevArcheTypeData, ComponentConfig config, SharedDataIndex? sharedDataIndex,
-            out ArcheTypeData nextArcheTypeData, out int preEntityCount)
-        {
-            var trackedEntityCount = tracker.GetArcheTypeDataEntities(prevArcheTypeData,
-                ref _cachedInternalEntities, 0);
-            if (trackedEntityCount == 0)
-            {
-                nextArcheTypeData = null;
-                preEntityCount = 0;
-                return false;
-            }
-
-            ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
-            if (sharedDataIndex == null)
-                ArcheType.AddConfig(ref _cachedArcheType, config);
-            else
-                ArcheType.AddConfig(ref _cachedArcheType, config, sharedDataIndex.Value);
-
-            nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-            preEntityCount = nextArcheTypeData.EntityCount;
-
-            for (var i = 0; i < trackedEntityCount; i++)
-            {
-                var entity = _cachedInternalEntities[i];
-
-                ArcheTypeData.TransferEntity(entity, _entityDatas,
-                    prevArcheTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackAdd(entity, config, nextArcheTypeData);
-                Context.Tracking.TrackArcheTypeDataChange(entity,
-                    prevArcheTypeData, nextArcheTypeData);
-            }
+                nextArcheTypeData,
+                _entityDatas);
 
             return true;
         }
@@ -409,134 +421,88 @@ namespace EcsLte
             return false;
         }
 
-        private int InternalGetComponentsTracker<TComponent>(EntityTracker tracker, ArcheTypeData archeTypeData,
+        private int InternalGetEntitiesTracker(EntityTracker tracker, ArcheTypeData archeTypeData,
+            ref Entity[] destEntities, int destStartingIndex)
+        {
+            if (!tracker.GetArcheTypeDataChunks(archeTypeData, out var chunks))
+                return 0;
+
+            var entityIndex = destStartingIndex;
+            for (var i = 0; i < chunks.Count; i++)
+            {
+                var chunk = chunks[i];
+                Helper.ResizeRefArray(ref destEntities, entityIndex, chunk.EntityCount);
+                entityIndex += chunk.GetEntities(ref destEntities,
+                    entityIndex);
+            }
+
+            return entityIndex - destStartingIndex;
+        }
+
+        private int InternalGetComponentsTracker<TComponent>(ComponentConfig config, EntityTracker tracker, ArcheTypeData archeTypeData,
             ref TComponent[] destComponents, int destStartingIndex)
             where TComponent : unmanaged, IGeneralComponent
         {
-            var trackedEntityCount = 0;
-            var config = ComponentConfig<TComponent>.Config;
-            if (archeTypeData.HasConfig(config))
-            {
-                trackedEntityCount = tracker.GetArcheTypeDataEntities(archeTypeData,
-                    ref _cachedInternalEntities, 0);
-                if (trackedEntityCount > 0)
-                {
-                    Helper.ResizeRefArray(ref destComponents, destStartingIndex, trackedEntityCount);
+            if (!archeTypeData.HasConfig(config))
+                return 0;
 
-                    var configOffset = archeTypeData.GetConfigOffset(config);
-                    for (var i = 0; i < trackedEntityCount; i++, destStartingIndex++)
-                    {
-                        destComponents[destStartingIndex] = archeTypeData.GetComponent<TComponent>(
-                            _entityDatas[_cachedInternalEntities[i].Id].EntityIndex,
-                            configOffset);
-                    }
-                }
+            if (!tracker.GetArcheTypeDataChunks(archeTypeData, out var chunks))
+                return 0;
+
+            var configOffset = archeTypeData.GetConfigOffset(config);
+            var componentIndex = destStartingIndex;
+            for (var i = 0; i < chunks.Count; i++)
+            {
+                var chunk = chunks[i];
+                Helper.ResizeRefArray(ref destComponents, componentIndex, chunk.EntityCount);
+                componentIndex += chunk.GetAllComponents(ref destComponents,
+                    componentIndex, configOffset);
             }
 
-            return trackedEntityCount;
+            return componentIndex - destStartingIndex;
         }
 
-        private int InternalGetManagedComponentsTracker<TComponent>(EntityTracker tracker, ArcheTypeData archeTypeData,
+        private int InternalGetManagedComponentsTracker<TComponent>(ComponentConfig config, EntityTracker tracker, ArcheTypeData archeTypeData,
             ref TComponent[] destComponents, int destStartingIndex)
             where TComponent : IManagedComponent
         {
-            var trackedEntityCount = 0;
-            var config = ComponentConfig<TComponent>.Config;
-            if (archeTypeData.HasConfig(config))
-            {
-                trackedEntityCount = tracker.GetArcheTypeDataEntities(archeTypeData,
-                    ref _cachedInternalEntities, 0);
-                if (trackedEntityCount > 0)
-                {
-                    Helper.ResizeRefArray(ref destComponents, destStartingIndex, trackedEntityCount);
+            if (!archeTypeData.HasConfig(config))
+                return 0;
 
-                    var configOffset = archeTypeData.GetConfigOffset(config);
-                    for (var i = 0; i < trackedEntityCount; i++, destStartingIndex++)
-                    {
-                        destComponents[destStartingIndex] = archeTypeData.GetManagedComponent<TComponent>(
-                            _entityDatas[_cachedInternalEntities[i].Id].EntityIndex,
-                            configOffset);
-                    }
-                }
+            if (!tracker.GetArcheTypeDataChunks(archeTypeData, out var chunks))
+                return 0;
+
+            var configOffset = archeTypeData.GetConfigOffset(config);
+            var componentIndex = destStartingIndex;
+            for (var i = 0; i < chunks.Count; i++)
+            {
+                var chunk = chunks[i];
+                Helper.ResizeRefArray(ref destComponents, componentIndex, chunk.EntityCount);
+                componentIndex += chunk.GetAllManagedComponents(ref destComponents,
+                    componentIndex, configOffset);
             }
 
-            return trackedEntityCount;
+            return componentIndex - destStartingIndex;
         }
 
-        private int InternalUpdateTrackingTracker(EntityTracker tracker,
-            ArcheTypeData archeTypeData, ComponentConfig config)
-        {
-            if (archeTypeData.HasConfig(config))
-            {
-                var trackedEntityCount = tracker.GetArcheTypeDataEntities(archeTypeData,
-                    ref _cachedInternalEntities, 0);
-                if (trackedEntityCount > 0)
-                {
-                    Context.Tracking.TrackUpdates(_cachedInternalEntities, 0, trackedEntityCount,
-                        config, archeTypeData);
-                }
-
-                return trackedEntityCount;
-            }
-
-            return 0;
-        }
-
-        private void InternalUpdateSharedTrackingTransferArcheTypeData(
-            ArcheTypeData prevArcheTypeData, ComponentConfig config, SharedDataIndex sharedDataIndex)
+        private void InternalUpdateSharedTransferArcheTypeData(ArcheTypeData prevArcheTypeData, SharedDataIndex sharedDataIndex)
         {
             var prevEntityCount = prevArcheTypeData.EntityCount;
             Helper.ResizeRefArray(ref _cachedInternalEntities, 0, prevEntityCount);
-            prevArcheTypeData.GetEntities(ref _cachedInternalEntities, 0);
+            prevArcheTypeData.GetAllEntities(ref _cachedInternalEntities, 0);
 
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
             if (ArcheType.ReplaceSharedDataIndex(ref _cachedArcheType, sharedDataIndex))
             {
                 var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferAllEntities(_entityDatas,
-                    prevArcheTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackAllArcheTypeDataChange(
-                    prevArcheTypeData, nextArcheTypeData);
-
-                prevArcheTypeData = nextArcheTypeData;
-            }
-
-            Context.Tracking.TrackUpdates(_cachedInternalEntities, 0, prevEntityCount,
-                config, prevArcheTypeData);
-        }
-
-        private void InternalUpdateSharedTrackingTransferTracker(EntityTracker tracker,
-            ArcheTypeData prevArcheTypeData, ComponentConfig config, SharedDataIndex sharedDataIndex)
-        {
-            if (prevArcheTypeData.HasConfig(config))
-            {
-                var trackedEntityCount = tracker.GetArcheTypeDataEntities(prevArcheTypeData,
-                    ref _cachedInternalEntities, 0);
-                if (trackedEntityCount > 0)
-                {
-                    ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
-                    if (ArcheType.ReplaceSharedDataIndex(ref _cachedArcheType, sharedDataIndex))
-                    {
-                        var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                        for (var j = 0; j < trackedEntityCount; j++)
-                        {
-                            var entity = _cachedInternalEntities[j];
-                            ArcheTypeData.TransferEntity(entity, _entityDatas,
-                                prevArcheTypeData, nextArcheTypeData);
-
-                            Context.Tracking.TrackArcheTypeDataChange(entity,
-                                prevArcheTypeData, nextArcheTypeData);
-                        }
-                    }
-
-                    Context.Tracking.TrackUpdates(_cachedInternalEntities, 0, trackedEntityCount,
-                        config, prevArcheTypeData);
-                }
+                ArcheTypeData.TransferAllEntities(GlobalVersion,
+                    prevArcheTypeData,
+                    nextArcheTypeData,
+                    _entityDatas);
             }
         }
 
-        private void InternalRemoveConfigTrackingTransferEntity(Entity entity,
+        private void InternalRemoveConfigTransferEntity(Entity entity,
             ArcheTypeData prevArcheTypeData, ComponentConfig config, bool removeShared)
         {
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
@@ -546,15 +512,14 @@ namespace EcsLte
                 ArcheType.RemoveConfig(ref _cachedArcheType, config);
 
             var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-            ArcheTypeData.TransferEntity(entity, _entityDatas,
-                prevArcheTypeData, nextArcheTypeData);
-
-            Context.Tracking.TrackRemove(entity, config, nextArcheTypeData);
-            Context.Tracking.TrackArcheTypeDataChange(entity,
-                prevArcheTypeData, nextArcheTypeData);
+            ArcheTypeData.TransferEntity(GlobalVersion,
+                entity,
+                prevArcheTypeData,
+                nextArcheTypeData,
+                _entityDatas);
         }
 
-        private void InternalRemoveConfigTrackingTransferArcheTypeData(
+        private void InternalRemoveConfigTransferArcheTypeData(
             ArcheTypeData prevArcheTypeData, ComponentConfig config, bool removeShared)
         {
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
@@ -564,46 +529,13 @@ namespace EcsLte
                 ArcheType.RemoveConfig(ref _cachedArcheType, config);
 
             Helper.ResizeRefArray(ref _cachedInternalEntities, 0, prevArcheTypeData.EntityCount);
-            prevArcheTypeData.GetEntities(ref _cachedInternalEntities, 0);
-            var prevEntityCount = prevArcheTypeData.EntityCount;
+            prevArcheTypeData.GetAllEntities(ref _cachedInternalEntities, 0);
 
             var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-            ArcheTypeData.TransferAllEntities(_entityDatas,
+            ArcheTypeData.TransferAllEntities(GlobalVersion,
                 prevArcheTypeData,
-                nextArcheTypeData);
-
-            Context.Tracking.TrackRemoves(_cachedInternalEntities, 0, prevEntityCount,
-                config, nextArcheTypeData);
-            Context.Tracking.TrackAllArcheTypeDataChange(prevArcheTypeData, nextArcheTypeData);
-        }
-
-        private void InternalRemoveConfigTrackingTransferArcheTypeData(EntityTracker tracker,
-            ArcheTypeData prevArcheTypeData, ComponentConfig config, bool removeShared)
-        {
-            var trackedEntityCount = tracker.GetArcheTypeDataEntities(prevArcheTypeData,
-                ref _cachedInternalEntities, 0);
-            if (trackedEntityCount == 0)
-                return;
-
-            ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
-            if (removeShared)
-                ArcheType.RemoveConfigAndSharedDataIndex(ref _cachedArcheType, config);
-            else
-                ArcheType.RemoveConfig(ref _cachedArcheType, config);
-
-            var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-
-            for (var i = 0; i < trackedEntityCount; i++)
-            {
-                var entity = _cachedInternalEntities[i];
-
-                ArcheTypeData.TransferEntity(entity, _entityDatas,
-                    prevArcheTypeData, nextArcheTypeData);
-
-                Context.Tracking.TrackRemove(entity, config, nextArcheTypeData);
-                Context.Tracking.TrackArcheTypeDataChange(entity,
-                    prevArcheTypeData, nextArcheTypeData);
-            }
+                nextArcheTypeData,
+                _entityDatas);
         }
 
         #endregion

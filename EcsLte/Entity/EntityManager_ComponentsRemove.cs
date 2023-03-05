@@ -23,18 +23,18 @@ namespace EcsLte
             AssertNotHaveComponent(config1, prevArcheTypeData);
             AssertNotHaveComponent(config2, prevArcheTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
 
             config1.Adapter.RemoveConfig(ref _cachedArcheType);
             config2.Adapter.RemoveConfig(ref _cachedArcheType);
 
             var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-            ArcheTypeData.TransferEntity(entity, _entityDatas,
-                prevArcheTypeData, nextArcheTypeData);
-
-            Context.Tracking.TrackArcheTypeDataChange(entity, prevArcheTypeData, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config1, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config2, nextArcheTypeData);
+            ArcheTypeData.TransferEntity(GlobalVersion,
+                entity,
+                prevArcheTypeData,
+                nextArcheTypeData,
+                _entityDatas);
         }
 
         public void RemoveComponents<T1, T2, T3>(Entity entity)
@@ -60,6 +60,7 @@ namespace EcsLte
             AssertNotHaveComponent(config2, prevArcheTypeData);
             AssertNotHaveComponent(config3, prevArcheTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
 
             config1.Adapter.RemoveConfig(ref _cachedArcheType);
@@ -67,13 +68,11 @@ namespace EcsLte
             config3.Adapter.RemoveConfig(ref _cachedArcheType);
 
             var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-            ArcheTypeData.TransferEntity(entity, _entityDatas,
-                prevArcheTypeData, nextArcheTypeData);
-
-            Context.Tracking.TrackArcheTypeDataChange(entity, prevArcheTypeData, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config1, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config2, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config3, nextArcheTypeData);
+            ArcheTypeData.TransferEntity(GlobalVersion,
+                entity,
+                prevArcheTypeData,
+                nextArcheTypeData,
+                _entityDatas);
         }
 
         public void RemoveComponents<T1, T2, T3, T4>(Entity entity)
@@ -103,6 +102,7 @@ namespace EcsLte
             AssertNotHaveComponent(config3, prevArcheTypeData);
             AssertNotHaveComponent(config4, prevArcheTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
 
             config1.Adapter.RemoveConfig(ref _cachedArcheType);
@@ -111,14 +111,11 @@ namespace EcsLte
             config4.Adapter.RemoveConfig(ref _cachedArcheType);
 
             var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-            ArcheTypeData.TransferEntity(entity, _entityDatas,
-                prevArcheTypeData, nextArcheTypeData);
-
-            Context.Tracking.TrackArcheTypeDataChange(entity, prevArcheTypeData, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config1, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config2, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config3, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config4, nextArcheTypeData);
+            ArcheTypeData.TransferEntity(GlobalVersion,
+                entity,
+                prevArcheTypeData,
+                nextArcheTypeData,
+                _entityDatas);
         }
 
         public void RemoveComponents<T1, T2, T3, T4, T5>(Entity entity)
@@ -152,6 +149,7 @@ namespace EcsLte
             AssertNotHaveComponent(config4, prevArcheTypeData);
             AssertNotHaveComponent(config5, prevArcheTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
 
             config1.Adapter.RemoveConfig(ref _cachedArcheType);
@@ -161,15 +159,11 @@ namespace EcsLte
             config5.Adapter.RemoveConfig(ref _cachedArcheType);
 
             var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-            ArcheTypeData.TransferEntity(entity, _entityDatas,
-                prevArcheTypeData, nextArcheTypeData);
-
-            Context.Tracking.TrackArcheTypeDataChange(entity, prevArcheTypeData, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config1, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config2, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config3, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config4, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config5, nextArcheTypeData);
+            ArcheTypeData.TransferEntity(GlobalVersion,
+                entity,
+                prevArcheTypeData,
+                nextArcheTypeData,
+                _entityDatas);
         }
 
         public void RemoveComponents<T1, T2, T3, T4, T5, T6>(Entity entity)
@@ -207,6 +201,7 @@ namespace EcsLte
             AssertNotHaveComponent(config5, prevArcheTypeData);
             AssertNotHaveComponent(config6, prevArcheTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
 
             config1.Adapter.RemoveConfig(ref _cachedArcheType);
@@ -217,16 +212,11 @@ namespace EcsLte
             config6.Adapter.RemoveConfig(ref _cachedArcheType);
 
             var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-            ArcheTypeData.TransferEntity(entity, _entityDatas,
-                prevArcheTypeData, nextArcheTypeData);
-
-            Context.Tracking.TrackArcheTypeDataChange(entity, prevArcheTypeData, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config1, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config2, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config3, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config4, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config5, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config6, nextArcheTypeData);
+            ArcheTypeData.TransferEntity(GlobalVersion,
+                entity,
+                prevArcheTypeData,
+                nextArcheTypeData,
+                _entityDatas);
         }
 
         public void RemoveComponents<T1, T2, T3, T4, T5, T6, T7>(Entity entity)
@@ -268,6 +258,7 @@ namespace EcsLte
             AssertNotHaveComponent(config6, prevArcheTypeData);
             AssertNotHaveComponent(config7, prevArcheTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
 
             config1.Adapter.RemoveConfig(ref _cachedArcheType);
@@ -279,17 +270,11 @@ namespace EcsLte
             config7.Adapter.RemoveConfig(ref _cachedArcheType);
 
             var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-            ArcheTypeData.TransferEntity(entity, _entityDatas,
-                prevArcheTypeData, nextArcheTypeData);
-
-            Context.Tracking.TrackArcheTypeDataChange(entity, prevArcheTypeData, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config1, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config2, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config3, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config4, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config5, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config6, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config7, nextArcheTypeData);
+            ArcheTypeData.TransferEntity(GlobalVersion,
+                entity,
+                prevArcheTypeData,
+                nextArcheTypeData,
+                _entityDatas);
         }
 
         public void RemoveComponents<T1, T2, T3, T4, T5, T6, T7, T8>(Entity entity)
@@ -335,6 +320,7 @@ namespace EcsLte
             AssertNotHaveComponent(config7, prevArcheTypeData);
             AssertNotHaveComponent(config8, prevArcheTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             ArcheType.CopyToCached(prevArcheTypeData.ArcheType, ref _cachedArcheType);
 
             config1.Adapter.RemoveConfig(ref _cachedArcheType);
@@ -347,18 +333,11 @@ namespace EcsLte
             config8.Adapter.RemoveConfig(ref _cachedArcheType);
 
             var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-            ArcheTypeData.TransferEntity(entity, _entityDatas,
-                prevArcheTypeData, nextArcheTypeData);
-
-            Context.Tracking.TrackArcheTypeDataChange(entity, prevArcheTypeData, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config1, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config2, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config3, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config4, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config5, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config6, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config7, nextArcheTypeData);
-            Context.Tracking.TrackRemove(entity, config8, nextArcheTypeData);
+            ArcheTypeData.TransferEntity(GlobalVersion,
+                entity,
+                prevArcheTypeData,
+                nextArcheTypeData,
+                _entityDatas);
         }
 
         public void RemoveComponents<TComponent>(EntityArcheType archeType)
@@ -370,10 +349,14 @@ namespace EcsLte
 
             var config = ComponentConfig<TComponent>.Config;
             var prevArcheTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
-
             AssertNotHaveComponent(config, prevArcheTypeData);
-            InternalRemoveConfigTrackingTransferArcheTypeData(prevArcheTypeData, config,
-                false);
+
+            if (prevArcheTypeData.EntityCount > 0)
+            {
+                ChangeVersion.IncVersion(ref _globalVersion);
+                InternalRemoveConfigTransferArcheTypeData(prevArcheTypeData, config,
+                    false);
+            }
         }
 
         public void RemoveComponents<TComponent>(EntityFilter filter)
@@ -385,62 +368,20 @@ namespace EcsLte
 
             var config = ComponentConfig<TComponent>.Config;
             var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
+            var incVersion = false;
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var prevArcheTypeData = filteredArcheTypeDatas[i];
-                if (prevArcheTypeData.HasConfig(config))
+                if (prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount > 0)
                 {
-                    InternalRemoveConfigTrackingTransferArcheTypeData(prevArcheTypeData, config,
-                        false);
-                }
-            }
-        }
-
-        public void RemoveComponents<TComponent>(EntityTracker tracker)
-            where TComponent : unmanaged, IGeneralComponent
-        {
-            Context.AssertContext();
-            Context.AssertStructualChangeAvailable();
-            EntityTracker.AssertEntityTracker(tracker, Context);
-
-            var config = ComponentConfig<TComponent>.Config;
-            var archeTypeDatas = tracker.CachedArcheTypeDatas;
-            for (var i = 0; i < archeTypeDatas.Length; i++)
-            {
-                var prevArcheTypeData = archeTypeDatas[i];
-                if (prevArcheTypeData.HasConfig(config))
-                {
-                    InternalRemoveConfigTrackingTransferArcheTypeData(tracker,
-                        prevArcheTypeData, config,
-                        false);
-                }
-            }
-        }
-
-        public void RemoveComponents<TComponent>(EntityQuery query)
-            where TComponent : unmanaged, IGeneralComponent
-        {
-            Context.AssertContext();
-            Context.AssertStructualChangeAvailable();
-            EntityQuery.AssertEntityQuery(query, Context);
-
-            if (query.Filter != null && query.Tracker == null)
-                RemoveComponents<TComponent>(query.Filter);
-            else if (query.Filter == null && query.Tracker != null)
-                RemoveComponents<TComponent>(query.Tracker);
-            else if (query.Filter != null && query.Tracker != null)
-            {
-                var config = ComponentConfig<TComponent>.Config;
-                var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(query.Filter);
-                for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
-                {
-                    var prevArcheTypeData = filteredArcheTypeDatas[i];
-                    if (prevArcheTypeData.HasConfig(config))
+                    if (!incVersion)
                     {
-                        InternalRemoveConfigTrackingTransferArcheTypeData(query.Tracker,
-                            prevArcheTypeData, config,
-                            false);
+                        ChangeVersion.IncVersion(ref _globalVersion);
+                        incVersion = true;
                     }
+
+                    InternalRemoveConfigTransferArcheTypeData(prevArcheTypeData, config,
+                        false);
                 }
             }
         }
@@ -454,10 +395,14 @@ namespace EcsLte
 
             var config = ComponentConfig<TComponent>.Config;
             var prevArcheTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
-
             AssertNotHaveComponent(config, prevArcheTypeData);
-            InternalRemoveConfigTrackingTransferArcheTypeData(prevArcheTypeData, config,
-                false);
+
+            if (prevArcheTypeData.EntityCount > 0)
+            {
+                ChangeVersion.IncVersion(ref _globalVersion);
+                InternalRemoveConfigTransferArcheTypeData(prevArcheTypeData, config,
+                    false);
+            }
         }
 
         public void RemoveManagedComponents<TComponent>(EntityFilter filter)
@@ -469,62 +414,20 @@ namespace EcsLte
 
             var config = ComponentConfig<TComponent>.Config;
             var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
+            var incVersion = false;
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var prevArcheTypeData = filteredArcheTypeDatas[i];
-                if (prevArcheTypeData.HasConfig(config))
+                if (prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount > 0)
                 {
-                    InternalRemoveConfigTrackingTransferArcheTypeData(prevArcheTypeData, config,
-                        false);
-                }
-            }
-        }
-
-        public void RemoveManagedComponents<TComponent>(EntityTracker tracker)
-            where TComponent : IManagedComponent
-        {
-            Context.AssertContext();
-            Context.AssertStructualChangeAvailable();
-            EntityTracker.AssertEntityTracker(tracker, Context);
-
-            var config = ComponentConfig<TComponent>.Config;
-            var archeTypeDatas = tracker.CachedArcheTypeDatas;
-            for (var i = 0; i < archeTypeDatas.Length; i++)
-            {
-                var prevArcheTypeData = archeTypeDatas[i];
-                if (prevArcheTypeData.HasConfig(config))
-                {
-                    InternalRemoveConfigTrackingTransferArcheTypeData(tracker,
-                        prevArcheTypeData, config,
-                        false);
-                }
-            }
-        }
-
-        public void RemoveManagedComponents<TComponent>(EntityQuery query)
-            where TComponent : IManagedComponent
-        {
-            Context.AssertContext();
-            Context.AssertStructualChangeAvailable();
-            EntityQuery.AssertEntityQuery(query, Context);
-
-            if (query.Filter != null && query.Tracker == null)
-                RemoveManagedComponents<TComponent>(query.Filter);
-            else if (query.Filter == null && query.Tracker != null)
-                RemoveManagedComponents<TComponent>(query.Tracker);
-            else if (query.Filter != null && query.Tracker != null)
-            {
-                var config = ComponentConfig<TComponent>.Config;
-                var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(query.Filter);
-                for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
-                {
-                    var prevArcheTypeData = filteredArcheTypeDatas[i];
-                    if (prevArcheTypeData.HasConfig(config))
+                    if (!incVersion)
                     {
-                        InternalRemoveConfigTrackingTransferArcheTypeData(query.Tracker,
-                            prevArcheTypeData, config,
-                            false);
+                        ChangeVersion.IncVersion(ref _globalVersion);
+                        incVersion = true;
                     }
+
+                    InternalRemoveConfigTransferArcheTypeData(prevArcheTypeData, config,
+                        false);
                 }
             }
         }
@@ -538,62 +441,20 @@ namespace EcsLte
 
             var config = ComponentConfig<TComponent>.Config;
             var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
+            var incVersion = false;
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var prevArcheTypeData = filteredArcheTypeDatas[i];
-                if (prevArcheTypeData.HasConfig(config))
+                if (prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount > 0)
                 {
-                    InternalRemoveConfigTrackingTransferArcheTypeData(prevArcheTypeData, config,
-                        false);
-                }
-            }
-        }
-
-        public void RemoveSharedComponents<TComponent>(EntityTracker tracker)
-            where TComponent : unmanaged, ISharedComponent
-        {
-            Context.AssertContext();
-            Context.AssertStructualChangeAvailable();
-            EntityTracker.AssertEntityTracker(tracker, Context);
-
-            var config = ComponentConfig<TComponent>.Config;
-            var archeTypeDatas = tracker.CachedArcheTypeDatas;
-            for (var i = 0; i < archeTypeDatas.Length; i++)
-            {
-                var prevArcheTypeData = archeTypeDatas[i];
-                if (prevArcheTypeData.HasConfig(config))
-                {
-                    InternalRemoveConfigTrackingTransferArcheTypeData(tracker,
-                        prevArcheTypeData, config,
-                        false);
-                }
-            }
-        }
-
-        public void RemoveSharedComponents<TComponent>(EntityQuery query)
-            where TComponent : unmanaged, ISharedComponent
-        {
-            Context.AssertContext();
-            Context.AssertStructualChangeAvailable();
-            EntityQuery.AssertEntityQuery(query, Context);
-
-            if (query.Filter != null && query.Tracker == null)
-                RemoveSharedComponents<TComponent>(query.Filter);
-            else if (query.Filter == null && query.Tracker != null)
-                RemoveSharedComponents<TComponent>(query.Tracker);
-            else if (query.Filter != null && query.Tracker != null)
-            {
-                var config = ComponentConfig<TComponent>.Config;
-                var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(query.Filter);
-                for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
-                {
-                    var prevArcheTypeData = filteredArcheTypeDatas[i];
-                    if (prevArcheTypeData.HasConfig(config))
+                    if (!incVersion)
                     {
-                        InternalRemoveConfigTrackingTransferArcheTypeData(query.Tracker,
-                            prevArcheTypeData, config,
-                            false);
+                        ChangeVersion.IncVersion(ref _globalVersion);
+                        incVersion = true;
                     }
+
+                    InternalRemoveConfigTransferArcheTypeData(prevArcheTypeData, config,
+                        false);
                 }
             }
         }

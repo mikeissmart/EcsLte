@@ -16,13 +16,13 @@ namespace EcsLte
         public ISharedComponent[] FilterByComponents => _data.FilterByComponents;
         internal SharedDataIndex[] SharedDataIndexes => _data.SharedDataIndexes;
         internal ISharedComponentData[] FilterComponentDatas => _data.FilterComponentDatas;
-        internal int ConfigCount => _data.AllOfConfigs.Length + _data.AnyOfConfigs.Length + _data.NoneOfConfigs.Length;
+        internal int ConfigCount => _data.AllOfConfigs.Length;// + _data.AnyOfConfigs.Length + _data.NoneOfConfigs.Length;
         internal ArcheTypeData[] ArcheTypeDatas
         {
             get => _data.ArcheTypeDatas;
             set => _data.ArcheTypeDatas = value;
         }
-        internal long ArcheTypeDataVersion
+        internal ChangeVersion ArcheTypeDataVersion
         {
             get => _data.ArcheTypeDataVersion;
             set => _data.ArcheTypeDataVersion = value;
@@ -153,6 +153,22 @@ namespace EcsLte
             return this;
         }
 
+        internal void WhereAllOf(EntityTracker tracker)
+        {
+            _data = new Data(_data)
+            {
+                AllOfConfigs = new ComponentConfig[tracker.TrackingGeneralConfigs.Count +
+                    tracker.TrackingManagedConfigs.Count +
+                    tracker.TrackingSharedConfigs.Count]
+            };
+            tracker.TrackingGeneralConfigs.CopyTo(_data.AllOfConfigs, 0);
+            tracker.TrackingManagedConfigs.CopyTo(_data.AllOfConfigs, tracker.TrackingGeneralConfigs.Count);
+            tracker.TrackingSharedConfigs.CopyTo(_data.AllOfConfigs, tracker.TrackingGeneralConfigs.Count +
+                tracker.TrackingManagedConfigs.Count);
+
+            Array.Sort(_data.AllOfConfigs);
+        }
+
         internal void RemoveAnyOf(ComponentConfig config)
         {
             var anyOfIndex = -1;
@@ -231,6 +247,22 @@ namespace EcsLte
             }
 
             return this;
+        }
+
+        internal void WhereAnyOf(EntityTracker tracker)
+        {
+            _data = new Data(_data)
+            {
+                AnyOfConfigs = new ComponentConfig[tracker.TrackingGeneralConfigs.Count +
+                    tracker.TrackingManagedConfigs.Count +
+                    tracker.TrackingSharedConfigs.Count]
+            };
+            tracker.TrackingGeneralConfigs.CopyTo(_data.AnyOfConfigs, 0);
+            tracker.TrackingManagedConfigs.CopyTo(_data.AnyOfConfigs, tracker.TrackingGeneralConfigs.Count);
+            tracker.TrackingSharedConfigs.CopyTo(_data.AnyOfConfigs, tracker.TrackingGeneralConfigs.Count +
+                tracker.TrackingManagedConfigs.Count);
+
+            Array.Sort(_data.AnyOfConfigs);
         }
 
         public EntityFilter WhereNoneOf<TComponent>()
@@ -479,8 +511,6 @@ namespace EcsLte
         public override bool Equals(object other)
             => other is EntityFilter obj && this == obj;
 
-        #endregion
-
         public override int GetHashCode()
         {
             if (_data.HashCode == 0)
@@ -503,6 +533,8 @@ namespace EcsLte
 
             return _data.HashCode;
         }
+
+        #endregion
 
         internal bool IsFiltered(ArcheType archeType)
             => IsFilteredAllConfigs(archeType) &&
@@ -596,14 +628,9 @@ namespace EcsLte
 
         private class Data
         {
-            private Type[] _allOfTypes;
-            private Type[] _anyOfTypes;
-            private Type[] _noneOfTypes;
-
             public ArcheTypeData[] ArcheTypeDatas;
-            public long ArcheTypeDataVersion;
+            public ChangeVersion ArcheTypeDataVersion;
             public int HashCode;
-            public object LockObj;
             public EcsContext Context;
             public ComponentConfig[] AllOfConfigs;
             public ComponentConfig[] AnyOfConfigs;
@@ -612,55 +639,11 @@ namespace EcsLte
             public ISharedComponent[] FilterByComponents;
             public ISharedComponentData[] FilterComponentDatas;
 
-            public Type[] AllOfTypes
-            {
-                get
-                {
-                    if (_allOfTypes == null)
-                    {
-                        _allOfTypes = new Type[AllOfConfigs.Length];
-                        for (var i = 0; i < AllOfConfigs.Length; i++)
-                            _allOfTypes[i] = AllOfConfigs[i].ComponentType;
-                    }
-
-                    return _allOfTypes;
-                }
-            }
-            public Type[] AnyOfTypes
-            {
-                get
-                {
-                    if (_anyOfTypes == null)
-                    {
-                        _anyOfTypes = new Type[AnyOfConfigs.Length];
-                        for (var i = 0; i < AnyOfConfigs.Length; i++)
-                            _anyOfTypes[i] = AnyOfConfigs[i].ComponentType;
-                    }
-
-                    return _anyOfTypes;
-                }
-            }
-            public Type[] NoneOfTypes
-            {
-                get
-                {
-                    if (_noneOfTypes == null)
-                    {
-                        _noneOfTypes = new Type[NoneOfConfigs.Length];
-                        for (var i = 0; i < NoneOfConfigs.Length; i++)
-                            _noneOfTypes[i] = NoneOfConfigs[i].ComponentType;
-                    }
-
-                    return _noneOfTypes;
-                }
-            }
-
             public Data(EcsContext context)
             {
                 ArcheTypeDatas = new ArcheTypeData[0];
                 //ArcheTypeDataVersion
                 //HashCode
-                LockObj = new object();
                 Context = context;
                 AllOfConfigs = new ComponentConfig[0];
                 AnyOfConfigs = new ComponentConfig[0];
@@ -675,7 +658,6 @@ namespace EcsLte
                 ArcheTypeDatas = new ArcheTypeData[0];
                 //ArcheTypeDataVersion
                 //HashCode
-                LockObj = new object();
                 Context = data.Context;
                 AllOfConfigs = data.AllOfConfigs;
                 AnyOfConfigs = data.AnyOfConfigs;

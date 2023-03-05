@@ -47,6 +47,7 @@ namespace EcsLte.UnitTest.EcsContextTests
 
             Assert.IsTrue(context != null);
             Assert.IsFalse(context.IsDestroyed);
+            Assert.IsTrue(context.Entities.GlobalVersion.Version == 1);
 
             Assert.ThrowsException<ArgumentNullException>(()
                 => EcsContexts.Instance.CreateContext(null));

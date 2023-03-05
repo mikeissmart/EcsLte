@@ -21,19 +21,18 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             _context = EcsContexts.Instance.CreateContext("Test");
             _query = _context.Queries
                 .SetTracker(_context.Tracking.CreateTracker("Tracker")
-                    .SetTrackingState<TestComponent1>(TrackingState.Added)
-                    .SetTrackingState<TestComponent2>(TrackingState.Added)
-                    .SetTrackingState<TestComponent3>(TrackingState.Added)
-                    .SetTrackingState<TestComponent4>(TrackingState.Added)
-                    .SetTrackingState<TestSharedComponent1>(TrackingState.Added)
-                    .SetTrackingState<TestSharedComponent2>(TrackingState.Added)
-                    .SetTrackingState<TestSharedComponent3>(TrackingState.Added)
-                    .SetTrackingState<TestSharedComponent4>(TrackingState.Added)
-                    .SetTrackingState<TestManagedComponent1>(TrackingState.Added)
-                    .SetTrackingState<TestManagedComponent2>(TrackingState.Added)
-                    .SetTrackingState<TestManagedComponent3>(TrackingState.Added)
-                    .SetTrackingState<TestManagedComponent4>(TrackingState.Added)
-                    .StartTracking());
+                    .SetTrackingComponent<TestComponent1>(true)
+                    .SetTrackingComponent<TestComponent2>(true)
+                    .SetTrackingComponent<TestComponent3>(true)
+                    .SetTrackingComponent<TestComponent4>(true)
+                    .SetTrackingComponent<TestSharedComponent1>(true)
+                    .SetTrackingComponent<TestSharedComponent2>(true)
+                    .SetTrackingComponent<TestSharedComponent3>(true)
+                    .SetTrackingComponent<TestSharedComponent4>(true)
+                    .SetTrackingComponent<TestManagedComponent1>(true)
+                    .SetTrackingComponent<TestManagedComponent2>(true)
+                    .SetTrackingComponent<TestManagedComponent3>(true)
+                    .SetTrackingComponent<TestManagedComponent4>(true));
             _commands = _context.Commands.CreateCommands("Commands");
         }
 
@@ -56,7 +55,6 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         [IterationCleanup(Target = "ForEach")]
         public void IterationCleanup_ForEach()
         {
-            _query.Tracker.ClearEntities();
             _context.Entities.DestroyEntities(_entities);
         }
 

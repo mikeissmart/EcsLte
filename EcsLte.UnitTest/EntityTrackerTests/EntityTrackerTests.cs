@@ -7,48 +7,49 @@ namespace EcsLte.UnitTest.EntityTrackerTests
     public class EntityTrackerTests : BasePrePostTest
     {
         [TestMethod]
-        public void GetTrackingState()
+        public void IsTrackingComponent()
         {
             var tracker = Context.Tracking.CreateTracker("Tracker")
-                .SetTrackingState<TestComponent1>(TrackingState.Added);
+                .SetTrackingComponent<TestComponent1>(true);
 
-            Assert.IsTrue(tracker.GetTrackingState<TestComponent1>() == TrackingState.Added);
+            Assert.IsTrue(tracker.IsTrackingComponent<TestComponent1>());
 
             Context.Tracking.RemoveTracker(tracker);
             Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
-                tracker.GetTrackingState<TestComponent1>());
+                tracker.IsTrackingComponent<TestComponent1>());
         }
 
         [TestMethod]
         public void SetTrackingState()
         {
             var tracker = Context.Tracking.CreateTracker("Tracker")
-                .SetTrackingState<TestComponent1>(TrackingState.Added);
+                .SetTrackingComponent<TestComponent1>(true);
 
-            Assert.IsTrue(tracker.GetTrackingState<TestComponent1>() == TrackingState.Added);
+            Assert.IsTrue(tracker.IsTrackingComponent<TestComponent1>());
 
             Context.Tracking.RemoveTracker(tracker);
             Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
-                tracker.SetTrackingState<TestComponent1>(TrackingState.Added));
+                tracker.SetTrackingComponent<TestComponent1>(true));
         }
 
         [TestMethod]
-        public void ClearAllTrackingStates()
+        public void SetAllTrackingComponents()
         {
             var tracker = Context.Tracking.CreateTracker("Tracker")
-                .SetTrackingState<TestComponent1>(TrackingState.Added)
-                .SetTrackingState<TestComponent2>(TrackingState.Added);
+                .SetTrackingComponent<TestComponent1>(true)
+                .SetTrackingComponent<TestComponent2>(true);
 
-            tracker.ClearAllTrackingStates();
-            Assert.IsFalse(tracker.GetTrackingState<TestComponent1>() == TrackingState.Added);
-            Assert.IsFalse(tracker.GetTrackingState<TestComponent2>() == TrackingState.Added);
+            tracker.SetAllTrackingComponents(false);
+            Assert.IsFalse(tracker.IsTrackingComponent<TestComponent1>());
+            Assert.IsFalse(tracker.IsTrackingComponent<TestComponent2>());
 
             Context.Tracking.RemoveTracker(tracker);
             Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
-                tracker.ClearAllTrackingStates());
+                tracker.SetAllTrackingComponents(false));
         }
 
-        [TestMethod]
+        // todo remove
+        /*[TestMethod]
         public void StartTracking()
         {
             var tracker = Context.Tracking.CreateTracker("Tracker")
@@ -59,9 +60,10 @@ namespace EcsLte.UnitTest.EntityTrackerTests
             Context.Tracking.RemoveTracker(tracker);
             Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
                 tracker.StartTracking());
-        }
+        }*/
 
-        [TestMethod]
+        // todo remove
+        /*[TestMethod]
         public void StopTracking()
         {
             var tracker = Context.Tracking.CreateTracker("Tracker")
@@ -73,14 +75,14 @@ namespace EcsLte.UnitTest.EntityTrackerTests
             Context.Tracking.RemoveTracker(tracker);
             Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
                 tracker.StopTracking());
-        }
+        }*/
 
-        [TestMethod]
+        // todo remove
+        /*[TestMethod]
         public void ClearEntities()
         {
             var tracker = Context.Tracking.CreateTracker("Tracker")
-                .SetTrackingState<TestComponent1>(TrackingState.Added)
-                .StartTracking();
+                .SetTrackingComponent<TestComponent1>(true);
 
             var entity = Context.Entities.CreateEntity(
                 Context.ArcheTypes.AddComponentType<TestComponent1>());
@@ -93,6 +95,6 @@ namespace EcsLte.UnitTest.EntityTrackerTests
             Context.Tracking.RemoveTracker(tracker);
             Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
                 tracker.ClearEntities());
-        }
+        }*/
     }
 }

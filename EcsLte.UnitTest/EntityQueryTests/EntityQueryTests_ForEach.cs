@@ -1664,15 +1664,14 @@ namespace EcsLte.UnitTest.EntityQueryTests
             query = Context.Queries
                 .SetFilter(Context.Filters.WhereAnyOf(archeType));
             tracker = Context.Tracking.CreateTracker("Tracker")
-                .SetTrackingState<TestComponent1>(TrackingState.Updated)
-                .SetTrackingState<TestComponent2>(TrackingState.Updated)
-                .SetTrackingState<TestManagedComponent1>(TrackingState.Updated)
-                .SetTrackingState<TestManagedComponent2>(TrackingState.Updated)
-                .SetTrackingState<TestSharedComponent1>(TrackingState.Updated)
-                .SetTrackingState<TestSharedComponent2>(TrackingState.Updated)
-                .SetTrackingState<TestSharedComponent3>(TrackingState.Updated)
-                .SetTrackingState<TestSharedComponent4>(TrackingState.Updated)
-                .StartTracking();
+                .SetTrackingComponent<TestComponent1>(true)
+                .SetTrackingComponent<TestComponent2>(true)
+                .SetTrackingComponent<TestManagedComponent1>(true)
+                .SetTrackingComponent<TestManagedComponent2>(true)
+                .SetTrackingComponent<TestSharedComponent1>(true)
+                .SetTrackingComponent<TestSharedComponent2>(true)
+                .SetTrackingComponent<TestSharedComponent3>(true)
+                .SetTrackingComponent<TestSharedComponent4>(true);
             entities = Context.Entities
                 .CreateEntities(archeType, UnitTestConsts.SmallCount);
             hitCount = new int[UnitTestConsts.SmallCount];

@@ -45,7 +45,7 @@ namespace EcsLte
             if (archeTypeData.EntityCount > 0)
             {
                 Helper.AssertAndResizeArray(ref entities, startingIndex, archeTypeData.EntityCount);
-                archeTypeData.GetEntities(ref entities, startingIndex);
+                archeTypeData.GetAllEntities(ref entities, startingIndex);
             }
 
             return archeTypeData.EntityCount;
@@ -76,8 +76,7 @@ namespace EcsLte
                 if (archeTypeData.EntityCount > 0)
                 {
                     Helper.ResizeRefArray(ref entities, entityIndex, archeTypeData.EntityCount);
-                    archeTypeData.GetEntities(ref entities, entityIndex);
-                    entityIndex += archeTypeData.EntityCount;
+                    entityIndex += archeTypeData.GetAllEntities(ref entities, entityIndex);
                 }
             }
 
@@ -101,7 +100,15 @@ namespace EcsLte
             EntityTracker.AssertEntityTracker(tracker, Context);
             Helper.AssertArray(entities, startingIndex);
 
-            return tracker.GetAllEntities(ref entities, startingIndex);
+            var trackedArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(tracker.TrackingFilter());
+            var entityIndex = startingIndex;
+            for (var i = 0; i < trackedArcheTypeDatas.Length; i++)
+            {
+                entityIndex += InternalGetEntitiesTracker(tracker, trackedArcheTypeDatas[i],
+                    ref entities, entityIndex);
+            }
+
+            return entityIndex - startingIndex;
         }
 
         public Entity[] GetEntities(EntityQuery query)

@@ -8,6 +8,7 @@ namespace EcsLte.UnitTest.EntityFilterTests
     [TestClass]
     public class EntityFilterTests : BasePrePostTest
     {
+
         [TestMethod]
         public void HasWhereAllOf()
         {
@@ -168,6 +169,171 @@ namespace EcsLte.UnitTest.EntityFilterTests
                 {
                     x => filter.WhereNoneOf(x)
                 });
+        }
+
+        [TestMethod]
+        public void Multi_WhereAllAnyNoneOf()
+        {
+            var filter = Context.Filters
+                .WhereAllOf<TestComponent1>()
+                .WhereAnyOf<TestComponent2>()
+                .WhereNoneOf<TestComponent3>();
+
+            var archeType1 = Context.ArcheTypes
+                .AddComponentType<TestComponent1>();
+            var archeType2 = Context.ArcheTypes
+                .AddComponentType<TestComponent2>();
+            var archeType3 = Context.ArcheTypes
+                .AddComponentType<TestComponent3>();
+            var archeType12 = Context.ArcheTypes
+                .AddComponentType<TestComponent1>()
+                .AddComponentType<TestComponent2>();
+            var archeType23 = Context.ArcheTypes
+                .AddComponentType<TestComponent2>()
+                .AddComponentType<TestComponent3>();
+            var archeType123 = Context.ArcheTypes
+                .AddComponentType<TestComponent1>()
+                .AddComponentType<TestComponent2>()
+                .AddComponentType<TestComponent3>();
+
+            var entity1 = Context.Entities.CreateEntity(archeType1);
+            var entity2 = Context.Entities.CreateEntity(archeType2);
+            var entity3 = Context.Entities.CreateEntity(archeType3);
+            var entity12 = Context.Entities.CreateEntity(archeType12);
+            var entity23 = Context.Entities.CreateEntity(archeType23);
+            var entity123 = Context.Entities.CreateEntity(archeType123);
+
+            var entities = Context.Entities.GetEntities(filter);
+
+            Assert.IsTrue(!entities.Any(x => x.Id == entity1.Id));      // No TestComponent2
+            Assert.IsTrue(!entities.Any(x => x.Id == entity2.Id));      // No TestComponent1
+            Assert.IsTrue(!entities.Any(x => x.Id == entity3.Id));      // Has TestCommponent3
+            Assert.IsTrue(entities.Any(x => x.Id == entity12.Id));      // Ok
+            Assert.IsTrue(!entities.Any(x => x.Id == entity23.Id));     // No TestComponent1, Has TestComponent3
+            Assert.IsTrue(!entities.Any(x => x.Id == entity123.Id));    // Has TestComponent3
+        }
+
+        [TestMethod]
+        public void Multi_WhereAllAnyOf()
+        {
+            var filter = Context.Filters
+                .WhereAllOf<TestComponent1>()
+                .WhereAnyOf<TestComponent2>();
+
+            var archeType1 = Context.ArcheTypes
+                .AddComponentType<TestComponent1>();
+            var archeType2 = Context.ArcheTypes
+                .AddComponentType<TestComponent2>();
+            var archeType3 = Context.ArcheTypes
+                .AddComponentType<TestComponent3>();
+            var archeType12 = Context.ArcheTypes
+                .AddComponentType<TestComponent1>()
+                .AddComponentType<TestComponent2>();
+            var archeType23 = Context.ArcheTypes
+                .AddComponentType<TestComponent2>()
+                .AddComponentType<TestComponent3>();
+            var archeType123 = Context.ArcheTypes
+                .AddComponentType<TestComponent1>()
+                .AddComponentType<TestComponent2>()
+                .AddComponentType<TestComponent3>();
+
+            var entity1 = Context.Entities.CreateEntity(archeType1);
+            var entity2 = Context.Entities.CreateEntity(archeType2);
+            var entity3 = Context.Entities.CreateEntity(archeType3);
+            var entity12 = Context.Entities.CreateEntity(archeType12);
+            var entity23 = Context.Entities.CreateEntity(archeType23);
+            var entity123 = Context.Entities.CreateEntity(archeType123);
+
+            var entities = Context.Entities.GetEntities(filter);
+
+            Assert.IsTrue(!entities.Any(x => x.Id == entity1.Id));      // No TestComponent2
+            Assert.IsTrue(!entities.Any(x => x.Id == entity2.Id));      // No TestComponent1
+            Assert.IsTrue(!entities.Any(x => x.Id == entity3.Id));      // No TestComponent1 or TestComponent2
+            Assert.IsTrue(entities.Any(x => x.Id == entity12.Id));      // Ok
+            Assert.IsTrue(!entities.Any(x => x.Id == entity23.Id));     // No TestComponent1
+            Assert.IsTrue(entities.Any(x => x.Id == entity123.Id));     // Ok
+        }
+
+        [TestMethod]
+        public void Multi_WhereAllNoneOf()
+        {
+            var filter = Context.Filters
+                .WhereAllOf<TestComponent1>()
+                .WhereNoneOf<TestComponent3>();
+
+            var archeType1 = Context.ArcheTypes
+                .AddComponentType<TestComponent1>();
+            var archeType2 = Context.ArcheTypes
+                .AddComponentType<TestComponent2>();
+            var archeType3 = Context.ArcheTypes
+                .AddComponentType<TestComponent3>();
+            var archeType12 = Context.ArcheTypes
+                .AddComponentType<TestComponent1>()
+                .AddComponentType<TestComponent2>();
+            var archeType23 = Context.ArcheTypes
+                .AddComponentType<TestComponent2>()
+                .AddComponentType<TestComponent3>();
+            var archeType123 = Context.ArcheTypes
+                .AddComponentType<TestComponent1>()
+                .AddComponentType<TestComponent2>()
+                .AddComponentType<TestComponent3>();
+
+            var entity1 = Context.Entities.CreateEntity(archeType1);
+            var entity2 = Context.Entities.CreateEntity(archeType2);
+            var entity3 = Context.Entities.CreateEntity(archeType3);
+            var entity12 = Context.Entities.CreateEntity(archeType12);
+            var entity23 = Context.Entities.CreateEntity(archeType23);
+            var entity123 = Context.Entities.CreateEntity(archeType123);
+
+            var entities = Context.Entities.GetEntities(filter);
+
+            Assert.IsTrue(entities.Any(x => x.Id == entity1.Id));       // Ok
+            Assert.IsTrue(!entities.Any(x => x.Id == entity2.Id));      // No TestComponent1
+            Assert.IsTrue(!entities.Any(x => x.Id == entity3.Id));      // Has TestComponent3
+            Assert.IsTrue(entities.Any(x => x.Id == entity12.Id));      // Ok
+            Assert.IsTrue(!entities.Any(x => x.Id == entity23.Id));     // Has TestComponent3
+            Assert.IsTrue(!entities.Any(x => x.Id == entity123.Id));    // Has TestComponent3
+        }
+
+        [TestMethod]
+        public void Multi_WhereAnyNoneOf()
+        {
+            var filter = Context.Filters
+                .WhereAnyOf<TestComponent2>()
+                .WhereNoneOf<TestComponent3>();
+
+            var archeType1 = Context.ArcheTypes
+                .AddComponentType<TestComponent1>();
+            var archeType2 = Context.ArcheTypes
+                .AddComponentType<TestComponent2>();
+            var archeType3 = Context.ArcheTypes
+                .AddComponentType<TestComponent3>();
+            var archeType12 = Context.ArcheTypes
+                .AddComponentType<TestComponent1>()
+                .AddComponentType<TestComponent2>();
+            var archeType23 = Context.ArcheTypes
+                .AddComponentType<TestComponent2>()
+                .AddComponentType<TestComponent3>();
+            var archeType123 = Context.ArcheTypes
+                .AddComponentType<TestComponent1>()
+                .AddComponentType<TestComponent2>()
+                .AddComponentType<TestComponent3>();
+
+            var entity1 = Context.Entities.CreateEntity(archeType1);
+            var entity2 = Context.Entities.CreateEntity(archeType2);
+            var entity3 = Context.Entities.CreateEntity(archeType3);
+            var entity12 = Context.Entities.CreateEntity(archeType12);
+            var entity23 = Context.Entities.CreateEntity(archeType23);
+            var entity123 = Context.Entities.CreateEntity(archeType123);
+
+            var entities = Context.Entities.GetEntities(filter);
+
+            Assert.IsTrue(!entities.Any(x => x.Id == entity1.Id));      // No TestComponent2
+            Assert.IsTrue(entities.Any(x => x.Id == entity2.Id));       // Ok
+            Assert.IsTrue(!entities.Any(x => x.Id == entity3.Id));      // Has TestCommponent3
+            Assert.IsTrue(entities.Any(x => x.Id == entity12.Id));      // Ok
+            Assert.IsTrue(!entities.Any(x => x.Id == entity23.Id));     // Has TestComponent3
+            Assert.IsTrue(!entities.Any(x => x.Id == entity123.Id));    // Has TestComponent3
         }
 
         [TestMethod]

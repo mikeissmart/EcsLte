@@ -58,14 +58,15 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             _context.Entities.UpdateSharedComponent(_archeType4, SharedComponent4);
         }
 
-        [Benchmark]
+        // todo might not want to update with queries because of chunk lvl changes
+        /*[Benchmark]
         public void UpdateSharedComponent_EntityQuery()
         {
             _context.Entities.UpdateSharedComponents(_query1, SharedComponent1);
             _context.Entities.UpdateSharedComponents(_query2, SharedComponent2);
             _context.Entities.UpdateSharedComponents(_query3, SharedComponent3);
             _context.Entities.UpdateSharedComponents(_query4, SharedComponent4);
-        }
+        }*/
 
         private void CreateArcheTypes()
         {

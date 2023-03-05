@@ -8,7 +8,7 @@
     internal interface IEntityQueryAdapter<TComponent> : IEntityQueryAdapter
         where TComponent : IComponent
     {
-        ref TComponent GetRef(int entityIndex);
+        ref TComponent GetRef(EntityData entityData);
         TComponent GetUpdatedComponent();
     }
 
@@ -19,7 +19,7 @@
         protected ComponentConfigOffset ConfigOffset { get; set; }
 
         public abstract void ChangeArcheTypeData(ArcheTypeData archeTypeDatas);
-        public abstract ref TComponent GetRef(int entityIndex);
+        public abstract ref TComponent GetRef(EntityData entityData);
         public virtual TComponent GetUpdatedComponent() => throw new System.NotImplementedException();
     }
 
@@ -34,8 +34,8 @@
             ConfigOffset = archeTypeData.GetConfigOffset(ComponentConfig<TComponent>.Config);
         }
 
-        public override unsafe ref TComponent GetRef(int entityIndex) =>
-            ref *(TComponent*)ArcheTypeData.GetComponentPtr(entityIndex, ConfigOffset);
+        public override unsafe ref TComponent GetRef(EntityData entityData) =>
+            ref *(TComponent*)ArcheTypeData.GetComponentPtr(entityData, ConfigOffset);
     }
 
     #endregion
@@ -51,8 +51,8 @@
             ConfigOffset = archeTypeData.GetConfigOffset(ComponentConfig<TComponent>.Config);
         }
 
-        public override ref TComponent GetRef(int entityIndex) =>
-            ref ArcheTypeData.GetManagedComponentRef<TComponent>(entityIndex, ConfigOffset);
+        public override ref TComponent GetRef(EntityData entityData) =>
+            ref ArcheTypeData.GetManagedComponentRef<TComponent>(entityData, ConfigOffset);
     }
 
     #endregion
@@ -72,7 +72,7 @@
             _originalComponent = archeTypeData.GetSharedComponent<TComponent>(ConfigOffset);
         }
 
-        public override ref TComponent GetRef(int entityIndex)
+        public override ref TComponent GetRef(EntityData entityData)
         {
             _component = _originalComponent;
             return ref _component;

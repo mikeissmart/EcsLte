@@ -66,6 +66,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
             }
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
+                false,
+                () => Context.Entities.GlobalVersion,
                 () => Context.Entities.GetSharedComponents<TestSharedComponent1>(filter),
                 x =>
                 {
@@ -112,8 +114,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
         public void GetComponent_Tracker()
         {
             var tracker = Context.Tracking.CreateTracker("Tracker")
-                .SetTrackingState<TestSharedComponent1>(TrackingState.Added)
-                .StartTracking();
+                .SetTrackingComponent<TestSharedComponent1>(true);
 
             var blueprint = new EntityBlueprint();
             for (var i = 0; i < 5; i++)
@@ -123,6 +124,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
             }
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
+                false,
+                () => Context.Entities.GlobalVersion,
                 () => Context.Entities.GetSharedComponents<TestSharedComponent1>(tracker),
                 x =>
                 {
@@ -178,8 +181,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 .SetFilter(Context.Filters
                     .WhereAllOf<TestComponent1>())
                 .SetTracker(Context.Tracking.CreateTracker("Tracker1")
-                    .SetTrackingState<TestComponent1>(TrackingState.Added)
-                    .StartTracking());
+                    .SetTrackingComponent<TestComponent1>(true));
 
             var blueprint = new EntityBlueprint();
             for (var i = 0; i < 5; i++)
@@ -189,6 +191,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
             }
 
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
+                false,
+                () => Context.Entities.GlobalVersion,
                 () => Context.Entities.GetSharedComponents<TestSharedComponent1>(query),
                 x =>
                 {

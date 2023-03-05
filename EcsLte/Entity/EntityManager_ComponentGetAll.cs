@@ -26,7 +26,7 @@ namespace EcsLte
             Helper.AssertAndResizeArray(ref destComponents,
                 destStartingIndex, archeTypeData.ArcheType.ConfigsLength);
 
-            archeTypeData.GetAllEntityComponents(entityData.EntityIndex,
+            archeTypeData.GetAllEntityComponents(entityData,
                 ref destComponents, destStartingIndex);
 
             return archeTypeData.ArcheType.ConfigsLength;

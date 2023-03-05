@@ -7,15 +7,20 @@ namespace EcsLte
     {
         int Length { get; }
 
-        IComponent GetComponent(int index);
-        void SetComponent(int index, IComponent component);
-
-        void CopySameArray(int srcIndex, int destIndex, int count);
-        void CopyFrom(IComponentPool srcPool, int srcStartingIndex, int destStartingIndex, int count);
+        IComponent GetComponent(int chunkIndex, int entityIndex);
+        void SetComponent(int chunkIndex, int entityIndex, in IComponent component);
+        void SetComponents(int poolIndex, int entityCount, in IComponent component);
+        void CopyFromSame(int srcChunkIndex, int srcEntityIndex,
+            int destChunkIndex, int destEntityIndex, int entityCount);
+        void CopyFromSame(int srcPoolIndex, int destPoolIndex,
+            int entityCount);
+        void CopyFromDifferent(IComponentPool srcPool, int srcChunkIndex, int srcEntityIndex,
+            int destChunkIndex, int destEntityIndex, int entityCount);
+        void CopyFromDifferent(IComponentPool srcPool, int srcPoolIndex, int destPoolIndex,
+            int entityCount);
+        void ClearPool(int srcPoolIndex, int entityCount);
+        void ClearComponents(int chunkIndex, int entityIndex, int entityCount);
         void Resize(int newSize);
-        void Clear(int index);
-        void ClearRange(int startingIndex, int count);
-        void ClearAll(int index);
     }
 
     internal class ComponentPool<TComponent> : IComponentPool
@@ -27,44 +32,108 @@ namespace EcsLte
 
         public int Length => _components.Length;
 
-        IComponent IComponentPool.GetComponent(int index)
-            => GetComponent(index);
+        IComponent IComponentPool.GetComponent(int chunkIndex, int entityIndex)
+            => GetComponent(chunkIndex, entityIndex);
 
-        public TComponent GetComponent(int index) => _components[index];
+        public TComponent GetComponent(int chunkIndex, int entityIndex)
+            => _components[Chunk(chunkIndex) + entityIndex];
 
-        public ref TComponent GetComponentRef(int index) => ref _components[index];
+        void IComponentPool.SetComponent(int chunkIndex, int entityIndex, in IComponent component)
+            => SetComponent(chunkIndex, entityIndex, (TComponent)component);
 
-        public void GetComponents(ref TComponent[] components, int startingIndex)
-            => Helper.ArrayCopy(_components, 0, components, startingIndex, _components.Length);
+        public void SetComponent(int chunkIndex, int entityIndex, in TComponent component)
+            => _components[Chunk(chunkIndex) + entityIndex] = component;
 
-        void IComponentPool.SetComponent(int index, IComponent component)
-            => SetComponent(index, (TComponent)component);
+        void IComponentPool.SetComponents(int poolIndex, int entityCount, in IComponent component)
+            => SetComponents(poolIndex, entityCount, (TComponent)component);
 
-        public void SetComponent(int index, in TComponent component) => _components[index] = component;
-
-        public void SetComponents(int index, int count, in TComponent component)
+        public void SetComponents(int poolIndex, int entityCount, in TComponent component)
         {
-            for (var i = 0; i < count; i++, index++)
-                _components[index] = component;
+            for (var i = 0; i < entityCount; i++, poolIndex++)
+                _components[poolIndex] = component;
         }
 
-        public void CopySameArray(int srcIndex, int destIndex, int count) =>
-            Helper.ArrayCopy(_components, srcIndex, _components, destIndex, count);
+        public void CopyFromSame(int srcChunkIndex, int srcEntityIndex,
+            int destChunkIndex, int destEntityIndex, int entityCount)
+        {
+            Helper.ArrayCopy(_components,
+                Chunk(srcChunkIndex) + srcEntityIndex,
+                _components,
+                Chunk(destChunkIndex) + destEntityIndex,
+                entityCount);
+            Array.Clear(_components, Chunk(srcChunkIndex) + srcEntityIndex, entityCount);
+        }
 
-        void IComponentPool.CopyFrom(IComponentPool srcPool, int srcStartingIndex, int destStartingIndex, int count)
-            => CopyFrom((ComponentPool<TComponent>)srcPool, srcStartingIndex, destStartingIndex, count);
+        public void CopyFromSame(int srcPoolIndex, int destPoolIndex,
+            int entityCount)
+        {
+            Helper.ArrayCopy(_components,
+                srcPoolIndex,
+                _components,
+                destPoolIndex,
+                entityCount);
+            Array.Clear(_components, srcPoolIndex, entityCount);
+        }
 
-        public void CopyFrom(ComponentPool<TComponent> srcPool, int srcStartingIndex, int destStartingIndex, int count)
-            => Helper.ArrayCopy(srcPool._components, srcStartingIndex,
-                _components, destStartingIndex,
-                count);
+        void IComponentPool.CopyFromDifferent(IComponentPool srcPool, int srcChunkIndex, int srcEntityIndex,
+            int destChunkIndex, int destEntityIndex, int entityCount)
+            => CopyFromDifferent((ComponentPool<TComponent>)srcPool, srcChunkIndex, srcEntityIndex,
+                destChunkIndex, destEntityIndex, entityCount);
 
-        public void Resize(int newSize) => Array.Resize(ref _components, newSize);
+        public void CopyFromDifferent(ComponentPool<TComponent> srcPool, int srcChunkIndex, int srcEntityIndex,
+            int destChunkIndex, int destEntityIndex, int entityCount)
+        {
+            Helper.ArrayCopy(srcPool._components,
+                Chunk(srcChunkIndex) + srcEntityIndex,
+                _components,
+                Chunk(destChunkIndex) + destEntityIndex,
+                entityCount);
+            Array.Clear(srcPool._components, Chunk(srcChunkIndex) + srcEntityIndex, entityCount);
+        }
 
-        public void Clear(int index) => _components[index] = default;
+        void IComponentPool.CopyFromDifferent(IComponentPool srcPool, int srcPoolIndex, int destPoolIndex,
+            int entityCount)
+            => CopyFromDifferent((ComponentPool<TComponent>)srcPool, srcPoolIndex, destPoolIndex,
+                entityCount);
 
-        public void ClearRange(int startingIndex, int count) => Array.Clear(_components, startingIndex, count);
+        public void CopyFromDifferent(ComponentPool<TComponent> srcPool, int srcPoolIndex, int destPoolIndex,
+            int entityCount)
+        {
+            Helper.ArrayCopy(srcPool._components,
+                srcPoolIndex,
+                _components,
+                destPoolIndex,
+                entityCount);
+            Array.Clear(srcPool._components, srcPoolIndex, entityCount);
+        }
 
-        public void ClearAll(int index) => Array.Clear(_components, 0, _components.Length);
+        public void ClearPool(int srcPoolIndex, int entityCount)
+            => Array.Clear(_components, srcPoolIndex, entityCount);
+
+        public void ClearComponents(int chunkIndex, int entityIndex, int entityCount)
+            => Array.Clear(_components, Chunk(chunkIndex) + entityIndex, entityCount);
+
+        public void Resize(int newSize)
+            => Array.Resize(ref _components, newSize);
+
+        public ref TComponent GetComponentRef(EntityData entityData)
+            => ref _components[Chunk(entityData.ChunkIndex) + entityData.EntityIndex];
+
+        public void GetAllComponents(ref TComponent[] components, int startingIndex, int entityCount)
+            => Helper.ArrayCopy(_components,
+                0,
+                components,
+                startingIndex,
+                entityCount);
+
+        public void GetChunkComponents(ref TComponent[] components, int chunkIndex, int startingIndex, int chunkEntityCount)
+            => Helper.ArrayCopy(_components,
+                Chunk(chunkIndex),
+                components,
+                startingIndex,
+                chunkEntityCount);
+
+        private int Chunk(int chunkIndex)
+            => chunkIndex * ArcheTypeDataChunk.ChunkMaxCapacity;
     }
 }

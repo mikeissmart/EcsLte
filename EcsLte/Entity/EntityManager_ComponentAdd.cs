@@ -11,13 +11,15 @@
                 out var _, out var prevArcheTypeData);
 
             var config = ComponentConfig<TComponent>.Config;
-
             AssertAlreadyHasComponent(config, prevArcheTypeData);
-            InternalAddConfigTrackingTransferEntity(entity, prevArcheTypeData, config,
+
+            ChangeVersion.IncVersion(ref _globalVersion);
+            InternalAddConfigTransferEntity(entity, prevArcheTypeData, config,
                 null,
                 out var nextArcheTypeData);
 
-            nextArcheTypeData.SetComponent(nextArcheTypeData.EntityCount - 1, config, component);
+            nextArcheTypeData.LastChunk.SetComponent(GlobalVersion,
+                nextArcheTypeData.LastChunk.EntityCount - 1, config, component);
         }
 
         public void AddManagedComponent<TComponent>(Entity entity, TComponent component)
@@ -29,13 +31,15 @@
                 out var _, out var prevArcheTypeData);
 
             var config = ComponentConfig<TComponent>.Config;
-
             AssertAlreadyHasComponent(config, prevArcheTypeData);
-            InternalAddConfigTrackingTransferEntity(entity, prevArcheTypeData, config,
+
+            ChangeVersion.IncVersion(ref _globalVersion);
+            InternalAddConfigTransferEntity(entity, prevArcheTypeData, config,
                 null,
                 out var nextArcheTypeData);
 
-            nextArcheTypeData.SetManagedComponent(nextArcheTypeData.EntityCount - 1, config, component);
+            nextArcheTypeData.LastChunk.SetManagedComponent(GlobalVersion,
+                nextArcheTypeData.LastChunk.EntityCount - 1, config, component);
         }
 
         public void AddSharedComponent<TComponent>(Entity entity, TComponent component)
@@ -47,9 +51,10 @@
                 out var _, out var prevArcheTypeData);
 
             var config = ComponentConfig<TComponent>.Config;
-
             AssertAlreadyHasComponent(config, prevArcheTypeData);
-            InternalAddConfigTrackingTransferEntity(entity, prevArcheTypeData, config,
+
+            ChangeVersion.IncVersion(ref _globalVersion);
+            InternalAddConfigTransferEntity(entity, prevArcheTypeData, config,
                 Context.SharedComponentDics.GetDic<TComponent>().GetSharedDataIndex(component),
                 out var _);
         }
@@ -63,9 +68,10 @@
 
             var config = ComponentConfig<TComponent>.Config;
             var prevArcheTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
-
             AssertAlreadyHasComponent(config, prevArcheTypeData);
-            InternalAddConfigTrackingTransferArcheTypeData(prevArcheTypeData, config,
+
+            ChangeVersion.IncVersion(ref _globalVersion);
+            InternalAddConfigTransferArcheTypeData(prevArcheTypeData, config,
                 Context.SharedComponentDics.GetDic<TComponent>().GetSharedDataIndex(component),
                 out var _, out var _);
         }

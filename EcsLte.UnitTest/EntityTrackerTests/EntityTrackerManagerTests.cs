@@ -49,7 +49,7 @@ namespace EcsLte.UnitTest.EntityTrackerTests
             Assert.IsTrue(tracker != null);
             Assert.IsTrue(tracker.Context == Context);
             Assert.IsTrue(tracker.Name == "Tracker");
-            Assert.IsTrue(tracker.IsTracking == false);
+            Assert.IsTrue(tracker.Mode == EntityTrackerMode.AnyChanges);
             Assert.IsTrue(tracker.IsDestroyed == false);
 
             Assert.ThrowsException<EntityTrackerAlreadyExistException>(() =>

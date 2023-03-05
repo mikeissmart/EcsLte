@@ -22,17 +22,18 @@ namespace EcsLte
             srcEntityManager.AssertNotExistEntity(srcEntity,
                 out var srcEntityData, out var srcArcheTypeData);
 
+            ChangeVersion.IncVersion(ref _globalVersion);
             InternalCacheDiffContextArcheType(srcArcheTypeData);
 
             var copyArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
             CheckAndAllocEntity(copyArcheTypeData, false,
                 out var copyEntity, out var copyEntityData);
 
-            copyArcheTypeData.CopyComponentsDifferentArcheTypeDataSameComponents(
+            copyArcheTypeData.CopyComponentsFromDifferentArcheTypeDataSameComponents(
+                GlobalVersion,
                 srcArcheTypeData,
-                srcEntityData.EntityIndex,
-                copyEntityData.EntityIndex,
-                1);
+                srcEntityData,
+                copyEntityData);
 
             return copyEntity;
         }
@@ -136,29 +137,34 @@ namespace EcsLte
             Helper.AssertArray(srcEntities, srcStartingIndex, srcCount);
             Helper.AssertAndResizeArray(ref destEntities, destStartingIndex, srcCount);
 
-            var cachedArcheTypes = new Dictionary<ArcheTypeIndex, (ArcheTypeData, ArcheTypeData)>();
-            for (var i = 0; i < srcCount; i++, srcStartingIndex++, destStartingIndex++)
+            if (srcCount > 0)
             {
-                var srcEntity = srcEntities[srcStartingIndex];
-                srcEntityManager.AssertNotExistEntity(srcEntity,
-                    out var srcEntityData, out var srcArcheTypeData);
-
-                if (!cachedArcheTypes.TryGetValue(srcEntityData.ArcheTypeIndex, out var archeTypeDatas))
+                var cachedArcheTypes = new Dictionary<ArcheTypeIndex, (ArcheTypeData, ArcheTypeData)>();
+                for (var i = 0; i < srcCount; i++, srcStartingIndex++, destStartingIndex++)
                 {
-                    archeTypeDatas.Item1 = srcArcheTypeData;
-                    InternalCacheDiffContextArcheType(srcArcheTypeData);
-                    archeTypeDatas.Item2 = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
+                    var srcEntity = srcEntities[srcStartingIndex];
+                    srcEntityManager.AssertNotExistEntity(srcEntity,
+                        out var srcEntityData, out var srcArcheTypeData);
 
-                    cachedArcheTypes.Add(srcEntityData.ArcheTypeIndex, archeTypeDatas);
+                    if (!cachedArcheTypes.TryGetValue(srcEntityData.ArcheTypeIndex, out var archeTypeDatas))
+                    {
+                        archeTypeDatas.Item1 = srcArcheTypeData;
+                        InternalCacheDiffContextArcheType(srcArcheTypeData);
+                        archeTypeDatas.Item2 = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
+
+                        cachedArcheTypes.Add(srcEntityData.ArcheTypeIndex, archeTypeDatas);
+                    }
+                    CheckAndAllocEntity(archeTypeDatas.Item2, false,
+                        out destEntities[destStartingIndex], out var copyEntityData);
+
+                    archeTypeDatas.Item2.CopyComponentsFromDifferentArcheTypeDataSameComponents(
+                        GlobalVersion,
+                        srcArcheTypeData,
+                        srcEntityData,
+                        copyEntityData);
                 }
-                CheckAndAllocEntity(archeTypeDatas.Item2, false,
-                    out destEntities[destStartingIndex], out var copyEntityData);
 
-                archeTypeDatas.Item2.CopyComponentsDifferentArcheTypeDataSameComponents(
-                    archeTypeDatas.Item1,
-                    srcEntityData.EntityIndex,
-                    copyEntityData.EntityIndex,
-                    1);
+                ChangeVersion.IncVersion(ref _globalVersion);
             }
         }
 
@@ -185,8 +191,16 @@ namespace EcsLte
                 throw new EntityCopyToSameContextException();
             Helper.AssertArray(destEntities, destStartingIndex);
 
-            return InternalCopyToArcheTypeData(srcArcheType.Context.ArcheTypes.GetArcheTypeData(srcArcheType),
+            var srcArcheTypeData = srcArcheType.Context.ArcheTypes.GetArcheTypeData(srcArcheType);
+            if (srcArcheTypeData.EntityCount > 0)
+            {
+                ChangeVersion.IncVersion(ref _globalVersion);
+
+                return InternalCopyToArcheTypeData(srcArcheTypeData,
                     ref destEntities, destStartingIndex);
+            }
+
+            return 0;
         }
 
         public Entity[] CopyEntitiesTo(EntityFilter srcFilter)
@@ -214,94 +228,21 @@ namespace EcsLte
 
             var filteredArcheTypeDatas = srcFilter.Context.ArcheTypes.GetArcheTypeDatas(srcFilter);
             var entityIndex = destStartingIndex;
+            var incVersion = false;
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
-                entityIndex += InternalCopyToArcheTypeData(filteredArcheTypeDatas[i],
-                    ref destEntities, entityIndex);
-            }
-
-            return entityIndex - destStartingIndex;
-        }
-
-        public Entity[] CopyEntitiesTo(EntityTracker srcTracker)
-        {
-            var entities = new Entity[0];
-            CopyEntitiesTo(srcTracker, ref entities, 0);
-
-            return entities;
-        }
-
-        public int CopyEntitiesTo(EntityTracker srcTracker,
-            ref Entity[] destEntities)
-            => CopyEntitiesTo(srcTracker, ref destEntities, 0);
-
-        public int CopyEntitiesTo(EntityTracker srcTracker,
-            ref Entity[] destEntities, int destStartingIndex)
-        {
-            EntityTracker.AssertEntityTracker(srcTracker, srcTracker?.Context);
-            Context.AssertContext();
-            Context.AssertStructualChangeAvailable();
-            srcTracker.Context.AssertContext();
-            if (Context == srcTracker.Context)
-                throw new EntityCopyToSameContextException();
-            Helper.AssertArray(destEntities, destStartingIndex);
-
-            var cachedArcheTypeDatas = new Dictionary<ArcheTypeIndex, (ArcheTypeData, ArcheTypeData)>();
-            var trackedArcheTypeDatas = srcTracker.CachedArcheTypeDatas;
-            var entityIndex = destStartingIndex;
-            for (var i = 0; i < trackedArcheTypeDatas.Length; i++)
-            {
-                entityIndex += InternalCopyToTracker(srcTracker, trackedArcheTypeDatas[i],
-                    cachedArcheTypeDatas,
-                    ref destEntities, entityIndex);
-            }
-
-            return entityIndex - destStartingIndex;
-        }
-
-        public Entity[] CopyEntitiesTo(EntityQuery srcQuery)
-        {
-            var entities = new Entity[0];
-            CopyEntitiesTo(srcQuery, ref entities, 0);
-
-            return entities;
-        }
-
-        public int CopyEntitiesTo(EntityQuery srcQuery,
-            ref Entity[] destEntities)
-            => CopyEntitiesTo(srcQuery, ref destEntities, 0);
-
-        public int CopyEntitiesTo(EntityQuery srcQuery,
-            ref Entity[] destEntities, int destStartingIndex)
-        {
-            EntityQuery.AssertEntityQuery(srcQuery, srcQuery?.Context);
-            Context.AssertContext();
-            Context.AssertStructualChangeAvailable();
-            srcQuery.Context.AssertContext();
-            if (Context == srcQuery.Context)
-                throw new EntityCopyToSameContextException();
-            Helper.AssertArray(destEntities, destStartingIndex);
-
-            if (srcQuery.Filter != null && srcQuery.Tracker == null)
-                return CopyEntitiesTo(srcQuery.Filter, ref destEntities, destStartingIndex);
-            else if (srcQuery.Filter == null && srcQuery.Tracker != null)
-                return CopyEntitiesTo(srcQuery.Tracker, ref destEntities, destStartingIndex);
-            else if (srcQuery.Filter != null && srcQuery.Tracker != null)
-            {
-                var filteredArcheTypeDatas = srcQuery.Context.ArcheTypes.GetArcheTypeDatas(srcQuery.Filter);
-                var cachedArcheTypeDatas = new Dictionary<ArcheTypeIndex, (ArcheTypeData, ArcheTypeData)>();
-                var entityIndex = destStartingIndex;
-                for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
+                var archeTypeData = filteredArcheTypeDatas[i];
+                if (archeTypeData.EntityCount > 0)
                 {
-                    entityIndex += InternalCopyToTracker(srcQuery.Tracker, filteredArcheTypeDatas[i],
-                        cachedArcheTypeDatas,
+                    incVersion = true;
+                    entityIndex += InternalCopyToArcheTypeData(archeTypeData,
                         ref destEntities, entityIndex);
                 }
-
-                return entityIndex - destStartingIndex;
             }
+            if (incVersion)
+                ChangeVersion.IncVersion(ref _globalVersion);
 
-            return 0;
+            return entityIndex - destStartingIndex;
         }
 
         public Entity[] CopyAllEntitiesTo(EntityManager srcEntityManager)
@@ -330,17 +271,23 @@ namespace EcsLte
             srcEntityManager.Context.AssertContext();
             Helper.AssertArray(destEntities, destStartingIndex);
 
-            var entityIndex = destStartingIndex;
-            foreach (var archeTypeDatas in srcEntityManager.Context.ArcheTypes.ArcheTypeDatas)
+            if (srcEntityManager._entitiesCount > 0)
             {
-                for (var i = 1; i < archeTypeDatas.Count; i++)
+                var entityIndex = destStartingIndex;
+                foreach (var archeTypeDatas in srcEntityManager.Context.ArcheTypes.ArcheTypeDatas)
                 {
-                    entityIndex += InternalCopyToArcheTypeData(archeTypeDatas[i],
-                        ref destEntities, entityIndex);
+                    for (var i = 1; i < archeTypeDatas.Count; i++)
+                    {
+                        entityIndex += InternalCopyToArcheTypeData(archeTypeDatas[i],
+                            ref destEntities, entityIndex);
+                    }
                 }
+                ChangeVersion.IncVersion(ref _globalVersion);
+
+                return entityIndex - destStartingIndex;
             }
 
-            return entityIndex - destStartingIndex;
+            return 0;
         }
     }
 }

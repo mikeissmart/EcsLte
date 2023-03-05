@@ -16,6 +16,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.IsTrue(entity.Version == 1);
             Assert.IsTrue(Context.Entities.HasEntity(entity));
             Assert.IsTrue(Context.Entities.GetAllComponents(entity).Length == 0);
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 2);
 
             EcsContexts.Instance.DestroyContext(Context);
             Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
@@ -35,6 +36,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             Assert.IsTrue(Context.Entities.HasEntity(entity));
             Assert.IsTrue(Context.Entities.HasComponent<TestComponent1>(entity));
             Assert.IsTrue(Context.Entities.HasSharedComponent<TestSharedComponent1>(entity));
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 2);
 
             AssertArcheType_DiffContext_Null(
                new Action<EntityArcheType>[]
@@ -63,6 +65,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             Assert.IsTrue(entity.Version == 2);
             Assert.IsTrue(Context.Entities.HasEntity(entity));
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 4);
         }
 
         [TestMethod]
@@ -104,6 +107,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             Assert.IsTrue(entity.Version == 2);
             Assert.IsTrue(Context.Entities.HasEntity(entity));
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 4);
         }
 
         [TestMethod]
@@ -111,6 +115,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
         {
             var entities = Context.Entities.CreateEntities(UnitTestConsts.SmallCount);
             Assert.IsTrue(entities.Length == UnitTestConsts.SmallCount);
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 2);
 
             for (var i = 0; i < entities.Length; i++)
             {
@@ -136,6 +141,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             var firstEntityId = 0;
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
+                true,
+                () => Context.Entities.GlobalVersion,
                 () =>
                 {
                     firstEntityId = Context.Entities.EntityCount() + 1;
@@ -221,6 +228,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             var firstEntityId = 0;
             AssertGetRef_Valid_StartingIndex_Null_OutOfRange(
+                true,
+                () => Context.Entities.GlobalVersion,
                 () =>
                 {
                     return Context.Entities.CreateEntities(
@@ -368,6 +377,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             result = assertAction(valid);
             Assert.IsTrue(result.Success, $"Valid: {result.Error}");
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 2);
 
             Assert.ThrowsException<ArgumentNullException>(() => assertAction(nullable),
                 "Null");

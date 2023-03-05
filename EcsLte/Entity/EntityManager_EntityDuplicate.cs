@@ -9,14 +9,15 @@ namespace EcsLte
             Context.AssertContext();
             Context.AssertStructualChangeAvailable();
             AssertNotExistEntity(srcEntity, out var srcEntityData, out var archeTypeData);
+            ChangeVersion.IncVersion(ref _globalVersion);
 
             CheckAndAllocEntity(archeTypeData, false,
                 out var dupEntity, out var dupEntityData);
 
-            archeTypeData.CopyComponentsSameArcheTypeData(
-                srcEntityData.EntityIndex,
-                dupEntityData.EntityIndex,
-                1);
+            archeTypeData.CopyComponentsFrom(
+                GlobalVersion,
+                srcEntityData,
+                dupEntityData);
 
             return dupEntity;
         }
@@ -97,18 +98,23 @@ namespace EcsLte
             Helper.AssertArray(srcEntities, srcStartingIndex, srcCount);
             Helper.AssertAndResizeArray(ref destEntities, destStartingIndex, srcCount);
 
-            for (var i = 0; i < srcCount; i++, srcStartingIndex++, destStartingIndex++)
+            if (srcCount > 0)
             {
-                AssertNotExistEntity(srcEntities[srcStartingIndex],
-                    out var srcEntityData, out var archeTypeData);
+                for (var i = 0; i < srcCount; i++, srcStartingIndex++, destStartingIndex++)
+                {
+                    AssertNotExistEntity(srcEntities[srcStartingIndex],
+                        out var srcEntityData, out var archeTypeData);
 
-                CheckAndAllocEntity(archeTypeData, false,
-                    out destEntities[destStartingIndex], out var dupEntityData);
+                    CheckAndAllocEntity(archeTypeData, false,
+                        out destEntities[destStartingIndex], out var dupEntityData);
 
-                archeTypeData.CopyComponentsSameArcheTypeData(
-                    srcEntityData.EntityIndex,
-                    dupEntityData.EntityIndex,
-                    1);
+                    archeTypeData.CopyComponentsFrom(
+                        GlobalVersion,
+                        srcEntityData,
+                        dupEntityData);
+                }
+
+                ChangeVersion.IncVersion(ref _globalVersion);
             }
         }
 
@@ -132,8 +138,16 @@ namespace EcsLte
             EntityArcheType.AssertEntityArcheType(archeType, Context);
             Helper.AssertArray(destEntities, destStartingIndex);
 
-            return InternalDuplicateArcheTypeData(Context.ArcheTypes.GetArcheTypeData(archeType),
-                ref destEntities, destStartingIndex);
+            var archeTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
+            if (archeTypeData.EntityCount > 0)
+            {
+                ChangeVersion.IncVersion(ref _globalVersion);
+
+                return InternalDuplicateArcheTypeData(archeTypeData,
+                    ref destEntities, destStartingIndex);
+            }
+
+            return 0;
         }
 
         public Entity[] DuplicateEntities(EntityFilter filter)
@@ -157,6 +171,15 @@ namespace EcsLte
             Helper.AssertArray(destEntities, destStartingIndex);
 
             var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
+            for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
+            {
+                if (filteredArcheTypeDatas[i].EntityCount > 0)
+                {
+                    ChangeVersion.IncVersion(ref _globalVersion);
+                    break;
+                }
+            }
+
             var entityIndex = destStartingIndex;
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
@@ -165,77 +188,6 @@ namespace EcsLte
             }
 
             return entityIndex - destStartingIndex;
-        }
-
-        public Entity[] DuplicateEntities(EntityTracker tracker)
-        {
-            var entities = new Entity[0];
-            DuplicateEntities(tracker, ref entities, 0);
-
-            return entities;
-        }
-
-        public int DuplicateEntities(EntityTracker tracker,
-            ref Entity[] destEntities)
-            => DuplicateEntities(tracker, ref destEntities, 0);
-
-        public int DuplicateEntities(EntityTracker tracker,
-            ref Entity[] destEntities, int destStartingIndex)
-        {
-            Context.AssertContext();
-            Context.AssertStructualChangeAvailable();
-            EntityTracker.AssertEntityTracker(tracker, Context);
-            Helper.AssertArray(destEntities, destStartingIndex);
-
-            var trackedArcheTypeDatas = tracker.CachedArcheTypeDatas;
-            var entityIndex = destStartingIndex;
-            for (var i = 0; i < trackedArcheTypeDatas.Length; i++)
-            {
-                entityIndex += InternalDuplicateTracker(tracker, trackedArcheTypeDatas[i],
-                    ref destEntities, entityIndex);
-            }
-
-            return entityIndex - destStartingIndex;
-        }
-
-        public Entity[] DuplicateEntities(EntityQuery query)
-        {
-            var entities = new Entity[0];
-            DuplicateEntities(query, ref entities, 0);
-
-            return entities;
-        }
-
-        public int DuplicateEntities(EntityQuery query,
-            ref Entity[] destEntities)
-            => DuplicateEntities(query, ref destEntities, 0);
-
-        public int DuplicateEntities(EntityQuery query,
-            ref Entity[] destEntities, int destStartingIndex)
-        {
-            Context.AssertContext();
-            Context.AssertStructualChangeAvailable();
-            EntityQuery.AssertEntityQuery(query, Context);
-            Helper.AssertArray(destEntities, destStartingIndex);
-
-            if (query.Filter != null && query.Tracker == null)
-                return DuplicateEntities(query.Filter, ref destEntities, destStartingIndex);
-            else if (query.Filter == null && query.Tracker != null)
-                return DuplicateEntities(query.Tracker, ref destEntities, destStartingIndex);
-            else if (query.Filter != null && query.Tracker != null)
-            {
-                var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(query.Filter);
-                var entityIndex = destStartingIndex;
-                for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
-                {
-                    entityIndex += InternalDuplicateTracker(query.Tracker, filteredArcheTypeDatas[i],
-                        ref destEntities, entityIndex);
-                }
-
-                return entityIndex - destStartingIndex;
-            }
-
-            return 0;
         }
     }
 }

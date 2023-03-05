@@ -1,4 +1,6 @@
-﻿namespace EcsLte
+﻿using System.Diagnostics;
+
+namespace EcsLte
 {
     public partial class EntityManager
     {
@@ -35,7 +37,18 @@
             Context.AssertContext();
             EntityTracker.AssertEntityTracker(tracker, Context);
 
-            return tracker.EntityCount;
+            var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(tracker.TrackingFilter());
+            var entityCount = 0;
+            for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
+            {
+                if (tracker.GetArcheTypeDataChunks(filteredArcheTypeDatas[i], out var chunks))
+                {
+                    for (var j = 0; j < chunks.Count; j++)
+                        entityCount += chunks[j].EntityCount;
+                }
+            }
+
+            return entityCount;
         }
 
         public int EntityCount(EntityQuery query)
@@ -50,9 +63,15 @@
                 entityCount = EntityCount(query.Tracker);
             else if (query.Filter != null && query.Tracker != null)
             {
-                var archeTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(query.Filter);
-                for (var i = 0; i < archeTypeDatas.Length; i++)
-                    entityCount += query.Tracker.GetArcheTypeDataEntityCount(archeTypeDatas[i]);
+                var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(query.Filter);
+                for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
+                {
+                    if (query.Tracker.GetArcheTypeDataChunks(filteredArcheTypeDatas[i], out var chunks))
+                    {
+                        for (var j = 0; j < chunks.Count; j++)
+                            entityCount += chunks[j].EntityCount;
+                    }
+                }
             }
 
             return entityCount;

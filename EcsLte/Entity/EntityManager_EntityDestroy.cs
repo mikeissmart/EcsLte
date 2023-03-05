@@ -9,6 +9,7 @@ namespace EcsLte
             Context.AssertContext();
             Context.AssertStructualChangeAvailable();
             AssertNotExistEntity(entity, out var _, out var archeTypeData);
+            ChangeVersion.IncVersion(ref _globalVersion);
 
             DeallocEntity(entity, archeTypeData);
         }
@@ -32,6 +33,9 @@ namespace EcsLte
 
                 DeallocEntity(entity, archeTypeData);
             }
+
+            if (count > 0)
+                ChangeVersion.IncVersion(ref _globalVersion);
         }
 
         public void DestroyEntities(EntityArcheType archeType)
@@ -40,7 +44,11 @@ namespace EcsLte
             Context.AssertStructualChangeAvailable();
             EntityArcheType.AssertEntityArcheType(archeType, Context);
 
-            DealloArcheTypeDataEntities(Context.ArcheTypes.GetArcheTypeData(archeType));
+            var archeTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
+            if (archeTypeData.EntityCount > 0)
+                ChangeVersion.IncVersion(ref _globalVersion);
+
+            DealloArcheTypeDataEntities(archeTypeData);
         }
 
         public void DestroyEntities(EntityFilter filter)
@@ -51,37 +59,16 @@ namespace EcsLte
 
             var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
-                DealloArcheTypeDataEntities(filteredArcheTypeDatas[i]);
-        }
-
-        public void DestroyEntities(EntityTracker tracker)
-        {
-            Context.AssertContext();
-            Context.AssertStructualChangeAvailable();
-            Context.AssertContext();
-            EntityTracker.AssertEntityTracker(tracker, Context);
-
-            var trackedArcheTypeDatas = tracker.CachedArcheTypeDatas;
-            for (var i = 0; i < trackedArcheTypeDatas.Length; i++)
-                InternalDestroyTracker(tracker, trackedArcheTypeDatas[i]);
-        }
-
-        public void DestroyEntities(EntityQuery query)
-        {
-            Context.AssertContext();
-            Context.AssertStructualChangeAvailable();
-            EntityQuery.AssertEntityQuery(query, Context);
-
-            if (query.Filter != null && query.Tracker == null)
-                DestroyEntities(query.Filter);
-            else if (query.Filter == null && query.Tracker != null)
-                GetEntities(query.Tracker);
-            else if (query.Filter != null && query.Tracker != null)
             {
-                var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(query.Filter);
-                for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
-                    InternalDestroyTracker(query.Tracker, filteredArcheTypeDatas[i]);
+                if (filteredArcheTypeDatas[i].EntityCount > 0)
+                {
+                    ChangeVersion.IncVersion(ref _globalVersion);
+                    break;
+                }
             }
+
+            for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
+                DealloArcheTypeDataEntities(filteredArcheTypeDatas[i]);
         }
 
         public void DestroyAllEntities()
@@ -89,9 +76,11 @@ namespace EcsLte
             Context.AssertContext();
             Context.AssertStructualChangeAvailable();
 
+            if (_entitiesCount > 0)
+                ChangeVersion.IncVersion(ref _globalVersion);
+
             _reusableEntitiesCount += Context.ArcheTypes.GetAndClearAllEntities(ref _reusableEntities, _reusableEntitiesCount);
             MemoryHelper.Clear(_entityDatas, _entitiesCount);
-            Context.Tracking.AllEntitiesDestroyed();
         }
     }
 }
