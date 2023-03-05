@@ -28,8 +28,8 @@ namespace EcsLte.BenchmarkTest
             Console.WriteLine("done");
             Console.ReadLine();
 #else
-            //BenchmarkRunner.Run(typeof(Program).Assembly, config);
-            BenchmarkRunner.Run<EcsContextTests.EcsContext_Tracking>(config);
+            BenchmarkRunner.Run(typeof(Program).Assembly, config);
+            //BenchmarkRunner.Run<EcsContextTests.EcsContext_Tracking>(config);
             Console.WriteLine("done");
 #endif
         }
