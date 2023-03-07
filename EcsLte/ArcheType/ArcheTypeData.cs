@@ -319,6 +319,10 @@ namespace EcsLte
 
         internal void RemoveAllEntities()
         {
+            // Clear managed so gc can clean up too
+            for (var i = 0; i < ManagedConfigs.Length; i++)
+                ManagedPools[i].ClearComponents(0, 0, EntityCount);
+
             for (var i = 0; i < ChunksCount; i++)
                 _chunks[i].RemoveAllEntities();
 
@@ -453,11 +457,17 @@ namespace EcsLte
 
         internal void SetComponent<TComponent>(ChangeVersion changeVersion, EntityData entityData, ComponentConfig config, in TComponent component)
             where TComponent : unmanaged, IGeneralComponent
-            => SetComponent(changeVersion, entityData, GetConfigOffset(config), component);
+            => SetComponentOffset(changeVersion, entityData, GetConfigOffset(config), component);
 
-        internal void SetComponent<TComponent>(ChangeVersion changeVersion, EntityData entityData, ComponentConfigOffset configOffset, in TComponent component)
+        internal void SetComponentOffset<TComponent>(ChangeVersion changeVersion, EntityData entityData, ComponentConfigOffset configOffset, in TComponent component)
             where TComponent : unmanaged, IGeneralComponent
             => _chunks[entityData.ChunkIndex].SetComponent(changeVersion, entityData.EntityIndex, configOffset, component);
+
+        internal void SetComponentAdapter(ChangeVersion changeVersion, EntityData entityData, ComponentConfig config, IComponent component)
+            => _chunks[entityData.ChunkIndex].SetComponentAdapter(changeVersion, entityData.EntityIndex, GetConfigOffset(config), component);
+
+        internal void SetComponentAdapter2(ChangeVersion changeVersion, EntityData entityData, ComponentConfig config)
+            => _chunks[entityData.ChunkIndex].SetComponentAdapter2(changeVersion, entityData.EntityIndex, GetConfigOffset(config));
 
         internal void SetChunkComponents<TComponent>(ChangeVersion changeVersion, int chunkIndex, ComponentConfig config, in TComponent component)
             where TComponent : unmanaged, IGeneralComponent
@@ -492,11 +502,17 @@ namespace EcsLte
 
         internal void SetManagedComponent<TComponent>(ChangeVersion changeVersion, EntityData entityData, ComponentConfig config, in TComponent component)
             where TComponent : IManagedComponent
-            => SetManagedComponent(changeVersion, entityData, GetConfigOffset(config), component);
+            => SetManagedComponentOffset(changeVersion, entityData, GetConfigOffset(config), component);
 
-        internal void SetManagedComponent<TComponent>(ChangeVersion changeVersion, EntityData entityData, ComponentConfigOffset configOffset, in TComponent component)
+        internal void SetManagedComponentOffset<TComponent>(ChangeVersion changeVersion, EntityData entityData, ComponentConfigOffset configOffset, in TComponent component)
             where TComponent : IManagedComponent
             => _chunks[entityData.ChunkIndex].SetManagedComponent(changeVersion, entityData.EntityIndex, configOffset, component);
+
+        internal void SetManagedComponentAdapter(ChangeVersion changeVersion, EntityData entityData, ComponentConfig config, in IComponent component)
+            => _chunks[entityData.ChunkIndex].SetManagedComponentAdapter(changeVersion, entityData.EntityIndex, GetConfigOffset(config), component);
+
+        internal void SetManagedComponentAdapter2(ChangeVersion changeVersion, EntityData entityData, ComponentConfig config)
+            => _chunks[entityData.ChunkIndex].SetManagedComponentAdapter2(changeVersion, entityData.EntityIndex, GetConfigOffset(config));
 
         internal void SetChunkManagedComponents<TComponent>(ChangeVersion changeVersion, int chunkIndex, ComponentConfig config, in TComponent component)
             where TComponent : IManagedComponent

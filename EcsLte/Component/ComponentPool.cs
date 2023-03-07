@@ -12,6 +12,8 @@ namespace EcsLte
         void SetComponents(int poolIndex, int entityCount, in IComponent component);
         void CopyFromSame(int srcChunkIndex, int srcEntityIndex,
             int destChunkIndex, int destEntityIndex, int entityCount);
+        void CopyFromSameSingle(int srcChunkIndex, int srcEntityIndex,
+            int destChunkIndex, int destEntityIndex);
         void CopyFromSame(int srcPoolIndex, int destPoolIndex,
             int entityCount);
         void CopyFromDifferent(IComponentPool srcPool, int srcChunkIndex, int srcEntityIndex,
@@ -56,12 +58,21 @@ namespace EcsLte
         public void CopyFromSame(int srcChunkIndex, int srcEntityIndex,
             int destChunkIndex, int destEntityIndex, int entityCount)
         {
+            srcChunkIndex = Chunk(srcChunkIndex) + srcEntityIndex;
             Helper.ArrayCopy(_components,
-                Chunk(srcChunkIndex) + srcEntityIndex,
+                srcChunkIndex,
                 _components,
                 Chunk(destChunkIndex) + destEntityIndex,
                 entityCount);
-            Array.Clear(_components, Chunk(srcChunkIndex) + srcEntityIndex, entityCount);
+            Array.Clear(_components, srcChunkIndex, entityCount);
+        }
+
+        public void CopyFromSameSingle(int srcChunkIndex, int srcEntityIndex,
+            int destChunkIndex, int destEntityIndex)
+        {
+            srcChunkIndex = Chunk(srcChunkIndex) + srcEntityIndex;
+            _components[Chunk(destChunkIndex) + destEntityIndex] = _components[srcChunkIndex];
+            _components[srcChunkIndex] = default;
         }
 
         public void CopyFromSame(int srcPoolIndex, int destPoolIndex,

@@ -54,6 +54,23 @@ namespace EcsLte.BenchmarkTest
             return blueprint;
         }
 
+        public static EntityBlueprint CreateAllBluprint()
+        {
+            return new EntityBlueprint()
+                .SetComponent(Component1)
+                .SetComponent(Component2)
+                .SetComponent(Component3)
+                .SetComponent(Component4)
+                .SetManagedComponent(ManagedComponent1)
+                .SetManagedComponent(ManagedComponent2)
+                .SetManagedComponent(ManagedComponent3)
+                .SetManagedComponent(ManagedComponent4)
+                .SetSharedComponent(SharedComponent1)
+                .SetSharedComponent(SharedComponent2)
+                .SetSharedComponent(SharedComponent3)
+                .SetSharedComponent(SharedComponent4);
+        }
+
         public static EntityBlueprint CreateBlueprint(ReadWriteType rwType)
         {
             var blueprint = new EntityBlueprint();

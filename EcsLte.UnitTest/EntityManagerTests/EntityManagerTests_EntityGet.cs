@@ -159,7 +159,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void GetEntities_Tracker()
         {
-            var tracker = Context.Tracking.CreateTracker("Tracker1")
+            var tracker = Context.Tracking
                 .SetTrackingComponent<TestComponent1>(true);
 
             var entities = Context.Entities.CreateEntities(
@@ -195,13 +195,11 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 });
 
             var diffContext = EcsContexts.Instance.CreateContext("DiffContext")
-                .Tracking.CreateTracker("Tracker");
-            var destroyedTracker = Context.Tracking.CreateTracker("Destroyed");
-            Context.Tracking.RemoveTracker(destroyedTracker);
+                .Tracking
+                .SetTrackingMode(EntityTrackerMode.AnyChanges);
             var refEntities = new Entity[0];
-            AssertTracker_Destroyed_Null(
+            AssertTracker_Different_Null(
                 diffContext,
-                destroyedTracker,
                 new Action<EntityTracker>[]
                 {
                     x => Context.Entities.GetEntities(x),
@@ -224,7 +222,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             var query = Context.Queries
                 .SetFilter(filter)
-                .SetTracker(Context.Tracking.CreateTracker("Tracker1")
+                .SetTracker(Context.Tracking
                     .SetTrackingComponent<TestComponent1>(true));
 
             var entities = Context.Entities.CreateEntities(
@@ -260,9 +258,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 });
 
             var refEntities = new Entity[0];
-            Context.Tracking.RemoveTracker(query.Tracker);
-            AssertQuery_DiffContext_DestroyedTracker_Null(
-                query,
+            AssertQuery_DiffContext_Null(
                 new Action<EntityQuery>[]
                 {
                     x => Context.Entities.GetEntities(x),

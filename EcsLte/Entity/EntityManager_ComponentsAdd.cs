@@ -30,7 +30,7 @@ namespace EcsLte
                 _entityDatas);
             var entityData = _entityDatas[entity.Id];
 
-            config1.Adapter.SetComponent(entityData, component1, nextArcheTypeData);
+            config1.Adapter.SetComponent(_globalVersion, entityData, component1, nextArcheTypeData);
         }
 
         public void AddComponents<T1, T2>(Entity entity,
@@ -66,8 +66,8 @@ namespace EcsLte
                 _entityDatas);
             var entityData = _entityDatas[entity.Id];
 
-            config1.Adapter.SetComponent(entityData, component1, nextArcheTypeData);
-            config2.Adapter.SetComponent(entityData, component2, nextArcheTypeData);
+            config1.Adapter.SetComponent(_globalVersion, entityData, component1, nextArcheTypeData);
+            config2.Adapter.SetComponent(_globalVersion, entityData, component2, nextArcheTypeData);
         }
 
         public void AddComponents<T1, T2, T3>(Entity entity,
@@ -108,9 +108,9 @@ namespace EcsLte
                 _entityDatas);
             var entityData = _entityDatas[entity.Id];
 
-            config1.Adapter.SetComponent(entityData, component1, nextArcheTypeData);
-            config2.Adapter.SetComponent(entityData, component2, nextArcheTypeData);
-            config3.Adapter.SetComponent(entityData, component3, nextArcheTypeData);
+            config1.Adapter.SetComponent(_globalVersion, entityData, component1, nextArcheTypeData);
+            config2.Adapter.SetComponent(_globalVersion, entityData, component2, nextArcheTypeData);
+            config3.Adapter.SetComponent(_globalVersion, entityData, component3, nextArcheTypeData);
         }
 
         public void AddComponents<T1, T2, T3, T4>(Entity entity,
@@ -156,10 +156,10 @@ namespace EcsLte
                 _entityDatas);
             var entityData = _entityDatas[entity.Id];
 
-            config1.Adapter.SetComponent(entityData, component1, nextArcheTypeData);
-            config2.Adapter.SetComponent(entityData, component2, nextArcheTypeData);
-            config3.Adapter.SetComponent(entityData, component3, nextArcheTypeData);
-            config4.Adapter.SetComponent(entityData, component4, nextArcheTypeData);
+            config1.Adapter.SetComponent(_globalVersion, entityData, component1, nextArcheTypeData);
+            config2.Adapter.SetComponent(_globalVersion, entityData, component2, nextArcheTypeData);
+            config3.Adapter.SetComponent(_globalVersion, entityData, component3, nextArcheTypeData);
+            config4.Adapter.SetComponent(_globalVersion, entityData, component4, nextArcheTypeData);
         }
 
         public void AddComponents<T1, T2, T3, T4, T5>(Entity entity,
@@ -211,11 +211,11 @@ namespace EcsLte
                 _entityDatas);
             var entityData = _entityDatas[entity.Id];
 
-            config1.Adapter.SetComponent(entityData, component1, nextArcheTypeData);
-            config2.Adapter.SetComponent(entityData, component2, nextArcheTypeData);
-            config3.Adapter.SetComponent(entityData, component3, nextArcheTypeData);
-            config4.Adapter.SetComponent(entityData, component4, nextArcheTypeData);
-            config5.Adapter.SetComponent(entityData, component5, nextArcheTypeData);
+            config1.Adapter.SetComponent(_globalVersion, entityData, component1, nextArcheTypeData);
+            config2.Adapter.SetComponent(_globalVersion, entityData, component2, nextArcheTypeData);
+            config3.Adapter.SetComponent(_globalVersion, entityData, component3, nextArcheTypeData);
+            config4.Adapter.SetComponent(_globalVersion, entityData, component4, nextArcheTypeData);
+            config5.Adapter.SetComponent(_globalVersion, entityData, component5, nextArcheTypeData);
         }
 
         public void AddComponents<T1, T2, T3, T4, T5, T6>(Entity entity,
@@ -272,12 +272,12 @@ namespace EcsLte
                 _entityDatas);
             var entityData = _entityDatas[entity.Id];
 
-            config1.Adapter.SetComponent(entityData, component1, nextArcheTypeData);
-            config2.Adapter.SetComponent(entityData, component2, nextArcheTypeData);
-            config3.Adapter.SetComponent(entityData, component3, nextArcheTypeData);
-            config4.Adapter.SetComponent(entityData, component4, nextArcheTypeData);
-            config5.Adapter.SetComponent(entityData, component5, nextArcheTypeData);
-            config6.Adapter.SetComponent(entityData, component6, nextArcheTypeData);
+            config1.Adapter.SetComponent(_globalVersion, entityData, component1, nextArcheTypeData);
+            config2.Adapter.SetComponent(_globalVersion, entityData, component2, nextArcheTypeData);
+            config3.Adapter.SetComponent(_globalVersion, entityData, component3, nextArcheTypeData);
+            config4.Adapter.SetComponent(_globalVersion, entityData, component4, nextArcheTypeData);
+            config5.Adapter.SetComponent(_globalVersion, entityData, component5, nextArcheTypeData);
+            config6.Adapter.SetComponent(_globalVersion, entityData, component6, nextArcheTypeData);
         }
 
         public void AddComponents<T1, T2, T3, T4, T5, T6, T7>(Entity entity,
@@ -339,13 +339,13 @@ namespace EcsLte
                 _entityDatas);
             var entityData = _entityDatas[entity.Id];
 
-            config1.Adapter.SetComponent(entityData, component1, nextArcheTypeData);
-            config2.Adapter.SetComponent(entityData, component2, nextArcheTypeData);
-            config3.Adapter.SetComponent(entityData, component3, nextArcheTypeData);
-            config4.Adapter.SetComponent(entityData, component4, nextArcheTypeData);
-            config5.Adapter.SetComponent(entityData, component5, nextArcheTypeData);
-            config6.Adapter.SetComponent(entityData, component6, nextArcheTypeData);
-            config7.Adapter.SetComponent(entityData, component7, nextArcheTypeData);
+            config1.Adapter.SetComponent(_globalVersion, entityData, component1, nextArcheTypeData);
+            config2.Adapter.SetComponent(_globalVersion, entityData, component2, nextArcheTypeData);
+            config3.Adapter.SetComponent(_globalVersion, entityData, component3, nextArcheTypeData);
+            config4.Adapter.SetComponent(_globalVersion, entityData, component4, nextArcheTypeData);
+            config5.Adapter.SetComponent(_globalVersion, entityData, component5, nextArcheTypeData);
+            config6.Adapter.SetComponent(_globalVersion, entityData, component6, nextArcheTypeData);
+            config7.Adapter.SetComponent(_globalVersion, entityData, component7, nextArcheTypeData);
         }
 
         public void AddComponents<T1, T2, T3, T4, T5, T6, T7, T8>(Entity entity,
@@ -412,14 +412,14 @@ namespace EcsLte
                 _entityDatas);
             var entityData = _entityDatas[entity.Id];
 
-            config1.Adapter.SetComponent(entityData, component1, nextArcheTypeData);
-            config2.Adapter.SetComponent(entityData, component2, nextArcheTypeData);
-            config3.Adapter.SetComponent(entityData, component3, nextArcheTypeData);
-            config4.Adapter.SetComponent(entityData, component4, nextArcheTypeData);
-            config5.Adapter.SetComponent(entityData, component5, nextArcheTypeData);
-            config6.Adapter.SetComponent(entityData, component6, nextArcheTypeData);
-            config7.Adapter.SetComponent(entityData, component7, nextArcheTypeData);
-            config8.Adapter.SetComponent(entityData, component8, nextArcheTypeData);
+            config1.Adapter.SetComponent(_globalVersion, entityData, component1, nextArcheTypeData);
+            config2.Adapter.SetComponent(_globalVersion, entityData, component2, nextArcheTypeData);
+            config3.Adapter.SetComponent(_globalVersion, entityData, component3, nextArcheTypeData);
+            config4.Adapter.SetComponent(_globalVersion, entityData, component4, nextArcheTypeData);
+            config5.Adapter.SetComponent(_globalVersion, entityData, component5, nextArcheTypeData);
+            config6.Adapter.SetComponent(_globalVersion, entityData, component6, nextArcheTypeData);
+            config7.Adapter.SetComponent(_globalVersion, entityData, component7, nextArcheTypeData);
+            config8.Adapter.SetComponent(_globalVersion, entityData, component8, nextArcheTypeData);
         }
 
         public void AddComponents<TComponent>(EntityArcheType archeType, TComponent component)

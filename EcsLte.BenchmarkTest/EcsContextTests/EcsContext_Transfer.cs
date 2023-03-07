@@ -25,7 +25,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
                 EcsContexts.Instance.DestroyContext(EcsContexts.Instance.GetContext("Dest"));
             _destContext = EcsContexts.Instance.CreateContext("Dest");
             _destEntities = new Entity[BenchmarkTestConsts.LargeCount];
-            _tracker = _sourceContext.Tracking.CreateTracker("Tracker")
+            _tracker = _sourceContext.Tracking
                 .SetTrackingComponent<TestComponent1>(true)
                 .SetTrackingComponent<TestComponent2>(true)
                 .SetTrackingComponent<TestComponent3>(true)

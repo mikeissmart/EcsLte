@@ -113,7 +113,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void GetComponent_Tracker()
         {
-            var tracker = Context.Tracking.CreateTracker("Tracker")
+            var tracker = Context.Tracking
                 .SetTrackingComponent<TestSharedComponent1>(true);
 
             var blueprint = new EntityBlueprint();
@@ -154,12 +154,10 @@ namespace EcsLte.UnitTest.EntityManagerTests
 
             var emptyComponents = new TestSharedComponent1[0];
             var diffContext = EcsContexts.Instance.CreateContext("DiffContext")
-                .Tracking.CreateTracker("Tracker");
-            var destroyedTracker = Context.Tracking.CreateTracker("Destroyed");
-            Context.Tracking.RemoveTracker(destroyedTracker);
-            AssertTracker_Destroyed_Null(
+                .Tracking
+                .SetTrackingMode(EntityTrackerMode.AnyChanges);
+            AssertTracker_Different_Null(
                 diffContext,
-                destroyedTracker,
                 new Action<EntityTracker>[]
                 {
                     x => Context.Entities.GetSharedComponents<TestSharedComponent1>(x),
@@ -180,7 +178,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             var query = Context.Queries
                 .SetFilter(Context.Filters
                     .WhereAllOf<TestComponent1>())
-                .SetTracker(Context.Tracking.CreateTracker("Tracker1")
+                .SetTracker(Context.Tracking
                     .SetTrackingComponent<TestComponent1>(true));
 
             var blueprint = new EntityBlueprint();
@@ -220,9 +218,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 });
 
             var emptyComponents = new TestSharedComponent1[0];
-            Context.Tracking.RemoveTracker(query.Tracker);
-            AssertQuery_DiffContext_DestroyedTracker_Null(
-                query,
+            AssertQuery_DiffContext_Null(
                 new Action<EntityQuery>[]
                 {
                     x => Context.Entities.GetSharedComponents<TestSharedComponent1>(x),

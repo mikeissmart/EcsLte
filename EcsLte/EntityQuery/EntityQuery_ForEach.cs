@@ -2494,17 +2494,19 @@ namespace EcsLte
             return this;
         }
 
-        private void InternalRun(bool isParallel)
+        private void InternalRun(bool isParallel, int threadCount)
         {
             _data.Context.AssertContext();
             _data.Context.AssertStructualChangeAvailable();
+            if (threadCount <= 0 || threadCount > _threadCount)
+                throw new ArgumentOutOfRangeException(nameof(threadCount));
 
             _data.Context.StructChangeAvailable = false;
 
             if (_data.Action != null)
-                EntityForEach(_data, isParallel);
+                EntityForEach(_data, isParallel, threadCount);
             else if (_data.OtherAction != null)
-                OtherForEach(_data, isParallel);
+                OtherForEach(_data, isParallel, threadCount);
             else
             {
                 _data.Context.StructChangeAvailable = true;
@@ -2514,14 +2516,18 @@ namespace EcsLte
             _data.Context.StructChangeAvailable = true;
         }
 
-        private void EntityForEach(Data runningData, bool isParallel)
+        private void EntityForEach(Data runningData, bool isParallel, int threadCount)
         {
             // Switch to temp filter that whereAllOf action configs
             var dataFilter = runningData.Filter;
             var useEntityQueryCache = false;
             var useQueryCommandsCount = 0;
+            var readWriteConfigs = new ComponentConfig[runningData.ReadConfigs.Length + runningData.WriteConfigs.Length];
 
-            Helper.AssertDuplicateConfigs(runningData.ReadConfigs);
+            Helper.ArrayCopy(runningData.ReadConfigs, readWriteConfigs, runningData.ReadConfigs.Length);
+            Helper.ArrayCopy(runningData.WriteConfigs, 0, readWriteConfigs, runningData.ReadConfigs.Length, runningData.WriteConfigs.Length);
+
+            Helper.AssertDuplicateConfigs(readWriteConfigs);
 
             try
             {
@@ -2534,7 +2540,7 @@ namespace EcsLte
                         if (runningData.Filter.HasWhereNoneOf(config))
                         {
                             // Cant have none of read/write component
-                            throw new Exception();
+                            throw new EntityFilterAlreadyHasWhereNoneOfException(config.ComponentType);
                         }
                         else
                         {
@@ -2552,7 +2558,7 @@ namespace EcsLte
                         if (runningData.Filter.HasWhereNoneOf(config))
                         {
                             // Cant have none of read/write component
-                            throw new Exception();
+                            throw new EntityFilterAlreadyHasWhereNoneOfException(config.ComponentType);
                         }
                         else
                         {
@@ -2577,17 +2583,18 @@ namespace EcsLte
                 }
 
                 useEntityQueryCache = useEntityQueryCache && runningData.Commands == null;
+                if (runningData.Commands == null && runningData.WriteConfigs.Length > 0)
+                    runningData.Context.Entities.ForEacGlobalVersionhIncVersion();
 
-                // TODO reformat for chunks instead of entities
-                var entitiesCount = Context.Entities.GetEntities(this, ref runningData.Entities);
+                var entitiesCount = runningData.Context.Entities.GetEntities(this, ref runningData.Entities);
 
                 if (isParallel)
                 {
                     var batches = new List<BatchOptions>();
-                    var batchCount = entitiesCount / _threadCount +
-                        (entitiesCount % _threadCount != 0 ? 1 : 0);
+                    var batchCount = entitiesCount / threadCount +
+                        (entitiesCount % threadCount != 0 ? 1 : 0);
 
-                    for (var i = 0; i < _threadCount; i++)
+                    for (var i = 0; i < threadCount; i++)
                     {
                         var batchStartIndex = i * batchCount;
                         var batchEndIndex = batchStartIndex + batchCount > entitiesCount
@@ -2619,7 +2626,7 @@ namespace EcsLte
                     useQueryCommandsCount = useEntityQueryCache
                         ? batches.Count
                         : 0;
-                    var result = Parallel.ForEach(batches, new ParallelOptions { MaxDegreeOfParallelism = _threadCount },
+                    var result = Parallel.ForEach(batches, new ParallelOptions { MaxDegreeOfParallelism = threadCount },
                         batch =>
                         {
                             new ForEachOptions(batch)
@@ -2669,10 +2676,6 @@ namespace EcsLte
                     useQueryCommandsCount = 0;
                 }
             }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
             finally
             {
                 runningData.Filter = dataFilter;
@@ -2689,7 +2692,7 @@ namespace EcsLte
             }
         }
 
-        private void OtherForEach(Data runningData, bool isParallel)
+        private void OtherForEach(Data runningData, bool isParallel, int threadCount)
         {
             if (runningData.OtherCount <= 0)
                 throw new ArgumentOutOfRangeException("ForEachOther.Count", "Must be greater than 0.");
@@ -2699,10 +2702,10 @@ namespace EcsLte
                 if (isParallel)
                 {
                     var batches = new List<BatchOptions>();
-                    var batchCount = runningData.OtherCount / _threadCount +
-                        (runningData.OtherCount % _threadCount != 0 ? 1 : 0);
+                    var batchCount = runningData.OtherCount / threadCount +
+                        (runningData.OtherCount % threadCount != 0 ? 1 : 0);
 
-                    for (var i = 0; i < _threadCount; i++)
+                    for (var i = 0; i < threadCount; i++)
                     {
                         var batchStartIndex = i * batchCount;
                         var batchEndIndex = batchStartIndex + batchCount > runningData.OtherCount
@@ -2721,7 +2724,7 @@ namespace EcsLte
                             break;
                     }
 
-                    var result = Parallel.ForEach(batches, new ParallelOptions { MaxDegreeOfParallelism = _threadCount },
+                    var result = Parallel.ForEach(batches, new ParallelOptions { MaxDegreeOfParallelism = threadCount },
                         batch =>
                         {
                             new ForEachOptions(batch)
@@ -2744,7 +2747,7 @@ namespace EcsLte
             }
         }
 
-        private static IEntityQueryAdapter[] CreateAdapters(bool useCommands, ComponentConfig[] writeConfigs, ComponentConfig[] readConfigs)
+        private static IEntityQueryAdapter[] CreateAdapters(ComponentConfig[] writeConfigs, ComponentConfig[] readConfigs)
         {
             var adapters = new IEntityQueryAdapter[writeConfigs.Length + readConfigs.Length];
             for (var i = 0; i < writeConfigs.Length; i++)
@@ -2831,8 +2834,7 @@ namespace EcsLte
                 _context = batchOptions.Context;
                 _configOffsets = new ComponentConfigOffset[batchOptions.WriteConfigs.Length];
 
-                Adapters = CreateAdapters(batchOptions.Commands != null,
-                    batchOptions.WriteConfigs, batchOptions.ReadConfigs);
+                Adapters = CreateAdapters(batchOptions.WriteConfigs, batchOptions.ReadConfigs);
                 BatchOptions = batchOptions;
             }
 

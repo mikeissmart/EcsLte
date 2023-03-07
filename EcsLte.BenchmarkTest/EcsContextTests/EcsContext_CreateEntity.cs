@@ -130,9 +130,12 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             nameof(DestroyEntity_Reuse),
             nameof(DestroyEntities_Reuse)
         })]
-        public void IterationSetup_Destroy_Reuse() => _entities = _context.Entities.CreateEntities(
+        public void IterationSetup_Destroy_Reuse()
+        {
+            _entities = _context.Entities.CreateEntities(
                 EcsContextSetupCleanup.CreateBlueprint(CompArr),
                 _entities.Length);
+        }
 
         [Benchmark]
         public void DestroyEntity_Reuse()

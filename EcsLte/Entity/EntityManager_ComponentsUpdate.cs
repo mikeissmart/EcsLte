@@ -1,4 +1,5 @@
 ﻿using EcsLte.Utilities;
+using System;
 using System.Collections.Generic;
 
 namespace EcsLte
@@ -15,26 +16,30 @@ namespace EcsLte
             Context.AssertContext();
             AssertNotExistEntity(entity,
                 out var entityData, out var archeTypeData);
-            Context.AssertStructualChangeAvailable();
             AssertNotHaveComponent(config1, archeTypeData);
 
-            ChangeVersion.IncVersion(ref _globalVersion);
-            ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-
-            if (InternalArcheTypeSharedUpdate(config1, component1))
+            if (config1.IsShared)
             {
-                var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(GlobalVersion,
-                    entity,
-                    archeTypeData,
-                    nextArcheTypeData,
-                    _entityDatas);
+                Context.AssertStructualChangeAvailable();
 
-                archeTypeData = nextArcheTypeData;
-                entityData = _entityDatas[entity.Id];
+                ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
+
+                if (InternalArcheTypeSharedUpdate(config1, component1))
+                {
+                    var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
+                    ArcheTypeData.TransferEntity(GlobalVersion,
+                        entity,
+                        archeTypeData,
+                        nextArcheTypeData,
+                        _entityDatas);
+
+                    archeTypeData = nextArcheTypeData;
+                    entityData = _entityDatas[entity.Id];
+                }
             }
+            ChangeVersion.IncVersion(ref _globalVersion);
 
-            config1.Adapter.SetComponent(entityData, component1, archeTypeData);
+            config1.Adapter.SetComponent(_globalVersion, entityData, component1, archeTypeData);
         }
 
         public void UpdateComponents<T1, T2>(Entity entity,
@@ -52,32 +57,37 @@ namespace EcsLte
             Context.AssertContext();
             AssertNotExistEntity(entity,
                 out var entityData, out var archeTypeData);
-            Context.AssertStructualChangeAvailable();
             AssertNotHaveComponent(config1, archeTypeData);
             AssertNotHaveComponent(config2, archeTypeData);
 
-            ChangeVersion.IncVersion(ref _globalVersion);
-            ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-
-            var changeArcheType = false;
-            changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
-
-            if (changeArcheType)
+            if (config1.IsShared ||
+                config2.IsShared)
             {
-                var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(GlobalVersion,
-                    entity,
-                    archeTypeData,
-                    nextArcheTypeData,
-                    _entityDatas);
+                Context.AssertStructualChangeAvailable();
 
-                archeTypeData = nextArcheTypeData;
-                entityData = _entityDatas[entity.Id];
+                ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
+
+                var changeArcheType = false;
+                changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
+
+                if (changeArcheType)
+                {
+                    var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
+                    ArcheTypeData.TransferEntity(GlobalVersion,
+                        entity,
+                        archeTypeData,
+                        nextArcheTypeData,
+                        _entityDatas);
+
+                    archeTypeData = nextArcheTypeData;
+                    entityData = _entityDatas[entity.Id];
+                }
             }
+            ChangeVersion.IncVersion(ref _globalVersion);
 
-            config1.Adapter.SetComponent(entityData, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityData, component2, archeTypeData);
+            config1.Adapter.SetComponent(_globalVersion, entityData, component1, archeTypeData);
+            config2.Adapter.SetComponent(_globalVersion, entityData, component2, archeTypeData);
         }
 
         public void UpdateComponents<T1, T2, T3>(Entity entity,
@@ -98,35 +108,41 @@ namespace EcsLte
             Context.AssertContext();
             AssertNotExistEntity(entity,
                 out var entityData, out var archeTypeData);
-            Context.AssertStructualChangeAvailable();
             AssertNotHaveComponent(config1, archeTypeData);
             AssertNotHaveComponent(config2, archeTypeData);
             AssertNotHaveComponent(config3, archeTypeData);
 
-            ChangeVersion.IncVersion(ref _globalVersion);
-            ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-
-            var changeArcheType = false;
-            changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
-
-            if (changeArcheType)
+            if (config1.IsShared ||
+                config2.IsShared ||
+                config3.IsShared)
             {
-                var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(GlobalVersion,
-                    entity,
-                    archeTypeData,
-                    nextArcheTypeData,
-                    _entityDatas);
+                Context.AssertStructualChangeAvailable();
 
-                archeTypeData = nextArcheTypeData;
-                entityData = _entityDatas[entity.Id];
+                ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
+
+                var changeArcheType = false;
+                changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
+
+                if (changeArcheType)
+                {
+                    var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
+                    ArcheTypeData.TransferEntity(GlobalVersion,
+                        entity,
+                        archeTypeData,
+                        nextArcheTypeData,
+                        _entityDatas);
+
+                    archeTypeData = nextArcheTypeData;
+                    entityData = _entityDatas[entity.Id];
+                }
             }
+            ChangeVersion.IncVersion(ref _globalVersion);
 
-            config1.Adapter.SetComponent(entityData, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityData, component2, archeTypeData);
-            config3.Adapter.SetComponent(entityData, component3, archeTypeData);
+            config1.Adapter.SetComponent(_globalVersion, entityData, component1, archeTypeData);
+            config2.Adapter.SetComponent(_globalVersion, entityData, component2, archeTypeData);
+            config3.Adapter.SetComponent(_globalVersion, entityData, component3, archeTypeData);
         }
 
         public void UpdateComponents<T1, T2, T3, T4>(Entity entity,
@@ -150,38 +166,45 @@ namespace EcsLte
             Context.AssertContext();
             AssertNotExistEntity(entity,
                 out var entityData, out var archeTypeData);
-            Context.AssertStructualChangeAvailable();
             AssertNotHaveComponent(config1, archeTypeData);
             AssertNotHaveComponent(config2, archeTypeData);
             AssertNotHaveComponent(config3, archeTypeData);
             AssertNotHaveComponent(config4, archeTypeData);
 
-            ChangeVersion.IncVersion(ref _globalVersion);
-            ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-
-            var changeArcheType = false;
-            changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config4, component4);
-
-            if (changeArcheType)
+            if (config1.IsShared ||
+                config2.IsShared ||
+                config3.IsShared ||
+                config4.IsShared)
             {
-                var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(GlobalVersion,
-                    entity,
-                    archeTypeData,
-                    nextArcheTypeData,
-                    _entityDatas);
+                Context.AssertStructualChangeAvailable();
 
-                archeTypeData = nextArcheTypeData;
-                entityData = _entityDatas[entity.Id];
+                ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
+
+                var changeArcheType = false;
+                changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config4, component4);
+
+                if (changeArcheType)
+                {
+                    var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
+                    ArcheTypeData.TransferEntity(GlobalVersion,
+                        entity,
+                        archeTypeData,
+                        nextArcheTypeData,
+                        _entityDatas);
+
+                    archeTypeData = nextArcheTypeData;
+                    entityData = _entityDatas[entity.Id];
+                }
             }
+            ChangeVersion.IncVersion(ref _globalVersion);
 
-            config1.Adapter.SetComponent(entityData, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityData, component2, archeTypeData);
-            config3.Adapter.SetComponent(entityData, component3, archeTypeData);
-            config4.Adapter.SetComponent(entityData, component4, archeTypeData);
+            config1.Adapter.SetComponent(_globalVersion, entityData, component1, archeTypeData);
+            config2.Adapter.SetComponent(_globalVersion, entityData, component2, archeTypeData);
+            config3.Adapter.SetComponent(_globalVersion, entityData, component3, archeTypeData);
+            config4.Adapter.SetComponent(_globalVersion, entityData, component4, archeTypeData);
         }
 
         public void UpdateComponents<T1, T2, T3, T4, T5>(Entity entity,
@@ -209,41 +232,49 @@ namespace EcsLte
             Context.AssertContext();
             AssertNotExistEntity(entity,
                 out var entityData, out var archeTypeData);
-            Context.AssertStructualChangeAvailable();
             AssertNotHaveComponent(config1, archeTypeData);
             AssertNotHaveComponent(config2, archeTypeData);
             AssertNotHaveComponent(config3, archeTypeData);
             AssertNotHaveComponent(config4, archeTypeData);
             AssertNotHaveComponent(config5, archeTypeData);
 
-            ChangeVersion.IncVersion(ref _globalVersion);
-            ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-
-            var changeArcheType = false;
-            changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config4, component4);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config5, component5);
-
-            if (changeArcheType)
+            if (config1.IsShared ||
+                config2.IsShared ||
+                config3.IsShared ||
+                config4.IsShared ||
+                config5.IsShared)
             {
-                var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(GlobalVersion,
-                    entity,
-                    archeTypeData,
-                    nextArcheTypeData,
-                    _entityDatas);
+                Context.AssertStructualChangeAvailable();
 
-                archeTypeData = nextArcheTypeData;
-                entityData = _entityDatas[entity.Id];
+                ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
+
+                var changeArcheType = false;
+                changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config4, component4);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config5, component5);
+
+                if (changeArcheType)
+                {
+                    var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
+                    ArcheTypeData.TransferEntity(GlobalVersion,
+                        entity,
+                        archeTypeData,
+                        nextArcheTypeData,
+                        _entityDatas);
+
+                    archeTypeData = nextArcheTypeData;
+                    entityData = _entityDatas[entity.Id];
+                }
             }
+            ChangeVersion.IncVersion(ref _globalVersion);
 
-            config1.Adapter.SetComponent(entityData, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityData, component2, archeTypeData);
-            config3.Adapter.SetComponent(entityData, component3, archeTypeData);
-            config4.Adapter.SetComponent(entityData, component4, archeTypeData);
-            config5.Adapter.SetComponent(entityData, component5, archeTypeData);
+            config1.Adapter.SetComponent(_globalVersion, entityData, component1, archeTypeData);
+            config2.Adapter.SetComponent(_globalVersion, entityData, component2, archeTypeData);
+            config3.Adapter.SetComponent(_globalVersion, entityData, component3, archeTypeData);
+            config4.Adapter.SetComponent(_globalVersion, entityData, component4, archeTypeData);
+            config5.Adapter.SetComponent(_globalVersion, entityData, component5, archeTypeData);
         }
 
         public void UpdateComponents<T1, T2, T3, T4, T5, T6>(Entity entity,
@@ -274,7 +305,6 @@ namespace EcsLte
             Context.AssertContext();
             AssertNotExistEntity(entity,
                 out var entityData, out var archeTypeData);
-            Context.AssertStructualChangeAvailable();
             AssertNotHaveComponent(config1, archeTypeData);
             AssertNotHaveComponent(config2, archeTypeData);
             AssertNotHaveComponent(config3, archeTypeData);
@@ -282,36 +312,46 @@ namespace EcsLte
             AssertNotHaveComponent(config5, archeTypeData);
             AssertNotHaveComponent(config6, archeTypeData);
 
-            ChangeVersion.IncVersion(ref _globalVersion);
-            ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-
-            var changeArcheType = false;
-            changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config4, component4);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config5, component5);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config6, component6);
-
-            if (changeArcheType)
+            if (config1.IsShared ||
+                config2.IsShared ||
+                config3.IsShared ||
+                config4.IsShared ||
+                config5.IsShared ||
+                config6.IsShared)
             {
-                var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(GlobalVersion,
-                    entity,
-                    archeTypeData,
-                    nextArcheTypeData,
-                    _entityDatas);
+                Context.AssertStructualChangeAvailable();
 
-                archeTypeData = nextArcheTypeData;
-                entityData = _entityDatas[entity.Id];
+                ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
+
+                var changeArcheType = false;
+                changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config4, component4);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config5, component5);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config6, component6);
+
+                if (changeArcheType)
+                {
+                    var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
+                    ArcheTypeData.TransferEntity(GlobalVersion,
+                        entity,
+                        archeTypeData,
+                        nextArcheTypeData,
+                        _entityDatas);
+
+                    archeTypeData = nextArcheTypeData;
+                    entityData = _entityDatas[entity.Id];
+                }
             }
+            ChangeVersion.IncVersion(ref _globalVersion);
 
-            config1.Adapter.SetComponent(entityData, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityData, component2, archeTypeData);
-            config3.Adapter.SetComponent(entityData, component3, archeTypeData);
-            config4.Adapter.SetComponent(entityData, component4, archeTypeData);
-            config5.Adapter.SetComponent(entityData, component5, archeTypeData);
-            config6.Adapter.SetComponent(entityData, component6, archeTypeData);
+            config1.Adapter.SetComponent(_globalVersion, entityData, component1, archeTypeData);
+            config2.Adapter.SetComponent(_globalVersion, entityData, component2, archeTypeData);
+            config3.Adapter.SetComponent(_globalVersion, entityData, component3, archeTypeData);
+            config4.Adapter.SetComponent(_globalVersion, entityData, component4, archeTypeData);
+            config5.Adapter.SetComponent(_globalVersion, entityData, component5, archeTypeData);
+            config6.Adapter.SetComponent(_globalVersion, entityData, component6, archeTypeData);
         }
 
         public void UpdateComponents<T1, T2, T3, T4, T5, T6, T7>(Entity entity,
@@ -345,7 +385,6 @@ namespace EcsLte
             Context.AssertContext();
             AssertNotExistEntity(entity,
                 out var entityData, out var archeTypeData);
-            Context.AssertStructualChangeAvailable();
             AssertNotHaveComponent(config1, archeTypeData);
             AssertNotHaveComponent(config2, archeTypeData);
             AssertNotHaveComponent(config3, archeTypeData);
@@ -354,38 +393,49 @@ namespace EcsLte
             AssertNotHaveComponent(config6, archeTypeData);
             AssertNotHaveComponent(config7, archeTypeData);
 
-            ChangeVersion.IncVersion(ref _globalVersion);
-            ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-
-            var changeArcheType = false;
-            changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config4, component4);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config5, component5);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config6, component6);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config7, component7);
-
-            if (changeArcheType)
+            if (config1.IsShared ||
+                config2.IsShared ||
+                config3.IsShared ||
+                config4.IsShared ||
+                config5.IsShared ||
+                config6.IsShared ||
+                config7.IsShared)
             {
-                var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(GlobalVersion,
-                    entity,
-                    archeTypeData,
-                    nextArcheTypeData,
-                    _entityDatas);
+                Context.AssertStructualChangeAvailable();
 
-                archeTypeData = nextArcheTypeData;
-                entityData = _entityDatas[entity.Id];
+                ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
+
+                var changeArcheType = false;
+                changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config4, component4);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config5, component5);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config6, component6);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config7, component7);
+
+                if (changeArcheType)
+                {
+                    var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
+                    ArcheTypeData.TransferEntity(GlobalVersion,
+                        entity,
+                        archeTypeData,
+                        nextArcheTypeData,
+                        _entityDatas);
+
+                    archeTypeData = nextArcheTypeData;
+                    entityData = _entityDatas[entity.Id];
+                }
             }
+            ChangeVersion.IncVersion(ref _globalVersion);
 
-            config1.Adapter.SetComponent(entityData, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityData, component2, archeTypeData);
-            config3.Adapter.SetComponent(entityData, component3, archeTypeData);
-            config4.Adapter.SetComponent(entityData, component4, archeTypeData);
-            config5.Adapter.SetComponent(entityData, component5, archeTypeData);
-            config6.Adapter.SetComponent(entityData, component6, archeTypeData);
-            config7.Adapter.SetComponent(entityData, component7, archeTypeData);
+            config1.Adapter.SetComponent(_globalVersion, entityData, component1, archeTypeData);
+            config2.Adapter.SetComponent(_globalVersion, entityData, component2, archeTypeData);
+            config3.Adapter.SetComponent(_globalVersion, entityData, component3, archeTypeData);
+            config4.Adapter.SetComponent(_globalVersion, entityData, component4, archeTypeData);
+            config5.Adapter.SetComponent(_globalVersion, entityData, component5, archeTypeData);
+            config6.Adapter.SetComponent(_globalVersion, entityData, component6, archeTypeData);
+            config7.Adapter.SetComponent(_globalVersion, entityData, component7, archeTypeData);
         }
 
         public void UpdateComponents<T1, T2, T3, T4, T5, T6, T7, T8>(Entity entity,
@@ -422,7 +472,6 @@ namespace EcsLte
             Context.AssertContext();
             AssertNotExistEntity(entity,
                 out var entityData, out var archeTypeData);
-            Context.AssertStructualChangeAvailable();
             AssertNotHaveComponent(config1, archeTypeData);
             AssertNotHaveComponent(config2, archeTypeData);
             AssertNotHaveComponent(config3, archeTypeData);
@@ -432,40 +481,52 @@ namespace EcsLte
             AssertNotHaveComponent(config7, archeTypeData);
             AssertNotHaveComponent(config8, archeTypeData);
 
-            ChangeVersion.IncVersion(ref _globalVersion);
-            ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
-
-            var changeArcheType = false;
-            changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config4, component4);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config5, component5);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config6, component6);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config7, component7);
-            changeArcheType |= InternalArcheTypeSharedUpdate(config8, component8);
-
-            if (changeArcheType)
+            if (config1.IsShared ||
+                config2.IsShared ||
+                config3.IsShared ||
+                config4.IsShared ||
+                config5.IsShared ||
+                config6.IsShared ||
+                config7.IsShared ||
+                config8.IsShared)
             {
-                var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-                ArcheTypeData.TransferEntity(GlobalVersion,
-                    entity,
-                    archeTypeData,
-                    nextArcheTypeData,
-                    _entityDatas);
+                Context.AssertStructualChangeAvailable();
 
-                archeTypeData = nextArcheTypeData;
-                entityData = _entityDatas[entity.Id];
+                ArcheType.CopyToCached(archeTypeData.ArcheType, ref _cachedArcheType);
+
+                var changeArcheType = false;
+                changeArcheType |= InternalArcheTypeSharedUpdate(config1, component1);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config2, component2);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config3, component3);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config4, component4);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config5, component5);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config6, component6);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config7, component7);
+                changeArcheType |= InternalArcheTypeSharedUpdate(config8, component8);
+
+                if (changeArcheType)
+                {
+                    var nextArcheTypeData = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
+                    ArcheTypeData.TransferEntity(GlobalVersion,
+                        entity,
+                        archeTypeData,
+                        nextArcheTypeData,
+                        _entityDatas);
+
+                    archeTypeData = nextArcheTypeData;
+                    entityData = _entityDatas[entity.Id];
+                }
             }
+            ChangeVersion.IncVersion(ref _globalVersion);
 
-            config1.Adapter.SetComponent(entityData, component1, archeTypeData);
-            config2.Adapter.SetComponent(entityData, component2, archeTypeData);
-            config3.Adapter.SetComponent(entityData, component3, archeTypeData);
-            config4.Adapter.SetComponent(entityData, component4, archeTypeData);
-            config5.Adapter.SetComponent(entityData, component5, archeTypeData);
-            config6.Adapter.SetComponent(entityData, component6, archeTypeData);
-            config7.Adapter.SetComponent(entityData, component7, archeTypeData);
-            config8.Adapter.SetComponent(entityData, component8, archeTypeData);
+            config1.Adapter.SetComponent(_globalVersion, entityData, component1, archeTypeData);
+            config2.Adapter.SetComponent(_globalVersion, entityData, component2, archeTypeData);
+            config3.Adapter.SetComponent(_globalVersion, entityData, component3, archeTypeData);
+            config4.Adapter.SetComponent(_globalVersion, entityData, component4, archeTypeData);
+            config5.Adapter.SetComponent(_globalVersion, entityData, component5, archeTypeData);
+            config6.Adapter.SetComponent(_globalVersion, entityData, component6, archeTypeData);
+            config7.Adapter.SetComponent(_globalVersion, entityData, component7, archeTypeData);
+            config8.Adapter.SetComponent(_globalVersion, entityData, component8, archeTypeData);
         }
 
         public void UpdateComponents<TComponent>(EntityArcheType archeType, TComponent component)
@@ -498,19 +559,16 @@ namespace EcsLte
             ChangeVersion.IncVersion(ref _globalVersion);
             var config = ComponentConfig<TComponent>.Config;
             var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
-            var incVersion = false;
+            var version = _globalVersion;
+            ChangeVersion.IncVersion(ref version);
+
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var archeTypeData = filteredArcheTypeDatas[i];
                 if (archeTypeData.HasConfig(config) && archeTypeData.EntityCount > 0)
                 {
-                    if (!incVersion)
-                    {
-                        ChangeVersion.IncVersion(ref _globalVersion);
-                        incVersion = true;
-                    }
-
-                    archeTypeData.SetAllComponents(GlobalVersion,
+                    _globalVersion = version;
+                    archeTypeData.SetAllComponents(version,
                         0,
                         archeTypeData.EntityCount,
                         config,
@@ -548,19 +606,16 @@ namespace EcsLte
 
             var config = ComponentConfig<TComponent>.Config;
             var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
-            var incVersion = false;
+            var version = _globalVersion;
+            ChangeVersion.IncVersion(ref version);
+
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var archeTypeData = filteredArcheTypeDatas[i];
                 if (archeTypeData.HasConfig(config) && archeTypeData.EntityCount > 0)
                 {
-                    if (!incVersion)
-                    {
-                        ChangeVersion.IncVersion(ref _globalVersion);
-                        incVersion = true;
-                    }
-
-                    archeTypeData.SetAllManagedComponents(GlobalVersion,
+                    _globalVersion = version;
+                    archeTypeData.SetAllManagedComponents(_globalVersion,
                         0,
                         archeTypeData.EntityCount,
                         config,
@@ -578,18 +633,15 @@ namespace EcsLte
             ChangeVersion.IncVersion(ref _globalVersion);
             var config = ComponentConfig<TComponent>.Config;
             var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
-            var incVersion = false;
+            var version = _globalVersion;
+            ChangeVersion.IncVersion(ref version);
+
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var archeTypeData = filteredArcheTypeDatas[i];
                 if (archeTypeData.HasConfig(config) && archeTypeData.EntityCount > 0)
                 {
-                    if (!incVersion)
-                    {
-                        ChangeVersion.IncVersion(ref _globalVersion);
-                        incVersion = true;
-                    }
-
+                    _globalVersion = version;
                     InternalUpdateSharedTransferArcheTypeData(archeTypeData,
                         Context.SharedComponentDics.GetDic<TComponent>().GetSharedDataIndex(component));
                 }

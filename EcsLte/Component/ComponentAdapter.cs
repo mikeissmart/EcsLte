@@ -1,5 +1,6 @@
 ﻿using EcsLte.Utilities;
 using System;
+using System.Reflection;
 
 namespace EcsLte
 {
@@ -9,7 +10,7 @@ namespace EcsLte
 
         TComponent2 GetComponent<TComponent2>(EntityData entityData, ArcheTypeData archeTypeData)
             where TComponent2 : IComponent;
-        void SetComponent<TComponent2>(EntityData entityData, TComponent2 component, ArcheTypeData archeTypeData)
+        void SetComponent<TComponent2>(ChangeVersion changeVersion, EntityData entityData, TComponent2 component, ArcheTypeData archeTypeData)
             where TComponent2 : IComponent;
         void AddConfig<TComponent2>(ref ArcheType cachedArcheType, TComponent2 component, SharedComponentDictionaries sharedDics)
             where TComponent2 : IComponent;
@@ -45,9 +46,9 @@ namespace EcsLte
             return component;
         }
 
-        public unsafe void SetComponent<TComponent2>(EntityData entityData, TComponent2 component, ArcheTypeData archeTypeData)
+        public unsafe void SetComponent<TComponent2>(ChangeVersion changeVersion, EntityData entityData, TComponent2 component, ArcheTypeData archeTypeData)
             where TComponent2 : IComponent
-            => InteropTools.StructureToPtr(ref component, (IntPtr)archeTypeData.GetComponentPtr(entityData, _config));
+            => archeTypeData.SetComponentAdapter(changeVersion, entityData, _config, component);
 
         public void AddConfig<TComponent2>(ref ArcheType cachedArcheType, TComponent2 component, SharedComponentDictionaries sharedDics)
             where TComponent2 : IComponent
@@ -71,10 +72,9 @@ namespace EcsLte
             => (TComponent2)archeTypeData.GetManagedComponentPool(_config)
                 .GetComponent(entityData.ChunkIndex, entityData.EntityIndex);
 
-        public void SetComponent<TComponent2>(EntityData entityData, TComponent2 component, ArcheTypeData archeTypeData)
+        public void SetComponent<TComponent2>(ChangeVersion changeVersion, EntityData entityData, TComponent2 component, ArcheTypeData archeTypeData)
             where TComponent2 : IComponent
-            => archeTypeData.GetManagedComponentPool(_config)
-                .SetComponent(entityData.ChunkIndex, entityData.EntityIndex, component);
+            => archeTypeData.SetManagedComponentAdapter(changeVersion, entityData, _config, component);
 
         public void AddConfig<TComponent2>(ref ArcheType cachedArcheType, TComponent2 component, SharedComponentDictionaries sharedDics)
             where TComponent2 : IComponent
@@ -97,7 +97,7 @@ namespace EcsLte
             where TComponent2 : IComponent
             => (TComponent2)archeTypeData.GetSharedComponentData(_config);
 
-        public void SetComponent<TComponent2>(EntityData entityData, TComponent2 component, ArcheTypeData archeTypeData)
+        public void SetComponent<TComponent2>(ChangeVersion changeVersion, EntityData entityData, TComponent2 component, ArcheTypeData archeTypeData)
             where TComponent2 : IComponent
         {
         }

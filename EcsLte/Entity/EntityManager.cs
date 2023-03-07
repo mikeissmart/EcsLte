@@ -40,68 +40,8 @@ namespace EcsLte
             _globalVersion = new ChangeVersion { Version = 1 };
         }
 
-        // todo might not need this code
-        /*internal int GetArcheTypeDataChunks(EntityQuery query, ref ArcheTypeDataChunk[] chunks)
-        {
-            if (query.Filter != null && query.Tracker == null)
-                return GetArcheTypeDataChunks(query.Filter, ref chunks);
-            else if (query.Filter == null && query.Tracker != null)
-                return GetArcheTypeDataChunks(query.Tracker, ref chunks);
-            else if (query.Filter != null && query.Tracker != null)
-            {
-                var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(query.Filter);
-                var chunkIndex = 0;
-                for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
-                {
-                    var archeTypeData = filteredArcheTypeDatas[i];
-                    query.Tracker.GetArcheTypeDataChunks(archeTypeData, out var archeTypeChunks);
-                    Helper.ResizeRefArray(ref chunks, chunkIndex, archeTypeChunks.Count);
-                    archeTypeChunks.CopyTo(0, chunks, chunkIndex, archeTypeChunks.Count);
-                }
-
-                // TODO Not sure if +1 is needed
-                return chunkIndex + 1;
-            }
-
-            return 0;
-        }
-
-        internal int GetArcheTypeDataChunks(EntityFilter filter, ref ArcheTypeDataChunk[] chunks)
-        {
-            var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
-            var chunkIndex = 0;
-            for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
-            {
-                var archeTypeData = filteredArcheTypeDatas[i];
-                if (archeTypeData.ChunksCount > 0)
-                {
-                    Helper.ResizeRefArray(ref chunks, chunkIndex, archeTypeData.ChunksCount);
-                    chunkIndex += archeTypeData.GetAllChunks(ref chunks, chunkIndex);
-                }
-            }
-
-            // TODO Not sure if +1 is needed
-            return chunkIndex + 1;
-        }
-
-        internal int GetArcheTypeDataChunks(EntityTracker tracker, ref ArcheTypeDataChunk[] chunks)
-        {
-            var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(tracker.TrackingFilter());
-            var chunkIndex = 0;
-            for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
-            {
-                var archeTypeData = filteredArcheTypeDatas[i];
-                tracker.GetArcheTypeDataChunks(archeTypeData, out var archeTypeChunks);
-
-                Helper.ResizeRefArray(ref chunks, chunkIndex, archeTypeChunks.Count);
-                archeTypeChunks.CopyTo(0, chunks, chunkIndex, archeTypeChunks.Count);
-
-                chunkIndex += archeTypeChunks.Count;
-            }
-
-            // TODO Not sure if +1 is needed
-            return chunkIndex + 1;
-        }*/
+        internal void ForEacGlobalVersionhIncVersion()
+            => ChangeVersion.IncVersion(ref _globalVersion);
 
         internal void InternalDestroy()
         {
@@ -268,42 +208,6 @@ namespace EcsLte
             return srcArcheTypeData.EntityCount;
         }
 
-        // TODO redo in chunk code?
-        /*private int InternalCopyToTracker(EntityTracker tracker, ArcheTypeData srcArcheTypeData,
-            Dictionary<ArcheTypeIndex, (ArcheTypeData, ArcheTypeData)> cachedArcheTypeDatas,
-            ref Entity[] destEntities, int destStartingIndex)
-        {
-            var trackedEntityCount = tracker.GetArcheTypeDataEntities(srcArcheTypeData,
-                ref _cachedInternalEntities, 0);
-            if (trackedEntityCount > 0)
-            {
-                if (!cachedArcheTypeDatas.TryGetValue(srcArcheTypeData.ArcheTypeIndex, out var archeTypeDatas))
-                {
-                    archeTypeDatas.Item1 = srcArcheTypeData;
-                    InternalCacheDiffContextArcheType(srcArcheTypeData);
-                    archeTypeDatas.Item2 = Context.ArcheTypes.GetArcheTypeData(_cachedArcheType);
-
-                    cachedArcheTypeDatas.Add(srcArcheTypeData.ArcheTypeIndex, archeTypeDatas);
-                }
-
-                var preEntityCount = archeTypeDatas.Item2.EntityCount;
-                Helper.ResizeRefArray(ref destEntities, destStartingIndex, trackedEntityCount);
-                CheckAndAllocEntities(archeTypeDatas.Item2, false,
-                    ref destEntities, destStartingIndex, trackedEntityCount);
-
-                for (var i = 0; i < trackedEntityCount; i++)
-                {
-                    archeTypeDatas.Item2.CopyComponentsDifferentArcheTypeDataSameComponents(
-                        archeTypeDatas.Item1,
-                        tracker.Context.Entities._entityDatas[_cachedInternalEntities[i].Id].EntityIndex,
-                        preEntityCount + i,
-                        1);
-                }
-            }
-
-            return trackedEntityCount;
-        }*/
-
         private int InternalDuplicateArcheTypeData(ArcheTypeData archeTypeData,
             ref Entity[] destEntities, int destStartingIndex)
         {
@@ -323,33 +227,6 @@ namespace EcsLte
 
             return archeTypeData.EntityCount - preEntityCount;
         }
-
-        // TODO redo in chunk code?
-        /*private int InternalDuplicateTracker(EntityTracker tracker, ArcheTypeData archeTypeData,
-            ref Entity[] destEntities, int destStartingIndex)
-        {
-            var trackedEntityCount = tracker.GetArcheTypeDataEntities(archeTypeData,
-                ref _cachedInternalEntities, 0);
-            if (trackedEntityCount > 0)
-            {
-                var preEntityCount = archeTypeData.EntityCount;
-                Helper.ResizeRefArray(ref destEntities, destStartingIndex, trackedEntityCount);
-                CheckAndAllocEntities(archeTypeData, false,
-                    ref destEntities, destStartingIndex, trackedEntityCount);
-
-                for (var i = 0; i < trackedEntityCount; i++)
-                {
-                    // NOT TESTED
-                    archeTypeData.CopyComponentsSameArcheTypeData(
-                        GlobalVersion,
-                        _entityDatas[_cachedInternalEntities[i].Id].EntityIndex,
-                        preEntityCount + i,
-                        1);
-                }
-            }
-
-            return trackedEntityCount;
-        }*/
 
         private void InternalCacheDiffContextArcheType(ArcheTypeData diffContextArcheTypeData)
         {

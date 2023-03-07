@@ -16,7 +16,7 @@ namespace EcsLte
         public ISharedComponent[] FilterByComponents => _data.FilterByComponents;
         internal SharedDataIndex[] SharedDataIndexes => _data.SharedDataIndexes;
         internal ISharedComponentData[] FilterComponentDatas => _data.FilterComponentDatas;
-        internal int ConfigCount => _data.AllOfConfigs.Length;// + _data.AnyOfConfigs.Length + _data.NoneOfConfigs.Length;
+        internal int ConfigCount => _data.AllOfConfigs.Length;
         internal ArcheTypeData[] ArcheTypeDatas
         {
             get => _data.ArcheTypeDatas;

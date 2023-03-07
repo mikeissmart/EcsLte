@@ -66,25 +66,25 @@ public struct TestSharedComponent4 : ISharedComponent, IEquatable<TestSharedComp
     public override int GetHashCode() => Prop.GetHashCode();
 }
 
-public struct TestManagedComponent1 : IManagedComponent, ITestComponent
+public class TestManagedComponent1 : IManagedComponent, ITestComponent
 {
     public int Prop { get; set; }
     public string StrProp { get; set; }
 }
 
-public struct TestManagedComponent2 : IManagedComponent, ITestComponent
+public class TestManagedComponent2 : IManagedComponent, ITestComponent
 {
     public int Prop { get; set; }
     public string StrProp { get; set; }
 }
 
-public struct TestManagedComponent3 : IManagedComponent, ITestComponent
+public class TestManagedComponent3 : IManagedComponent, ITestComponent
 {
     public int Prop { get; set; }
     public string StrProp { get; set; }
 }
 
-public struct TestManagedComponent4 : IManagedComponent, ITestComponent
+public class TestManagedComponent4 : IManagedComponent, ITestComponent
 {
     public int Prop { get; set; }
     public string StrProp { get; set; }

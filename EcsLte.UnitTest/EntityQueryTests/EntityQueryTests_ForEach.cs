@@ -11,12 +11,14 @@ namespace EcsLte.UnitTest.EntityQueryTests
         {
             PrepTest(out var query, out var tracker, out var entities, out var wasHit);
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity) =>
                 {
                     wasHit[index]++;
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
         }
@@ -31,6 +33,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
             for (var i = 0; i < entities.Length; i++)
                 Context.Entities.UpdateComponent(entities[i], new TestComponent1 { Prop = entities[i].Id });
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 in TestComponent1 component1) =>
@@ -40,6 +43,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                         $"Entity: {entity}");
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
         }
@@ -56,6 +60,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestComponent2 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 in TestComponent1 component1,
@@ -66,6 +71,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component2);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
         }
@@ -83,6 +89,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestManagedComponent1 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 in TestComponent1 component1,
@@ -95,6 +102,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component3);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
         }
@@ -113,6 +121,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestManagedComponent2 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 in TestComponent1 component1,
@@ -127,6 +136,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component4);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
         }
@@ -146,6 +156,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent1 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 in TestComponent1 component1,
@@ -162,6 +173,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component5);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
         }
@@ -182,6 +194,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent2 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 in TestComponent1 component1,
@@ -200,6 +213,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component6);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
         }
@@ -221,6 +235,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent3 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 in TestComponent1 component1,
@@ -241,6 +256,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component7);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
         }
@@ -263,6 +279,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent4 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 in TestComponent1 component1,
@@ -285,6 +302,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component8);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
         }
@@ -298,6 +316,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
         {
             PrepTest(out var query, out var tracker, out var entities, out var wasHit);
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1) =>
@@ -306,6 +325,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     component1.Prop++;
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -323,6 +343,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestComponent2 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -333,6 +354,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component2);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -351,6 +373,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestManagedComponent1 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -363,6 +386,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component3);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -382,6 +406,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestManagedComponent2 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -396,6 +421,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component4);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -416,6 +442,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent1 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -432,6 +459,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component5);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -453,6 +481,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent2 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -471,6 +500,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component6);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -493,6 +523,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent3 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -513,6 +544,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component7);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -536,6 +568,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent4 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -558,6 +591,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component8);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -573,6 +607,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
         {
             PrepTest(out var query, out var tracker, out var entities, out var wasHit);
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -583,6 +618,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     component2.Prop++;
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -601,6 +637,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestManagedComponent1 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -613,6 +650,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component3);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -632,6 +670,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestManagedComponent2 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -646,6 +685,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component4);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -666,6 +706,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent1 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -682,6 +723,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component5);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -703,6 +745,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent2 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -721,6 +764,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component6);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -743,6 +787,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent3 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -763,6 +808,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component7);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -786,6 +832,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent4 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -808,6 +855,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component8);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -824,6 +872,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
         {
             PrepTest(out var query, out var tracker, out var entities, out var wasHit);
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -836,6 +885,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     component3.Prop++;
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -855,6 +905,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestManagedComponent2 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -869,6 +920,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component4);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -889,6 +941,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent1 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -905,6 +958,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component5);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -926,6 +980,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent2 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -944,6 +999,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component6);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -966,6 +1022,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent3 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -986,6 +1043,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component7);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -1009,6 +1067,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent4 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -1031,6 +1090,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component8);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -1048,6 +1108,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
         {
             PrepTest(out var query, out var tracker, out var entities, out var wasHit);
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -1062,6 +1123,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     component4.Prop++;
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -1082,6 +1144,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent1 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -1098,6 +1161,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component5);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -1119,6 +1183,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent2 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -1137,6 +1202,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component6);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -1159,6 +1225,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent3 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -1179,6 +1246,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component7);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -1202,6 +1270,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent4 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -1224,6 +1293,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component8);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -1242,6 +1312,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
         {
             PrepTest(out var query, out var tracker, out var entities, out var wasHit);
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -1258,6 +1329,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     component5.Prop++;
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -1279,6 +1351,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent2 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -1297,6 +1370,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component6);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -1319,6 +1393,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent3 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -1339,6 +1414,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component7);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -1362,6 +1438,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent4 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -1384,6 +1461,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component8);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -1403,6 +1481,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
         {
             PrepTest(out var query, out var tracker, out var entities, out var wasHit);
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -1421,6 +1500,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     component6.Prop++;
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -1443,6 +1523,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent3 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -1463,6 +1544,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component7);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -1486,6 +1568,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent4 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -1508,6 +1591,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component8);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -1528,6 +1612,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
         {
             PrepTest(out var query, out var tracker, out var entities, out var wasHit);
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -1548,6 +1633,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     component7.Prop++;
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -1571,6 +1657,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     new TestSharedComponent4 { Prop = entities[i].Id });
             }
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -1593,6 +1680,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     AssertReadComponent(entity, component8);
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -1614,6 +1702,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
         {
             PrepTest(out var query, out var tracker, out var entities, out var wasHit);
 
+            var preChangeVersion = Context.Entities.GlobalVersion;
             query.ForEach(
                 (int threadIndex, int index, Entity entity,
                 ref TestComponent1 component1,
@@ -1636,6 +1725,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                     component8.Prop++;
                 })
                 .Run();
+            Assert.IsTrue(preChangeVersion.Version + 1 == Context.Entities.GlobalVersion.Version);
 
             AssertWasHit(wasHit);
             AssertTracked(tracker, entities);
@@ -1663,7 +1753,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
                 .AddSharedComponent(new TestSharedComponent4 { Prop = 0 });
             query = Context.Queries
                 .SetFilter(Context.Filters.WhereAnyOf(archeType));
-            tracker = Context.Tracking.CreateTracker("Tracker")
+            tracker = Context.Tracking
                 .SetTrackingComponent<TestComponent1>(true)
                 .SetTrackingComponent<TestComponent2>(true)
                 .SetTrackingComponent<TestManagedComponent1>(true)

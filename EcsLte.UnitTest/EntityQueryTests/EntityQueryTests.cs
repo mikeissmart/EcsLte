@@ -13,7 +13,6 @@ namespace EcsLte.UnitTest.EntityQueryTests
                 .CreateCommands("Test");
             var query = Context.Queries
                 .SetCommands(commands);
-
             Assert.IsTrue(query.Commands == commands);
 
             Context.Commands.RemoveCommands(commands);
@@ -70,18 +69,14 @@ namespace EcsLte.UnitTest.EntityQueryTests
         public void SetTracker()
         {
             var tracker = Context.Tracking
-                .CreateTracker("Test");
+                .SetTrackingMode(EntityTrackerMode.AnyChanges);
             var query = Context.Queries
                 .SetTracker(tracker);
 
             Assert.IsTrue(query.Tracker == tracker);
 
-            Context.Tracking.RemoveTracker(tracker);
-            Assert.ThrowsException<EntityTrackerIsDestroyedException>(() =>
-                query.SetTracker(tracker));
-
             var diffTracking = EcsContexts.Instance.CreateContext("Diff").Tracking
-                .CreateTracker("DiffTest");
+                .SetTrackingMode(EntityTrackerMode.AnyChanges);
             Assert.ThrowsException<EcsContextNotSameException>(() =>
                 query.SetTracker(diffTracking));
         }
@@ -90,7 +85,7 @@ namespace EcsLte.UnitTest.EntityQueryTests
         public void ClearTracking()
         {
             var tracker = Context.Tracking
-                .CreateTracker("Test");
+                .SetTrackingMode(EntityTrackerMode.AnyChanges);
             var query = Context.Queries
                 .SetTracker(tracker)
                 .ClearTracker();

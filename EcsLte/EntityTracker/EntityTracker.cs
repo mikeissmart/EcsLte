@@ -21,22 +21,18 @@ namespace EcsLte
         private ChangeVersion _cacheVersion;
 
         public EcsContext Context { get; private set; }
-        public string Name { get; private set; }
-        public bool IsDestroyed { get; private set; }
         public ChangeVersion TrackChangeVersion { get; private set; }
         public EntityTrackerMode Mode { get; private set; }
-        public bool IsTrackingEntities { get; set; }
         internal HashSet<ComponentConfig> TrackingGeneralConfigs { get; private set; }
         internal HashSet<ComponentConfig> TrackingManagedConfigs { get; private set; }
         internal HashSet<ComponentConfig> TrackingSharedConfigs { get; private set; }
 
-        internal EntityTracker(EcsContext context, string name)
+        internal EntityTracker(EcsContext context)
         {
             _archeTypeDatas = new Dictionary<ArcheTypeIndex, CacheData>();
             _filter = context.Filters.CreateFilter();
 
             Context = context;
-            Name = name;
             TrackingGeneralConfigs = new HashSet<ComponentConfig>();
             TrackingManagedConfigs = new HashSet<ComponentConfig>();
             TrackingSharedConfigs = new HashSet<ComponentConfig>();
@@ -49,7 +45,6 @@ namespace EcsLte
         public bool IsTrackingComponent(ComponentConfig config)
         {
             Context.AssertContext();
-            AssertEntityTracker();
 
             if (config.IsGeneral)
                 return TrackingGeneralConfigs.Contains(config);
@@ -66,7 +61,6 @@ namespace EcsLte
         public EntityTracker SetTrackingComponent(ComponentConfig config, bool tracking)
         {
             Context.AssertContext();
-            AssertEntityTracker();
 
             if (config.IsGeneral)
             {
@@ -102,7 +96,6 @@ namespace EcsLte
         public EntityTracker SetAllTrackingComponents(bool tracking)
         {
             Context.AssertContext();
-            AssertEntityTracker();
 
             var clearCache = false;
             for (var i = 0; i < ComponentConfigs.Instance.AllGeneralCount; i++)
@@ -139,7 +132,6 @@ namespace EcsLte
         public EntityTracker SetTrackingMode(EntityTrackerMode mode)
         {
             Context.AssertContext();
-            AssertEntityTracker();
 
             if (Mode != mode)
             {
@@ -150,24 +142,9 @@ namespace EcsLte
             return this;
         }
 
-        public EntityTracker SetTrackingEntities(bool tracking)
-        {
-            Context.AssertContext();
-            AssertEntityTracker();
-
-            if (IsTrackingEntities != tracking)
-            {
-                IsTrackingEntities = tracking;
-                _cacheVersion = Context.Entities.GlobalVersion;
-            }
-
-            return this;
-        }
-
         public EntityTracker SetChangeVersion(ChangeVersion changeVersion)
         {
             Context.AssertContext();
-            AssertEntityTracker();
 
             if (TrackChangeVersion != changeVersion)
             {
@@ -226,7 +203,6 @@ namespace EcsLte
         {
             _archeTypeDatas.Clear();
             _componentVersion = Context.Entities.GlobalVersion;;
-            IsDestroyed = true;
             TrackingGeneralConfigs.Clear();
             TrackingManagedConfigs.Clear();
             TrackingSharedConfigs.Clear();
@@ -376,16 +352,8 @@ namespace EcsLte
         {
             if (tracker == null)
                 throw new ArgumentNullException(nameof(tracker));
-            if (tracker.IsDestroyed)
-                throw new EntityTrackerIsDestroyedException(tracker);
             if (tracker.Context != context)
                 throw new EcsContextNotSameException(tracker.Context, context);
-        }
-
-        private void AssertEntityTracker()
-        {
-            if (IsDestroyed)
-                throw new EntityTrackerIsDestroyedException(this);
         }
 
         #endregion

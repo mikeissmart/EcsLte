@@ -13,6 +13,9 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         [ParamsAllValues]
         public ReadWriteType ReadWrite { get; set; }
 
+        [ParamsAllValues]
+        public ParallelType Parallel { get; set; }
+
         [GlobalSetup]
         public void GlobalSetup()
         {
@@ -20,7 +23,7 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
                 EcsContexts.Instance.DestroyContext(EcsContexts.Instance.GetContext("Test"));
             _context = EcsContexts.Instance.CreateContext("Test");
             _query = _context.Queries
-                .SetTracker(_context.Tracking.CreateTracker("Tracker")
+                .SetTracker(_context.Tracking
                     .SetTrackingComponent<TestComponent1>(true)
                     .SetTrackingComponent<TestComponent2>(true)
                     .SetTrackingComponent<TestComponent3>(true)
@@ -61,40 +64,38 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
         [Benchmark]
         public void ForEach()
         {
+            EntityQuery q;
             switch (ReadWrite)
             {
                 case ReadWriteType.R0W0:
-                    _query.ForEach(
+                    q = _query.ForEach(
                         (int threadIndex, int index, Entity entity) =>
                         {
-                        })
-                        .Run();
+                        });
                     break;
 
                 #region Normal
 
                 case ReadWriteType.R0W4_Normal_x4:
-                    _query.ForEach(
+                    q = _query.ForEach(
                         (int threadIndex, int index, Entity entity, ref TestComponent1 component1, ref TestComponent2 component2, ref TestComponent3 component3, ref TestComponent4 component4) =>
                         {
                             component1.Prop++;
                             component2.Prop++;
                             component3.Prop++;
                             component4.Prop++;
-                        })
-                        .Run();
+                        });
                     break;
 
                 case ReadWriteType.R4W0_Normal_x4:
-                    _query.ForEach(
+                    q = _query.ForEach(
                         (int threadIndex, int index, Entity entity, in TestComponent1 component1, in TestComponent2 component2, in TestComponent3 component3, in TestComponent4 component4) =>
                         {
                             var prop1 = component1.Prop + 1;
                             var prop2 = component2.Prop + 1;
                             var prop3 = component3.Prop + 1;
                             var prop4 = component4.Prop + 1;
-                        })
-                        .Run();
+                        });
                     break;
 
                 #endregion Normal
@@ -102,27 +103,25 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
                 #region Managed
 
                 case ReadWriteType.R0W4_Managed_x4:
-                    _query.ForEach(
+                    q = _query.ForEach(
                         (int threadIndex, int index, Entity entity, ref TestManagedComponent1 component1, ref TestManagedComponent2 component2, ref TestManagedComponent3 component3, ref TestManagedComponent4 component4) =>
                         {
                             component1.Prop++;
                             component2.Prop++;
                             component3.Prop++;
                             component4.Prop++;
-                        })
-                        .Run();
+                        });
                     break;
 
                 case ReadWriteType.R4W0_Managed_x4:
-                    _query.ForEach(
+                    q = _query.ForEach(
                         (int threadIndex, int index, Entity entity, in TestManagedComponent1 component1, in TestManagedComponent2 component2, in TestManagedComponent3 component3, in TestManagedComponent4 component4) =>
                         {
                             var prop1 = component1.Prop + 1;
                             var prop2 = component2.Prop + 1;
                             var prop3 = component3.Prop + 1;
                             var prop4 = component4.Prop + 1;
-                        })
-                        .Run();
+                        });
                     break;
 
                 #endregion Managed
@@ -130,27 +129,25 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
                 #region Shared
 
                 case ReadWriteType.R0W4_Shared_x4:
-                    _query.ForEach(
+                    q = _query.ForEach(
                         (int threadIndex, int index, Entity entity, ref TestSharedComponent1 component1, ref TestSharedComponent2 component2, ref TestSharedComponent3 component3, ref TestSharedComponent4 component4) =>
                         {
                             component1.Prop++;
                             component2.Prop++;
                             component3.Prop++;
                             component4.Prop++;
-                        })
-                        .Run();
+                        });
                     break;
 
                 case ReadWriteType.R4W0_Shared_x4:
-                    _query.ForEach(
+                    q = _query.ForEach(
                         (int threadIndex, int index, Entity entity, in TestSharedComponent1 component1, in TestSharedComponent2 component2, in TestSharedComponent3 component3, in TestSharedComponent4 component4) =>
                         {
                             var prop1 = component1.Prop + 1;
                             var prop2 = component2.Prop + 1;
                             var prop3 = component3.Prop + 1;
                             var prop4 = component4.Prop + 1;
-                        })
-                        .Run();
+                        });
                     break;
 
                 #endregion Shared
@@ -158,6 +155,11 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
                 default:
                     throw new InvalidOperationException();
             }
+
+            if (Parallel == ParallelType.Yes)
+                q.RunParallel();
+            else
+                q.Run();
         }
     }
 
@@ -173,5 +175,11 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
 
         R0W4_Shared_x4,
         R4W0_Shared_x4,
+    }
+
+    public enum ParallelType
+    {
+        No,
+        Yes
     }
 }

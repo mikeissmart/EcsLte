@@ -686,9 +686,8 @@ namespace EcsLte.UnitTest
             }
         }
 
-        protected void AssertTracker_Destroyed_Null(
+        protected void AssertTracker_Different_Null(
             EntityTracker diffContext,
-            EntityTracker destroyedTracker,
             params Action<EntityTracker>[] assertActions)
         {
             EntityTracker nullable = null;
@@ -703,21 +702,17 @@ namespace EcsLte.UnitTest
                     Assert.ThrowsException<EcsContextNotSameException>(() => action(diffContext),
                         "Different Context");
                 }
-
-                Assert.ThrowsException<EntityTrackerIsDestroyedException>(() => action(destroyedTracker),
-                    "Tracker Destroyed");
             }
         }
 
-        protected void AssertQuery_DiffContext_DestroyedTracker_Null(
-            EntityQuery destroyedTracker,
+        protected void AssertQuery_DiffContext_Null(
             params Action<EntityQuery>[] assertActions)
         {
             var diffContext = EcsContexts.Instance.CreateContext(DateTime.Now.Ticks.ToString());
             var diffQuery = diffContext.Queries
                 .SetFilter(diffContext.Filters
                     .WhereAllOf<TestComponent1>())
-                .SetTracker(diffContext.Tracking.CreateTracker(diffContext.Name));
+                .SetTracker(diffContext.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges));
             EntityQuery nullable = null;
 
             foreach (var action in assertActions)
@@ -730,9 +725,6 @@ namespace EcsLte.UnitTest
                     Assert.ThrowsException<EcsContextNotSameException>(() => action(diffQuery),
                         "Different Context");
                 }
-
-                Assert.ThrowsException<EntityTrackerIsDestroyedException>(() => action(destroyedTracker),
-                    "Tracker Destroyed");
             }
         }
     }

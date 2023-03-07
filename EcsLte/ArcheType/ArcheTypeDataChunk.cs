@@ -169,8 +169,11 @@ namespace EcsLte
                     }
                     for (var i = 0; i < ParentArcheTypeData.ManagedPools.Length; i++)
                     {
-                        ParentArcheTypeData.ManagedPools[i].CopyFromSame(ChunkIndex, lastIndex,
-                            ChunkIndex, entityData.EntityIndex, 1);
+                        ParentArcheTypeData.ManagedPools[i].CopyFromSameSingle(
+                            ChunkIndex,
+                            lastIndex,
+                            ChunkIndex,
+                            entityData.EntityIndex);
                     }
 
                     ParentArcheTypeData.Entities[(ChunkIndex * ChunkMaxCapacity) + entityData.EntityIndex] = lastEntity;
@@ -198,14 +201,13 @@ namespace EcsLte
                     removeEntityData.EntityIndex,
                     1);
             }
-            for (var i = 0; i < ParentArcheTypeData.ManagedConfigs.Length; i++)
+            for (var i = 0; i < ParentArcheTypeData.ManagedPools.Length; i++)
             {
-                ParentArcheTypeData.ManagedPools[i].CopyFromSame(
+                ParentArcheTypeData.ManagedPools[i].CopyFromSameSingle(
                     copyChunk.ChunkIndex,
                     copyEntityData.EntityIndex,
                     ChunkIndex,
-                    removeEntityData.EntityIndex,
-                    1);
+                    removeEntityData.EntityIndex);
             }
 
             ParentArcheTypeData.Entities[(removeEntityData.ChunkIndex * ChunkMaxCapacity) + removeEntityData.EntityIndex] = copyEntity;
@@ -216,13 +218,6 @@ namespace EcsLte
 
         internal void RemoveAllEntities()
         {
-            // Clear managed so gc can clean up too
-            for (var i = 0; i < ParentArcheTypeData.ManagedConfigs.Length; i++)
-            {
-                ParentArcheTypeData.ManagedPools[i].ClearComponents(
-                    ChunkIndex, 0, EntityCount);
-            }
-
             EntityCount = 0;
         }
 
@@ -326,6 +321,21 @@ namespace EcsLte
                 .PtrComponent(ChunkIndex, entityIndex) = component;
         }
 
+        internal void SetComponentAdapter(ChangeVersion changeVersion, int entityIndex,
+            ComponentConfigOffset configOffset, IComponent component)
+        {
+            GeneralVersions[configOffset.ConfigIndex] = changeVersion;
+
+            InteropTools.StructureToPtr(ref component, (IntPtr)ParentArcheTypeData.GeneralBuffers[configOffset.ConfigIndex]
+                .PtrComponent(ChunkIndex, entityIndex));
+        }
+
+        internal void SetComponentAdapter2(ChangeVersion changeVersion, int entityIndex,
+            ComponentConfigOffset configOffset)
+        {
+            GeneralVersions[configOffset.ConfigIndex] = changeVersion;
+        }
+
         internal void SetComponents<TComponent>(ChangeVersion changeVersion, ComponentConfigOffset configOffset,
             in TComponent component)
             where TComponent : unmanaged, IGeneralComponent
@@ -355,6 +365,21 @@ namespace EcsLte
 
             ((ComponentPool<TComponent>)ParentArcheTypeData.ManagedPools[configOffset.ConfigIndex])
                 .SetComponent(ChunkIndex, entityIndex, component);
+        }
+
+        internal void SetManagedComponentAdapter(ChangeVersion changeVersion, int entityIndex,
+            ComponentConfigOffset configOffset, in IComponent component)
+        {
+            ManagedVersions[configOffset.ConfigIndex] = changeVersion;
+
+            ParentArcheTypeData.ManagedPools[configOffset.ConfigIndex]
+                .SetComponent(ChunkIndex, entityIndex, component);
+        }
+
+        internal void SetManagedComponentAdapter2(ChangeVersion changeVersion, int entityIndex,
+            ComponentConfigOffset configOffset)
+        {
+            ManagedVersions[configOffset.ConfigIndex] = changeVersion;
         }
 
         internal void SetManagedComponents<TComponent>(ChangeVersion changeVersion, ComponentConfigOffset configOffset,

@@ -11,7 +11,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void UpdateSharedComponent()
         {
-            var updateSharedTracker = Context.Tracking.CreateTracker("UpdateSharedTracker")
+            var updateSharedTracker = Context.Tracking
                 .SetTrackingComponent<TestSharedComponent1>(true);
 
             var entity = Context.Entities.CreateEntity(
@@ -39,7 +39,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void UpdateSharedComponent_ArcheType()
         {
-            var updateSharedTracker = Context.Tracking.CreateTracker("UpdateSharedTracker")
+            var updateSharedTracker = Context.Tracking
                 .SetTrackingComponent<TestSharedComponent1>(true);
 
             var archeType1 = Context.ArcheTypes
@@ -81,7 +81,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void UpdateSharedComponents_Filter()
         {
-            var updateSharedTracker = Context.Tracking.CreateTracker("UpdateSharedTracker")
+            var updateSharedTracker = Context.Tracking
                 .SetTrackingComponent<TestSharedComponent1>(true);
 
             var anyFilter = Context.Filters

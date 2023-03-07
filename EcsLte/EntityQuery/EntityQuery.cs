@@ -93,10 +93,13 @@ namespace EcsLte
         }
 
         public void Run()
-            => InternalRun(false);
+            => InternalRun(false, 1);
 
         public void RunParallel()
-            => InternalRun(true);
+            => InternalRun(true, _threadCount);
+
+        public void RunParallel(int threadCount)
+            => InternalRun(true, threadCount);
 
         #region Assert
 

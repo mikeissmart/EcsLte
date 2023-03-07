@@ -9,7 +9,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
         [TestMethod]
         public void UpdateComponent()
         {
-            var updateTracker = Context.Tracking.CreateTracker("UpdateTracker")
+            var updateTracker = Context.Tracking
                 .SetTrackingComponent<TestComponent1>(true);
 
             var entity = Context.Entities.CreateEntity(
@@ -41,6 +41,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
             var components = Context.Entities.GetAllComponents(entity);
 
             Context.Entities.UpdateComponents(entity, components[0]);
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
         }
 
         [TestMethod]
@@ -48,7 +49,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
         {
             var trackers = new[]
             {
-                Context.Tracking.CreateTracker("UpdateTracker1")
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges)
             };
             trackers[0].SetTrackingComponent<TestComponent1>(true);
 
@@ -92,8 +93,8 @@ namespace EcsLte.UnitTest.EntityManagerTests
         {
             var trackers = new[]
             {
-                Context.Tracking.CreateTracker("UpdateTracker1"),
-                Context.Tracking.CreateTracker("UpdateTracker2")
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges)
             };
             trackers[0].SetTrackingComponent<TestComponent1>(true);
             trackers[1].SetTrackingComponent<TestComponent2>(true);
@@ -147,9 +148,9 @@ namespace EcsLte.UnitTest.EntityManagerTests
         {
             var trackers = new[]
             {
-                Context.Tracking.CreateTracker("UpdateTracker1"),
-                Context.Tracking.CreateTracker("UpdateTracker2"),
-                Context.Tracking.CreateTracker("UpdateTracker3")
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges)
             };
             trackers[0].SetTrackingComponent<TestComponent1>(true);
             trackers[1].SetTrackingComponent<TestComponent2>(true);
@@ -216,10 +217,10 @@ namespace EcsLte.UnitTest.EntityManagerTests
         {
             var trackers = new[]
             {
-                Context.Tracking.CreateTracker("UpdateTracker1"),
-                Context.Tracking.CreateTracker("UpdateTracker2"),
-                Context.Tracking.CreateTracker("UpdateTracker3"),
-                Context.Tracking.CreateTracker("UpdateTracker4")
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges)
             };
             trackers[0].SetTrackingComponent<TestComponent1>(true);
             trackers[1].SetTrackingComponent<TestComponent2>(true);
@@ -301,11 +302,11 @@ namespace EcsLte.UnitTest.EntityManagerTests
         {
             var trackers = new[]
             {
-                Context.Tracking.CreateTracker("UpdateTracker1"),
-                Context.Tracking.CreateTracker("UpdateTracker2"),
-                Context.Tracking.CreateTracker("UpdateTracker3"),
-                Context.Tracking.CreateTracker("UpdateTracker4"),
-                Context.Tracking.CreateTracker("UpdateTracker5")
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges)
             };
             trackers[0].SetTrackingComponent<TestComponent1>(true);
             trackers[1].SetTrackingComponent<TestComponent2>(true);
@@ -404,12 +405,12 @@ namespace EcsLte.UnitTest.EntityManagerTests
         {
             var trackers = new[]
             {
-                Context.Tracking.CreateTracker("UpdateTracker1"),
-                Context.Tracking.CreateTracker("UpdateTracker2"),
-                Context.Tracking.CreateTracker("UpdateTracker3"),
-                Context.Tracking.CreateTracker("UpdateTracker4"),
-                Context.Tracking.CreateTracker("UpdateTracker5"),
-                Context.Tracking.CreateTracker("UpdateTracker6")
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges)
             };
             trackers[0].SetTrackingComponent<TestComponent1>(true);
             trackers[1].SetTrackingComponent<TestComponent2>(true);
@@ -527,13 +528,13 @@ namespace EcsLte.UnitTest.EntityManagerTests
         {
             var trackers = new[]
             {
-                Context.Tracking.CreateTracker("UpdateTracker1"),
-                Context.Tracking.CreateTracker("UpdateTracker2"),
-                Context.Tracking.CreateTracker("UpdateTracker3"),
-                Context.Tracking.CreateTracker("UpdateTracker4"),
-                Context.Tracking.CreateTracker("UpdateTracker5"),
-                Context.Tracking.CreateTracker("UpdateTracker6"),
-                Context.Tracking.CreateTracker("UpdateTracker7")
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges)
             };
             trackers[0].SetTrackingComponent<TestComponent1>(true);
             trackers[1].SetTrackingComponent<TestComponent2>(true);
@@ -671,14 +672,14 @@ namespace EcsLte.UnitTest.EntityManagerTests
         {
             var trackers = new[]
             {
-                Context.Tracking.CreateTracker("UpdateTracker1"),
-                Context.Tracking.CreateTracker("UpdateTracker2"),
-                Context.Tracking.CreateTracker("UpdateTracker3"),
-                Context.Tracking.CreateTracker("UpdateTracker4"),
-                Context.Tracking.CreateTracker("UpdateTracker5"),
-                Context.Tracking.CreateTracker("UpdateTracker6"),
-                Context.Tracking.CreateTracker("UpdateTracker7"),
-                Context.Tracking.CreateTracker("UpdateTracker8")
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges),
+                Context.Tracking.SetTrackingMode(EntityTrackerMode.AnyChanges)
             };
             trackers[0].SetTrackingComponent<TestComponent1>(true);
             trackers[1].SetTrackingComponent<TestComponent2>(true);

@@ -49,6 +49,8 @@ C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - Blittable Only\
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - Blittable Only\EcsLte.UnitTest\obj\Debug\EcsLte.UnitTest.csproj.CopyComplete
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - Blittable Only\EcsLte.UnitTest\obj\Debug\EcsLte.UnitTest.dll
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte - Blittable Only\EcsLte.UnitTest\obj\Debug\EcsLte.UnitTest.pdb
+C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.UnitTest\obj\Debug\EcsLte.UnitTest.csproj.AssemblyReference.cache
+C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.UnitTest\obj\Debug\EcsLte.UnitTest.csproj.CoreCompileInputs.cache
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.UnitTest\bin\Debug\Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.dll
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.UnitTest\bin\Debug\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.Interface.dll
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.UnitTest\bin\Debug\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.dll
@@ -61,8 +63,6 @@ C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.UnitTest\b
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.UnitTest\bin\Debug\EcsLte.pdb
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.UnitTest\bin\Debug\Microsoft.VisualStudio.TestPlatform.TestFramework.xml
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.UnitTest\bin\Debug\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.xml
-C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.UnitTest\obj\Debug\EcsLte.UnitTest.csproj.AssemblyReference.cache
-C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.UnitTest\obj\Debug\EcsLte.UnitTest.csproj.CoreCompileInputs.cache
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.UnitTest\obj\Debug\EcsLte.UnitTest.csproj.CopyComplete
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.UnitTest\obj\Debug\EcsLte.UnitTest.dll
 C:\Users\mtaylor\Documents\Projects\VisualStudio\EcsLte\EcsLte\EcsLte.UnitTest\obj\Debug\EcsLte.UnitTest.pdb
