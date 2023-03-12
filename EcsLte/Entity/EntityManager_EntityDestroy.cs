@@ -26,9 +26,9 @@ namespace EcsLte
             Context.AssertStructualChangeAvailable();
             Helper.AssertArray(entities, startingIndex, count);
 
-            for (var i = 0; i < count; i++, startingIndex++)
+            for (var i = 0; i < count; i++)
             {
-                var entity = entities[startingIndex];
+                var entity = entities[startingIndex + i];
                 AssertNotExistEntity(entity, out var _, out var archeTypeData);
 
                 DeallocEntity(entity, archeTypeData);
@@ -45,7 +45,7 @@ namespace EcsLte
             EntityArcheType.AssertEntityArcheType(archeType, Context);
 
             var archeTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
-            if (archeTypeData.EntityCount > 0)
+            if (archeTypeData.EntityCount() > 0)
                 ChangeVersion.IncVersion(ref _globalVersion);
 
             DealloArcheTypeDataEntities(archeTypeData);
@@ -60,7 +60,7 @@ namespace EcsLte
             var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
-                if (filteredArcheTypeDatas[i].EntityCount > 0)
+                if (filteredArcheTypeDatas[i].EntityCount() > 0)
                 {
                     ChangeVersion.IncVersion(ref _globalVersion);
                     break;

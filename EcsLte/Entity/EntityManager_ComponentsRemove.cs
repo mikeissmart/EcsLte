@@ -351,7 +351,7 @@ namespace EcsLte
             var prevArcheTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
             AssertNotHaveComponent(config, prevArcheTypeData);
 
-            if (prevArcheTypeData.EntityCount > 0)
+            if (prevArcheTypeData.EntityCount() > 0)
             {
                 ChangeVersion.IncVersion(ref _globalVersion);
                 InternalRemoveConfigTransferArcheTypeData(prevArcheTypeData, config,
@@ -372,7 +372,7 @@ namespace EcsLte
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var prevArcheTypeData = filteredArcheTypeDatas[i];
-                if (prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount > 0)
+                if (prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount() > 0)
                 {
                     if (!incVersion)
                     {
@@ -397,7 +397,7 @@ namespace EcsLte
             var prevArcheTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
             AssertNotHaveComponent(config, prevArcheTypeData);
 
-            if (prevArcheTypeData.EntityCount > 0)
+            if (prevArcheTypeData.EntityCount() > 0)
             {
                 ChangeVersion.IncVersion(ref _globalVersion);
                 InternalRemoveConfigTransferArcheTypeData(prevArcheTypeData, config,
@@ -418,7 +418,7 @@ namespace EcsLte
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var prevArcheTypeData = filteredArcheTypeDatas[i];
-                if (prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount > 0)
+                if (prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount() > 0)
                 {
                     if (!incVersion)
                     {
@@ -445,7 +445,7 @@ namespace EcsLte
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var prevArcheTypeData = filteredArcheTypeDatas[i];
-                if (prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount > 0)
+                if (prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount() > 0)
                 {
                     if (!incVersion)
                     {

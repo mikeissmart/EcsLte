@@ -812,6 +812,233 @@ namespace EcsLte.UnitTest.EntityManagerTests
                     new TestManagedComponent2()));
         }
 
+        [TestMethod]
+        public void AddComponents_ArcheType()
+        {
+            var archeType = Context.ArcheTypes
+                .AddComponentType<TestComponent1>();
+
+            var addTracker = Context.Tracking
+                .SetTrackingComponent<TestComponent1>(true);
+
+            var entities = Context.Entities.CreateEntities(archeType, UnitTestConsts.SmallCount);
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 2);
+
+            Context.Entities.AddComponents(archeType, new TestComponent2 { Prop = 2 });
+
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
+            for (var i = 0; i < entities.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities[i]).Prop == 2, $"Entity: {entities[i]}");
+
+            Assert.ThrowsException<ComponentAlreadyHaveException>(() =>
+                Context.Entities.AddComponents(archeType, new TestComponent1()));
+
+            // No change after error
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 3);
+
+            EcsContexts.Instance.DestroyContext(Context);
+            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
+                Context.Entities.AddComponents(archeType, new TestComponent2()));
+        }
+
+        [TestMethod]
+        public void AddComponents_ArcheType_Small_Add_Small()
+        {
+            var archeType = Context.ArcheTypes
+                .AddComponentType<TestComponent1>();
+
+            var entities = Context.Entities.CreateEntities(archeType, UnitTestConsts.SmallCount);
+            Context.Entities.AddComponents(archeType, new TestComponent2 { Prop = 2 });
+
+            var entities2 = Context.Entities.CreateEntities(archeType, UnitTestConsts.SmallCount);
+            Context.Entities.AddComponents(archeType, new TestComponent2 { Prop = 3 });
+
+            for (var i = 0; i < entities.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities[i]).Prop == 2, $"Entity: {entities[i]}");
+            for (var i = 0; i < entities2.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities2[i]).Prop == 3, $"Entity: {entities2[i]}");
+        }
+
+        [TestMethod]
+        public void AddComponents_ArcheType_Small_Add_Medium()
+        {
+            var archeType = Context.ArcheTypes
+                .AddComponentType<TestComponent1>();
+
+            var entities = Context.Entities.CreateEntities(archeType, UnitTestConsts.SmallCount);
+            Context.Entities.AddComponents(archeType, new TestComponent2 { Prop = 2 });
+
+            var entities2 = Context.Entities.CreateEntities(archeType, UnitTestConsts.MediumCount);
+            Context.Entities.AddComponents(archeType, new TestComponent2 { Prop = 3 });
+
+            for (var i = 0; i < entities.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities[i]).Prop == 2, $"Entity: {entities[i]}");
+            for (var i = 0; i < entities2.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities2[i]).Prop == 3, $"Entity: {entities2[i]}");
+        }
+
+        [TestMethod]
+        public void AddComponents_ArcheType_Small_Add_Large()
+        {
+            var archeType = Context.ArcheTypes
+                .AddComponentType<TestComponent1>();
+
+            var entities = Context.Entities.CreateEntities(archeType, UnitTestConsts.SmallCount);
+            Context.Entities.AddComponents(archeType, new TestComponent2 { Prop = 2 });
+
+            var entities2 = Context.Entities.CreateEntities(archeType, UnitTestConsts.LargeCount);
+            for (var i = 10000; i < entities2.Length; i++)
+                Assert.IsTrue(Context.Entities.HasEntity(entities2[i]), $"Entity: {entities2[i]}");
+
+            Context.Entities.AddComponents(archeType, new TestComponent2 { Prop = 3 });
+
+            for (var i = 0; i < entities.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities[i]).Prop == 2, $"Entity: {entities[i]}");
+            for (var i = 0; i < entities2.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities2[i]).Prop == 3, $"Entity: {entities2[i]}");
+        }
+
+        [TestMethod]
+        public void AddComponents_ArcheType_Medium_Add_Small()
+        {
+            var archeType = Context.ArcheTypes
+                .AddComponentType<TestComponent1>();
+
+            var entities = Context.Entities.CreateEntities(archeType, UnitTestConsts.MediumCount);
+            Context.Entities.AddComponents(archeType, new TestComponent2 { Prop = 2 });
+
+            var entities2 = Context.Entities.CreateEntities(archeType, UnitTestConsts.SmallCount);
+            Context.Entities.AddComponents(archeType, new TestComponent2 { Prop = 3 });
+
+            for (var i = 0; i < entities.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities[i]).Prop == 2, $"Entity: {entities[i]}");
+            for (var i = 0; i < entities2.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities2[i]).Prop == 3, $"Entity: {entities2[i]}");
+        }
+
+        [TestMethod]
+        public void AddComponents_ArcheType_Medium_Add_Medium()
+        {
+            var archeType = Context.ArcheTypes
+                .AddComponentType<TestComponent1>();
+
+            var entities = Context.Entities.CreateEntities(archeType, UnitTestConsts.MediumCount);
+            Context.Entities.AddComponents(archeType, new TestComponent2 { Prop = 2 });
+
+            var entities2 = Context.Entities.CreateEntities(archeType, UnitTestConsts.MediumCount);
+            Context.Entities.AddComponents(archeType, new TestComponent2 { Prop = 3 });
+
+            for (var i = 0; i < entities.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities[i]).Prop == 2, $"Entity: {entities[i]}");
+            for (var i = 0; i < entities2.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities2[i]).Prop == 3, $"Entity: {entities2[i]}");
+        }
+
+        [TestMethod]
+        public void AddComponents_ArcheType_Medium_Add_Large()
+        {
+            var archeType = Context.ArcheTypes
+                .AddComponentType<TestComponent1>();
+
+            var entities = Context.Entities.CreateEntities(archeType, UnitTestConsts.MediumCount);
+            Context.Entities.AddComponents(archeType, new TestComponent2 { Prop = 2 });
+
+            var entities2 = Context.Entities.CreateEntities(archeType, UnitTestConsts.LargeCount);
+            Context.Entities.AddComponents(archeType, new TestComponent2 { Prop = 3 });
+
+            for (var i = 0; i < entities.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities[i]).Prop == 2, $"Entity: {entities[i]}");
+            for (var i = 0; i < entities2.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities2[i]).Prop == 3, $"Entity: {entities2[i]}");
+        }
+        
+        [TestMethod]
+        public void AddComponents_ArcheType_Large_Add_Small()
+        {
+            var archeType = Context.ArcheTypes
+                .AddComponentType<TestComponent1>();
+
+            var entities = Context.Entities.CreateEntities(archeType, UnitTestConsts.LargeCount);
+            Context.Entities.AddComponents(archeType, new TestComponent2 { Prop = 2 });
+
+            var entities2 = Context.Entities.CreateEntities(archeType, UnitTestConsts.SmallCount);
+            Context.Entities.AddComponents(archeType, new TestComponent2 { Prop = 3 });
+
+            for (var i = 0; i < entities.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities[i]).Prop == 2, $"Entity: {entities[i]}");
+            for (var i = 0; i < entities2.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities2[i]).Prop == 3, $"Entity: {entities2[i]}");
+        }
+
+        [TestMethod]
+        public void AddComponents_ArcheType_Large_Add_Medium()
+        {
+            var archeType = Context.ArcheTypes
+                .AddComponentType<TestComponent1>();
+
+            var entities = Context.Entities.CreateEntities(archeType, UnitTestConsts.LargeCount);
+            Context.Entities.AddComponents(archeType, new TestComponent2 { Prop = 2 });
+
+            var entities2 = Context.Entities.CreateEntities(archeType, UnitTestConsts.MediumCount);
+            Context.Entities.AddComponents(archeType, new TestComponent2 { Prop = 3 });
+
+            for (var i = 0; i < entities.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities[i]).Prop == 2, $"Entity: {entities[i]}");
+            for (var i = 0; i < entities2.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities2[i]).Prop == 3, $"Entity: {entities2[i]}");
+        }
+
+        [TestMethod]
+        public void AddComponents_ArcheType_Large_Add_Large()
+        {
+            var archeType = Context.ArcheTypes
+                .AddComponentType<TestComponent1>();
+
+            var entities = Context.Entities.CreateEntities(archeType, UnitTestConsts.LargeCount);
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 2);
+
+            Context.Entities.AddComponents(archeType, new TestComponent2 { Prop = 2 });
+
+            // Check when existing entities
+            var entities2 = Context.Entities.CreateEntities(archeType, UnitTestConsts.LargeCount);
+            Context.Entities.AddComponents(archeType, new TestComponent2 { Prop = 3 });
+
+            for (var i = 0; i < entities.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities[i]).Prop == 2, $"Entity: {entities[i]}");
+            for (var i = 0; i < entities2.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities2[i]).Prop == 3, $"Entity: {entities2[i]}");
+        }
+
+        [TestMethod]
+        public void AddComponents_Filter()
+        {
+            var archeType1 = Context.ArcheTypes
+                .AddComponentType<TestComponent1>();
+            var archeType2 = Context.ArcheTypes
+                .AddComponentType<TestComponent3>();
+            var filter = Context.Filters
+                .WhereAnyOf<TestComponent1>()
+                .WhereAnyOf<TestComponent3>();
+
+            var addTracker = Context.Tracking
+                .SetTrackingComponent<TestComponent1>(true);
+
+            var entities1 = Context.Entities.CreateEntities(archeType1, UnitTestConsts.SmallCount);
+            var entities2 = Context.Entities.CreateEntities(archeType2, UnitTestConsts.SmallCount);
+
+            Context.Entities.AddComponents(filter, new TestComponent2 { Prop = 2 });
+
+            Assert.IsTrue(Context.Entities.GlobalVersion.Version == 4);
+            for (var i = 0; i < entities1.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities1[i]).Prop == 2, $"Entity: {entities1[i]}");
+            for (var i = 0; i < entities2.Length; i++)
+                Assert.IsTrue(Context.Entities.GetComponent<TestComponent2>(entities2[i]).Prop == 2, $"Entity: {entities2[i]}");
+
+            EcsContexts.Instance.DestroyContext(Context);
+            Assert.ThrowsException<EcsContextIsDestroyedException>(() =>
+                Context.Entities.AddComponents(filter, new TestComponent2()));
+        }
+
         private Entity CreateTestEntity()
             => Context.Entities.CreateEntity();
     }

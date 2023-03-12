@@ -60,7 +60,7 @@ namespace EcsLte
         public ComponentConfig GetConfig(int componentIndex)
             => AllComponentConfigs[componentIndex];
 
-        internal IComponentPool[] CreateComponentPools(ComponentConfigOffset[] manageConfigs)
+        /*internal IComponentPool[] CreateComponentPools(ComponentConfigOffset[] manageConfigs)
         {
             var pools = new IComponentPool[manageConfigs.Length];
             var poolType = typeof(ComponentPool<>);
@@ -72,7 +72,7 @@ namespace EcsLte
             }
 
             return pools;
-        }
+        }*/
 
         private ComponentConfigs() { }
 

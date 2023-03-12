@@ -14,7 +14,7 @@ namespace EcsLte
             CheckAndAllocEntity(archeTypeData, false,
                 out var dupEntity, out var dupEntityData);
 
-            archeTypeData.CopyComponentsFrom(
+            archeTypeData.CopyComponentsFromSameArcheTypeData(
                 GlobalVersion,
                 srcEntityData,
                 dupEntityData);
@@ -108,7 +108,7 @@ namespace EcsLte
                     CheckAndAllocEntity(archeTypeData, false,
                         out destEntities[destStartingIndex], out var dupEntityData);
 
-                    archeTypeData.CopyComponentsFrom(
+                    archeTypeData.CopyComponentsFromSameArcheTypeData(
                         GlobalVersion,
                         srcEntityData,
                         dupEntityData);
@@ -139,7 +139,7 @@ namespace EcsLte
             Helper.AssertArray(destEntities, destStartingIndex);
 
             var archeTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
-            if (archeTypeData.EntityCount > 0)
+            if (archeTypeData.EntityCount() > 0)
             {
                 ChangeVersion.IncVersion(ref _globalVersion);
 
@@ -173,7 +173,7 @@ namespace EcsLte
             var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
-                if (filteredArcheTypeDatas[i].EntityCount > 0)
+                if (filteredArcheTypeDatas[i].EntityCount() > 0)
                 {
                     ChangeVersion.IncVersion(ref _globalVersion);
                     break;

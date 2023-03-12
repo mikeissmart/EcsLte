@@ -16,7 +16,7 @@ namespace EcsLte
             Context.AssertContext();
             EntityArcheType.AssertEntityArcheType(archeType, Context);
 
-            return Context.ArcheTypes.GetArcheTypeData(archeType).EntityCount;
+            return Context.ArcheTypes.GetArcheTypeData(archeType).EntityCount();
         }
 
         public int EntityCount(EntityFilter filter)
@@ -27,7 +27,7 @@ namespace EcsLte
             var entityCount = 0;
             var archeTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(filter);
             for (var i = 0; i < archeTypeDatas.Length; i++)
-                entityCount += archeTypeDatas[i].EntityCount;
+                entityCount += archeTypeDatas[i].EntityCount();
 
             return entityCount;
         }
@@ -41,7 +41,7 @@ namespace EcsLte
             var entityCount = 0;
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
-                if (tracker.GetArcheTypeDataChunks(filteredArcheTypeDatas[i], out var chunks))
+                if (tracker.GetDataChunks(filteredArcheTypeDatas[i], out var chunks))
                 {
                     for (var j = 0; j < chunks.Count; j++)
                         entityCount += chunks[j].EntityCount;
@@ -66,7 +66,7 @@ namespace EcsLte
                 var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(query.Filter);
                 for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
                 {
-                    if (query.Tracker.GetArcheTypeDataChunks(filteredArcheTypeDatas[i], out var chunks))
+                    if (query.Tracker.GetDataChunks(filteredArcheTypeDatas[i], out var chunks))
                     {
                         for (var j = 0; j < chunks.Count; j++)
                             entityCount += chunks[j].EntityCount;

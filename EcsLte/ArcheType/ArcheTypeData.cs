@@ -1,4 +1,5 @@
-﻿using EcsLte.Utilities;
+﻿using EcsLte.Data;
+using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -8,30 +9,26 @@ namespace EcsLte
 {
     internal unsafe class ArcheTypeData
     {
-        private Entity* _entities;
-        private int _entitiesLength;
-        private IComponentPool[] _managedPools;
+        private DataManager _dataManager;
+        private DataChunk[] _chunks;
         private ComponentConfigOffset* _configOffsets;
-        private ComponentBuffer* _generalBuffers;
-        private ArcheTypeDataChunk[] _chunks;
+        private int _lastChunkIndex;
 
         internal ArcheType ArcheType { get; private set; }
         internal ArcheTypeIndex ArcheTypeIndex { get; private set; }
-        internal Entity* Entities { get => _entities; }
-        internal int EntityCount { get; private set; }
-        internal ArcheTypeDataChunk[] Chunks { get => _chunks; }
+        internal DataChunk[] Chunks { get => _chunks; }
         internal int ChunksCount { get; private set; }
-        internal ArcheTypeDataChunk LastChunk => _chunks[ChunksCount - 1];
+        internal DataChunk LastChunk { get => _chunks[_lastChunkIndex]; }
         internal ChangeVersion[] SharedVersions { get; private set; }
-        internal ComponentBuffer* GeneralBuffers { get => _generalBuffers; }
-        internal IComponentPool[] ManagedPools { get => _managedPools; }
         internal ComponentConfigOffset[] GeneralConfigs { get; private set; }
         internal ComponentConfigOffset[] ManagedConfigs { get; private set; }
         internal ComponentConfigOffset[] SharedConfigs { get; private set; }
         internal ISharedComponentData[] SharedComponentDatas { get; private set; }
 
-        internal ArcheTypeData(ArcheType archeType, ArcheTypeIndex archeTypeIndex, SharedComponentDictionaries sharedDics)
+        internal ArcheTypeData(ArcheType archeType, ArcheTypeIndex archeTypeIndex, SharedComponentDictionaries sharedDics, DataManager dataManager)
         {
+            _dataManager = dataManager;
+
             var generalConfigs = new List<ComponentConfigOffset>();
             var managedConfigs = new List<ComponentConfigOffset>();
             var sharedConfigs = new List<ComponentConfigOffset>();
@@ -71,24 +68,9 @@ namespace EcsLte
             ArcheTypeIndex = archeTypeIndex;
 
             GeneralConfigs = generalConfigs.ToArray();
-            if (GeneralConfigs.Length > 0)
-            {
-                _generalBuffers = MemoryHelper.Alloc<ComponentBuffer>(GeneralConfigs.Length);
-                for (var i = 0; i < GeneralConfigs.Length; i++)
-                {
-                    var configOffset = GeneralConfigs[i];
-                    _generalBuffers[i] = new ComponentBuffer
-                    {
-                        Buffer = MemoryHelper.Alloc<byte>(configOffset.Config.UnmanagedSizeInBytes),
-                        ComponentSize = configOffset.Config.UnmanagedSizeInBytes
-                    };
-                }
-            }
-
             ManagedConfigs = managedConfigs.ToArray();
-            _managedPools = ComponentConfigs.Instance.CreateComponentPools(ManagedConfigs);
-
             SharedConfigs = sharedConfigs.ToArray();
+
             SharedComponentDatas = new ISharedComponentData[SharedConfigs.Length];
             if (SharedConfigs.Length > 0)
             {
@@ -100,12 +82,9 @@ namespace EcsLte
             }
             SharedVersions = new ChangeVersion[SharedConfigs.Length];
 
-            _entities = MemoryHelper.Alloc<Entity>(1);
-            _entitiesLength = 1;
-
-            _chunks = new ArcheTypeDataChunk[1];
-            _chunks[0] = new ArcheTypeDataChunk(this, 0);
+            _chunks = new DataChunk[0];
             ChunksCount = 0;
+            _lastChunkIndex = 0;
         }
 
         #region GetChunks
@@ -116,7 +95,7 @@ namespace EcsLte
         /// <param name="chunks"></param>
         /// <param name="startingIndex"></param>
         /// <exception cref="Exception"></exception>
-        internal int GetAllChunks(ref ArcheTypeDataChunk[] chunks, int startingIndex)
+        internal int GetAllChunks(ref DataChunk[] chunks, int startingIndex)
         {
             Helper.ArrayCopy(_chunks, 0, chunks, startingIndex, ChunksCount);
             return ChunksCount;
@@ -136,18 +115,19 @@ namespace EcsLte
             var prevEntityData = allEntityDatas[entity.Id];
             var nextEntityData = nextArcheTypeData.AddEntityNoChangeVersion(entity, false);
 
+            var prevChunk = prevArcheTypeData._chunks[prevEntityData.ChunkIndex];
+            var nextChunk = nextArcheTypeData._chunks[nextEntityData.ChunkIndex];
+
             for (var i = 0; i < prevArcheTypeData.GeneralConfigs.Length; i++)
             {
                 var prevConfigOffset = prevArcheTypeData.GeneralConfigs[i];
                 if (nextArcheTypeData.HasConfigOffset(prevConfigOffset.Config, out var nextConfigOffset))
                 {
-                    nextArcheTypeData._generalBuffers[nextConfigOffset.ConfigIndex]
-                        .CopyFromDifferent(prevArcheTypeData._generalBuffers[prevConfigOffset.ConfigIndex],
-                            prevEntityData.ChunkIndex,
+                    nextChunk.GeneralComponentPages[nextConfigOffset.ConfigIndex]
+                        .Copy(
+                            prevChunk.GeneralComponentPages[prevConfigOffset.ConfigIndex],
                             prevEntityData.EntityIndex,
-                            nextEntityData.ChunkIndex,
-                            nextEntityData.EntityIndex,
-                            1);
+                            nextEntityData.EntityIndex);
                 }
             }
             for (var i = 0; i < prevArcheTypeData.ManagedConfigs.Length; i++)
@@ -155,13 +135,11 @@ namespace EcsLte
                 var prevConfigOffset = prevArcheTypeData.ManagedConfigs[i];
                 if (nextArcheTypeData.HasConfigOffset(prevConfigOffset.Config, out var nextConfigOffset))
                 {
-                    nextArcheTypeData._managedPools[nextConfigOffset.ConfigIndex]
-                        .CopyFromDifferent(prevArcheTypeData._managedPools[prevConfigOffset.ConfigIndex],
-                            prevEntityData.ChunkIndex,
+                    nextChunk.ManagedComponentPages[nextConfigOffset.ConfigIndex]
+                        .Copy(
+                            prevChunk.ManagedComponentPages[prevConfigOffset.ConfigIndex],
                             prevEntityData.EntityIndex,
-                            nextEntityData.ChunkIndex,
-                            nextEntityData.EntityIndex,
-                            1);
+                            nextEntityData.EntityIndex);
                 }
             }
 
@@ -175,50 +153,101 @@ namespace EcsLte
             ArcheTypeData nextArcheTypeData,
             EntityData* allEntityDatas)
         {
-            if (prevArcheTypeData.EntityCount == 0)
+            var prevEntityCount = prevArcheTypeData.EntityCount();
+            if (prevEntityCount == 0)
                 return;
 
-            var nextArcheTypeDataEntityCount = nextArcheTypeData.EntityCount;
-            nextArcheTypeData.AddEntitiesNoChangeVersion(prevArcheTypeData._entities,
-                0,
-                prevArcheTypeData.EntityCount,
-                allEntityDatas,
-                false);
+            nextArcheTypeData.CheckCapacity(prevEntityCount);
 
-            for (var i = 0; i < prevArcheTypeData.GeneralConfigs.Length; i++)
+            var preChunk = prevArcheTypeData._chunks[0];
+            var preChunkEntityCount = preChunk.EntityCount;
+            var nextChunk = nextArcheTypeData._chunks[nextArcheTypeData._lastChunkIndex];
+            while (prevEntityCount > 0)
             {
-                var prevConfigOffset = prevArcheTypeData.GeneralConfigs[i];
-                if (nextArcheTypeData.HasConfigOffset(prevConfigOffset.Config, out var nextConfigOffset))
+                if (nextChunk.IsFull)
+                    nextChunk = nextArcheTypeData._chunks[nextChunk.ChunkIndex + 1];
+                if (preChunk.IsEmpty)
                 {
-                    nextArcheTypeData._generalBuffers[nextConfigOffset.ConfigIndex]
-                        .CopyFromDifferent(prevArcheTypeData._generalBuffers[prevConfigOffset.ConfigIndex],
-                            0,
-                            nextArcheTypeDataEntityCount,
-                            prevArcheTypeData.EntityCount);
+                    // Set this back so clear can run corrrect entity count
+                    preChunk.EntityCount = preChunkEntityCount;
+                    preChunk = prevArcheTypeData._chunks[preChunk.ChunkIndex + 1];
                 }
-            }
-            for (var i = 0; i < prevArcheTypeData.ManagedConfigs.Length; i++)
-            {
-                var prevConfigOffset = prevArcheTypeData.ManagedConfigs[i];
-                if (nextArcheTypeData.HasConfigOffset(prevConfigOffset.Config, out var nextConfigOffset))
+
+                var transferCount = Math.Min(nextChunk.EntityAvailableCount, preChunk.EntityCount);
+                var transferIndex = preChunk.EntityCount - transferCount;
+
+                nextChunk.EntityPage.Copy(
+                    preChunk.EntityPage,
+                    transferIndex,
+                    nextChunk.EntityCount,
+                    transferCount);
+                for (var j = 0; j < transferCount; j++)
                 {
-                    nextArcheTypeData._managedPools[nextConfigOffset.ConfigIndex]
-                        .CopyFromDifferent(prevArcheTypeData._managedPools[prevConfigOffset.ConfigIndex],
-                            0,
-                            nextArcheTypeDataEntityCount,
-                            prevArcheTypeData.EntityCount);
+                    allEntityDatas[preChunk.EntityPage.Get(transferIndex + j).Id] = new EntityData
+                    {
+                        ArcheTypeIndex = nextArcheTypeData.ArcheTypeIndex,
+                        ChunkIndex = nextChunk.ChunkIndex,
+                        EntityIndex = nextChunk.EntityCount + j
+                    };
                 }
+                for (var j = 0; j < prevArcheTypeData.GeneralConfigs.Length; j++)
+                {
+                    var prevConfigOffset = prevArcheTypeData.GeneralConfigs[j];
+                    if (nextArcheTypeData.HasConfigOffset(prevConfigOffset.Config, out var nextConfigOffset))
+                    {
+                        nextChunk.GeneralComponentPages[nextConfigOffset.ConfigIndex].Copy(
+                            preChunk.GeneralComponentPages[prevConfigOffset.ConfigIndex],
+                            transferIndex,
+                            nextChunk.EntityCount,
+                            transferCount);
+                    }
+                }
+                for (var j = 0; j < prevArcheTypeData.ManagedConfigs.Length; j++)
+                {
+                    var prevConfigOffset = prevArcheTypeData.ManagedConfigs[j];
+                    if (nextArcheTypeData.HasConfigOffset(prevConfigOffset.Config, out var nextConfigOffset))
+                    {
+                        nextChunk.ManagedComponentPages[nextConfigOffset.ConfigIndex].Copy(
+                            preChunk.ManagedComponentPages[prevConfigOffset.ConfigIndex],
+                            transferIndex,
+                            nextChunk.EntityCount,
+                            transferCount);
+                    }
+                }
+
+                nextChunk.EntityCount += transferCount;
+                preChunk.EntityCount -= transferCount;
+                prevEntityCount -= transferCount;
             }
 
             prevArcheTypeData.RemoveAllEntities();
+            nextArcheTypeData._lastChunkIndex = nextArcheTypeData.ChunksCount - 1;
         }
 
         #endregion
 
         #region GetEntity
 
+        internal int EntityCount()
+        {
+            if (ChunksCount == 0)
+                return 0;
+
+            var chunkIndex = ChunksCount - 1;
+            var count = chunkIndex * DataManager.PageCapacity;
+            count += _chunks[chunkIndex].EntityCount;
+
+            return count;
+        }
+
+        internal int EntityCapacity()
+            => _chunks.Length * DataManager.PageCapacity;
+
         internal Entity GetEntity(EntityData entityData)
-            => _entities[(entityData.ChunkIndex * ArcheTypeDataChunk.ChunkMaxCapacity) + entityData.EntityIndex];
+        {
+            var chunk = _chunks[entityData.ChunkIndex];
+            return chunk.EntityPage.Get(entityData.EntityIndex);
+        }
 
         /// <summary>
         /// Doesnt resize ref entities
@@ -228,18 +257,11 @@ namespace EcsLte
         /// <exception cref="Exception"></exception>
         internal int GetAllEntities(ref Entity[] entities, int startingIndex)
         {
-            if (EntityCount > 0)
-            {
-                fixed (Entity* entitiesPtr = &entities[startingIndex])
-                {
-                    MemoryHelper.Copy(
-                        _entities,
-                        entitiesPtr,
-                        EntityCount);
-                }
-            }
+            var entityIndex = startingIndex;
+            for (var i = 0; i < ChunksCount; i++)
+                entityIndex += _chunks[i].GetEntities(ref entities, entityIndex);
 
-            return EntityCount;
+            return entityIndex - startingIndex;
         }
 
         #endregion
@@ -250,16 +272,14 @@ namespace EcsLte
         {
             CheckCapacity(1);
 
-            EntityCount++;
-            if (ChunksCount == 0)
-                ChunksCount++;
-
             var lastChunk = LastChunk;
-            var entityData = lastChunk.AddEntity(changeVersion, entity, clearComponents);
             if (lastChunk.IsFull)
-                ChunksCount++;
+            {
+                _lastChunkIndex++;
+                lastChunk = LastChunk;
+            }
 
-            return entityData;
+            return lastChunk.AddEntity(changeVersion, entity, clearComponents);
         }
 
         internal void AddEntities(ChangeVersion changeVersion, in Entity[] entities, int startingIndex, int count,
@@ -267,26 +287,18 @@ namespace EcsLte
         {
             CheckCapacity(count);
 
-            fixed (Entity* entitiesPtr = &entities[startingIndex])
+            while (count > 0)
             {
-                MemoryHelper.Copy(
-                    entitiesPtr,
-                    _entities + EntityCount,
-                    count);
-
-                EntityCount += count;
-                if (ChunksCount == 0)
-                    ChunksCount++;
-
-                var availableCount = count;
-                while (availableCount > 0)
+                var lastChunk = LastChunk;
+                if (lastChunk.IsFull)
                 {
-                    var chunk = LastChunk;
-                    availableCount -= chunk.AddEntities(changeVersion, entitiesPtr, count - availableCount, availableCount,
-                        allEntityDatas, clearComponents);
-                    if (chunk.IsFull)
-                        ChunksCount++;
+                    _lastChunkIndex++;
+                    lastChunk = LastChunk;
                 }
+                var addedCount = lastChunk.AddAvailableEntities(changeVersion, entities, startingIndex, count,
+                    allEntityDatas, clearComponents);
+                count -= addedCount;
+                startingIndex += addedCount;
             }
         }
 
@@ -301,33 +313,29 @@ namespace EcsLte
             var lastChunk = LastChunk;
 
             if (chunk.ChunkIndex != lastChunk.ChunkIndex)
-            {
                 // Move last entity to removed entity index
-                chunk.RemoveEntityAndCopyFromDifferentChunk(
-                    entity,
-                    _entities[EntityCount - 1],
-                    lastChunk,
-                    allEntityDatas);
-            }
+                chunk.RemoveEntityAndFill(entity, lastChunk, allEntityDatas);
             else
-                chunk.RemoveEntityFromChunk(entity, allEntityDatas);
+                chunk.RemoveEntity(entity, allEntityDatas);
 
             if (lastChunk.IsEmpty)
+            {
+                if (_lastChunkIndex != 0)
+                    _lastChunkIndex--;
                 ChunksCount--;
-            EntityCount--;
+                _dataManager.EnqueuePages(GeneralConfigs, ManagedConfigs, ref _chunks, ChunksCount, 1);
+            }
         }
 
         internal void RemoveAllEntities()
         {
-            // Clear managed so gc can clean up too
-            for (var i = 0; i < ManagedConfigs.Length; i++)
-                ManagedPools[i].ClearComponents(0, 0, EntityCount);
-
             for (var i = 0; i < ChunksCount; i++)
                 _chunks[i].RemoveAllEntities();
 
+            _dataManager.EnqueuePages(GeneralConfigs, ManagedConfigs, ref _chunks, 0, ChunksCount);
+
+            _lastChunkIndex = 0;
             ChunksCount = 0;
-            EntityCount = 0;
         }
 
         #endregion
@@ -336,33 +344,25 @@ namespace EcsLte
 
         internal int GetAllEntityComponents(EntityData entityData, ref IComponent[] components, int startingIndex)
         {
-            var componentIndex = startingIndex;
+            var componentIndex = startingIndex + _chunks[entityData.ChunkIndex].GetAllEntityComponents(entityData.EntityIndex, ref components, startingIndex);
 
-            for (var i = 0; i < GeneralConfigs.Length; i++)
-            {
-                components[componentIndex++] = (IComponent)Marshal.PtrToStructure(
-                    (IntPtr)_generalBuffers[i].PtrComponent(entityData.ChunkIndex, entityData.EntityIndex),
-                    GeneralConfigs[i].Config.ComponentType);
-            }
-            for (var i = 0; i < ManagedConfigs.Length; i++)
-                components[componentIndex++] = _managedPools[i].GetComponent(entityData.ChunkIndex, entityData.EntityIndex);
             for (var i = 0; i < SharedConfigs.Length; i++)
                 components[componentIndex++] = SharedComponentDatas[i].Component;
 
             return componentIndex - startingIndex;
         }
 
-        internal byte* GetComponentPtr(EntityData entityData, ComponentConfig config)
-            => GetComponentPtr(entityData, GetConfigOffset(config));
+        internal IDataPage GetComponentPage(EntityData entityData, ComponentConfig config)
+            => GetComponentPage(entityData, GetConfigOffset(config));
 
-        internal byte* GetComponentPtr(EntityData entityData, ComponentConfigOffset configOffset)
-            => _generalBuffers[configOffset.ConfigIndex].PtrComponent(entityData.ChunkIndex, entityData.EntityIndex);
+        internal IDataPage GetComponentPage(EntityData entityData, ComponentConfigOffset configOffset)
+            => _chunks[entityData.ChunkIndex].GetComponentPage(configOffset);
 
-        internal IComponentPool GetManagedComponentPool(ComponentConfig config)
-            => GetManagedComponentPool(GetConfigOffset(config));
+        internal IDataPage GetManagedComponentPage(EntityData entityData, ComponentConfig config)
+            => GetManagedComponentPage(entityData, GetConfigOffset(config));
 
-        internal IComponentPool GetManagedComponentPool(ComponentConfigOffset configOffset)
-            => _managedPools[configOffset.ConfigIndex];
+        internal IDataPage GetManagedComponentPage(EntityData entityData, ComponentConfigOffset configOffset)
+            => _chunks[entityData.ChunkIndex].GetManagedComponentPage(configOffset);
 
         internal IComponent GetSharedComponentData(ComponentConfig config)
             => GetSharedComponentData(GetConfigOffset(config));
@@ -374,13 +374,20 @@ namespace EcsLte
 
         #region GetGeneral
 
+        internal IComponent GetComponentObj(EntityData entityData, ComponentConfig config)
+            => _chunks[entityData.ChunkIndex].GetComponentObj(entityData.EntityIndex, GetConfigOffset(config));
+
+        internal ref TComponent GetComponentRef<TComponent>(EntityData entityData, ComponentConfigOffset configOffset)
+            where TComponent : unmanaged, IGeneralComponent
+            => ref _chunks[entityData.ChunkIndex].GetComponentRef<TComponent>(entityData.EntityIndex, configOffset);
+
         internal TComponent GetComponent<TComponent>(EntityData entityData, ComponentConfig config)
             where TComponent : unmanaged, IGeneralComponent
             => GetComponent<TComponent>(entityData, GetConfigOffset(config));
 
         internal TComponent GetComponent<TComponent>(EntityData entityData, ComponentConfigOffset configOffset)
             where TComponent : unmanaged, IGeneralComponent
-            => *(TComponent*)_generalBuffers[configOffset.ConfigIndex].PtrComponent(entityData.ChunkIndex, entityData.EntityIndex);
+            => _chunks[entityData.ChunkIndex].GetComponent<TComponent>(entityData.EntityIndex, configOffset);
 
         internal int GetAllComponents<TComponent>(ref TComponent[] components, int startingIndex, ComponentConfig config)
             where TComponent : unmanaged, IGeneralComponent
@@ -389,23 +396,23 @@ namespace EcsLte
         internal int GetAllComponents<TComponent>(ref TComponent[] components, int startingIndex, ComponentConfigOffset configOffset)
             where TComponent : unmanaged, IGeneralComponent
         {
-            if (EntityCount > 0)
-            {
-                fixed (TComponent* componentPtr = &components[startingIndex])
-                {
-                    MemoryHelper.Copy(
-                        (TComponent*)_generalBuffers[configOffset.ConfigIndex].Buffer,
-                        componentPtr,
-                        EntityCount);
-                }
-            }
+            var componentIndex = startingIndex;
+            for (var i = 0; i < ChunksCount; i++)
+                componentIndex += _chunks[i].GetAllComponents(ref components, componentIndex, configOffset);
 
-            return EntityCount;
+            return componentIndex - startingIndex;
         }
 
         #endregion
 
         #region GetManaged
+
+        internal IComponent GetManagedComponentObj(EntityData entityData, ComponentConfig config)
+            => _chunks[entityData.ChunkIndex].GetManagedComponentObj(entityData.EntityIndex, GetConfigOffset(config));
+
+        internal ref TComponent GetManagedComponentRef<TComponent>(EntityData entityData, ComponentConfigOffset configOffset)
+            where TComponent : IManagedComponent
+            => ref _chunks[entityData.ChunkIndex].GetManagedComponentRef<TComponent>(entityData.EntityIndex, configOffset);
 
         internal TComponent GetManagedComponent<TComponent>(EntityData entityData, ComponentConfig config)
             where TComponent : IManagedComponent
@@ -413,15 +420,7 @@ namespace EcsLte
 
         internal TComponent GetManagedComponent<TComponent>(EntityData entityData, ComponentConfigOffset configOffset)
             where TComponent : IManagedComponent
-            => ((ComponentPool<TComponent>)_managedPools[configOffset.ConfigIndex]).GetComponent(entityData.ChunkIndex, entityData.EntityIndex);
-
-        internal ref TComponent GetManagedComponentRef<TComponent>(EntityData entityData, ComponentConfig config)
-            where TComponent : IManagedComponent
-            => ref GetManagedComponentRef<TComponent>(entityData, GetConfigOffset(config));
-
-        internal ref TComponent GetManagedComponentRef<TComponent>(EntityData entityData, ComponentConfigOffset configOffset)
-            where TComponent : IManagedComponent
-            => ref ((ComponentPool<TComponent>)_managedPools[configOffset.ConfigIndex]).GetComponentRef(entityData);
+            => _chunks[entityData.ChunkIndex].GetManagedComponent<TComponent>(entityData.EntityIndex, configOffset);
 
         internal int GetAllManagedComponents<TComponent>(ref TComponent[] components, int startingIndex, ComponentConfig config)
             where TComponent : IManagedComponent
@@ -430,13 +429,11 @@ namespace EcsLte
         internal int GetAllManagedComponents<TComponent>(ref TComponent[] components, int startingIndex, ComponentConfigOffset configOffset)
             where TComponent : IManagedComponent
         {
-            if (EntityCount > 0)
-            {
-                ((ComponentPool<TComponent>)_managedPools[configOffset.ConfigIndex])
-                    .GetAllComponents(ref components, startingIndex, EntityCount);
-            }
+            var componentIndex = startingIndex;
+            for (var i = 0; i < ChunksCount; i++)
+                componentIndex += _chunks[i].GetAllManagedComponents(ref components, componentIndex, configOffset);
 
-            return EntityCount;
+            return componentIndex - startingIndex;
         }
 
         #endregion
@@ -466,17 +463,6 @@ namespace EcsLte
         internal void SetComponentAdapter(ChangeVersion changeVersion, EntityData entityData, ComponentConfig config, IComponent component)
             => _chunks[entityData.ChunkIndex].SetComponentAdapter(changeVersion, entityData.EntityIndex, GetConfigOffset(config), component);
 
-        internal void SetComponentAdapter2(ChangeVersion changeVersion, EntityData entityData, ComponentConfig config)
-            => _chunks[entityData.ChunkIndex].SetComponentAdapter2(changeVersion, entityData.EntityIndex, GetConfigOffset(config));
-
-        internal void SetChunkComponents<TComponent>(ChangeVersion changeVersion, int chunkIndex, ComponentConfig config, in TComponent component)
-            where TComponent : unmanaged, IGeneralComponent
-            => SetChunkComponents(changeVersion, chunkIndex, GetConfigOffset(config), component);
-
-        internal void SetChunkComponents<TComponent>(ChangeVersion changeVersion, int chunkIndex, ComponentConfigOffset configOffset, in TComponent component)
-            where TComponent : unmanaged, IGeneralComponent
-            => _chunks[chunkIndex].SetComponents(changeVersion, configOffset, component);
-
         internal void SetAllComponents<TComponent>(ChangeVersion changeVersion, int srcChunkEntityIndex, int entityCount,
             ComponentConfig config, in TComponent component)
             where TComponent : unmanaged, IGeneralComponent
@@ -486,14 +472,36 @@ namespace EcsLte
             ComponentConfigOffset configOffset, in TComponent component)
             where TComponent : unmanaged, IGeneralComponent
         {
-            var buffer = (TComponent*)_generalBuffers[configOffset.ConfigIndex].Buffer;
-            for (var i = 0; i < entityCount; i++)
-                buffer[srcChunkEntityIndex + i] = component;
+            var currentChunkIndex = srcChunkEntityIndex / DataManager.PageCapacity;
+            var currentEntityIndex = srcChunkEntityIndex - (currentChunkIndex * DataManager.PageCapacity);
 
-            var startChunkIndex = srcChunkEntityIndex / ArcheTypeDataChunk.ChunkMaxCapacity;
-            var endChunkIndex = (srcChunkEntityIndex + entityCount) / ArcheTypeDataChunk.ChunkMaxCapacity;
-            for (; startChunkIndex < endChunkIndex; startChunkIndex++)
-                _chunks[startChunkIndex].GeneralVersions[configOffset.ConfigIndex] = changeVersion;
+            // -1 first set would do at least one
+            // Ex when entityCount = PageCapacity, endChunkIndex is +1 when it is wrong
+            var endChunkIndex = (srcChunkEntityIndex + entityCount - 1) / DataManager.PageCapacity;
+            var endEntityIndex = (srcChunkEntityIndex + entityCount) - (endChunkIndex * DataManager.PageCapacity);
+
+            // set first chunk
+            var chunk = _chunks[currentChunkIndex];
+            chunk.SetComponents(changeVersion, currentEntityIndex, chunk.EntityCount - currentEntityIndex,
+                configOffset, component);
+
+            if (currentChunkIndex != endChunkIndex)
+            {
+                // set inbetween, set full chunks
+                currentChunkIndex++;
+                while (currentChunkIndex < endChunkIndex)
+                {
+                    chunk = _chunks[currentChunkIndex];
+                    chunk.SetComponents(changeVersion, 0, chunk.EntityCount,
+                        configOffset, component);
+                    currentChunkIndex++;
+                }
+
+                // set last chunk
+                chunk = _chunks[endChunkIndex];
+                chunk.SetComponents(changeVersion, 0, endEntityIndex,
+                    configOffset, component);
+            }
         }
 
         #endregion
@@ -511,17 +519,6 @@ namespace EcsLte
         internal void SetManagedComponentAdapter(ChangeVersion changeVersion, EntityData entityData, ComponentConfig config, in IComponent component)
             => _chunks[entityData.ChunkIndex].SetManagedComponentAdapter(changeVersion, entityData.EntityIndex, GetConfigOffset(config), component);
 
-        internal void SetManagedComponentAdapter2(ChangeVersion changeVersion, EntityData entityData, ComponentConfig config)
-            => _chunks[entityData.ChunkIndex].SetManagedComponentAdapter2(changeVersion, entityData.EntityIndex, GetConfigOffset(config));
-
-        internal void SetChunkManagedComponents<TComponent>(ChangeVersion changeVersion, int chunkIndex, ComponentConfig config, in TComponent component)
-            where TComponent : IManagedComponent
-            => SetChunkManagedComponents(changeVersion, chunkIndex, GetConfigOffset(config), component);
-
-        internal void SetChunkManagedComponents<TComponent>(ChangeVersion changeVersion, int chunkIndex, ComponentConfigOffset configOffset, in TComponent component)
-            where TComponent : IManagedComponent
-            => _chunks[chunkIndex].SetManagedComponents(changeVersion, configOffset, component);
-
         internal void SetAllManagedComponents<TComponent>(ChangeVersion changeVersion, int srcChunkEntityIndex, int entityCount,
             ComponentConfig config, in TComponent component)
             where TComponent : IManagedComponent
@@ -531,12 +528,36 @@ namespace EcsLte
             ComponentConfigOffset configOffset, in TComponent component)
             where TComponent : IManagedComponent
         {
-            _managedPools[configOffset.ConfigIndex].SetComponents(srcChunkEntityIndex, entityCount, component);
+            var currentChunkIndex = srcChunkEntityIndex / DataManager.PageCapacity;
+            var currentEntityIndex = srcChunkEntityIndex - (currentChunkIndex * DataManager.PageCapacity);
 
-            var startChunkIndex = srcChunkEntityIndex / ArcheTypeDataChunk.ChunkMaxCapacity;
-            var endChunkIndex = (srcChunkEntityIndex + entityCount) / ArcheTypeDataChunk.ChunkMaxCapacity;
-            for (; startChunkIndex < endChunkIndex; startChunkIndex++)
-                _chunks[startChunkIndex].ManagedVersions[configOffset.ConfigIndex] = changeVersion;
+            // -1 first set would do at least one
+            // Ex when entityCount = PageCapacity, endChunkIndex is +1 when it is wrong
+            var endChunkIndex = (srcChunkEntityIndex + entityCount - 1) / DataManager.PageCapacity;
+            var endEntityIndex = (srcChunkEntityIndex + entityCount) - (endChunkIndex * DataManager.PageCapacity);
+
+            // set first chunk
+            var chunk = _chunks[currentChunkIndex];
+            chunk.SetManagedComponents(changeVersion, currentEntityIndex, chunk.EntityCount - currentEntityIndex,
+                configOffset, component);
+
+            if (currentChunkIndex != endChunkIndex)
+            {
+                // set inbetween, set full chunks
+                currentChunkIndex++;
+                while (currentChunkIndex < endChunkIndex)
+                {
+                    chunk = _chunks[currentChunkIndex];
+                    chunk.SetManagedComponents(changeVersion, 0, chunk.EntityCount,
+                        configOffset, component);
+                    currentChunkIndex++;
+                }
+
+                // set last chunk
+                chunk = _chunks[endChunkIndex];
+                chunk.SetManagedComponents(changeVersion, 0, endEntityIndex,
+                    configOffset, component);
+            }
         }
 
         #endregion
@@ -553,80 +574,60 @@ namespace EcsLte
 
         #region CopyEntity
 
-        internal void CopyComponentsFrom(ChangeVersion changeVersion, EntityData srcEntityData, EntityData destEntityData)
-            => _chunks[destEntityData.ChunkIndex].CopyComponentsFrom(changeVersion, srcEntityData, destEntityData);
+        internal void CopyComponentsFromSameArcheTypeData(ChangeVersion changeVersion, EntityData srcEntityData, EntityData destEntityData)
+            => _chunks[destEntityData.ChunkIndex].CopyComponentsFromSameArcheTypeData(changeVersion, srcEntityData.EntityIndex, destEntityData.EntityIndex);
 
         internal void CopyComponentsFromSameArcheTypeData(ChangeVersion changeVersion,
             int srcChunkEntityIndex, int destChunkEntityIndex, int entityCount)
         {
-            for (var i = 0; i < GeneralConfigs.Length; i++)
+            var copiedCount = 0;
+            while (entityCount > 0)
             {
-                _generalBuffers[i].CopyFromSame(
-                    srcChunkEntityIndex,
-                    destChunkEntityIndex,
-                    entityCount);
-            }
-            for (var i = 0; i < ManagedConfigs.Length; i++)
-            {
-                _managedPools[i].CopyFromSame(
-                    srcChunkEntityIndex,
-                    destChunkEntityIndex,
-                    entityCount);
-            }
+                var srcChunkIndex = (srcChunkEntityIndex + copiedCount) / DataManager.PageCapacity;
+                var srcEntityIndex = (srcChunkEntityIndex + copiedCount) - (srcChunkIndex * DataManager.PageCapacity);
+                var srcChunk = _chunks[srcChunkIndex];
 
-            var destStartChunkIndex = destChunkEntityIndex / ArcheTypeDataChunk.ChunkMaxCapacity;
-            var destEndChunkIndex = (destChunkEntityIndex + entityCount) / ArcheTypeDataChunk.ChunkMaxCapacity;
-            for (; destStartChunkIndex <= destEndChunkIndex; destStartChunkIndex++)
-                _chunks[destStartChunkIndex].UpdateComponentVersions(changeVersion);
+                var destChunkIndex = (destChunkEntityIndex + copiedCount) / DataManager.PageCapacity;
+                var destEntityIndex = (destChunkEntityIndex + copiedCount) - (destChunkIndex * DataManager.PageCapacity);
+                var destChunk = _chunks[destChunkIndex];
+
+                var copyCount = Math.Min(destChunk.EntityCount, entityCount);
+                destChunk.CopyComponentsFromDifferentDataChunkSameComponents(changeVersion, srcChunk,
+                    srcEntityIndex, destEntityIndex, copyCount);
+                entityCount -= copyCount;
+                copiedCount += copyCount;
+            }
         }
 
         internal void CopyComponentsFromDifferentArcheTypeDataSameComponents(ChangeVersion changeVersion, ArcheTypeData srcArcheTypeData,
             EntityData srcEntityData, EntityData destEntityData)
         {
-            for (var i = 0; i < GeneralConfigs.Length; i++)
-            {
-                _generalBuffers[i].CopyFromDifferent(srcArcheTypeData._generalBuffers[i],
-                    srcEntityData.ChunkIndex,
-                    srcEntityData.EntityIndex,
-                    destEntityData.ChunkIndex,
-                    destEntityData.EntityIndex,
-                    1);
-            }
-            for (var i = 0; i < ManagedConfigs.Length; i++)
-            {
-                _managedPools[i].CopyFromDifferent(srcArcheTypeData._managedPools[i],
-                    srcEntityData.ChunkIndex,
-                    srcEntityData.EntityIndex,
-                    destEntityData.ChunkIndex,
-                    destEntityData.EntityIndex,
-                    1);
-            }
+            var srcChunk = srcArcheTypeData._chunks[srcEntityData.ChunkIndex];
 
-            _chunks[srcEntityData.ChunkIndex].UpdateComponentVersions(changeVersion);
+            _chunks[destEntityData.ChunkIndex].CopyComponentsFromDifferentArcheTypeDataSameComponents(changeVersion, srcChunk,
+                srcEntityData.EntityIndex, destEntityData.EntityIndex);
         }
 
         internal void CopyComponentsFromDifferentArcheTypeDataSameComponents(ChangeVersion changeVersion, ArcheTypeData srcArcheTypeData,
             int srcChunkEntityIndex, int destChunkEntityIndex, int entityCount)
         {
-            for (var i = 0; i < GeneralConfigs.Length; i++)
+            var copiedCount = 0;
+            while (entityCount > 0)
             {
-                _generalBuffers[i].CopyFromDifferent(srcArcheTypeData._generalBuffers[i],
-                    srcChunkEntityIndex,
-                    destChunkEntityIndex,
-                    entityCount);
-            }
-            for (var i = 0; i < ManagedConfigs.Length; i++)
-            {
-                _managedPools[i].CopyFromDifferent(srcArcheTypeData._managedPools[i],
-                    srcChunkEntityIndex,
-                    destChunkEntityIndex,
-                    entityCount);
-            }
+                var srcChunkIndex = (srcChunkEntityIndex + copiedCount) / DataManager.PageCapacity;
+                var srcEntityIndex = (srcChunkEntityIndex + copiedCount) - (srcChunkIndex * DataManager.PageCapacity);
+                var srcChunk = srcArcheTypeData._chunks[srcChunkIndex];
 
-            var destStartChunkIndex = destChunkEntityIndex / ArcheTypeDataChunk.ChunkMaxCapacity;
-            var destEndChunkIndex = (destChunkEntityIndex + entityCount) / ArcheTypeDataChunk.ChunkMaxCapacity;
-            for (; destStartChunkIndex < destEndChunkIndex; destStartChunkIndex++)
-                _chunks[destStartChunkIndex].UpdateComponentVersions(changeVersion);
+                var destChunkIndex = (destChunkEntityIndex + copiedCount) / DataManager.PageCapacity;
+                var destEntityIndex = (destChunkEntityIndex + copiedCount) - (destChunkIndex * DataManager.PageCapacity);
+                var destChunk = _chunks[destChunkIndex];
+
+                var copyCount = Math.Min(destChunk.EntityCount, entityCount);
+                destChunk.CopyComponentsFromDifferentDataChunkSameComponents(changeVersion, srcChunk,
+                    srcEntityIndex, destEntityIndex, copyCount);
+                entityCount -= copyCount;
+                copiedCount += copyCount;
+            }
         }
 
         #endregion
@@ -661,99 +662,89 @@ namespace EcsLte
 
         internal void InternalDestroy()
         {
-            MemoryHelper.Free(_entities);
-            _entitiesLength = 0;
-            _managedPools = null;
+            _dataManager.DequeuePages(GeneralConfigs, ManagedConfigs, ref _chunks, 0, ChunksCount);
+            _chunks = null;
             MemoryHelper.Free(_configOffsets);
             _configOffsets = null;
-            if (GeneralConfigs.Length > 0)
-                MemoryHelper.Free(_generalBuffers);
-            _generalBuffers = null;
-            SharedComponentDatas = null;
-            ArcheTypeIndex = new ArcheTypeIndex();
+            _lastChunkIndex = 0;
+
             ArcheType.Dispose();
             ArcheType = new ArcheType();
-            EntityCount = 0;
+            ArcheTypeIndex = new ArcheTypeIndex();
+            ChunksCount = 0;
+            SharedVersions = null;
             GeneralConfigs = null;
             ManagedConfigs = null;
             SharedConfigs = null;
+            SharedComponentDatas = null;
+        }
+
+        private int CheckCapacityNoDataPageDequeue(int count)
+        {
+            var entityCount = EntityCount();
+            var neededChunkLength = (entityCount + count) / DataManager.PageCapacity +
+                ((entityCount + count) % DataManager.PageCapacity > 0 ? 1 : 0);
+
+            var prevChunksLength = _chunks.Length;
+            if (neededChunkLength > _chunks.Length)
+                Array.Resize(ref _chunks, neededChunkLength);
+
+            for (var i = prevChunksLength; i < neededChunkLength; i++)
+            {
+                _chunks[i] = new DataChunk
+                {
+                    ArcheTypeData = this,
+                    ChunkIndex = i,
+                    GeneralComponentPages = new IDataPage[GeneralConfigs.Length],
+                    ManagedComponentPages = new IDataPage[ManagedConfigs.Length],
+                    GeneralVersions = new ChangeVersion[GeneralConfigs.Length],
+                    ManagedVersions = new ChangeVersion[ManagedConfigs.Length]
+                };
+            }
+
+            return neededChunkLength;
         }
 
         private void CheckCapacity(int count)
         {
-            if (count > (_entitiesLength - EntityCount))
-            {
-                var newLength = Helper.NextPow2(_entitiesLength + count);
-                _entities = MemoryHelper.ReallocCopy(_entities, _entitiesLength, newLength);
-                for (var i = 0; i < GeneralConfigs.Length; i++)
-                {
-                    var genBuffer = _generalBuffers[i];
-                    _generalBuffers[i] = new ComponentBuffer
-                    {
-                        Buffer = MemoryHelper.ReallocCopy(genBuffer.Buffer,
-                            genBuffer.ComponentSize * _entitiesLength,
-                            genBuffer.ComponentSize * newLength),
-                        ComponentSize = genBuffer.ComponentSize
-                    };
-                }
-                for (var i = 0; i < _managedPools.Length; i++)
-                    _managedPools[i].Resize(newLength);
+            var neededChunkLength = CheckCapacityNoDataPageDequeue(count);
+            _dataManager.DequeuePages(GeneralConfigs, ManagedConfigs, ref _chunks, ChunksCount, neededChunkLength - ChunksCount);
 
-                if (newLength > _chunks.Length * ArcheTypeDataChunk.ChunkMaxCapacity)
-                {
-                    var newChunkLength = (newLength / ArcheTypeDataChunk.ChunkMaxCapacity) +
-                        (newLength % ArcheTypeDataChunk.ChunkMaxCapacity != 0 ? 1 : 0);
-
-                    var oldChunkLength = _chunks.Length;
-                    if (newChunkLength > _chunks.Length)
-                        Array.Resize(ref _chunks, newChunkLength);
-
-                    for (; oldChunkLength < newChunkLength; oldChunkLength++)
-                        _chunks[oldChunkLength] = new ArcheTypeDataChunk(this, oldChunkLength);
-                }
-
-                _entitiesLength = newLength;
-            }
+            ChunksCount = neededChunkLength;
         }
 
         private EntityData AddEntityNoChangeVersion(Entity entity, bool clearComponents)
         {
             CheckCapacity(1);
 
-            EntityCount++;
-            if (ChunksCount == 0)
-                ChunksCount++;
-
             var lastChunk = LastChunk;
-            var entityData = lastChunk.AddEntityNoChangeVersion(entity, clearComponents);
             if (lastChunk.IsFull)
-                ChunksCount++;
+            {
+                _lastChunkIndex++;
+                lastChunk = LastChunk;
+            }
 
-            return entityData;
+            return lastChunk.AddEntityNoChangeVersion(entity, clearComponents);
         }
 
-        private void AddEntitiesNoChangeVersion(Entity* entities, int startingIndex, int count,
+        private void AddEntitiesNoChangeVersion(Entity[] entities, int startingIndex, int count,
             EntityData* allEntityDatas, bool clearComponents)
         {
             CheckCapacity(count);
 
-            MemoryHelper.Copy(
-                entities,
-                _entities + EntityCount,
-                count);
-
-            EntityCount += count;
-            if (ChunksCount == 0)
-                ChunksCount++;
-
-            var availableCount = count;
-            while (availableCount > 0)
+            while (count > 0)
             {
-                var chunk = LastChunk;
-                availableCount -= chunk.AddEntitiesNoChangeVersion(entities, count - availableCount, availableCount,
+                var lastChunk = LastChunk;
+                if (lastChunk.IsFull)
+                {
+                    _lastChunkIndex++;
+                    lastChunk = LastChunk;
+                }
+
+                var addedCount = lastChunk.AddAvailableEntitiesNoChangeVersion(entities, startingIndex, count,
                     allEntityDatas, clearComponents);
-                if (chunk.IsFull)
-                    ChunksCount++;
+                count -= addedCount;
+                startingIndex += addedCount;
             }
         }
     }

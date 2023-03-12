@@ -301,10 +301,10 @@ namespace EcsLte
 
             AssertNotHaveComponent(config, archeTypeData);
 
-            Helper.AssertAndResizeArray(ref destComponents, destStartingIndex, archeTypeData.EntityCount);
+            Helper.AssertAndResizeArray(ref destComponents, destStartingIndex, archeTypeData.EntityCount());
 
             archeTypeData.GetAllComponents(ref destComponents, destStartingIndex, config);
-            return archeTypeData.EntityCount;
+            return archeTypeData.EntityCount();
         }
 
         public TComponent[] GetComponents<TComponent>(EntityFilter filter)
@@ -335,12 +335,12 @@ namespace EcsLte
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var archeTypeData = filteredArcheTypeDatas[i];
-                if (archeTypeData.EntityCount > 0 &&
+                if (archeTypeData.EntityCount() > 0 &&
                     archeTypeData.HasConfig(config))
                 {
-                    Helper.ResizeRefArray(ref destComponents, componentIndex, archeTypeData.EntityCount);
+                    Helper.ResizeRefArray(ref destComponents, componentIndex, archeTypeData.EntityCount());
                     archeTypeData.GetAllComponents(ref destComponents, destStartingIndex, config);
-                    componentIndex += archeTypeData.EntityCount;
+                    componentIndex += archeTypeData.EntityCount();
                 }
             }
 
@@ -451,10 +451,10 @@ namespace EcsLte
 
             AssertNotHaveComponent(config, archeTypeData);
 
-            Helper.AssertAndResizeArray(ref destComponents, destStartingIndex, archeTypeData.EntityCount);
+            Helper.AssertAndResizeArray(ref destComponents, destStartingIndex, archeTypeData.EntityCount());
 
             archeTypeData.GetAllManagedComponents(ref destComponents, destStartingIndex, config);
-            return archeTypeData.EntityCount;
+            return archeTypeData.EntityCount();
         }
 
         public TComponent[] GetManagedComponents<TComponent>(EntityFilter filter)
@@ -485,12 +485,12 @@ namespace EcsLte
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var archeTypeData = filteredArcheTypeDatas[i];
-                if (archeTypeData.EntityCount > 0 &&
+                if (archeTypeData.EntityCount() > 0 &&
                     archeTypeData.HasConfig(config))
                 {
-                    Helper.ResizeRefArray(ref destComponents, componentIndex, archeTypeData.EntityCount);
+                    Helper.ResizeRefArray(ref destComponents, componentIndex, archeTypeData.EntityCount());
                     archeTypeData.GetAllManagedComponents(ref destComponents, destStartingIndex, config);
-                    componentIndex += archeTypeData.EntityCount;
+                    componentIndex += archeTypeData.EntityCount();
                 }
             }
 
@@ -642,7 +642,7 @@ namespace EcsLte
             {
                 var archeTypeData = trackedArcheTypeDatas[i];
                 if (archeTypeData.HasConfig(config) &&
-                    tracker.GetArcheTypeDataChunks(archeTypeData, out _))
+                    tracker.GetDataChunks(archeTypeData, out _))
                 {
                     Helper.ResizeRefArray(ref destComponents, componentIndex, 1);
                     destComponents[componentIndex++] = archeTypeData.GetSharedComponent<TComponent>(config);
@@ -688,7 +688,7 @@ namespace EcsLte
                 {
                     var archeTypeData = filteredArcheTypeDatas[i];
                     if (archeTypeData.HasConfig(config) &&
-                        query.Tracker.GetArcheTypeDataChunks(archeTypeData, out _))
+                        query.Tracker.GetDataChunks(archeTypeData, out _))
                     {
                         Helper.ResizeRefArray(ref destComponents, componentIndex, 1);
                         destComponents[componentIndex++] = archeTypeData.GetSharedComponent<TComponent>(config);

@@ -66,7 +66,7 @@
             var prevArcheTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
             AssertNotHaveComponent(config, prevArcheTypeData);
 
-            if (prevArcheTypeData.EntityCount > 0)
+            if (prevArcheTypeData.EntityCount() > 0)
             {
                 ChangeVersion.IncVersion(ref _globalVersion);
                 InternalUpdateSharedTransferArcheTypeData(prevArcheTypeData,

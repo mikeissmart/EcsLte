@@ -1,4 +1,5 @@
-﻿using EcsLte.Utilities;
+﻿using EcsLte.Data;
+using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,7 @@ namespace EcsLte
         private ChangeVersion _archeTypeDataVersion;
         private ArcheType _cachedArcheType;
         private DataPoint _rootPoint;
+        private DataManager _dataManager;
         private readonly object _lockCacheObj;
 
         public EcsContext Context { get; private set; }
@@ -24,6 +26,7 @@ namespace EcsLte
                 ComponentConfigs.Instance.AllComponentCount,
                 ComponentConfigs.Instance.AllSharedCount);
             _rootPoint = new DataPoint();
+            _dataManager = new DataManager();
             _lockCacheObj = new object();
 
             Context = context;
@@ -73,80 +76,6 @@ namespace EcsLte
             return archeTypeIndex - destStartingIndex;
         }
 
-        // TODO remove
-        /*public EntityArcheType[] GetArcheTypes(EntityTracker tracker)
-        {
-            var archeTypes = new EntityArcheType[0];
-            GetArcheTypes(tracker, ref archeTypes, 0);
-
-            return archeTypes;
-        }*/
-
-        // TODO remove
-        /*public void GetArcheTypes(EntityTracker tracker,
-            ref EntityArcheType[] destArcheTypes)
-            => GetArcheTypes(tracker, ref destArcheTypes, 0);*/
-
-        // TODO remove
-        /*public int GetArcheTypes(EntityTracker tracker,
-            ref EntityArcheType[] destArcheTypes, int destStartingIndex)
-        {
-            Context.AssertContext();
-
-            var archeTypeDatas = tracker.CachedArcheTypeDatas;
-            Helper.AssertAndResizeArray(ref destArcheTypes, destStartingIndex, archeTypeDatas.Length);
-            var archeTypeIndex = destStartingIndex;
-            for (var i = 0; i < archeTypeDatas.Length; i++, archeTypeIndex++)
-                destArcheTypes[archeTypeIndex] = new EntityArcheType(Context, archeTypeDatas[i]);
-
-            return archeTypeIndex - destStartingIndex;
-        }*/
-
-        // TODO remove
-        /*public EntityArcheType[] GetArcheTypes(EntityQuery query)
-        {
-            var archeTypes = new EntityArcheType[0];
-            GetArcheTypes(query, ref archeTypes, 0);
-
-            return archeTypes;
-        }*/
-
-        // TODO remove
-        /*public void GetArcheTypes(EntityQuery query,
-            ref EntityArcheType[] destArcheTypes)
-            => GetArcheTypes(query, ref destArcheTypes, 0);*/
-
-        // TODO remove
-        /*public int GetArcheTypes(EntityQuery query,
-            ref EntityArcheType[] destArcheTypes, int destStartingIndex)
-        {
-            Context.AssertContext();
-
-            if (query.Filter != null && query.Tracker == null)
-                return GetArcheTypes(query.Filter, ref destArcheTypes, destStartingIndex);
-            else if (query.Filter == null && query.Tracker != null)
-                return GetArcheTypes(query.Tracker, ref destArcheTypes, destStartingIndex);
-            else if (query.Filter != null && query.Tracker != null)
-            {
-                Helper.AssertArray(destArcheTypes, destStartingIndex);
-
-                var filteredArcheTypes = GetArcheTypeDatas(query.Filter);
-                var archeTypeIndex = destStartingIndex;
-                for (var i = 0; i < filteredArcheTypes.Length; i++)
-                {
-                    if (query.Tracker.GetArcheTypeDataEntityCount(filteredArcheTypes[i]) > 0)
-                    {
-                        Helper.ResizeRefArray(ref destArcheTypes, archeTypeIndex, 1);
-                        destArcheTypes[archeTypeIndex++] = new EntityArcheType(Context, filteredArcheTypes[i]);
-                    }
-                }
-
-                return archeTypeIndex - destStartingIndex;
-            }
-
-            return 0;
-        }*/
-
         internal int GetAllEntities(ref Entity[] entities, int startingIndex)
         {
             var entityIndex = startingIndex;
@@ -156,9 +85,9 @@ namespace EcsLte
                 for (var j = 1; j < archeTypeDatas.Count; j++)
                 {
                     var archeTypeData = archeTypeDatas[j];
-                    Helper.ResizeRefArray(ref entities, entityIndex, archeTypeData.EntityCount);
+                    Helper.ResizeRefArray(ref entities, entityIndex, archeTypeData.EntityCount());
                     archeTypeData.GetAllEntities(ref entities, entityIndex);
-                    entityIndex += archeTypeData.EntityCount;
+                    entityIndex += archeTypeData.EntityCount();
                 }
             }
 
@@ -174,9 +103,9 @@ namespace EcsLte
                 for (var j = 1; j < archeTypeDatas.Count; j++)
                 {
                     var archeTypeData = archeTypeDatas[j];
-                    Helper.ResizeRefArray(ref entities, entityIndex, archeTypeData.EntityCount);
+                    Helper.ResizeRefArray(ref entities, entityIndex, archeTypeData.EntityCount());
                     archeTypeData.GetAllEntities(ref entities, entityIndex);
-                    entityIndex += archeTypeData.EntityCount;
+                    entityIndex += archeTypeData.EntityCount();
 
                     archeTypeData.RemoveAllEntities();
                 }
@@ -258,6 +187,8 @@ namespace EcsLte
             _cachedArcheType.Dispose();
             _cachedArcheType = new ArcheType();
             _rootPoint = null;
+            _dataManager.Dispose();
+            _dataManager = null;
         }
 
         private ArcheTypeData InternalGetArcheTypeData(ArcheType cachedArcheType)
@@ -275,7 +206,8 @@ namespace EcsLte
                     archeTypeData = new ArcheTypeData(
                         ArcheType.AllocClone(cachedArcheType),
                         new ArcheTypeIndex(cachedArcheType.ConfigsLength, dataList.Count),
-                        Context.SharedComponentDics);
+                        Context.SharedComponentDics,
+                        _dataManager);
                     point.ArcheTypeDatas.Add(archeTypeData.ArcheType, archeTypeData);
                     dataList.Add(archeTypeData);
                     _archeTypeDataVersion = Context.Entities.GlobalVersion;

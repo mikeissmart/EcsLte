@@ -539,12 +539,12 @@ namespace EcsLte
             var archeTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
             AssertNotHaveComponent(config, archeTypeData);
 
-            if (archeTypeData.EntityCount > 0)
+            if (archeTypeData.EntityCount() > 0)
             {
                 ChangeVersion.IncVersion(ref _globalVersion);
                 archeTypeData.SetAllComponents(GlobalVersion,
                     0,
-                    archeTypeData.EntityCount,
+                    archeTypeData.EntityCount(),
                     config,
                     component);
             }
@@ -565,12 +565,12 @@ namespace EcsLte
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var archeTypeData = filteredArcheTypeDatas[i];
-                if (archeTypeData.HasConfig(config) && archeTypeData.EntityCount > 0)
+                if (archeTypeData.HasConfig(config) && archeTypeData.EntityCount() > 0)
                 {
                     _globalVersion = version;
                     archeTypeData.SetAllComponents(version,
                         0,
-                        archeTypeData.EntityCount,
+                        archeTypeData.EntityCount(),
                         config,
                         component);
                 }
@@ -587,12 +587,12 @@ namespace EcsLte
             var archeTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
             AssertNotHaveComponent(config, archeTypeData);
 
-            if (archeTypeData.EntityCount > 0)
+            if (archeTypeData.EntityCount() > 0)
             {
                 ChangeVersion.IncVersion(ref _globalVersion);
                 archeTypeData.SetAllManagedComponents(GlobalVersion,
                     0,
-                    archeTypeData.EntityCount,
+                    archeTypeData.EntityCount(),
                     config,
                     component);
             }
@@ -612,12 +612,12 @@ namespace EcsLte
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var archeTypeData = filteredArcheTypeDatas[i];
-                if (archeTypeData.HasConfig(config) && archeTypeData.EntityCount > 0)
+                if (archeTypeData.HasConfig(config) && archeTypeData.EntityCount() > 0)
                 {
                     _globalVersion = version;
                     archeTypeData.SetAllManagedComponents(_globalVersion,
                         0,
-                        archeTypeData.EntityCount,
+                        archeTypeData.EntityCount(),
                         config,
                         component);
                 }
@@ -639,7 +639,7 @@ namespace EcsLte
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var archeTypeData = filteredArcheTypeDatas[i];
-                if (archeTypeData.HasConfig(config) && archeTypeData.EntityCount > 0)
+                if (archeTypeData.HasConfig(config) && archeTypeData.EntityCount() > 0)
                 {
                     _globalVersion = version;
                     InternalUpdateSharedTransferArcheTypeData(archeTypeData,

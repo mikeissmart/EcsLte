@@ -1,4 +1,5 @@
-﻿using EcsLte.Exceptions;
+﻿using EcsLte.Data;
+using EcsLte.Exceptions;
 using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
@@ -172,7 +173,7 @@ namespace EcsLte
 
         internal int GetArcheTypeDataEntities(ArcheTypeData archeTypeData, ref Entity[] entities, int startingIndex)
         {
-            if (archeTypeData.EntityCount == 0)
+            if (archeTypeData.EntityCount() == 0)
                 return 0;
 
             var cacheData = GetCacheData(archeTypeData);
@@ -187,9 +188,9 @@ namespace EcsLte
             return entityIndex - startingIndex;
         }
 
-        internal bool GetArcheTypeDataChunks(ArcheTypeData archeTypeData, out List<ArcheTypeDataChunk> chunks)
+        internal bool GetDataChunks(ArcheTypeData archeTypeData, out List<DataChunk> chunks)
         {
-            if (archeTypeData.EntityCount == 0)
+            if (archeTypeData.EntityCount() == 0)
             {
                 chunks = null;
                 return false;
@@ -360,7 +361,7 @@ namespace EcsLte
 
         private class CacheData
         {
-            public List<ArcheTypeDataChunk> Chunks = new List<ArcheTypeDataChunk>();
+            public List<DataChunk> Chunks = new List<DataChunk>();
             public ComponentConfigOffset[] GeneralOffsets = new ComponentConfigOffset[0];
             public ComponentConfigOffset[] ManagedOffsets = new ComponentConfigOffset[0];
             public ComponentConfigOffset[] SharedOffsets = new ComponentConfigOffset[0];

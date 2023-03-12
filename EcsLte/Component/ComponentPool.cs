@@ -1,9 +1,10 @@
-﻿using EcsLte.Utilities;
+﻿using EcsLte.Data;
+using EcsLte.Utilities;
 using System;
 
 namespace EcsLte
 {
-    internal interface IComponentPool
+    /*internal interface IComponentPool
     {
         int Length { get; }
 
@@ -145,6 +146,6 @@ namespace EcsLte
                 chunkEntityCount);
 
         private int Chunk(int chunkIndex)
-            => chunkIndex * ArcheTypeDataChunk.ChunkMaxCapacity;
-    }
+            => chunkIndex * DataManager.PageCapacity;
+    }*/
 }

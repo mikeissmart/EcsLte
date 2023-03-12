@@ -45,12 +45,8 @@ namespace EcsLte
                     _values = MemoryHelper.ReallocCopy(_values, _valuesLength, newLength);
                     _valuesLength = newLength;
                 }
-                _values[index] = component;
             }
-            // TODO need to create test
-            // To check if updating shared component is set
-            //  event when index is added
-            //_values[index] = component;
+            _values[index] = component;
 
             return new SharedDataIndex
             {

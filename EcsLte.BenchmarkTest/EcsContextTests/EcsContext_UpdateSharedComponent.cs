@@ -33,8 +33,8 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
             CreateArcheTypes();
         }
 
-        private EntityArcheType BlueprintUpdateAndArcheType<T>(T component) where T : unmanaged, ISharedComponent =>
-            _blueprint.SetSharedComponent(component).GetArcheType(_context);
+        private EntityArcheType BlueprintUpdateAndArcheType<T>(EntityBlueprint blueprint, T component) where T : unmanaged, ISharedComponent =>
+            blueprint.SetSharedComponent(component).GetArcheType(_context);
 
         [GlobalCleanup]
         public void GlobalCleanup()
@@ -70,10 +70,11 @@ namespace EcsLte.BenchmarkTest.EcsContextTests
 
         private void CreateArcheTypes()
         {
+            var blueprint = EcsContextSetupCleanup.CreateBlueprint(ComponentArrangement.Shared_x4);
             _archeType1 = _blueprint.GetArcheType(_context);
-            _archeType2 = BlueprintUpdateAndArcheType(SharedComponent1);
-            _archeType3 = BlueprintUpdateAndArcheType(SharedComponent2);
-            _archeType4 = BlueprintUpdateAndArcheType(SharedComponent3);
+            _archeType2 = BlueprintUpdateAndArcheType(_blueprint, SharedComponent1);
+            _archeType3 = BlueprintUpdateAndArcheType(_blueprint, SharedComponent2);
+            _archeType4 = BlueprintUpdateAndArcheType(_blueprint, SharedComponent3);
 
             _query1 = _context.Queries
                 .SetFilter(_context.Filters

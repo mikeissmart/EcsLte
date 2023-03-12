@@ -7,6 +7,8 @@ namespace EcsLte.Utilities
     {
         internal static int NextPow2(int n) => (int)Math.Pow(2, (int)Math.Log(n, 2) + 1);
 
+        internal static int NextPow(int pow, int n) => (int)Math.Pow(pow, (int)Math.Log(n, pow) + 1);
+
         internal static void CheckArrayLength<T>(ref T[] srcArray, int startingIndex, int count)
         {
             if (startingIndex + count > srcArray.Length)

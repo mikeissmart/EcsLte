@@ -34,8 +34,8 @@
             ConfigOffset = archeTypeData.GetConfigOffset(ComponentConfig<TComponent>.Config);
         }
 
-        public override unsafe ref TComponent GetRef(EntityData entityData) =>
-            ref *(TComponent*)ArcheTypeData.GetComponentPtr(entityData, ConfigOffset);
+        public override ref TComponent GetRef(EntityData entityData)
+            => ref ArcheTypeData.GetComponentRef<TComponent>(entityData, ConfigOffset);
     }
 
     #endregion
@@ -51,8 +51,8 @@
             ConfigOffset = archeTypeData.GetConfigOffset(ComponentConfig<TComponent>.Config);
         }
 
-        public override ref TComponent GetRef(EntityData entityData) =>
-            ref ArcheTypeData.GetManagedComponentRef<TComponent>(entityData, ConfigOffset);
+        public override ref TComponent GetRef(EntityData entityData)
+            => ref ArcheTypeData.GetManagedComponentRef<TComponent>(entityData, ConfigOffset);
     }
 
     #endregion

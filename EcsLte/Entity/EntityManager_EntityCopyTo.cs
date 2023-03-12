@@ -192,7 +192,7 @@ namespace EcsLte
             Helper.AssertArray(destEntities, destStartingIndex);
 
             var srcArcheTypeData = srcArcheType.Context.ArcheTypes.GetArcheTypeData(srcArcheType);
-            if (srcArcheTypeData.EntityCount > 0)
+            if (srcArcheTypeData.EntityCount() > 0)
             {
                 ChangeVersion.IncVersion(ref _globalVersion);
 
@@ -232,7 +232,7 @@ namespace EcsLte
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var archeTypeData = filteredArcheTypeDatas[i];
-                if (archeTypeData.EntityCount > 0)
+                if (archeTypeData.EntityCount() > 0)
                 {
                     incVersion = true;
                     entityIndex += InternalCopyToArcheTypeData(archeTypeData,

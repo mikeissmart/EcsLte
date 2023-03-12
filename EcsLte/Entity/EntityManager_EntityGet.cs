@@ -42,13 +42,13 @@ namespace EcsLte
             EntityArcheType.AssertEntityArcheType(archeType, Context);
 
             var archeTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
-            if (archeTypeData.EntityCount > 0)
+            if (archeTypeData.EntityCount() > 0)
             {
-                Helper.AssertAndResizeArray(ref entities, startingIndex, archeTypeData.EntityCount);
+                Helper.AssertAndResizeArray(ref entities, startingIndex, archeTypeData.EntityCount());
                 archeTypeData.GetAllEntities(ref entities, startingIndex);
             }
 
-            return archeTypeData.EntityCount;
+            return archeTypeData.EntityCount();
         }
 
         public Entity[] GetEntities(EntityFilter filter)
@@ -73,9 +73,9 @@ namespace EcsLte
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var archeTypeData = filteredArcheTypeDatas[i];
-                if (archeTypeData.EntityCount > 0)
+                if (archeTypeData.EntityCount() > 0)
                 {
-                    Helper.ResizeRefArray(ref entities, entityIndex, archeTypeData.EntityCount);
+                    Helper.ResizeRefArray(ref entities, entityIndex, archeTypeData.EntityCount());
                     entityIndex += archeTypeData.GetAllEntities(ref entities, entityIndex);
                 }
             }

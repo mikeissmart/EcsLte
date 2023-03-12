@@ -79,7 +79,7 @@ namespace EcsLte.UnitTest.EntityManagerTests
                 .FirstOrDefault();
 
             Assert.IsTrue(component != null,
-                $"No Component: {nameof(TComponent)}");
+                $"No Component: {typeof(TComponent).Name}");
             Assert.IsTrue(component.Prop == propNum,
                 $"Wrong Component Value: {typeof(TComponent).Name}, {component.Prop}");
         }

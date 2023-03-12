@@ -1,4 +1,5 @@
-﻿using EcsLte.Utilities;
+﻿using EcsLte.Data;
+using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,7 +12,7 @@ namespace EcsLte
         internal int ComponentSize;
 
         internal byte* PtrChunk(int chunkIndex)
-            => Buffer + (chunkIndex * ArcheTypeDataChunk.ChunkMaxCapacity * ComponentSize);
+            => Buffer + (chunkIndex * DataManager.PageCapacity * ComponentSize);
 
         internal byte* PtrComponent(int chunkIndex, int entityIndex)
             => PtrChunk(chunkIndex) + (ComponentSize * entityIndex);

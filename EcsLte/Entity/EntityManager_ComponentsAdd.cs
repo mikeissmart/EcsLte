@@ -433,7 +433,7 @@ namespace EcsLte
             var prevArcheTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
             AssertAlreadyHasComponent(config, prevArcheTypeData);
 
-            if (prevArcheTypeData.EntityCount > 0)
+            if (prevArcheTypeData.EntityCount() > 0)
             {
                 ChangeVersion.IncVersion(ref _globalVersion);
                 if (InternalAddConfigTransferArcheTypeData(prevArcheTypeData, config,
@@ -442,7 +442,7 @@ namespace EcsLte
                 {
                     nextArcheTypeData.SetAllComponents(GlobalVersion,
                         preEntityCount,
-                        nextArcheTypeData.EntityCount - preEntityCount,
+                        nextArcheTypeData.EntityCount() - preEntityCount,
                         config,
                         component);
                 }
@@ -462,7 +462,7 @@ namespace EcsLte
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var prevArcheTypeData = filteredArcheTypeDatas[i];
-                if (!prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount > 0)
+                if (!prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount() > 0)
                 {
                     if (!incVersion)
                     {
@@ -476,89 +476,12 @@ namespace EcsLte
 
                     nextArcheTypeData.SetAllComponents(GlobalVersion,
                         preEntityCount,
-                        nextArcheTypeData.EntityCount - preEntityCount,
+                        nextArcheTypeData.EntityCount() - preEntityCount,
                         config,
                         component);
                 }
             }
         }
-
-        // todo not gonna want to add/edit/remove components/entities by tracker
-        //  trackered is by chunk not by entity
-        //  unwanted entities are gonna be affected
-        /*public void AddComponents<TComponent>(EntityTracker tracker, TComponent component)
-            where TComponent : unmanaged, IGeneralComponent
-        {
-            Context.AssertContext();
-            Context.AssertStructualChangeAvailable();
-            EntityTracker.AssertEntityTracker(tracker, Context);
-
-            var config = ComponentConfig<TComponent>.Config;
-            var archeTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(tracker.TrackingFilter());
-            var incVersion = false;
-            for (var i = 0; i < archeTypeDatas.Length; i++)
-            {
-                var prevArcheTypeData = archeTypeDatas[i];
-                if (!prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount > 0)
-                {
-                    if (!incVersion)
-                    {
-                        ChangeVersion.IncVersion(ref _globalVersion);
-                        incVersion = true;
-                    }
-
-                    InternalAddConfig(prevArcheTypeData, config,
-                        null,
-                        out var nextArcheTypeData);
-
-                    if (tracker.GetArcheTypeDataChunks(prevArcheTypeData, out var chunks))
-                    {
-
-                    }
-
-                    if (InternalAddConfigTrackingTransferTracker(tracker, prevArcheTypeData, config,
-                        null,
-                        out var nextArcheTypeData, out var preEntityCount))
-                    {
-                        nextArcheTypeData.SetComponents(preEntityCount, nextArcheTypeData.EntityCount - preEntityCount,
-                            config, component);
-                    }
-                }
-            }
-        }*/
-
-        // todo figure out what to do with tracking/changeVersion
-        /*public void AddComponents<TComponent>(EntityQuery query, TComponent component)
-            where TComponent : unmanaged, IGeneralComponent
-        {
-            Context.AssertContext();
-            Context.AssertStructualChangeAvailable();
-            EntityQuery.AssertEntityQuery(query, Context);
-
-            if (query.Filter != null && query.Tracker == null)
-                AddComponents(query.Filter, component);
-            else if (query.Filter == null && query.Tracker != null)
-                AddComponents(query.Tracker, component);
-            else if (query.Filter != null && query.Tracker != null)
-            {
-                var config = ComponentConfig<TComponent>.Config;
-                var filteredArcheTypeDatas = Context.ArcheTypes.GetArcheTypeDatas(query.Filter);
-                for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
-                {
-                    var prevArcheTypeData = filteredArcheTypeDatas[i];
-                    if (!prevArcheTypeData.HasConfig(config))
-                    {
-                        if (InternalAddConfigTrackingTransferTracker(query.Tracker, prevArcheTypeData, config,
-                            null,
-                            out var nextArcheTypeData, out var preEntityCount))
-                        {
-                            nextArcheTypeData.SetComponents(preEntityCount, nextArcheTypeData.EntityCount - preEntityCount,
-                                config, component);
-                        }
-                    }
-                }
-            }
-        }*/
 
         public void AddManagedComponents<TComponent>(EntityArcheType archeType, TComponent component)
             where TComponent : IManagedComponent
@@ -571,7 +494,7 @@ namespace EcsLte
             var prevArcheTypeData = Context.ArcheTypes.GetArcheTypeData(archeType);
             AssertAlreadyHasComponent(config, prevArcheTypeData);
 
-            if (prevArcheTypeData.EntityCount > 0)
+            if (prevArcheTypeData.EntityCount() > 0)
             {
                 ChangeVersion.IncVersion(ref _globalVersion);
                 if (InternalAddConfigTransferArcheTypeData(prevArcheTypeData, config,
@@ -580,7 +503,7 @@ namespace EcsLte
                 {
                     nextArcheTypeData.SetAllManagedComponents(GlobalVersion,
                         preEntityCount,
-                        nextArcheTypeData.EntityCount - preEntityCount,
+                        nextArcheTypeData.EntityCount() - preEntityCount,
                         config,
                         component);
                 }
@@ -600,7 +523,7 @@ namespace EcsLte
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var prevArcheTypeData = filteredArcheTypeDatas[i];
-                if (!prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount > 0)
+                if (!prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount() > 0)
                 {
                     if (!incVersion)
                     {
@@ -614,7 +537,7 @@ namespace EcsLte
 
                     nextArcheTypeData.SetAllManagedComponents(GlobalVersion,
                         preEntityCount,
-                        nextArcheTypeData.EntityCount - preEntityCount,
+                        nextArcheTypeData.EntityCount() - preEntityCount,
                         config,
                         component);
                 }
@@ -634,7 +557,7 @@ namespace EcsLte
             for (var i = 0; i < filteredArcheTypeDatas.Length; i++)
             {
                 var prevArcheTypeData = filteredArcheTypeDatas[i];
-                if (!prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount > 0)
+                if (!prevArcheTypeData.HasConfig(config) && prevArcheTypeData.EntityCount() > 0)
                 {
                     if (!incVersion)
                     {

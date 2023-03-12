@@ -1,4 +1,5 @@
-﻿using EcsLte.Exceptions;
+﻿using EcsLte.Data;
+using EcsLte.Exceptions;
 using EcsLte.Utilities;
 using System;
 using System.Collections.Generic;
@@ -2818,7 +2819,7 @@ namespace EcsLte
         {
             private readonly EcsContext _context;
             private ArcheTypeData _prevArcheTypeData = null;
-            private ArcheTypeDataChunk _prevChunk;
+            private DataChunk _prevChunk;
             private ComponentConfigOffset[] _configOffsets;
 
             internal int Index { get; set; }

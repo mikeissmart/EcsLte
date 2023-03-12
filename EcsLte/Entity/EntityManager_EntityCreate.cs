@@ -134,7 +134,7 @@ namespace EcsLte
                 ChangeVersion.IncVersion(ref _globalVersion);
 
                 var archeTypeData = Context.ArcheTypes.GetArcheTypeData(blueprint.GetArcheType(Context));
-                var prevEntityIndex = archeTypeData.EntityCount;
+                var prevEntityIndex = archeTypeData.EntityCount();
                 CheckAndAllocEntities(archeTypeData, false,
                     ref entities, startingIndex, count);
 
